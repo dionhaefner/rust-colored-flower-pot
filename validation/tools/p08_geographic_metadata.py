@@ -18,6 +18,13 @@ def main():
             oracle=compute_metadata(str(path),**options)
             native=base.operation(dict(operation='compute_metadata',path=str(path),options=options))
             name=path.stem+'-'+mode
+            reduction=None
+            if name=='dateline-mosaic-full':
+                with rasterio.open(path) as src:
+                    values=np.ma.masked_invalid(src.read(1,masked=True)).compressed()
+                reduction={field:dict(numpy_float32=float(fn(values)),numpy_float64=float(fn(values,dtype='float64')))
+                    for field,fn in [('mean',np.mean),('stdev',np.std)]}
+                write_json(base.OUT/'mosaic-reduction.json',dict(samples=int(values.size),sha256=sha256(path),moments=reduction))
             write_json(base.OUT/(name+'-python.json'),base.normalized(oracle))
             write_json(base.OUT/(name+'-rust.json'),native)
             checks=[]
@@ -32,6 +39,14 @@ def main():
                     atol=4*float(np.spacing(np.float32(abs(a)))) if dtype=='float32' and mode!='chunk' else 1e-10
                     rtol=0 if dtype=='float32' and mode!='chunk' else 2e-12
                     passed=np.allclose(a,b,rtol=rtol,atol=atol);bound=dict(atol=atol,rtol=rtol)
+                    if reduction is not None:
+                        # RW-042: this 17.28-million-sample input exceeds the
+                        # small-crop bound. Prove the precise reduction cause,
+                        # and bound only this pinned full-mosaic comparison.
+                        atol={'mean':5e-6,'stdev':2.1e-4}[field]
+                        passed=(float(a)==reduction[field]['numpy_float32'] and
+                            float(b)==float(np.float32(reduction[field]['numpy_float64'])) and abs(float(a-b))<=atol)
+                        bound=dict(atol=atol,rtol=0,requires='exact NumPy f32 oracle and rounded NumPy f64 native moments',discovery='RW-042')
                 else:passed=np.allclose(a,b,rtol=0,atol=1e-12);bound=dict(atol=1e-12,rtol=0)
                 checks.append(dict(field=field,passed=bool(passed),max_difference=float(np.max(np.abs(a-b))),bound=bound))
             a=shape(oracle['convex_hull']);b=shape(native['convex_hull'])

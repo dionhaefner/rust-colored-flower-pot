@@ -2,6 +2,7 @@
 import json
 import platform
 import shutil
+import subprocess
 from pathlib import Path
 from common import ROOT, COMMIT, sha256, write_json
 
@@ -19,6 +20,9 @@ def main():
       'geographic-metadata':'p08-geographic-metadata',
     }
     for name,directory in reports.items():shutil.copy2(ROOT/'validation/artifacts'/directory/'report.json',out/(name+'.json'))
+    shutil.copy2(ROOT/'validation/artifacts/p08-geographic-metadata/mosaic-reduction.json',out/'mosaic-reduction.json')
+    initial=ROOT/'validation/artifacts/p08-geographic-metadata-before-roundoff-classification/report.json'
+    if initial.exists():shutil.copy2(initial,out/'geographic-metadata-initial-failure.json')
     images=out/'images';images.mkdir(exist_ok=True)
     for directory,pattern in [('p08-geography-final','images/*.png'),('p08-geography-final','side-by-side.png'),('p08-bigtiff','*.png'),('p08-rollback','*.png')]:
         destination=images/directory;destination.mkdir(exist_ok=True)
@@ -34,7 +38,8 @@ def main():
     write_json(out/'run-manifest.json',dict(phase='P08',reference_commit=COMMIT,platform=platform.platform(),
         reference_lock=files([ROOT/'validation/reference/requirements.lock'])[0],source=files(source),artifacts=files(artifacts),runtime=files(runtime),
         commands='validation/evidence/p08/qualification.json',
-        git_state='Initially wholly untracked; no commit, push, publishing or deployment performed.',
+        git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        git_state='Initially wholly untracked. An initial commit appeared during qualification; it was not created by this agent. Final qualification updates remain in the working tree. No agent commit, push, publishing or deployment performed.',
         release_state='Local work qualified; full release blocked on actual AWS, deferred platforms and external basemap workflow.'))
     print('Retained',len(reports),'final reports and',len(source),'source fingerprints')
 

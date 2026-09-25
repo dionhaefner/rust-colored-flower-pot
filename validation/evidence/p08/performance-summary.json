@@ -1,4 +1,6 @@
 {
+  "primary_navigation_results": "navigation/summary.json \u2014 viewport refill for singleband/RGB with 1, 4, 8 sessions; matched aggregate GDAL budgets. Use this for map-browsing conclusions; the rows below remain the earlier repeated-request microbenchmarks.",
+  "qualification_note": "RW-043: original runs used GDAL_CACHEMAX=32 per process: 32 MiB total Rust vs 96 MiB total across three Python workers. Raw measurements retained; equal aggregate-cache qualification requires a rerun. See bottleneck-followup/README.md.",
   "rows": [
     {
       "access": "local",
@@ -6,26 +8,26 @@
       "workload": "compute-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 77.96139949641656,
-        "p50_trial_min_ms": 77.74858850461897,
-        "p50_trial_max_ms": 78.5057219909504,
-        "p95_ms": 82.0488934914465,
-        "p99_ms": 82.63943608762929,
-        "requests_per_second": 12.513923395271169,
+        "p50_ms": 78.35157500812784,
+        "p50_trial_min_ms": 77.90929600014351,
+        "p50_trial_max_ms": 78.4144889912568,
+        "p95_ms": 79.32875400729245,
+        "p99_ms": 80.17493925290182,
+        "requests_per_second": 12.608203064688581,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 93.98030700685922,
-        "p50_trial_min_ms": 88.8158099987777,
-        "p50_trial_max_ms": 103.85553799278568,
-        "p95_ms": 114.42994125536643,
-        "p99_ms": 117.0425215663272,
-        "requests_per_second": 10.304164578334468,
+        "p50_ms": 99.47942549479194,
+        "p50_trial_min_ms": 95.11888299311977,
+        "p50_trial_max_ms": 115.243874504813,
+        "p95_ms": 110.73491699062288,
+        "p99_ms": 116.50567545293598,
+        "requests_per_second": 9.89587576024634,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.8295503811317246
+      "python_over_rust_p50": 0.7876158775387156
     },
     {
       "access": "local",
@@ -33,26 +35,26 @@
       "workload": "compute-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 82.47649949043989,
-        "p50_trial_min_ms": 82.04280250356533,
-        "p50_trial_max_ms": 82.76591599860694,
-        "p95_ms": 87.73367224785034,
-        "p99_ms": 88.96761369833257,
-        "requests_per_second": 35.43478666335647,
+        "p50_ms": 83.12221850792412,
+        "p50_trial_min_ms": 82.7766369911842,
+        "p50_trial_max_ms": 83.29853498435114,
+        "p95_ms": 95.04179424402537,
+        "p99_ms": 99.54641094664112,
+        "requests_per_second": 32.82463531090412,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 84.38146449043415,
-        "p50_trial_min_ms": 81.91434599575587,
-        "p50_trial_max_ms": 86.08118850679602,
-        "p95_ms": 96.49776875448879,
-        "p99_ms": 103.66854184831026,
-        "requests_per_second": 33.4271450993437,
+        "p50_ms": 82.4006089969771,
+        "p50_trial_min_ms": 82.05311749770772,
+        "p50_trial_max_ms": 82.95838699268643,
+        "p95_ms": 93.83028850425035,
+        "p99_ms": 96.58852850116091,
+        "requests_per_second": 33.92165576886144,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.9774243666959559
+      "python_over_rust_p50": 1.0087573322543464
     },
     {
       "access": "local",
@@ -60,26 +62,26 @@
       "workload": "geographic-dem",
       "concurrency": 1,
       "python": {
-        "p50_ms": 71.14263449329883,
-        "p50_trial_min_ms": 71.0186465003062,
-        "p50_trial_max_ms": 77.82393650268205,
-        "p95_ms": 72.46046025829855,
-        "p99_ms": 82.92807515535969,
-        "requests_per_second": 13.636393130140975,
+        "p50_ms": 71.03723399632145,
+        "p50_trial_min_ms": 70.97574901126791,
+        "p50_trial_max_ms": 78.2075269962661,
+        "p95_ms": 74.53391675517196,
+        "p99_ms": 80.72347844426986,
+        "requests_per_second": 13.654150727854574,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 59.57488100102637,
-        "p50_trial_min_ms": 58.11974099196959,
-        "p50_trial_max_ms": 61.389410504489206,
-        "p95_ms": 65.6427197609446,
-        "p99_ms": 67.12683220976032,
-        "requests_per_second": 15.910669137935187,
+        "p50_ms": 59.900025007664226,
+        "p50_trial_min_ms": 59.6599944983609,
+        "p50_trial_max_ms": 60.4698594979709,
+        "p95_ms": 63.23466874164296,
+        "p99_ms": 67.2424393997062,
+        "requests_per_second": 16.001329781688373,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.1941716592278744
+      "python_over_rust_p50": 1.1859299555756815
     },
     {
       "access": "local",
@@ -87,26 +89,26 @@
       "workload": "geographic-dem",
       "concurrency": 3,
       "python": {
-        "p50_ms": 70.23550999292638,
-        "p50_trial_min_ms": 68.62401351099834,
-        "p50_trial_max_ms": 73.53592950676102,
-        "p95_ms": 88.93667100346647,
-        "p99_ms": 90.86403524124762,
-        "requests_per_second": 39.56386466159794,
+        "p50_ms": 73.87412650859915,
+        "p50_trial_min_ms": 69.00625098205637,
+        "p50_trial_max_ms": 76.8938929977594,
+        "p95_ms": 94.68199801631272,
+        "p99_ms": 112.56535090506075,
+        "requests_per_second": 38.66416445915201,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 111.23426600534003,
-        "p50_trial_min_ms": 110.94293050700799,
-        "p50_trial_max_ms": 111.2344979919726,
-        "p95_ms": 115.56719926011283,
-        "p99_ms": 120.72816205327398,
-        "requests_per_second": 26.3552226854609,
+        "p50_ms": 111.10343999462202,
+        "p50_trial_min_ms": 110.72096100542694,
+        "p50_trial_max_ms": 112.00277050375007,
+        "p95_ms": 120.37019100534962,
+        "p99_ms": 125.14449709124165,
+        "requests_per_second": 26.21231994283901,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.6314197280679191
+      "python_over_rust_p50": 0.6649130442061473
     },
     {
       "access": "local",
@@ -114,26 +116,26 @@
       "workload": "high-zoom",
       "concurrency": 1,
       "python": {
-        "p50_ms": 21.32898049603682,
-        "p50_trial_min_ms": 20.93979799246881,
-        "p50_trial_max_ms": 22.06987149838824,
-        "p95_ms": 24.522640735085588,
-        "p99_ms": 25.52806715102633,
-        "requests_per_second": 43.501011478330035,
+        "p50_ms": 19.78313700237777,
+        "p50_trial_min_ms": 19.47299251332879,
+        "p50_trial_max_ms": 22.709002514602616,
+        "p95_ms": 23.965001237229444,
+        "p99_ms": 25.112571360659782,
+        "requests_per_second": 45.5922397178984,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 10.41461700515356,
-        "p50_trial_min_ms": 9.555789991281927,
-        "p50_trial_max_ms": 11.627877509454265,
-        "p95_ms": 15.029065987619106,
-        "p99_ms": 17.371937308053017,
-        "requests_per_second": 80.34198153545003,
+        "p50_ms": 11.982427997281775,
+        "p50_trial_min_ms": 10.070535005070269,
+        "p50_trial_max_ms": 12.064888505847193,
+        "p95_ms": 12.330686236964539,
+        "p99_ms": 12.345536350039765,
+        "requests_per_second": 84.87967038328132,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 2.0479851045393613
+      "python_over_rust_p50": 1.651012383038362
     },
     {
       "access": "local",
@@ -141,26 +143,26 @@
       "workload": "high-zoom",
       "concurrency": 3,
       "python": {
-        "p50_ms": 13.215519997174852,
-        "p50_trial_min_ms": 13.163874493329786,
-        "p50_trial_max_ms": 13.768763019470498,
-        "p95_ms": 17.747874255292118,
-        "p99_ms": 20.587977535615206,
-        "requests_per_second": 185.5069471936652,
+        "p50_ms": 14.422125503188,
+        "p50_trial_min_ms": 12.808988496544771,
+        "p50_trial_max_ms": 14.839469993603416,
+        "p95_ms": 20.657872752053663,
+        "p99_ms": 23.856345756212242,
+        "requests_per_second": 179.14242283188977,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 7.408249002764933,
-        "p50_trial_min_ms": 7.325211990973912,
-        "p50_trial_max_ms": 7.462840003427118,
-        "p95_ms": 11.42483174771769,
-        "p99_ms": 13.134388302569276,
-        "requests_per_second": 318.0567158870382,
+        "p50_ms": 7.294053502846509,
+        "p50_trial_min_ms": 7.2268314979737625,
+        "p50_trial_max_ms": 7.406707009067759,
+        "p95_ms": 10.462806989380624,
+        "p99_ms": 12.307290459284555,
+        "requests_per_second": 328.8079554931417,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.7838925220038513
+      "python_over_rust_p50": 1.9772442713176912
     },
     {
       "access": "local",
@@ -168,26 +170,26 @@
       "workload": "preview",
       "concurrency": 1,
       "python": {
-        "p50_ms": 728.5562685137847,
-        "p50_trial_min_ms": 722.7526160131674,
-        "p50_trial_max_ms": 728.9815850090235,
-        "p95_ms": 733.6845579920919,
-        "p99_ms": 738.7330484081758,
-        "requests_per_second": 1.367903295838347,
+        "p50_ms": 728.1976509839296,
+        "p50_trial_min_ms": 722.2415990108857,
+        "p50_trial_max_ms": 729.8068745149067,
+        "p95_ms": 735.9687150092213,
+        "p99_ms": 737.7318356506294,
+        "requests_per_second": 1.36656649256486,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 481.8554090015823,
-        "p50_trial_min_ms": 480.838171497453,
-        "p50_trial_max_ms": 524.6625444997335,
-        "p95_ms": 524.9963097667205,
-        "p99_ms": 529.2402534134453,
-        "requests_per_second": 2.045198035673213,
+        "p50_ms": 481.55320950900204,
+        "p50_trial_min_ms": 479.2561135109281,
+        "p50_trial_max_ms": 526.0672384902136,
+        "p95_ms": 483.5706147496239,
+        "p99_ms": 484.5413074071985,
+        "requests_per_second": 2.0688251567273634,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.5119810941281606
+      "python_over_rust_p50": 1.5121852302187113
     },
     {
       "access": "local",
@@ -195,26 +197,26 @@
       "workload": "preview",
       "concurrency": 3,
       "python": {
-        "p50_ms": 736.2724090053234,
-        "p50_trial_min_ms": 734.42265149788,
-        "p50_trial_max_ms": 737.4404240108561,
-        "p95_ms": 838.9691237607622,
-        "p99_ms": 844.8457839374896,
-        "requests_per_second": 3.7676203148612957,
+        "p50_ms": 736.3165724964347,
+        "p50_trial_min_ms": 733.0479374941206,
+        "p50_trial_max_ms": 737.1266254922375,
+        "p95_ms": 841.5058475002297,
+        "p99_ms": 843.1697253152379,
+        "requests_per_second": 3.759924988611616,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1408.3162424940383,
-        "p50_trial_min_ms": 1371.8012235040078,
-        "p50_trial_max_ms": 1411.5952244901564,
-        "p95_ms": 1565.3439114976209,
-        "p99_ms": 1574.345519443159,
-        "requests_per_second": 2.085272275126097,
+        "p50_ms": 1413.8607460045023,
+        "p50_trial_min_ms": 1379.8234455025522,
+        "p50_trial_max_ms": 1417.312101504649,
+        "p95_ms": 1459.8734587489162,
+        "p99_ms": 1470.2792954965844,
+        "requests_per_second": 2.1073638656954286,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.522803321291979
+      "python_over_rust_p50": 0.5207843661953466
     },
     {
       "access": "local",
@@ -222,26 +224,26 @@
       "workload": "rgb-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 124.05157550529111,
-        "p50_trial_min_ms": 123.7473874934949,
-        "p50_trial_max_ms": 124.57673500466626,
-        "p95_ms": 127.11054676037747,
-        "p99_ms": 129.1349706458277,
-        "requests_per_second": 7.7952734505575085,
+        "p50_ms": 124.91967801179271,
+        "p50_trial_min_ms": 124.38625798677094,
+        "p50_trial_max_ms": 125.69525650178548,
+        "p95_ms": 128.7339972477639,
+        "p99_ms": 132.58922981185606,
+        "requests_per_second": 7.764249489419816,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 46.23929898662027,
-        "p50_trial_min_ms": 46.022201495361514,
-        "p50_trial_max_ms": 46.404096006881446,
-        "p95_ms": 48.681455504265614,
-        "p99_ms": 50.98870541987707,
-        "requests_per_second": 20.229529728787675,
+        "p50_ms": 46.32140749890823,
+        "p50_trial_min_ms": 46.06580601830501,
+        "p50_trial_max_ms": 50.33963400637731,
+        "p95_ms": 52.775406489672605,
+        "p99_ms": 63.74778445315313,
+        "requests_per_second": 19.99558096539535,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 2.6828169592533504
+      "python_over_rust_p50": 2.696802294160362
     },
     {
       "access": "local",
@@ -249,26 +251,26 @@
       "workload": "rgb-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 132.12269150244538,
-        "p50_trial_min_ms": 130.52533300651703,
-        "p50_trial_max_ms": 133.70440401195083,
-        "p95_ms": 146.03896550397621,
-        "p99_ms": 151.04134811263066,
-        "requests_per_second": 21.638727392826368,
+        "p50_ms": 133.67975599248894,
+        "p50_trial_min_ms": 132.999141496839,
+        "p50_trial_max_ms": 134.10402050067205,
+        "p95_ms": 148.38964850787306,
+        "p99_ms": 152.3261229507625,
+        "requests_per_second": 20.562809182162976,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 120.18277549941558,
-        "p50_trial_min_ms": 118.64747949584853,
-        "p50_trial_max_ms": 120.65392699150834,
-        "p95_ms": 129.96952352114022,
-        "p99_ms": 136.6065376496408,
-        "requests_per_second": 24.341344631411495,
+        "p50_ms": 117.6579404855147,
+        "p50_trial_min_ms": 116.137183009414,
+        "p50_trial_max_ms": 119.54692298604641,
+        "p95_ms": 129.11367049673572,
+        "p99_ms": 133.85600814508507,
+        "requests_per_second": 24.599751384912597,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.0993479802194106
+      "python_over_rust_p50": 1.1361728366216537
     },
     {
       "access": "local",
@@ -276,26 +278,26 @@
       "workload": "singleband-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 50.12122199696023,
-        "p50_trial_min_ms": 49.47491949133109,
-        "p50_trial_max_ms": 50.29322500922717,
-        "p95_ms": 51.039088240941055,
-        "p99_ms": 51.916353846900165,
-        "requests_per_second": 19.420901495615574,
+        "p50_ms": 50.16102550143842,
+        "p50_trial_min_ms": 49.437580004450865,
+        "p50_trial_max_ms": 50.50462199142203,
+        "p95_ms": 52.271795240812935,
+        "p99_ms": 132.3721663953618,
+        "requests_per_second": 18.208906357944233,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 41.687324992381036,
-        "p50_trial_min_ms": 41.47686550277285,
-        "p50_trial_max_ms": 41.71655449317768,
-        "p95_ms": 44.251603503653314,
-        "p99_ms": 50.239809291088015,
-        "requests_per_second": 22.942889656558133,
+        "p50_ms": 41.50881250097882,
+        "p50_trial_min_ms": 41.396641012397595,
+        "p50_trial_max_ms": 42.30527899926528,
+        "p95_ms": 42.1170792542398,
+        "p99_ms": 45.830207156541285,
+        "requests_per_second": 23.229308981784282,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.202313221251798
+      "python_over_rust_p50": 1.2084427975446315
     },
     {
       "access": "local",
@@ -303,26 +305,26 @@
       "workload": "singleband-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 48.11268948833458,
-        "p50_trial_min_ms": 47.8169884881936,
-        "p50_trial_max_ms": 52.661714507848956,
-        "p95_ms": 96.9854544964619,
-        "p99_ms": 187.40707145043413,
-        "requests_per_second": 50.00165658217814,
+        "p50_ms": 49.498391497763805,
+        "p50_trial_min_ms": 49.17877800471615,
+        "p50_trial_max_ms": 50.542384007712826,
+        "p95_ms": 64.12836126401089,
+        "p99_ms": 142.6484876486937,
+        "requests_per_second": 51.598390872606174,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 41.80416351300664,
-        "p50_trial_min_ms": 41.350232510012574,
-        "p50_trial_max_ms": 41.8979255045997,
-        "p95_ms": 48.259556489938404,
-        "p99_ms": 58.442204659513656,
-        "requests_per_second": 66.83855153162179,
+        "p50_ms": 42.171002001850866,
+        "p50_trial_min_ms": 41.81312202126719,
+        "p50_trial_max_ms": 43.21145899302792,
+        "p95_ms": 47.826847519900184,
+        "p99_ms": 49.20517324790126,
+        "requests_per_second": 65.46512997462894,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.1509066429080719
+      "python_over_rust_p50": 1.1737542184933463
     },
     {
       "access": "local",
@@ -330,26 +332,26 @@
       "workload": "compute-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 4.303858993807808,
-        "p50_trial_min_ms": 4.302605491830036,
-        "p50_trial_max_ms": 4.50433099467773,
-        "p95_ms": 6.118880250141956,
-        "p99_ms": 29.56136428838358,
-        "requests_per_second": 154.03612580743678,
+        "p50_ms": 4.493854503380135,
+        "p50_trial_min_ms": 4.339142993558198,
+        "p50_trial_max_ms": 5.651125509757549,
+        "p95_ms": 6.206093239597976,
+        "p99_ms": 28.61171074619046,
+        "requests_per_second": 151.6612250300165,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 6.486894999397919,
-        "p50_trial_min_ms": 5.491435993462801,
-        "p50_trial_max_ms": 6.516053501400165,
-        "p95_ms": 6.669538757705595,
-        "p99_ms": 7.037159551691729,
-        "requests_per_second": 135.92333332109754,
+        "p50_ms": 6.483987992396578,
+        "p50_trial_min_ms": 6.448233500123024,
+        "p50_trial_max_ms": 8.566605494706891,
+        "p95_ms": 8.826905002933927,
+        "p99_ms": 9.640962952107657,
+        "requests_per_second": 122.25950854207625,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.6634698101645349
+      "python_over_rust_p50": 0.6930695289148954
     },
     {
       "access": "local",
@@ -357,26 +359,26 @@
       "workload": "compute-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 4.816142507479526,
-        "p50_trial_min_ms": 4.75767400348559,
-        "p50_trial_max_ms": 5.039702504291199,
-        "p95_ms": 9.255590251996182,
-        "p99_ms": 35.64345341001165,
-        "requests_per_second": 388.66171438046445,
+        "p50_ms": 4.665075000957586,
+        "p50_trial_min_ms": 4.573801503283903,
+        "p50_trial_max_ms": 4.779024500749074,
+        "p95_ms": 7.6785694909631275,
+        "p99_ms": 32.490066696482195,
+        "requests_per_second": 392.7435866195484,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 6.403298015356995,
-        "p50_trial_min_ms": 5.965877513517626,
-        "p50_trial_max_ms": 7.928066494059749,
-        "p95_ms": 10.233623506792355,
-        "p99_ms": 12.007369441562329,
-        "requests_per_second": 376.37664859592536,
+        "p50_ms": 6.463897996582091,
+        "p50_trial_min_ms": 5.658695008605719,
+        "p50_trial_max_ms": 6.615599486394785,
+        "p95_ms": 9.834045500610955,
+        "p99_ms": 12.204699133872047,
+        "requests_per_second": 350.98100949211243,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.7521346805863162
+      "python_over_rust_p50": 0.7217123480946532
     },
     {
       "access": "local",
@@ -384,26 +386,26 @@
       "workload": "geographic-dem",
       "concurrency": 1,
       "python": {
-        "p50_ms": 4.6542910131393,
-        "p50_trial_min_ms": 4.622265507350676,
-        "p50_trial_max_ms": 8.018595486646518,
-        "p95_ms": 9.3340657549561,
-        "p99_ms": 54.0376502511207,
-        "requests_per_second": 97.61531321424815,
+        "p50_ms": 4.643374995794147,
+        "p50_trial_min_ms": 4.586134498822503,
+        "p50_trial_max_ms": 7.647445992915891,
+        "p95_ms": 6.574204984644894,
+        "p99_ms": 6.803972713532857,
+        "requests_per_second": 160.03350531775047,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 0.7118344947230071,
-        "p50_trial_min_ms": 0.709158499375917,
-        "p50_trial_max_ms": 0.7186194998212159,
-        "p95_ms": 0.8210215019062161,
-        "p99_ms": 0.9444809358683411,
-        "requests_per_second": 558.9597757307029,
+        "p50_ms": 0.7223505090223625,
+        "p50_trial_min_ms": 0.7196635124273598,
+        "p50_trial_max_ms": 0.726882994058542,
+        "p95_ms": 1.0110567454830743,
+        "p99_ms": 1.0628753429045898,
+        "requests_per_second": 559.8021646041312,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 6.538445449950277
+      "python_over_rust_p50": 6.428146637673924
     },
     {
       "access": "local",
@@ -411,26 +413,26 @@
       "workload": "geographic-dem",
       "concurrency": 3,
       "python": {
-        "p50_ms": 5.383298004744574,
-        "p50_trial_min_ms": 4.577370491460897,
-        "p50_trial_max_ms": 5.701800007955171,
-        "p95_ms": 6.207913014804944,
-        "p99_ms": 9.557507561112288,
-        "requests_per_second": 390.6965641445199,
+        "p50_ms": 4.830145000596531,
+        "p50_trial_min_ms": 4.620631996658631,
+        "p50_trial_max_ms": 7.653822991414927,
+        "p95_ms": 6.514853994303849,
+        "p99_ms": 6.851302710128948,
+        "requests_per_second": 450.84612551878706,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.237967997440137,
-        "p50_trial_min_ms": 1.178431004518643,
-        "p50_trial_max_ms": 1.314179491600953,
-        "p95_ms": 1.638656758586876,
-        "p99_ms": 1.8775822551106103,
-        "requests_per_second": 1118.7176318672878,
+        "p50_ms": 1.0796610004035756,
+        "p50_trial_min_ms": 1.0779045114759356,
+        "p50_trial_max_ms": 1.207812994834967,
+        "p95_ms": 1.6552772431168705,
+        "p99_ms": 1.929316540190484,
+        "requests_per_second": 1199.4768284419765,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 4.348495288954259
+      "python_over_rust_p50": 4.4737607441512015
     },
     {
       "access": "local",
@@ -438,26 +440,26 @@
       "workload": "high-zoom",
       "concurrency": 1,
       "python": {
-        "p50_ms": 3.6062620056327432,
-        "p50_trial_min_ms": 3.604793004342355,
-        "p50_trial_max_ms": 3.6151694948785007,
-        "p95_ms": 3.926824254449457,
-        "p99_ms": 10.679868853185312,
-        "requests_per_second": 193.70856012420455,
+        "p50_ms": 4.2459749965928495,
+        "p50_trial_min_ms": 3.610216503147967,
+        "p50_trial_max_ms": 4.780793489771895,
+        "p95_ms": 5.390274258388672,
+        "p99_ms": 6.568749395955817,
+        "requests_per_second": 177.30223392750204,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 0.7121395028661937,
-        "p50_trial_min_ms": 0.69985851587262,
-        "p50_trial_max_ms": 0.7165879942476749,
-        "p95_ms": 0.8749340122449212,
-        "p99_ms": 1.097249545273371,
-        "requests_per_second": 609.8419445221144,
+        "p50_ms": 0.7085840043146163,
+        "p50_trial_min_ms": 0.7017110037850216,
+        "p50_trial_max_ms": 0.7269025081768632,
+        "p95_ms": 0.8583827584516257,
+        "p99_ms": 0.9250083297956732,
+        "requests_per_second": 601.703462464574,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.063982535891337
+      "python_over_rust_p50": 5.992197072949457
     },
     {
       "access": "local",
@@ -465,26 +467,26 @@
       "workload": "high-zoom",
       "concurrency": 3,
       "python": {
-        "p50_ms": 3.930694016162306,
-        "p50_trial_min_ms": 3.8516475033247843,
-        "p50_trial_max_ms": 4.378604993689805,
-        "p95_ms": 5.536564262001775,
-        "p99_ms": 5.95071829011431,
-        "requests_per_second": 541.1388970283164,
+        "p50_ms": 4.309872005251236,
+        "p50_trial_min_ms": 3.81207799364347,
+        "p50_trial_max_ms": 4.365157496067695,
+        "p95_ms": 5.087186007585842,
+        "p99_ms": 5.467912046879063,
+        "requests_per_second": 519.2418256058487,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.1866320128319785,
-        "p50_trial_min_ms": 0.8963145082816482,
-        "p50_trial_max_ms": 1.3607730070361868,
-        "p95_ms": 1.6270234846160747,
-        "p99_ms": 1.8146010916098019,
-        "requests_per_second": 1183.2017305823024,
+        "p50_ms": 1.1521610140334815,
+        "p50_trial_min_ms": 0.894338998477906,
+        "p50_trial_max_ms": 1.1820314830401912,
+        "p95_ms": 1.6919299887376837,
+        "p99_ms": 1.8697197505389338,
+        "requests_per_second": 1240.4360664253797,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 3.312479331129316
+      "python_over_rust_p50": 3.7406855055468773
     },
     {
       "access": "local",
@@ -492,26 +494,26 @@
       "workload": "preview",
       "concurrency": 1,
       "python": {
-        "p50_ms": 11.392816493753344,
-        "p50_trial_min_ms": 11.304696497973055,
-        "p50_trial_max_ms": 13.265009503811598,
-        "p95_ms": 22.71316826227121,
-        "p99_ms": 497.8966755370482,
-        "requests_per_second": 26.190580578490415,
+        "p50_ms": 11.103080003522336,
+        "p50_trial_min_ms": 10.990540497004986,
+        "p50_trial_max_ms": 11.14058199163992,
+        "p95_ms": 20.09526024630759,
+        "p99_ms": 482.2828138945614,
+        "requests_per_second": 28.516558729257184,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 2.2672665072605014,
-        "p50_trial_min_ms": 2.242398011730984,
-        "p50_trial_max_ms": 2.4685120006324723,
-        "p95_ms": 2.993848749611061,
-        "p99_ms": 3.166175905789714,
-        "requests_per_second": 239.43133617499112,
+        "p50_ms": 2.2426660143537447,
+        "p50_trial_min_ms": 2.2222214902285486,
+        "p50_trial_max_ms": 2.970780013129115,
+        "p95_ms": 2.994551010488067,
+        "p99_ms": 3.0505636997986585,
+        "requests_per_second": 235.6645654198726,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.024912800180286
+      "python_over_rust_p50": 4.950839729348573
     },
     {
       "access": "local",
@@ -519,26 +521,26 @@
       "workload": "preview",
       "concurrency": 3,
       "python": {
-        "p50_ms": 11.740097004803829,
-        "p50_trial_min_ms": 11.574789503356442,
-        "p50_trial_max_ms": 11.797752493293956,
-        "p95_ms": 15.779604502313305,
-        "p99_ms": 19.158854005218018,
-        "requests_per_second": 197.78232500994963,
+        "p50_ms": 11.210204509552568,
+        "p50_trial_min_ms": 11.055484996177256,
+        "p50_trial_max_ms": 11.57374850299675,
+        "p95_ms": 20.00746098929085,
+        "p99_ms": 513.182243760092,
+        "requests_per_second": 47.9537887888255,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 2.808726509101689,
-        "p50_trial_min_ms": 2.6640159921953455,
-        "p50_trial_max_ms": 3.084178999415599,
-        "p95_ms": 3.997103005531244,
-        "p99_ms": 4.725286203029099,
-        "requests_per_second": 579.0138830954111,
+        "p50_ms": 3.0329895089380443,
+        "p50_trial_min_ms": 2.8902589983772486,
+        "p50_trial_max_ms": 3.151144497678615,
+        "p95_ms": 4.301709006540477,
+        "p99_ms": 5.113917609560301,
+        "requests_per_second": 548.1194940046807,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 4.179864777421368
+      "python_over_rust_p50": 3.6960907634255724
     },
     {
       "access": "local",
@@ -546,26 +548,26 @@
       "workload": "rgb-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 11.746699005016126,
-        "p50_trial_min_ms": 11.706108998623677,
-        "p50_trial_max_ms": 11.880947495228611,
-        "p95_ms": 17.801224763388745,
-        "p99_ms": 20.96971002174541,
-        "requests_per_second": 62.91546621465283,
+        "p50_ms": 11.740643516532145,
+        "p50_trial_min_ms": 11.691785490256734,
+        "p50_trial_max_ms": 11.822172498796135,
+        "p95_ms": 15.026411740109324,
+        "p99_ms": 63.897704202099604,
+        "requests_per_second": 56.76891453513196,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 2.4720834917388856,
-        "p50_trial_min_ms": 2.394059003563598,
-        "p50_trial_max_ms": 2.498665009625256,
-        "p95_ms": 3.0550669907825068,
-        "p99_ms": 3.2433773521916005,
-        "requests_per_second": 224.58045986376953,
+        "p50_ms": 2.480740993632935,
+        "p50_trial_min_ms": 2.4731970042921603,
+        "p50_trial_max_ms": 3.036901485756971,
+        "p95_ms": 3.1989542476367205,
+        "p99_ms": 3.308583788748365,
+        "requests_per_second": 219.60778743452727,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 4.75174040208221
+      "python_over_rust_p50": 4.732716372513559
     },
     {
       "access": "local",
@@ -573,26 +575,26 @@
       "workload": "rgb-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 12.112775511923246,
-        "p50_trial_min_ms": 12.05034249869641,
-        "p50_trial_max_ms": 12.168460511020385,
-        "p95_ms": 16.024651245970745,
-        "p99_ms": 16.416454607679043,
-        "requests_per_second": 183.05058744189702,
+        "p50_ms": 12.160355996456929,
+        "p50_trial_min_ms": 12.04295149364043,
+        "p50_trial_max_ms": 13.115371504682116,
+        "p95_ms": 17.53268126049079,
+        "p99_ms": 21.814331582572773,
+        "requests_per_second": 171.54594968992535,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 3.101647016592324,
-        "p50_trial_min_ms": 3.00767898443155,
-        "p50_trial_max_ms": 3.365195501828566,
-        "p95_ms": 4.5016497533652,
-        "p99_ms": 5.225446201802697,
-        "requests_per_second": 529.5824616571517,
+        "p50_ms": 3.259670003899373,
+        "p50_trial_min_ms": 3.2378860196331516,
+        "p50_trial_max_ms": 3.4834899997804314,
+        "p95_ms": 4.6246749989222735,
+        "p99_ms": 5.503711939672939,
+        "requests_per_second": 505.22299538306737,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 3.905272085161757
+      "python_over_rust_p50": 3.7305481787758055
     },
     {
       "access": "local",
@@ -600,26 +602,26 @@
       "workload": "singleband-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 5.046092497650534,
-        "p50_trial_min_ms": 4.452623499673791,
-        "p50_trial_max_ms": 5.268693494144827,
-        "p95_ms": 5.949850747128949,
-        "p99_ms": 115.95799959031841,
-        "requests_per_second": 86.50878195985904,
+        "p50_ms": 4.505896489717998,
+        "p50_trial_min_ms": 4.483274489757605,
+        "p50_trial_max_ms": 4.852033511269838,
+        "p95_ms": 5.3172759944573045,
+        "p99_ms": 5.933953615021892,
+        "requests_per_second": 152.48754649580047,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 0.788355988333933,
-        "p50_trial_min_ms": 0.7694514933973551,
-        "p50_trial_max_ms": 0.8186695049516857,
-        "p95_ms": 1.2771835026796907,
-        "p99_ms": 1.6088614414911715,
-        "requests_per_second": 488.830534691677,
+        "p50_ms": 0.7722899899818003,
+        "p50_trial_min_ms": 0.767429984989576,
+        "p50_trial_max_ms": 0.7792239921400324,
+        "p95_ms": 1.2771749898092821,
+        "p99_ms": 1.6656540828989816,
+        "requests_per_second": 490.6256899096516,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 6.400779054541921
+      "python_over_rust_p50": 5.834461857810928
     },
     {
       "access": "local",
@@ -627,26 +629,26 @@
       "workload": "singleband-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 4.86528649344109,
-        "p50_trial_min_ms": 4.656640507164411,
-        "p50_trial_max_ms": 7.812395007931627,
-        "p95_ms": 5.872276000445709,
-        "p99_ms": 6.281951462733558,
-        "requests_per_second": 435.2247877102945,
+        "p50_ms": 4.738319999887608,
+        "p50_trial_min_ms": 4.721418503322639,
+        "p50_trial_max_ms": 5.112622005981393,
+        "p95_ms": 6.229576240002643,
+        "p99_ms": 9.001291282766031,
+        "requests_per_second": 434.62741844377126,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.1331124987918884,
-        "p50_trial_min_ms": 1.1232804972678423,
-        "p50_trial_max_ms": 1.172983495052904,
-        "p95_ms": 1.5396224916912615,
-        "p99_ms": 1.8246154009830202,
-        "requests_per_second": 1117.814096776004,
+        "p50_ms": 1.2801364937331527,
+        "p50_trial_min_ms": 1.1586870095925406,
+        "p50_trial_max_ms": 1.3096970069454983,
+        "p95_ms": 1.7374842500430532,
+        "p99_ms": 1.9809080506092867,
+        "requests_per_second": 1062.989604792398,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 4.293736498916394
+      "python_over_rust_p50": 3.701417796527033
     },
     {
       "access": "range",
@@ -654,26 +656,26 @@
       "workload": "compute-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 77.06020749174058,
-        "p50_trial_min_ms": 76.31230998958927,
-        "p50_trial_max_ms": 77.14055151154753,
-        "p95_ms": 77.57411825150484,
-        "p99_ms": 78.41964520775946,
-        "requests_per_second": 12.81055811348358,
+        "p50_ms": 77.17457700346131,
+        "p50_trial_min_ms": 76.27687850617804,
+        "p50_trial_max_ms": 85.82650849712081,
+        "p95_ms": 78.21955925464863,
+        "p99_ms": 78.321195555327,
+        "requests_per_second": 12.787787042724002,
         "total_range_requests": 7,
         "total_range_bytes": 2892984
       },
       "rust": {
-        "p50_ms": 92.80774649232626,
-        "p50_trial_min_ms": 90.81302651611622,
-        "p50_trial_max_ms": 96.6999560041586,
-        "p95_ms": 108.07051799929468,
-        "p99_ms": 110.46154425857821,
-        "requests_per_second": 10.662592886411167,
+        "p50_ms": 94.84006850107107,
+        "p50_trial_min_ms": 82.19964551972225,
+        "p50_trial_max_ms": 95.68121300253551,
+        "p95_ms": 109.7144487357582,
+        "p99_ms": 110.49364813952707,
+        "requests_per_second": 10.419114564725172,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.8303208557931342
+      "python_over_rust_p50": 0.8137338808711398
     },
     {
       "access": "range",
@@ -681,26 +683,26 @@
       "workload": "compute-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 82.80418399954215,
-        "p50_trial_min_ms": 82.00550350011326,
-        "p50_trial_max_ms": 83.74268451007083,
-        "p95_ms": 92.52947573259007,
-        "p99_ms": 108.42177533049832,
-        "requests_per_second": 33.58755620847228,
+        "p50_ms": 81.3001409987919,
+        "p50_trial_min_ms": 80.98099449125584,
+        "p50_trial_max_ms": 81.41239899850916,
+        "p95_ms": 91.99200899456628,
+        "p99_ms": 108.3332157373661,
+        "requests_per_second": 35.41320987632163,
         "total_range_requests": 28,
         "total_range_bytes": 11571936
       },
       "rust": {
-        "p50_ms": 80.10051598830614,
-        "p50_trial_min_ms": 76.69574550527614,
-        "p50_trial_max_ms": 82.47369001037441,
-        "p95_ms": 90.4666467467905,
-        "p99_ms": 92.44210190954617,
-        "requests_per_second": 35.22616526900948,
+        "p50_ms": 78.93097249325365,
+        "p50_trial_min_ms": 78.50160099042114,
+        "p50_trial_max_ms": 80.59319399762899,
+        "p95_ms": 90.19925549364416,
+        "p99_ms": 96.17680048540933,
+        "requests_per_second": 34.7802500565987,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.0337534406348983
+      "python_over_rust_p50": 1.0300157014502862
     },
     {
       "access": "range",
@@ -708,26 +710,26 @@
       "workload": "geographic-dem",
       "concurrency": 1,
       "python": {
-        "p50_ms": 75.75377049215604,
-        "p50_trial_min_ms": 71.05273399793077,
-        "p50_trial_max_ms": 75.96940448274836,
-        "p95_ms": 77.30883773911046,
-        "p99_ms": 81.88020254892761,
-        "requests_per_second": 12.914960631370318,
+        "p50_ms": 70.92505750188138,
+        "p50_trial_min_ms": 70.82370399439242,
+        "p50_trial_max_ms": 71.02295650111046,
+        "p95_ms": 71.6352282470325,
+        "p99_ms": 71.93718194757821,
+        "requests_per_second": 13.761024060043678,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 57.90641649218742,
-        "p50_trial_min_ms": 57.899549006833695,
-        "p50_trial_max_ms": 60.91845899936743,
-        "p95_ms": 61.64881399308797,
-        "p99_ms": 62.03377284837188,
-        "requests_per_second": 16.76855355487141,
+        "p50_ms": 57.771311490796506,
+        "p50_trial_min_ms": 57.68385100236628,
+        "p50_trial_max_ms": 57.907016496756114,
+        "p95_ms": 63.276656743255444,
+        "p99_ms": 64.8253358565853,
+        "requests_per_second": 16.627218521524544,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.3082103000170375
+      "python_over_rust_p50": 1.2276864705275106
     },
     {
       "access": "range",
@@ -735,26 +737,26 @@
       "workload": "geographic-dem",
       "concurrency": 3,
       "python": {
-        "p50_ms": 68.87242449738551,
-        "p50_trial_min_ms": 67.40407399774995,
-        "p50_trial_max_ms": 71.02669299638364,
-        "p95_ms": 78.56254299986176,
-        "p99_ms": 84.43029110349015,
-        "requests_per_second": 39.759270780461975,
+        "p50_ms": 69.3966899998486,
+        "p50_trial_min_ms": 67.66310200328007,
+        "p50_trial_max_ms": 71.02717350062449,
+        "p95_ms": 83.95725750597194,
+        "p99_ms": 91.35572920349658,
+        "requests_per_second": 39.898070316654895,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 111.10123999242205,
-        "p50_trial_min_ms": 110.84002099232748,
-        "p50_trial_max_ms": 111.16035148734227,
-        "p95_ms": 113.9581217430532,
-        "p99_ms": 117.90283384762006,
-        "requests_per_second": 26.547829750738856,
+        "p50_ms": 110.9503545158077,
+        "p50_trial_min_ms": 110.94546600361355,
+        "p50_trial_max_ms": 111.31661251420155,
+        "p95_ms": 117.16651674942113,
+        "p99_ms": 120.38797778659499,
+        "requests_per_second": 26.386279126267237,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.6199068930471265
+      "python_over_rust_p50": 0.6254751533034649
     },
     {
       "access": "range",
@@ -762,26 +764,26 @@
       "workload": "high-zoom",
       "concurrency": 1,
       "python": {
-        "p50_ms": 18.461644503986463,
-        "p50_trial_min_ms": 18.210862486739643,
-        "p50_trial_max_ms": 23.589965494466014,
-        "p95_ms": 21.70776849379763,
-        "p99_ms": 22.17735560698202,
-        "requests_per_second": 50.94803646308253,
+        "p50_ms": 22.904981989995576,
+        "p50_trial_min_ms": 22.49497101001907,
+        "p50_trial_max_ms": 23.00856249348726,
+        "p95_ms": 24.765889247646555,
+        "p99_ms": 25.03412359073991,
+        "requests_per_second": 42.74848760226329,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 8.931657008361071,
-        "p50_trial_min_ms": 7.244843989610672,
-        "p50_trial_max_ms": 9.721342503326014,
-        "p95_ms": 11.570873997698072,
-        "p99_ms": 12.087431308464147,
-        "requests_per_second": 98.42245374938715,
+        "p50_ms": 10.000745998695493,
+        "p50_trial_min_ms": 9.112033993005753,
+        "p50_trial_max_ms": 10.226154001429677,
+        "p95_ms": 12.329807243077084,
+        "p99_ms": 12.39214939851081,
+        "requests_per_second": 92.31584024306152,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 2.066989863885751
+      "python_over_rust_p50": 2.290327340878703
     },
     {
       "access": "range",
@@ -789,26 +791,26 @@
       "workload": "high-zoom",
       "concurrency": 3,
       "python": {
-        "p50_ms": 13.469974990584888,
-        "p50_trial_min_ms": 13.249769501271658,
-        "p50_trial_max_ms": 13.54153199645225,
-        "p95_ms": 18.266255006892607,
-        "p99_ms": 18.91696015372872,
-        "requests_per_second": 185.1384339293808,
+        "p50_ms": 13.139406990376301,
+        "p50_trial_min_ms": 12.826185498852283,
+        "p50_trial_max_ms": 13.270868992549367,
+        "p95_ms": 18.55310923565412,
+        "p99_ms": 20.385102594445925,
+        "requests_per_second": 188.61305869353856,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 7.5333974964451045,
-        "p50_trial_min_ms": 7.028960011666641,
-        "p50_trial_max_ms": 7.762663008179516,
-        "p95_ms": 11.373069013643544,
-        "p99_ms": 11.54051760531729,
-        "requests_per_second": 310.6321462480359,
+        "p50_ms": 7.039455987978727,
+        "p50_trial_min_ms": 6.956561002880335,
+        "p50_trial_max_ms": 7.125543008442037,
+        "p95_ms": 9.696025750599802,
+        "p99_ms": 10.019160095544066,
+        "requests_per_second": 339.21271894421795,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.788034548414731
+      "python_over_rust_p50": 1.866537274018682
     },
     {
       "access": "range",
@@ -816,26 +818,26 @@
       "workload": "preview",
       "concurrency": 1,
       "python": {
-        "p50_ms": 721.2765580043197,
-        "p50_trial_min_ms": 720.7022725051502,
-        "p50_trial_max_ms": 722.2887259995332,
-        "p95_ms": 756.712801005051,
-        "p99_ms": 826.7608333466342,
-        "requests_per_second": 1.3668282533532277,
-        "total_range_requests": 110,
-        "total_range_bytes": 47677440
+        "p50_ms": 721.9803095067618,
+        "p50_trial_min_ms": 720.9146019886248,
+        "p50_trial_max_ms": 724.1926925053122,
+        "p95_ms": 727.4802510000882,
+        "p99_ms": 733.1470445846207,
+        "requests_per_second": 1.3786359934819137,
+        "total_range_requests": 44,
+        "total_range_bytes": 19070976
       },
       "rust": {
-        "p50_ms": 517.5149424903793,
-        "p50_trial_min_ms": 478.2109809893882,
-        "p50_trial_max_ms": 520.4740340122953,
-        "p95_ms": 533.1207115086727,
-        "p99_ms": 554.4844124073279,
-        "requests_per_second": 1.915727370106884,
+        "p50_ms": 478.1352279969724,
+        "p50_trial_min_ms": 477.1808054938447,
+        "p50_trial_max_ms": 516.8961690069409,
+        "p95_ms": 517.9431762589957,
+        "p99_ms": 523.084809811553,
+        "requests_per_second": 2.064146498898439,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.3937308834666706
+      "python_over_rust_p50": 1.5099918751674444
     },
     {
       "access": "range",
@@ -843,26 +845,26 @@
       "workload": "preview",
       "concurrency": 3,
       "python": {
-        "p50_ms": 731.0641439980827,
-        "p50_trial_min_ms": 730.9996340045473,
-        "p50_trial_max_ms": 754.3879330041818,
-        "p95_ms": 754.1837937314995,
-        "p99_ms": 754.3103375501232,
-        "requests_per_second": 4.069997119183821,
-        "total_range_requests": 0,
-        "total_range_bytes": 0
+        "p50_ms": 732.0582495012786,
+        "p50_trial_min_ms": 730.8770300151082,
+        "p50_trial_max_ms": 732.5723540125182,
+        "p95_ms": 750.6028280113242,
+        "p99_ms": 782.0329822992788,
+        "requests_per_second": 4.051455867725227,
+        "total_range_requests": 22,
+        "total_range_bytes": 9535488
       },
       "rust": {
-        "p50_ms": 1407.7610739914235,
-        "p50_trial_min_ms": 1389.1147230024217,
-        "p50_trial_max_ms": 1416.376050998224,
-        "p95_ms": 1557.0522652706131,
-        "p99_ms": 1565.796500952274,
-        "requests_per_second": 2.108190504683504,
+        "p50_ms": 1407.6658300036797,
+        "p50_trial_min_ms": 1406.4804164954694,
+        "p50_trial_max_ms": 1424.680450509186,
+        "p95_ms": 1429.6541277435608,
+        "p99_ms": 1434.3207421334228,
+        "requests_per_second": 2.1222069901797007,
         "total_range_requests": 2,
-        "total_range_bytes": 315866
+        "total_range_bytes": 141423
       },
-      "python_over_rust_p50": 0.519309815780953
+      "python_over_rust_p50": 0.5200511612186857
     },
     {
       "access": "range",
@@ -870,26 +872,26 @@
       "workload": "rgb-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 120.51280699961353,
-        "p50_trial_min_ms": 119.8893524997402,
-        "p50_trial_max_ms": 121.22124851157423,
-        "p95_ms": 123.59203226515092,
-        "p99_ms": 132.39939148916164,
-        "requests_per_second": 8.036312329068847,
-        "total_range_requests": 0,
-        "total_range_bytes": 0
+        "p50_ms": 120.23243599105626,
+        "p50_trial_min_ms": 120.13713500346057,
+        "p50_trial_max_ms": 121.0090675012907,
+        "p95_ms": 124.67769324575784,
+        "p99_ms": 158.37457330781027,
+        "requests_per_second": 7.972017218619979,
+        "total_range_requests": 30,
+        "total_range_bytes": 11507716
       },
       "rust": {
-        "p50_ms": 44.86821150931064,
-        "p50_trial_min_ms": 41.52785200858489,
-        "p50_trial_max_ms": 46.219910494983196,
-        "p95_ms": 48.00826976133976,
-        "p99_ms": 49.335021756996866,
-        "requests_per_second": 21.011782167865544,
+        "p50_ms": 43.82959949725773,
+        "p50_trial_min_ms": 42.208729006233625,
+        "p50_trial_max_ms": 44.3300074985018,
+        "p95_ms": 51.872944735805504,
+        "p99_ms": 61.03948804229729,
+        "requests_per_second": 21.13997241344873,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 2.685928476881808
+      "python_over_rust_p50": 2.7431789788218075
     },
     {
       "access": "range",
@@ -897,26 +899,26 @@
       "workload": "rgb-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 128.0694409942953,
-        "p50_trial_min_ms": 126.94772249960806,
-        "p50_trial_max_ms": 136.5098069945816,
-        "p95_ms": 145.0103532479261,
-        "p99_ms": 186.8019518544315,
-        "requests_per_second": 21.309661437372185,
-        "total_range_requests": 75,
-        "total_range_bytes": 28769290
+        "p50_ms": 128.40225450054277,
+        "p50_trial_min_ms": 127.14944800245576,
+        "p50_trial_max_ms": 128.66606350871734,
+        "p95_ms": 144.59307725337567,
+        "p99_ms": 171.64848785905627,
+        "requests_per_second": 21.4312194345002,
+        "total_range_requests": 60,
+        "total_range_bytes": 23015432
       },
       "rust": {
-        "p50_ms": 113.718266991782,
-        "p50_trial_min_ms": 107.320161012467,
-        "p50_trial_max_ms": 115.17553550947923,
-        "p95_ms": 119.6545562488609,
-        "p99_ms": 123.80395459913416,
-        "requests_per_second": 25.536444406878207,
+        "p50_ms": 111.46668149740435,
+        "p50_trial_min_ms": 108.16569549206179,
+        "p50_trial_max_ms": 112.65587249363307,
+        "p95_ms": 121.16308950498933,
+        "p99_ms": 128.2116842077812,
+        "requests_per_second": 26.343086129157037,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.1261993730835733
+      "python_over_rust_p50": 1.151933948114646
     },
     {
       "access": "range",
@@ -924,26 +926,26 @@
       "workload": "singleband-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 47.8521345066838,
-        "p50_trial_min_ms": 47.83320148999337,
-        "p50_trial_max_ms": 51.8479675083654,
-        "p95_ms": 49.28516750806011,
-        "p99_ms": 148.81910194380885,
-        "requests_per_second": 18.56961819132326,
-        "total_range_requests": 14,
-        "total_range_bytes": 5555660
-      },
-      "rust": {
-        "p50_ms": 40.826954995281994,
-        "p50_trial_min_ms": 39.991186509723775,
-        "p50_trial_max_ms": 41.19096651265863,
-        "p95_ms": 53.15757574135205,
-        "p99_ms": 54.97440773615381,
-        "requests_per_second": 22.993004887983368,
+        "p50_ms": 47.75714450806845,
+        "p50_trial_min_ms": 46.8474064982729,
+        "p50_trial_max_ms": 51.12580850254744,
+        "p95_ms": 49.195097242773045,
+        "p99_ms": 50.467797394958325,
+        "requests_per_second": 20.422599449685915,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.1720720909069422
+      "rust": {
+        "p50_ms": 40.015303005930036,
+        "p50_trial_min_ms": 39.54085448640399,
+        "p50_trial_max_ms": 41.20618950400967,
+        "p95_ms": 48.354866506997496,
+        "p99_ms": 50.627532099315424,
+        "requests_per_second": 23.677785683922515,
+        "total_range_requests": 0,
+        "total_range_bytes": 0
+      },
+      "python_over_rust_p50": 1.1934720199667392
     },
     {
       "access": "range",
@@ -951,26 +953,26 @@
       "workload": "singleband-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 46.13768449053168,
-        "p50_trial_min_ms": 45.21827599091921,
-        "p50_trial_max_ms": 57.12393799331039,
-        "p95_ms": 69.89553549647098,
-        "p99_ms": 171.0556303602059,
-        "requests_per_second": 52.8176928995256,
-        "total_range_requests": 28,
-        "total_range_bytes": 11111320
+        "p50_ms": 45.81509600393474,
+        "p50_trial_min_ms": 45.70582849555649,
+        "p50_trial_max_ms": 52.1391020010924,
+        "p95_ms": 103.95097725267988,
+        "p99_ms": 208.11598501168191,
+        "requests_per_second": 50.746123065947025,
+        "total_range_requests": 35,
+        "total_range_bytes": 13889150
       },
       "rust": {
-        "p50_ms": 41.28588200546801,
-        "p50_trial_min_ms": 40.449271007673815,
-        "p50_trial_max_ms": 41.339605988468975,
-        "p95_ms": 46.76297900732607,
-        "p99_ms": 47.04633230139734,
-        "requests_per_second": 67.29850855731299,
+        "p50_ms": 40.36114600603469,
+        "p50_trial_min_ms": 40.27965900604613,
+        "p50_trial_max_ms": 41.09431599499658,
+        "p95_ms": 43.27013275906211,
+        "p99_ms": 47.67572556011145,
+        "requests_per_second": 70.0366889542578,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 1.1175172298467813
+      "python_over_rust_p50": 1.1351287200092037
     },
     {
       "access": "range",
@@ -978,53 +980,53 @@
       "workload": "compute-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 4.50724849360995,
-        "p50_trial_min_ms": 4.289955002604984,
-        "p50_trial_max_ms": 4.6906794887036085,
-        "p95_ms": 6.6332019996480085,
-        "p99_ms": 46.72553305281317,
-        "requests_per_second": 129.04663635539768,
-        "total_range_requests": 28,
-        "total_range_bytes": 11571936
-      },
-      "rust": {
-        "p50_ms": 6.524350494146347,
-        "p50_trial_min_ms": 6.497178997960873,
-        "p50_trial_max_ms": 6.737407500622794,
-        "p95_ms": 10.080825260956772,
-        "p99_ms": 10.740729187091347,
-        "requests_per_second": 129.59188226044137,
-        "total_range_requests": 0,
-        "total_range_bytes": 0
-      },
-      "python_over_rust_p50": 0.6908348191369942
-    },
-    {
-      "access": "range",
-      "cache_bytes": 67108864,
-      "workload": "compute-tile",
-      "concurrency": 3,
-      "python": {
-        "p50_ms": 4.804898999282159,
-        "p50_trial_min_ms": 4.641736988560297,
-        "p50_trial_max_ms": 4.885898990323767,
-        "p95_ms": 7.267619512276724,
-        "p99_ms": 45.27139716228695,
-        "requests_per_second": 370.61105406191047,
+        "p50_ms": 4.340942497947253,
+        "p50_trial_min_ms": 4.31049702456221,
+        "p50_trial_max_ms": 4.440535019966774,
+        "p95_ms": 5.919567738601472,
+        "p99_ms": 43.538441348937255,
+        "requests_per_second": 147.37317569016906,
         "total_range_requests": 14,
         "total_range_bytes": 5785968
       },
       "rust": {
-        "p50_ms": 5.833949500811286,
-        "p50_trial_min_ms": 5.675061489455402,
-        "p50_trial_max_ms": 6.225104501936585,
-        "p95_ms": 8.559545247408096,
-        "p99_ms": 9.733474791573824,
-        "requests_per_second": 392.4426619214331,
+        "p50_ms": 5.472943012136966,
+        "p50_trial_min_ms": 5.402832990512252,
+        "p50_trial_max_ms": 6.392448514816351,
+        "p95_ms": 6.545597003423609,
+        "p99_ms": 7.406707681366241,
+        "requests_per_second": 142.07894826815232,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 0.8236099744459522
+      "python_over_rust_p50": 0.7931642058615714
+    },
+    {
+      "access": "range",
+      "cache_bytes": 67108864,
+      "workload": "compute-tile",
+      "concurrency": 3,
+      "python": {
+        "p50_ms": 4.8366270057158545,
+        "p50_trial_min_ms": 4.586496987030841,
+        "p50_trial_max_ms": 5.079675989691168,
+        "p95_ms": 7.859642006224021,
+        "p99_ms": 50.97604420006964,
+        "requests_per_second": 354.9255093161378,
+        "total_range_requests": 28,
+        "total_range_bytes": 11571936
+      },
+      "rust": {
+        "p50_ms": 5.715244988095947,
+        "p50_trial_min_ms": 5.707996504497714,
+        "p50_trial_max_ms": 5.782584979897365,
+        "p95_ms": 7.955515509820543,
+        "p99_ms": 9.493336650484705,
+        "requests_per_second": 395.3511102524678,
+        "total_range_requests": 0,
+        "total_range_bytes": 0
+      },
+      "python_over_rust_p50": 0.8462676605797074
     },
     {
       "access": "range",
@@ -1032,26 +1034,26 @@
       "workload": "geographic-dem",
       "concurrency": 1,
       "python": {
-        "p50_ms": 3.971944490331225,
-        "p50_trial_min_ms": 3.806445500231348,
-        "p50_trial_max_ms": 6.404911488061771,
-        "p95_ms": 4.99506076448597,
-        "p99_ms": 6.345889104704837,
-        "requests_per_second": 185.85418279226784,
+        "p50_ms": 3.9955460088094696,
+        "p50_trial_min_ms": 3.9918930124258623,
+        "p50_trial_max_ms": 4.001714012701996,
+        "p95_ms": 23.38462424086174,
+        "p99_ms": 74.62399360520067,
+        "requests_per_second": 108.22485151882606,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 0.711886998033151,
-        "p50_trial_min_ms": 0.7046019891276956,
-        "p50_trial_max_ms": 0.7194569916464388,
-        "p95_ms": 0.8642844986752607,
-        "p99_ms": 0.9871462403680195,
-        "requests_per_second": 569.5192446443218,
+        "p50_ms": 0.6983790080994368,
+        "p50_trial_min_ms": 0.6858359993202612,
+        "p50_trial_max_ms": 0.7046764803817496,
+        "p95_ms": 0.7708457560511306,
+        "p99_ms": 0.9146190059254874,
+        "requests_per_second": 572.6429378115242,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.579459241853241
+      "python_over_rust_p50": 5.721171401876637
     },
     {
       "access": "range",
@@ -1059,26 +1061,26 @@
       "workload": "geographic-dem",
       "concurrency": 3,
       "python": {
-        "p50_ms": 4.656414006603882,
-        "p50_trial_min_ms": 4.035884005133994,
-        "p50_trial_max_ms": 4.751576008857228,
-        "p95_ms": 6.567786767845973,
-        "p99_ms": 6.775549490703269,
-        "requests_per_second": 479.5714678265224,
+        "p50_ms": 4.359888494946063,
+        "p50_trial_min_ms": 4.254896004567854,
+        "p50_trial_max_ms": 4.878902997006662,
+        "p95_ms": 5.172562756342813,
+        "p99_ms": 5.5028545946697704,
+        "requests_per_second": 503.94825981312783,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.2219755008118227,
-        "p50_trial_min_ms": 0.8682600018801168,
-        "p50_trial_max_ms": 1.2995180004509166,
-        "p95_ms": 1.735477737383917,
-        "p99_ms": 1.9210260012187064,
-        "requests_per_second": 1126.1857322609237,
+        "p50_ms": 1.19173749408219,
+        "p50_trial_min_ms": 0.8995239768410102,
+        "p50_trial_max_ms": 1.1988695187028497,
+        "p95_ms": 1.8158872626372613,
+        "p99_ms": 2.0101521513424814,
+        "requests_per_second": 1116.8143097722707,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 3.810562489600144
+      "python_over_rust_p50": 3.658430247093808
     },
     {
       "access": "range",
@@ -1086,26 +1088,26 @@
       "workload": "high-zoom",
       "concurrency": 1,
       "python": {
-        "p50_ms": 4.113593007787131,
-        "p50_trial_min_ms": 3.630999504821375,
-        "p50_trial_max_ms": 5.231986520811915,
-        "p95_ms": 8.203022262023296,
-        "p99_ms": 17.041390744270757,
-        "requests_per_second": 163.86969693992498,
+        "p50_ms": 3.615663983509876,
+        "p50_trial_min_ms": 3.4328914916841313,
+        "p50_trial_max_ms": 6.189504987560213,
+        "p95_ms": 6.665767257800326,
+        "p99_ms": 10.742251388728606,
+        "requests_per_second": 173.00868280119508,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 0.7108434947440401,
-        "p50_trial_min_ms": 0.703025987604633,
-        "p50_trial_max_ms": 0.7240144914248958,
-        "p95_ms": 0.8661259926157072,
-        "p99_ms": 0.9364302968606352,
-        "requests_per_second": 602.4105254075981,
+        "p50_ms": 0.7009495020611212,
+        "p50_trial_min_ms": 0.6960195023566484,
+        "p50_trial_max_ms": 0.7254160009324551,
+        "p95_ms": 0.7973419924383052,
+        "p99_ms": 0.8946993111749177,
+        "requests_per_second": 601.8845304279016,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.786917989969578
+      "python_over_rust_p50": 5.158237466291257
     },
     {
       "access": "range",
@@ -1113,26 +1115,26 @@
       "workload": "high-zoom",
       "concurrency": 3,
       "python": {
-        "p50_ms": 4.2100115097127855,
-        "p50_trial_min_ms": 3.7113440048415214,
-        "p50_trial_max_ms": 5.466049493406899,
-        "p95_ms": 5.660655500832945,
-        "p99_ms": 5.77730725199217,
-        "requests_per_second": 524.0413121261635,
+        "p50_ms": 3.8635630189673975,
+        "p50_trial_min_ms": 3.6148799990769476,
+        "p50_trial_max_ms": 4.082861996721476,
+        "p95_ms": 4.905859728751238,
+        "p99_ms": 5.062339646974578,
+        "requests_per_second": 534.1911174509524,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.1064484860980883,
-        "p50_trial_min_ms": 0.8597630076110363,
-        "p50_trial_max_ms": 1.2552194821182638,
-        "p95_ms": 1.5278729915735312,
-        "p99_ms": 1.644865996786393,
-        "requests_per_second": 1279.3197886801547,
+        "p50_ms": 1.2354310019873083,
+        "p50_trial_min_ms": 0.8528599864803255,
+        "p50_trial_max_ms": 1.2685924884863198,
+        "p95_ms": 1.6154045151779428,
+        "p99_ms": 1.6874897046363913,
+        "requests_per_second": 1163.692295908014,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 3.804977423358833
+      "python_over_rust_p50": 3.1272997138265826
     },
     {
       "access": "range",
@@ -1140,53 +1142,53 @@
       "workload": "preview",
       "concurrency": 1,
       "python": {
-        "p50_ms": 11.404461503843777,
-        "p50_trial_min_ms": 11.359412004821934,
-        "p50_trial_max_ms": 11.43524250073824,
-        "p95_ms": 20.334829001512844,
-        "p99_ms": 550.9994050575175,
-        "requests_per_second": 26.125562568590084,
-        "total_range_requests": 36,
-        "total_range_bytes": 19136512
-      },
-      "rust": {
-        "p50_ms": 1.6450195107609034,
-        "p50_trial_min_ms": 1.6211715119425207,
-        "p50_trial_max_ms": 1.6778470017015934,
-        "p95_ms": 2.0268377411412075,
-        "p99_ms": 2.0489397589699365,
-        "requests_per_second": 286.3749208329816,
-        "total_range_requests": 0,
-        "total_range_bytes": 0
-      },
-      "python_over_rust_p50": 6.9327211192581215
-    },
-    {
-      "access": "range",
-      "cache_bytes": 67108864,
-      "workload": "preview",
-      "concurrency": 3,
-      "python": {
-        "p50_ms": 11.72677450813353,
-        "p50_trial_min_ms": 11.68152350874152,
-        "p50_trial_max_ms": 11.782166009652428,
-        "p95_ms": 15.042442253616173,
-        "p99_ms": 17.409038695041087,
-        "requests_per_second": 193.16886740540318,
+        "p50_ms": 11.437850494985469,
+        "p50_trial_min_ms": 11.415800981922075,
+        "p50_trial_max_ms": 11.466543001006357,
+        "p95_ms": 11.544233988388442,
+        "p99_ms": 11.753951451100875,
+        "requests_per_second": 71.20906820441928,
         "total_range_requests": 18,
         "total_range_bytes": 9568256
       },
       "rust": {
-        "p50_ms": 2.125921004335396,
-        "p50_trial_min_ms": 2.018883984419517,
-        "p50_trial_max_ms": 2.294312493177131,
-        "p95_ms": 3.13574900792446,
-        "p99_ms": 3.2979655457893386,
-        "requests_per_second": 689.0742380164169,
+        "p50_ms": 1.6027890087570995,
+        "p50_trial_min_ms": 1.5869954804657027,
+        "p50_trial_max_ms": 1.6183024999918416,
+        "p95_ms": 1.994337493670173,
+        "p99_ms": 2.0306408434407786,
+        "requests_per_second": 289.11202202348073,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.516091371325223
+      "python_over_rust_p50": 7.136217201698355
+    },
+    {
+      "access": "range",
+      "cache_bytes": 67108864,
+      "workload": "preview",
+      "concurrency": 3,
+      "python": {
+        "p50_ms": 11.51323999511078,
+        "p50_trial_min_ms": 11.453637984232046,
+        "p50_trial_max_ms": 11.516563507029787,
+        "p95_ms": 209.6926459853421,
+        "p99_ms": 793.3000306918984,
+        "requests_per_second": 45.15795156267911,
+        "total_range_requests": 90,
+        "total_range_bytes": 47841280
+      },
+      "rust": {
+        "p50_ms": 2.3507745063398033,
+        "p50_trial_min_ms": 2.1536105050472543,
+        "p50_trial_max_ms": 2.3670445079915226,
+        "p95_ms": 3.064745993469842,
+        "p99_ms": 3.1715693345176987,
+        "requests_per_second": 648.2590625193408,
+        "total_range_requests": 0,
+        "total_range_bytes": 0
+      },
+      "python_over_rust_p50": 4.897636912456182
     },
     {
       "access": "range",
@@ -1194,26 +1196,26 @@
       "workload": "rgb-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 11.945938487770036,
-        "p50_trial_min_ms": 11.914470509509556,
-        "p50_trial_max_ms": 12.014879001071677,
-        "p95_ms": 19.230333004088607,
-        "p99_ms": 96.04146509518597,
-        "requests_per_second": 51.573644924180286,
-        "total_range_requests": 45,
-        "total_range_bytes": 17261574
+        "p50_ms": 11.936300012166612,
+        "p50_trial_min_ms": 11.930186505196616,
+        "p50_trial_max_ms": 11.989367500063963,
+        "p95_ms": 18.49793624569429,
+        "p99_ms": 95.21459725510778,
+        "requests_per_second": 51.288264688101584,
+        "total_range_requests": 30,
+        "total_range_bytes": 11507716
       },
       "rust": {
-        "p50_ms": 1.80758599890396,
-        "p50_trial_min_ms": 1.7730230028973892,
-        "p50_trial_max_ms": 1.8763770058285445,
-        "p95_ms": 2.844084992830176,
-        "p99_ms": 3.1158115438302043,
-        "requests_per_second": 250.27818074342227,
+        "p50_ms": 1.830059991334565,
+        "p50_trial_min_ms": 1.8213705043308437,
+        "p50_trial_max_ms": 1.9234715000493452,
+        "p95_ms": 2.7125984997837804,
+        "p99_ms": 2.8003847022773694,
+        "requests_per_second": 249.45401273926106,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 6.60878016039819
+      "python_over_rust_p50": 6.522354495855683
     },
     {
       "access": "range",
@@ -1221,26 +1223,26 @@
       "workload": "rgb-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 12.371608492685482,
-        "p50_trial_min_ms": 12.330630997894332,
-        "p50_trial_max_ms": 12.586238008225337,
-        "p95_ms": 16.394754762586672,
-        "p99_ms": 18.66154215240385,
-        "requests_per_second": 179.7100728446313,
-        "total_range_requests": 0,
-        "total_range_bytes": 0
+        "p50_ms": 12.228246006998233,
+        "p50_trial_min_ms": 12.224151490954682,
+        "p50_trial_max_ms": 12.371456512482837,
+        "p95_ms": 16.174331249203533,
+        "p99_ms": 19.251916652137876,
+        "requests_per_second": 181.3765436517702,
+        "total_range_requests": 15,
+        "total_range_bytes": 5753858
       },
       "rust": {
-        "p50_ms": 2.4369129969272763,
-        "p50_trial_min_ms": 2.3610780044691637,
-        "p50_trial_max_ms": 2.5721749989315867,
-        "p95_ms": 3.3046257522073574,
-        "p99_ms": 3.5122894521919075,
-        "requests_per_second": 591.5991636521668,
+        "p50_ms": 2.4520029983250424,
+        "p50_trial_min_ms": 2.221439513959922,
+        "p50_trial_max_ms": 2.695242001209408,
+        "p95_ms": 3.139866494166199,
+        "p99_ms": 3.7079820918734177,
+        "requests_per_second": 606.4261565602292,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 5.076754282276366
+      "python_over_rust_p50": 4.9870436599593555
     },
     {
       "access": "range",
@@ -1248,26 +1250,26 @@
       "workload": "singleband-tile",
       "concurrency": 1,
       "python": {
-        "p50_ms": 5.239911493845284,
-        "p50_trial_min_ms": 4.837065498577431,
-        "p50_trial_max_ms": 5.241889506578445,
-        "p95_ms": 5.999563763907645,
-        "p99_ms": 137.48626725428008,
-        "requests_per_second": 81.97118531997221,
-        "total_range_requests": 21,
-        "total_range_bytes": 8333490
+        "p50_ms": 4.681660997448489,
+        "p50_trial_min_ms": 4.558743996312842,
+        "p50_trial_max_ms": 5.36820299748797,
+        "p95_ms": 5.83222749264678,
+        "p99_ms": 134.1558565007287,
+        "requests_per_second": 87.29653330085236,
+        "total_range_requests": 14,
+        "total_range_bytes": 5555660
       },
       "rust": {
-        "p50_ms": 0.7566024869447574,
-        "p50_trial_min_ms": 0.7368639926426113,
-        "p50_trial_max_ms": 0.7602760015288368,
-        "p95_ms": 1.2493017566157505,
-        "p99_ms": 1.4192384347552434,
-        "requests_per_second": 501.76770667896847,
+        "p50_ms": 0.7558030047221109,
+        "p50_trial_min_ms": 0.7485405076295137,
+        "p50_trial_max_ms": 1.1581129947444424,
+        "p95_ms": 1.314106753852684,
+        "p99_ms": 1.5371316098025996,
+        "requests_per_second": 503.9014711428618,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 6.925580584600789
+      "python_over_rust_p50": 6.194287358211567
     },
     {
       "access": "range",
@@ -1275,44 +1277,44 @@
       "workload": "singleband-tile",
       "concurrency": 3,
       "python": {
-        "p50_ms": 4.6173459850251675,
-        "p50_trial_min_ms": 4.594877013005316,
-        "p50_trial_max_ms": 5.069557009846903,
-        "p95_ms": 6.152653746539727,
-        "p99_ms": 7.191269699251278,
-        "requests_per_second": 455.00676358453927,
+        "p50_ms": 4.773209991981275,
+        "p50_trial_min_ms": 4.599412000970915,
+        "p50_trial_max_ms": 5.53341351042036,
+        "p95_ms": 6.211179505044129,
+        "p99_ms": 7.836121955187991,
+        "requests_per_second": 426.7581231468711,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
       "rust": {
-        "p50_ms": 1.0611514881020412,
-        "p50_trial_min_ms": 0.9878635028144345,
-        "p50_trial_max_ms": 1.1648700019577518,
-        "p95_ms": 1.6266669845208526,
-        "p99_ms": 1.7073796523618512,
-        "requests_per_second": 1131.6458379612095,
+        "p50_ms": 1.2754360068356618,
+        "p50_trial_min_ms": 1.0036089952336624,
+        "p50_trial_max_ms": 1.3167410070309415,
+        "p95_ms": 1.79543650301639,
+        "p99_ms": 1.9112801557639612,
+        "requests_per_second": 1082.8723735554415,
         "total_range_requests": 0,
         "total_range_bytes": 0
       },
-      "python_over_rust_p50": 4.351259963159152
+      "python_over_rust_p50": 3.742414332353326
     }
   ],
   "resources": {
     "python": {
-      "startup_median_seconds": 0.4136744669958716,
-      "first_raster_median_seconds": 0.09834005699667614,
-      "peak_rss_min": 485171200,
-      "peak_rss_max": 608047104,
+      "startup_median_seconds": 0.41025868999713566,
+      "first_raster_median_seconds": 0.10042698899633251,
+      "peak_rss_min": 484077568,
+      "peak_rss_max": 607154176,
       "peak_fds_min": 49,
       "peak_fds_max": 57
     },
     "rust": {
-      "startup_median_seconds": 0.021467533995746635,
-      "first_raster_median_seconds": 0.07131861199741252,
-      "peak_rss_min": 119222272,
-      "peak_rss_max": 198361088,
+      "startup_median_seconds": 0.021505020500626415,
+      "first_raster_median_seconds": 0.07273246149998158,
+      "peak_rss_min": 117993472,
+      "peak_rss_max": 199749632,
       "peak_fds_min": 10,
-      "peak_fds_max": 18
+      "peak_fds_max": 19
     }
   },
   "conditions": "Sequential engine trials, three CPU affinity cores, three sync Gunicorn workers versus three native raster workers; native threads and BLAS capped. Primary cache-off comparison; cache-on uses total 64 MiB logical budget (Python compressed per worker, Rust uncompressed shared). OS page cache is warm, not dropped. Cold means fresh service process and first raster request, not cold disk. RSS is sum of service process-tree RSS including shared pages; 20ms samples. Loopback range server adds 2ms per GET. No external network performance claim."

@@ -656,3 +656,65 @@ not runtime reproductions, and no rewrite deviations have yet been validated.
   Tile, mask and category behavior remain separately checked.
 - Evidence: P08 `before-dateline/geography-final.log` and retained image pairs show the material pre-fix failure;
   final qualified geographic reports and image pairs use the repaired candidate.
+
+### RW-042: Large float32 reductions exceed the small-crop moment bound
+
+- **Kind:** accepted, explained numerical difference; no runtime change.
+- The real dateline mosaic has 17,280,000 valid float32 samples. Frozen NumPy
+  reductions give mean 4.362151622772217 m and standard deviation
+  38.27044677734375 m. Independent float64 reductions give 4.362156338360042 m
+  and 38.27065278496088 m; the native values exactly equal these rounded to
+  float32 (4.362156391143799 and 38.270652770996094).
+- The original four-ULP small-crop bound fails here. Retain the failed report and
+  log, prove both reduction paths on this input, and accept only this pinned
+  full-mosaic case within 0.000005 m mean and 0.00021 m standard deviation.
+  Other geographic cases retain RW-024's four-ULP or strict chunked bounds.
+  This is sub-millimetre elevation roundoff, not changed statistical meaning.
+- Stored percentiles, ranges, validity percentage, bounds and hull are exact.
+  Rendering uses ranges/percentiles rather than these moments, and all 30
+  geographic rendered images remain exact. No global numeric/pixel tolerance
+  was widened. Evidence: `validation/evidence/p08/geographic-metadata.json`,
+  `mosaic-reduction.json`, and `geographic-metadata-initial-failure.log`.
+
+### RW-043: P08 compared unequal aggregate GDAL block-cache budgets
+
+- **Kind:** benchmark configuration defect found during post-qualification
+  bottleneck investigation; earlier equal-budget performance wording corrected.
+- `GDAL_CACHEMAX=32` gave one threaded native process 32 MiB total but three
+  Gunicorn processes 96 MiB total. Equal CPU/app-cache settings do not fix this.
+- A bounded native diagnostic with exact images reduced concurrent RGB preview
+  p50 from 1434 to 768 ms and DEM from 113 to 60 ms by changing only native GDAL
+  cache to 96 MiB. Preview CPU work fell 25.83→13.58 seconds for 18 requests.
+  Splitting into three native processes at the same total cache gave similar
+  results (763/61 ms); shared-cache pressure is the dominant identified cause,
+  rather than Rust instruction speed or demonstrated mutex contention.
+- Keep the original matrix as observations of its documented configuration,
+  not equal aggregate-cache proof. Rerun the repeated full matrix at matched
+  aggregate GDAL budgets before final performance qualification. No production
+  or sealed archive changes were made. See
+  `validation/evidence/p08/bottleneck-followup/README.md` and its raw results.
+- Cached compute retains a separate suspected per-pixel interpreter overhead
+  (`src/expressions.rs`); it has not received isolated stage profiling yet.
+
+### RW-044: Map browsing requires viewport-completion measurements
+
+- **Kind:** user-directed performance coverage correction; no runtime change.
+- Repeating one cached tile does not represent navigating through new imagery.
+  Measure all newly visible tiles for 1024×768 views, six requests in flight per
+  session, 1/4/8 spatially offset sessions, initial views and six successive pans.
+  Each session retains downloaded tiles and pauses 100 ms after completion.
+- Use full original Sentinel-2 COGs and native overviews. Initial bounding-box
+  tracks contained extensive nodata and were rejected; zoom-13 valid-footprint
+  tracks are 100% opaque. A first corrected attempt briefly overlapped the old
+  pilot, was stopped and excluded. Final measurement ran alone.
+- Match three CPU cores, 96 MiB aggregate GDAL cache and 64 MiB logical raster
+  cache. Three trials per engine/mode/user count: 36 runs, 4,992 successful
+  requests, 412 unique URLs, all decoded images exact.
+- Typical pan completion improves 1.15× singleband / 1.28× RGB for one session,
+  1.67× / 1.42× for four, and 1.92× / 1.50× for eight. At eight sessions RGB
+  p95 improves 1,585→935 ms. These are local server-delivery timings, not browser
+  frame rate, WAN latency or continuous-drag/cancellation results. Queue capacity
+  256 is documented; no retries conceal overloads.
+- Evidence and reproduction: `validation/evidence/p08/navigation/README.md`.
+  Optimize this workload and its p95 under load for release-facing claims.
+  Expressions and repeated-image microbenchmarks remain secondary diagnostics.

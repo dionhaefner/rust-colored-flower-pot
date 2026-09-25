@@ -333,8 +333,21 @@
       "classification": "failed",
       "seconds": 2.3054516830015928,
       "completed_at": "2026-09-25T06:11:54.906823+00:00",
+      "log": "validation/evidence/p08/geographic-metadata-initial-failure.log"
+    },
+    {
+      "name": "geographic-metadata",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_geographic_metadata.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 6.248123188037425,
+      "completed_at": "2026-09-25T10:49:30.558883+00:00",
       "log": "validation/evidence/p08/geographic-metadata-final.log"
     }
   ],
-  "complete": false
+  "complete": true
 }

@@ -37,8 +37,8 @@ real rasters and GDAL 3.9.3. Results vary by workload/cache mode: some tile path
 are faster, while cache-disabled RGB previews and geographic DEM previews are
 slower. No general speedup is claimed.
 
-Median readiness was 0.021 s native versus 0.414 s Python in this setup. Sampled
-service-tree RSS peaks ranged 114–189 MiB native and 463–580 MiB Python; summing
+Median readiness was 0.022 s native versus 0.410 s Python in this setup. Sampled
+service-tree RSS peaks ranged 113–190 MiB native and 462–579 MiB Python; summing
 RSS double-counts shared pages across Python processes and is not a PSS result.
 These local measurements do not establish WAN latency, cold-disk performance,
 cloud cold-start behavior or results on other hardware. Raw distributions,
@@ -60,7 +60,7 @@ polar/dateline comparisons and the complete HTTP matrix pass exactly.
 
 ## Compatibility details and limits
 
-The documented RW-019 float32 expression and RW-024/RW-025 moment/hull differences
+The documented RW-019 float32 expression and RW-024/RW-025/RW-042 moment/hull differences
 remain narrowly bounded by retained comparisons. PNG compression bytes need not
 match. Category values, masks, dataset identity and schemas remain contractual.
 

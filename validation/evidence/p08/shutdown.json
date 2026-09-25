@@ -1,0 +1,1009 @@
+{
+  "passed": true,
+  "iterations": 200,
+  "runtime_image": "public.ecr.aws/lambda/provided@sha256:6e44223227dfb00686065ab66db7c4ce86f1483a8f69e40bcba5ebdb0f4d5fd7",
+  "zip_sha256": "6373cb747700653620537c161693819542a7a3c393511dd560ecd9e675505097",
+  "results": [
+    {
+      "iteration": 0,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 1,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 2,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 3,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 4,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 5,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 6,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 7,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 8,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 9,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 10,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 11,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 12,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 13,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 14,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 15,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 16,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 17,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 18,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 19,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 20,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 21,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 22,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 23,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 24,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 25,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 26,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 27,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 28,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 29,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 30,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 31,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 32,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 33,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 34,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 35,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 36,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 37,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 38,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 39,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 40,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 41,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 42,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 43,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 44,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 45,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 46,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 47,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 48,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 49,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 50,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 51,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 52,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 53,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 54,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 55,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 56,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 57,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 58,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 59,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 60,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 61,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 62,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 63,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 64,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 65,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 66,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 67,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 68,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 69,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 70,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 71,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 72,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 73,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 74,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 75,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 76,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 77,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 78,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 79,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 80,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 81,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 82,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 83,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 84,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 85,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 86,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 87,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 88,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 89,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 90,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 91,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 92,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 93,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 94,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 95,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 96,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 97,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 98,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 99,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 100,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 101,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 102,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 103,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 104,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 105,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 106,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 107,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 108,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 109,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 110,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 111,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 112,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 113,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 114,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 115,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 116,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 117,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 118,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 119,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 120,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 121,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 122,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 123,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 124,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 125,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 126,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 127,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 128,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 129,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 130,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 131,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 132,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 133,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 134,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 135,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 136,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 137,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 138,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 139,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 140,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 141,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 142,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 143,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 144,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 145,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 146,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 147,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 148,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 149,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 150,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 151,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 152,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 153,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 154,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 155,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 156,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 157,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 158,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 159,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 160,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 161,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 162,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 163,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 164,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 165,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 166,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 167,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 168,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 169,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 170,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 171,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 172,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 173,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 174,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 175,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 176,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 177,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 178,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 179,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 180,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 181,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 182,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 183,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 184,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 185,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 186,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 187,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 188,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 189,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 190,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 191,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 192,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 193,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 194,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 195,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 196,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 197,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 198,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    },
+    {
+      "iteration": 199,
+      "exit_code": 0,
+      "decoded_rgba_exact": true
+    }
+  ],
+  "purpose": "Regression for RW-039; cold native processes inside one clean runtime container. Native worker join and thread-local cleanup must finish before every process exits."
+}

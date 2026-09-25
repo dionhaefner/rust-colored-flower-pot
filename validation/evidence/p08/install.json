@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "checks": [
+    "native-create-insert-lambda-render-exact",
+    "installed-python-future-array",
+    "wsgi-exact",
+    "flask-keys"
+  ],
+  "platform": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "rasterio": "1.4.3",
+  "gdal": "3.9.3",
+  "binary_sha256": "7b5578bf306a67926f9e8b2a022e57db95127c54ca621d39d02e3bc2409150d1"
+}

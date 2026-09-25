@@ -1,5 +1,17 @@
 # P08 release qualification evidence
 
+**Map navigation follow-up:** [viewport refill results](navigation/README.md)
+measure new singleband/RGB tiles for 1, 4 and 8 sessions with matched aggregate
+cache budgets. This is the primary evidence for browsing performance: 36 trials,
+4,992 successful exact-image requests, with fully visible real imagery. Native
+pan p50 improves 1.15–1.28× for one session and 1.42–1.92× for 4–8 sessions.
+
+**Post-qualification correction (RW-043):** the benchmark used unequal aggregate
+GDAL cache budgets. [The bottleneck diagnostic](bottleneck-followup/README.md)
+shows that matching capacity nearly halves native preview cost. The original
+results remain configuration-specific evidence; a corrected repeated matrix is
+pending. Sealed artifacts predate this addendum; runtime code is unchanged.
+
 The final local candidate is qualified on Linux x86_64. Full release remains blocked
 on actual AWS services, deferred platforms and the external basemap workflow;
 these are not accepted numerical differences. See [release notes](../../../packaging/RELEASE_NOTES.md),
@@ -41,6 +53,7 @@ Counts overlap; these are separate checks, not an additive total.
 | Preparation / real SQL engines / migrations | 329 / 123 / 19 pass | [preparation](preparation.json), [engines](engines.json), [migrations](migrations.json) |
 | Rollback | 5 workflows pass, including old Python reading native writes | [rollback](rollback.json) |
 | Geographic rendering | 30 polar/dateline images exact, including three mosaic preview routes | [geography](geography.json), [comparison sheet](images/p08-geography-final/side-by-side.png) |
+| Geographic metadata | 96 full/sample/chunk checks; narrow moment bounds RW-024/RW-042, exact percentile encoding | [metadata](geographic-metadata.json), [reduction proof](mosaic-reduction.json) |
 | Physical BigTIFF | 9 checks; 7,109,429,559 bytes, 5,041 blocks and masks exact, real ranges beyond 4 GiB | [BigTIFF](bigtiff.json) |
 | Lifecycle and overload | 20 owner lifetimes, TCP disconnect/drain, 503 overload/504 timeout and recovery pass | [resources](resources.json), [failure](failure.json) |
 | Soak | 180 seconds, 12 clients; 10,384 successful and 38,384 expected overloaded responses; peak RSS 139 MiB, final FDs return to 6 | [soak](soak.json) |
@@ -48,7 +61,7 @@ Counts overlap; these are separate checks, not an additive total.
 | Installation/runtime | Fresh wheel, Debian and official AL2023 exact rendering pass | [install](install.json), [container](container.json), [Lambda image](lambda-runtime.json) |
 | Browser | Chromium singleband/RGB/metadata exploration; queue 64 and every backend response checked | [browser](browser-qualified/report.json) |
 | Performance | 24 matched runs, three trials per engine/access/cache configuration, exact decoded responses | [measurements](PERFORMANCE.md) |
-| Detailed source inventory | All 386 records reconciled with explicit external blockers | [audit](coverage-reconciliation.json) |
+| Detailed source inventory | 386 records: 336 verified, 43 accepted deviations, 7 partial; platform limits apply to all | [audit](coverage-reconciliation.json) |
 
 ## Findings and repaired failures
 
@@ -75,6 +88,11 @@ after historical migration, while both implementations write `0.10.0`; the fixed
 test executes the frozen migration and compares versions, keys, datasets and all
 stored metadata. Its initial incorrect CLI-module invocation was also repaired.
 Neither issue required changing application migration behavior or the oracle.
+The canonical archive smoke initially assumed pip was installed in the fresh
+application environment; it now targets that environment with the separate
+validation installer. The failed log remains in `archive-smoke-initial-failure.log`.
+Inventory reconciliation normalizes inherited string/list evidence links and
+validates file paths separately from their Markdown anchors.
 
 **RW-041:** the actual dateline-spanning mosaic exposed a material preview
 framing error, then two extra opaque edge columns. HTTP now leaves preview bounds
@@ -93,6 +111,13 @@ tile burst, despite an intact screenshot. That run remains in `browser-final`;
 `browser-qualified` uses the documented 64-job queue and asserts every backend
 response succeeds. Worker concurrency remains bounded. This is an operator
 configuration choice; no default or client behavior was silently changed.
+
+**RW-042:** full-mosaic float32 mean/stdev reductions exceeded the small-crop
+four-ULP bound. Independent float64 reductions exactly reproduce native moments
+after float32 rounding; differences are below 0.000005 m and 0.00021 m. Only
+this pinned case has those bounds, with both reduction paths independently
+asserted. Percentiles and displayed imagery remain exact. The [initial failed
+comparison](geographic-metadata-initial-failure.json) remains retained.
 
 The two unchanged upstream ANSI capture failures remain RW-036. The six
 in-process boto-mock cases are explicitly excluded (RW-037), with separately
@@ -120,6 +145,11 @@ Lambda ZIP, platform wheel, source/evidence archive, manifest and SHA256SUMS.
 Identical output hashes from two preparations qualify archive reproducibility;
 they do not establish bit-for-bit reproducible native compilation. Artifact hashes
 and native library/data fingerprints identify the actual tested build.
+[Archive smoke](archive-smoke.json) verifies all checksums and wheel RECORD
+members, installs the canonical wheel offline, renders from the extracted native
+tarball through native/Python/WSGI interfaces, and renders the canonical Lambda
+ZIP in the official runtime image. [Release manifest](release-manifest.json) and
+[reproducibility](reproducibility.json) identify the sealed local candidate.
 
 ## External release gates
 

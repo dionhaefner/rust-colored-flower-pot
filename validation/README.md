@@ -482,6 +482,12 @@ archives only after evidence/documentation are finalized:
 .venv-reference/bin/python packaging/prepare-candidate.py --out validation/artifacts/p08-candidate-repeat
 ```
 
+`p08_archive_smoke.py` checks canonical archives in `p08-candidate-preflight`,
+including wheel RECORD integrity, offline installation into `p08-final-install`,
+and native/WSGI/official-Lambda-image rendering. Use `p08_collect.py` to retain
+compact reports and final source/runtime hashes, then `p08_reconcile.py` to audit
+the inventory. Retain initial failed metadata evidence when rerunning collection.
+
 Compare both SHA256SUMS files. Archive reproducibility is distinct from compiler
 bit reproducibility. No command here pushes, tags, publishes or deploys; deferred
 platforms and actual AWS service checks remain explicit release gates.

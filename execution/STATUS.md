@@ -2,28 +2,39 @@
 
 ## Current position
 
-- P07 is complete within the user-authorized local/CI-preparation scope (D-010).
-  Legacy Python/Flask/WSGI/CLI/settings/client integration, owned native sessions,
-  public contexts/futures/types, profiling/logging, packages and operator docs are
-  implemented. [Handoff](handoffs/P07.md), [evidence](../validation/evidence/p07/README.md).
-- P08 release qualification is in progress (Codex); [plan](plans/P08.md). The user explicitly deferred nonlocal
-  platform runs to prepared GitHub Actions. C32 remains partial: CI being ready
-  is not evidence that macOS, Windows or arm64 passed.
-- Frozen source remains `6db38d5873cde5ebabe47338a1f61ddc788eada6`, exported
-  independently of the sibling's modified tree. Earlier real-corpus, rendering,
-  metadata/ingestion and storage evidence remains linked in COVERAGE.
-- Final Linux x86_64 native/CPython wheel, Debian container and official AL2023
-  runtime-image load/render pass with exact real-raster RGBA; maximum glibc 2.34.
-  Actual AWS/S3/X-Ray services remain unqualified.
+- P08 implementation is locally qualified, but post-qualification investigation
+  found unequal aggregate GDAL cache budgets in the benchmark (RW-043). A
+  corrected full benchmark remains local follow-up work; external gates remain. [Handoff](handoffs/P08.md), [evidence](../validation/evidence/p08/README.md).
+- The final candidate repairs native worker shutdown (RW-039/D-011) and dateline
+  preview framing/wrapping (RW-041). All 386 detailed inventory records are
+  reconciled: 336 verified, 43 accepted deviations, seven partial. Platform
+  qualification is limited to Linux x86_64 across the inventory.
+- Native Linux x86_64 / CPython 3.12 wheel, Debian container and official AL2023
+  runtime-image rendering pass. Canonical archive installation/rendering and
+  repeatable archive checksums pass. Nothing was published, tagged or deployed.
+- Oracle commit `6db38d5873cde5ebabe47338a1f61ddc788eada6` is unchanged; all 412
+  tracked blobs were verified against commit objects. The sibling is read-only.
 
-## P08 qualification
+## Final local results
 
-The final combined suite has completed, including the repaired native worker
-shutdown (RW-039/D-011), exact dateline previews (RW-041), 180-second soak and
-200 cold official-runtime exits. The isolated benchmark, strict browser check,
-geographic metadata extension and canonical archive checks are being finalized.
-[Plan](plans/P08.md), [evidence](../validation/evidence/p08/README.md).
-No full-parity or cloud/platform completion claim is made.
+Twenty Rust unit tests and SQL/remote integration, fmt and Clippy pass. Final
+HTTP 526, packaged adapters 46, public integration 27, settings 46, remote socket
+emulator 13, preparation 329, real SQL engines 123 and migrations 19 pass.
+The unchanged applicable Python suite has 526 passes, two reproduced oracle ANSI
+failures (RW-036), zero skips and six explicitly excluded in-process boto mocks
+(RW-037). Counts overlap; failures and exclusions are not passes.
+
+P08 adds 30 exact polar/dateline rendering cases, 96 geographic metadata checks
+with explained input-specific float32 reduction RW-042, nine physical BigTIFF
+checks beyond 4 GiB, five rollback workflows, 20 owner lifetimes, disconnect/drain
+and failure recovery, a 180-second soak and 200 clean AL2023 cold process exits.
+Chromium's unchanged client passes all 192 backend responses with queue 64 and
+retained inspected singleband/RGB/metadata views on an offline basemap.
+
+The fair benchmark has 24 matched runs (three trials, cache off/on, local/range,
+six workloads, clients 1/3 and equal three-core affinity). Performance is mixed:
+several tile paths improve, while RGB and geographic DEM previews are slower.
+No universal speedup is claimed. [Measurements and limits](../validation/evidence/p08/PERFORMANCE.md).
 
 ## Phase ledger
 
@@ -37,39 +48,60 @@ No full-parity or cloud/platform completion claim is made.
 | P05 Metadata, ingestion, optimization | complete | Codex | [plan](plans/P05.md), [handoff](handoffs/P05.md), [evidence](../validation/evidence/p05/README.md) | None for P05; narrow moment/hull roundoff accepted as RW-024/RW-025 |
 | P06 Storage backends and migrations | complete | Codex | [plan](plans/P06.md), [handoff](handoffs/P06.md), [evidence](../validation/evidence/p06/README.md) | None locally; real S3/role/SSO service credentials remain explicitly pending |
 | P07 Integration and operational completion | complete | Codex | [plan](plans/P07.md), [handoff](handoffs/P07.md), [evidence](../validation/evidence/p07/README.md) | None in revised scope; nonlocal CI results explicitly deferred by user (D-010) |
-| P08 Release qualification | in-progress | Codex | [plan](plans/P08.md) | Combined qualification underway; external checks remain explicit |
+| P08 Release qualification | in-progress | Codex | [plan](plans/P08.md), [handoff](handoffs/P08.md), [evidence](../validation/evidence/p08/README.md) | RW-043 corrected aggregate-cache benchmark; B08-PLATFORMS, B08-AWS, B08-BASEMAP |
 
-## Blockers and pending questions
+## External blockers and exact next actions
 
-No outstanding user question or local P07 blocker. The user requested GitHub
-Actions setup and deferred platform execution. [The workflow](../.github/workflows/platforms.yml)
-is prepared and linted; its Linux staging/Lambda build paths were tested locally.
-Linux/Lambda arm64, macOS Intel/arm64 and Windows x86_64 remain unrun.
-Real S3/role/SSO services, actual AWS Lambda/X-Ray delivery, physical multi-GiB
-BigTIFF offsets, broader geographic/alpha stress, soak and fair performance
-qualification remain explicit P08 release checks. Browser exploration is now
-verified with an offline plain basemap; external basemap/token integration is not.
+| ID | Missing condition | Resume action |
+| --- | --- | --- |
+| B08-PLATFORMS | User deferred platform execution (D-010) | When resumed, run [Platform qualification](../.github/workflows/platforms.yml) for Linux/Lambda arm64, macOS Intel/arm64 and Windows x86_64; retain actual uploaded results. Prepared CI is not passing evidence. |
+| B08-AWS | Authorized test account, region, disposable resources/credentials and deployment/spend scope | Execute real S3/custom endpoint, role/SSO refresh, actual Lambda binary-response and X-Ray ingestion checks; retain service evidence and cleanup. Local emulators/runtime images do not clear these claims. |
+| B08-BASEMAP | Intended authorized external Mapbox/token deployment | Exercise unchanged browser assets with the external basemap and retain the result. Local exploration is qualified only with the offline background. |
 
-## Last handoff
+No new permission checkpoint is imposed by the harness. These are unavailable
+external prerequisites or user-deferred work, not failing local implementation.
+Mark P08 complete after required gate evidence or an explicit accepted scope
+change. No successor implementation phase is defined; publishing remains a
+separately authorized action.
 
-[P07 completed](handoffs/P07.md): final HTTP 526/526; packaged adapters 46/46;
-settings 46/46; real-corpus public integration 27/27; engine/context/migration
-121/121; public remote socket-emulator 13/13. Nineteen Rust unit tests, rustfmt,
-Clippy, owner-release/disconnect and final failure/recovery checks pass.
+## Retained state and last handoff
 
-The final applicable unchanged Python suite has 526 passes and two ANSI-capture
-failures reproduced in the frozen oracle (RW-036), with no skips. Its six remote
-in-process boto-mock cases are explicitly excluded and replaced by labeled
-socket-emulator evidence; two real eager-error defects are repaired (RW-037).
-No excluded case or oracle failure is called a pass.
+[Resume P08](handoffs/P08.md) from the final reports and artifact hashes. Candidate:
+`validation/artifacts/p08-candidate` (native tarball, wheel, Lambda ZIP,
+source/evidence archive, manifest and SHA256SUMS); repeat preparation:
+`p08-candidate-repeat`. [Release manifest](../validation/evidence/p08/release-manifest.json),
+[reproducibility](../validation/evidence/p08/reproducibility.json),
+[source/runtime manifest](../validation/evidence/p08/run-manifest.json).
 
-Final artifacts: `validation/artifacts/p07-final`, `p07-final-python`,
-`p07-final-wheels`, and `p07-final-lambda/terracotta-lambda.zip`. Use these rather
-than older `p07-release*` intermediates. Native target cache: `p07-native-target`.
-Fresh installed-wheel environment: `p07-install`. The CI-built Linux/Lambda zip
-also passed local official-runtime rendering; other CI targets await execution.
+Underlying final outputs: `p08-final`, `p08-final-python`, `p08-final-wheels`,
+`p08-final-lambda`; installed environment `p08-final-install`; native target cache
+`p07-native-target` contains final P08 code. Earlier `p07-final` and
+`p08-*-before-dateline` builds are diagnostic history, not the current candidate.
+The pinned corpus, reusable build caches/images and physical 7.1 GB BigTIFF remain.
 
-Disposable SQL containers/volumes were removed, and no phase daemon is
-intentionally left running. Reusable artifacts/images/caches remain. Workspace
-changes remain uncommitted from the initially untracked state. Start P08 from
-D-009/D-010, RW-032–038, the evidence index and the handoff's exact next actions.
+Disposable SQL containers and volumes were removed. No phase daemon is left
+intentionally running. The repository was initially wholly untracked. Initial commit
+`812db1aadcbca93d77101aa6507b47c92f683ef1` appeared during qualification; it was
+not created by this agent. Final qualification updates remain in the working
+tree. Runtime source fingerprints still match the tested build. The sibling
+Python checkout was not modified.
+
+## Post-qualification discovery
+
+[RW-043 diagnostic](../validation/evidence/p08/bottleneck-followup/README.md)
+identifies GDAL cache pressure as the dominant preview regression. Prior
+performance figures compare 32 MiB native with 96 MiB aggregate Python GDAL
+cache. The full corrected matrix is pending; sealed artifacts and source archives
+predate this addendum. No runtime implementation changed during this diagnostic.
+
+## User-facing navigation baseline
+
+The [map-navigation follow-up](../validation/evidence/p08/navigation/README.md)
+now measures first views and new-tile pan completion for 1/4/8 sessions at matched
+96 MiB aggregate GDAL and 64 MiB logical raster-cache budgets. All 36 runs and
+4,992 requests pass, with exact images and fully opaque real-data tiles. Native
+pan p50 is 1.15×/1.28× faster for singleband/RGB with one session and 1.92×/1.50×
+at eight sessions. This is local server tile delivery, not browser animation or
+WAN latency. Use it as the primary performance baseline for map browsing;
+older expression/repeated-tile results are secondary diagnostics. No runtime
+optimization or resealing was performed in this measurement task.

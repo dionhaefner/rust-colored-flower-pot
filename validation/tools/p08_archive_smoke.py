@@ -32,7 +32,8 @@ def main():
             assert digest=='sha256='+base64.urlsafe_b64encode(hashlib.sha256(body).digest()).rstrip(b'=').decode()
     env=dict(os.environ);env.pop('PYTHONPATH',None)
     python=ROOT/'validation/artifacts/p08-final-install/bin/python'
-    subprocess.run([str(python),'-m','pip','install','--no-deps','--no-index','--force-reinstall',str(wheel)],env=env,check=True)
+    subprocess.run([str(ROOT/'.venv-reference/bin/python'),'-m','pip','--python',str(python),
+        'install','--no-deps','--no-index','--force-reinstall',str(wheel)],env=env,check=True)
     subprocess.run([str(python),'validation/tools/p07_platform_smoke.py','--binary',str(binary),'--out',str(out/'installed')],env=env,check=True)
     subprocess.run([str(ROOT/'.venv-reference/bin/python'),'validation/tools/p03_lambda_runtime.py','--bundle',str(bundle),
         '--lambda-zip',str(candidate/'terracotta-0.1.0-lambda-x86_64.zip'),'--out',str(out/'lambda')],check=True)

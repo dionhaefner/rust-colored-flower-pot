@@ -31,6 +31,8 @@ def main():
         family,name=record['family'],record['name']
         before=dict(implementation=record['implementation'],verification=record['verification'])
         evidence=record.setdefault('evidence',[])
+        if isinstance(evidence,str):
+            evidence=[evidence] if evidence else []
         source=record['source'].rsplit(':',1)[0]
         # Public Python adapters retain the source modules; native behavior is
         # independently exercised through the listed cross-language reports.
@@ -50,7 +52,7 @@ def main():
             record['notes']='Reconciled P08: public Python adapter plus native family integration/differential evidence. Related suite cases are indexed separately; constants and internal helpers are inspected as part of their public workflow, not counted as independent runtime tests.'
             if family=='C13' and name in ['compute_image_stats_chunked','compute_image_stats','compute_metadata']:
                 record['verification']='accepted-deviation'
-                record['notes']+=' Metadata moment/hull bounds are RW-024/RW-025; raster values/masks retain exact checks.'
+                record['notes']+=' Metadata moment/hull bounds are RW-024/RW-025 and input-specific RW-042; raster values/masks retain exact checks.'
         blockers=[]
         if family=='C16' or (family=='C12' and name in ['GeoTiffRasterStore.get_raster_tile','GeoTiffRasterStore.__init__']) or name=='get_aws_session':
             record['verification']='partial';blockers.append('B08-AWS: signed S3/custom endpoint and role/SSO credential services unqualified; local/range/emulator evidence only.')
@@ -66,7 +68,7 @@ def main():
             record['notes']='Backend configuration exercised through unchanged browser client, real final native backend; offline basemap. External Mapbox token workflow unqualified.'
         evidence.append('validation/evidence/p08/README.md')
         record['evidence']=sorted(set(evidence))
-        for link in record['evidence']:assert (ROOT/link).is_file(),link
+        for link in record['evidence']:assert (ROOT/link.split('#',1)[0]).is_file(),link
         audit.append(dict(index=index,source=record['source'],family=family,name=name,kind=record['kind'],
             previous=before,implementation=record['implementation'],verification=record['verification'],
             evidence=record['evidence'],related_upstream_cases=matching,blockers=blockers))

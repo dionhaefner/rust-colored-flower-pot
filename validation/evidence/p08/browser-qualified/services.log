@@ -1,0 +1,3 @@
+GDAL 3.9.3
+Terracotta P07 listening on http://127.0.0.1:5077 (HTTP workers 68, raster workers 3, queue 64)
+Terracotta browser listening on http://127.0.0.1:5177/

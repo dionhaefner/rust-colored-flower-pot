@@ -1,0 +1,29 @@
+{
+  "implementation": "0.1.0",
+  "protocol": "0.10.1",
+  "database": "0.10.1",
+  "status": "local review candidate; external release gates remain open",
+  "reproducibility": "Deterministic archive metadata/member ordering over identical inputs; native compilation is identified by source/toolchain/library hashes, not claimed bit-reproducible.",
+  "artifacts": [
+    {
+      "file": "terracotta-0.1.0-lambda-x86_64.zip",
+      "bytes": 44727193,
+      "sha256": "2c8cde50c2e500afc077317f09dee16b24f8e133143195d2901e9ef7729bdb7c"
+    },
+    {
+      "file": "terracotta-0.1.0-linux-x86_64.tar.gz",
+      "bytes": 42311247,
+      "sha256": "5714e6e6228508830e4f745982f563156f1a996b132ee7811c0f4af83982cc64"
+    },
+    {
+      "file": "terracotta-0.1.0-source-and-evidence.tar.gz",
+      "bytes": 23687850,
+      "sha256": "9f288ccbec5fe61eafafa11f69f0493863e221dfecd7d0f16a7215075ce37e89"
+    },
+    {
+      "file": "terracotta_rust-0.1.0-cp312-cp312-linux_x86_64.whl",
+      "bytes": 45698689,
+      "sha256": "d5bd63b44c3d41259bceeb11e72be270ce51b496817a6da390d6488887e07840"
+    }
+  ]
+}
