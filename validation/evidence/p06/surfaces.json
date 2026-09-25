@@ -1,0 +1,114 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "mysql partial-stretch",
+      "passed": true,
+      "details": {
+        "reference_status": 500,
+        "rust_status": 500
+      }
+    },
+    {
+      "name": "mysql percentile",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "mysql categorical",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "mysql rgb-default",
+      "passed": true,
+      "details": {
+        "reference_status": 500,
+        "rust_status": 500
+      }
+    },
+    {
+      "name": "mysql rgb-explicit",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "mysql compute",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "mysql batch metadata",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql partial-stretch",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql percentile",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql categorical",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql rgb-default",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql rgb-explicit",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql compute",
+      "passed": true,
+      "details": {
+        "reference_status": 200,
+        "rust_status": 200
+      }
+    },
+    {
+      "name": "postgresql batch metadata",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "external": {
+    "real_s3": "not-run: no credentials/account provided"
+  }
+}

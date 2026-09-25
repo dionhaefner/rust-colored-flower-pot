@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p07_platform_smoke.py", line 71, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p07_platform_smoke.py", line 57, in main
+    assert result.shape == (256,256) and result.dtype == np.float32
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

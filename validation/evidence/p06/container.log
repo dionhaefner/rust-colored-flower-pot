@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p03_container.py", line 119, in <module>
+    run(args.bundle.resolve(), args.out.resolve(), args.tag)
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p03_container.py", line 67, in run
+    invocation = subprocess.run(
+                 ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['docker', 'run', '--rm', '--network', 'none', 'terracotta-p06-local:20260923', 'lambda-event', '-d', '/data/terracotta.sqlite', '--event', '/data/event.json']' returned non-zero exit status 1.

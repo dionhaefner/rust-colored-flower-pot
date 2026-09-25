@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/terracotta",
+    "connect",
+    "http://127.0.0.1:5104",
+    "--no-browser",
+    "--port",
+    "5199"
+  ],
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "",
+  "note": "Unchanged legacy connect executes real /keys and /swagger.json handshake. TC_TESTING suppresses its persistent client server; render contracts are exercised by this matrix."
+}

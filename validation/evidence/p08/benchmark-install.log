@@ -1,0 +1,12 @@
+Collecting gunicorn==23.0.0
+  Using cached gunicorn-23.0.0-py3-none-any.whl.metadata (4.4 kB)
+Collecting packaging (from gunicorn==23.0.0)
+  Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Using cached gunicorn-23.0.0-py3-none-any.whl (85 kB)
+Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Installing collected packages: packaging, gunicorn
+
+Successfully installed gunicorn-23.0.0 packaging-26.3
+
+[notice] A new release of pip is available: 25.1.1 -> 26.2.1
+[notice] To update, run: /home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python -m pip install --upgrade pip

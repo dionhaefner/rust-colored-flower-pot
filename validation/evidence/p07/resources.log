@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p07_resources.py", line 53, in <module>
+    assert 'duration' in (OUT/'server.log').read_text()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

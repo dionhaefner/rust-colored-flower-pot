@@ -1,0 +1,11 @@
+{
+  "original_report": "browser-final/report.json",
+  "visual_review": "RGB image intact, one backend request overloaded. Original harness only required representative successful responses; it did not assert all backend responses.",
+  "failed_responses": [
+    {
+      "url": "http://127.0.0.1:5077/rgb/lagoon/12/2189/1467.png?r=red&r_range=[183,1734]&g=green&g_range=[183,1734]&b=blue&b_range=[183,1734]&",
+      "status": 503
+    }
+  ],
+  "qualification": "Superseded by strict browser-qualified run with queue 64."
+}

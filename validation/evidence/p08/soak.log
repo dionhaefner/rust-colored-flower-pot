@@ -1,0 +1,111 @@
+Exception in thread Thread-1 (_sample):
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 1593, in wrapper
+    return fun(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 2253, in num_fds
+    return len(os.listdir(f"{self._procfs_path}/{self.pid}/fd"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/proc/344660/fd'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.12/threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_runtime.py", line 100, in _sample
+    def _sample(self):
+                       
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_runtime.py", line 91, in snapshot
+    fds += process.num_fds()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/__init__.py", line 824, in num_fds
+    return self._proc.num_fds()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 1595, in wrapper
+    raise AccessDenied(pid, name) from err
+psutil.AccessDenied: (pid=344660)
+{
+  "passed": true,
+  "elapsed_seconds": 180.26001114500104,
+  "requested_seconds": 180,
+  "concurrency": 12,
+  "distinct_grids": 24,
+  "status_counts": {
+    "200": 9731,
+    "503": 35773
+  },
+  "invalid_requests": {
+    "/singleband/missing/red/preview.png": 404,
+    "/compute/lagoon/preview.png?expression=__import__(1)": 400,
+    "/singleband/lagoon/red/preview.png?tile_size=[0,0]": 400
+  },
+  "baseline": {
+    "seconds": 215168.855644467,
+    "rss": 83144704,
+    "fds": 6,
+    "threads": 21
+  },
+  "final": {
+    "seconds": 215349.113735766,
+    "rss": 163848192,
+    "fds": 6,
+    "threads": 25
+  },
+  "resources": {
+    "peak_rss": 185167872,
+    "peak_fds": 21,
+    "peak_threads": 37
+  },
+  "metrics_before": {
+    "workers": 3,
+    "queue_capacity": 8,
+    "wait_timeout_ms": 120000,
+    "cache_capacity_bytes": 2097152,
+    "cache_bytes": 1916928,
+    "cache_entries": 2,
+    "submitted": 44,
+    "completed": 44,
+    "failed": 0,
+    "overloaded": 0,
+    "timed_out": 0,
+    "cache_hits": 0,
+    "cache_misses": 44,
+    "remote_jobs": 0,
+    "in_flight": 0,
+    "peak_in_flight": 3,
+    "rss_bytes": 83144704,
+    "open_file_descriptors": 8,
+    "remote_traffic_note": "remote_jobs counts admitted GDAL URL/S3 reads; exact HTTP request/byte traffic is measured at the range server"
+  },
+  "metrics_after": {
+    "workers": 3,
+    "queue_capacity": 8,
+    "wait_timeout_ms": 120000,
+    "cache_capacity_bytes": 2097152,
+    "cache_bytes": 1032192,
+    "cache_entries": 4,
+    "submitted": 11137,
+    "completed": 11137,
+    "failed": 0,
+    "overloaded": 56697,
+    "timed_out": 0,
+    "cache_hits": 9615,
+    "cache_misses": 67834,
+    "remote_jobs": 0,
+    "in_flight": 0,
+    "peak_in_flight": 3,
+    "rss_bytes": 163848192,
+    "open_file_descriptors": 8,
+    "remote_traffic_note": "remote_jobs counts admitted GDAL URL/S3 reads; exact HTTP request/byte traffic is measured at the range server"
+  },
+  "limits": {
+    "rss_bytes": 536870912,
+    "workers": 3,
+    "queue": 8,
+    "cache_bytes": 2097152
+  },
+  "scope": "Three-minute sustained local workload; this is not a multi-day production leak or cloud qualification."
+}

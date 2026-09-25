@@ -1,0 +1,12 @@
+{
+  "credential_variable_presence": {
+    "AWS_ACCESS_KEY_ID": false,
+    "AWS_SECRET_ACCESS_KEY": false,
+    "AWS_SESSION_TOKEN": false,
+    "AWS_PROFILE": false,
+    "AWS_WEB_IDENTITY_TOKEN_FILE": false,
+    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI": false,
+    "AWS_CONTAINER_CREDENTIALS_FULL_URI": false
+  },
+  "real_s3": "not-run; no authorized bucket/account supplied; emulator is local evidence only"
+}

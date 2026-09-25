@@ -1,0 +1,84 @@
+{
+  "passed": true,
+  "budget_bytes": 536870912,
+  "sampled_peak_rss_bytes": 41926656,
+  "budget_exceeded": false,
+  "source": {
+    "width": 36000,
+    "height": 36000,
+    "dtype": "uint8",
+    "overviews": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "bounds_wgs84": [
+      12.0,
+      45.0,
+      15.0,
+      48.0
+    ],
+    "block_shapes": [
+      [
+        1024,
+        1024
+      ]
+    ],
+    "path": "/home/dion/codes/rust-colored-flower-pot/.cache/corpus/worldcover.tif",
+    "file_bytes": 85040674,
+    "sha256": "80f665ce258f470e3d18facf5842f3451c5d66e7010d130bc2d3b1e387f8b7b4",
+    "tiff_variant": "classic TIFF / publisher COG",
+    "decoded_value_bytes": 1296000000
+  },
+  "results": [
+    {
+      "name": "preview",
+      "seconds": 0.024848550001479452,
+      "bytes": 16712,
+      "comparison": {
+        "passed": true,
+        "shape": [
+          256,
+          256,
+          4
+        ],
+        "different_channels": 0
+      },
+      "url": "/singleband/lagoon/classes/preview.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D"
+    },
+    {
+      "name": "detail",
+      "seconds": 0.013581954000983387,
+      "bytes": 3184,
+      "comparison": {
+        "passed": true,
+        "shape": [
+          256,
+          256,
+          4
+        ],
+        "different_channels": 0
+      },
+      "url": "/singleband/lagoon/classes/15/17506/11730.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D"
+    }
+  ],
+  "io_delta": {
+    "read_count": 416,
+    "write_count": 0,
+    "read_bytes": 0,
+    "write_bytes": 0,
+    "read_chars": 1491218,
+    "write_chars": 0
+  },
+  "detail_xyz": [
+    17506,
+    11730,
+    15
+  ],
+  "overview_notes": "Broad preview may select one of the publisher COG's native overviews. The z15 request is about 4.78 m/pixel, finer than the 10 m source, and therefore touches base-resolution blocks. The source path is the checksum-pinned 36,000 x 36,000 parent, not a derivative.",
+  "io_notes": "Linux process counters cover the Rust server. read_chars counts cached read syscalls; read_bytes counts physical storage I/O and may be zero after checksum verification warms the OS cache. No remote traffic is claimed.",
+  "database_note": "stress.sqlite was a generated copy of the Python-created database with only the categorical path/bounds redirected to the pinned full parent; it is removed after the run."
+}

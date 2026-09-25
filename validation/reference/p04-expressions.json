@@ -1,0 +1,1555 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "operands": {
+    "v1": {
+      "values": [
+        -4.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    "v2": {
+      "values": [
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    }
+  },
+  "cases": [
+    {
+      "expression": "v1",
+      "values": [
+        -4.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "-v1",
+      "values": [
+        4.0,
+        1.0,
+        -0.0,
+        -0.25,
+        -1.0,
+        -2.0,
+        -4.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "-v1**2",
+      "values": [
+        -16.0,
+        -1.0,
+        -0.0,
+        -0.0625,
+        -1.0,
+        -4.0,
+        -16.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "(-v1)**2",
+      "values": [
+        16.0,
+        1.0,
+        0.0,
+        0.0625,
+        1.0,
+        4.0,
+        16.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1**-2",
+      "values": [
+        0.0625,
+        1.0,
+        0.0,
+        16.0,
+        1.0,
+        0.25,
+        0.0625
+      ],
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1+2*3",
+      "values": [
+        2.0,
+        5.0,
+        6.0,
+        6.25,
+        7.0,
+        8.0,
+        10.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1-2-3",
+      "values": [
+        -9.0,
+        -6.0,
+        -5.0,
+        -4.75,
+        -4.0,
+        -3.0,
+        -1.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1%(-3)",
+      "values": [
+        -1.0,
+        -1.0,
+        -0.0,
+        -2.75,
+        -2.0,
+        -1.0,
+        -2.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "2**3**2+v1",
+      "values": [
+        508.0,
+        511.0,
+        512.0,
+        512.25,
+        513.0,
+        514.0,
+        516.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "setmask(v2, nomask)",
+      "values": [
+        0.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        0.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "setmask(v2, ~getmask(v2))",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_where(~getmask(v2),v2)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "where(v2>1,nan,v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "where(v1>0,v1,v2)",
+      "values": [
+        0.0,
+        2.0,
+        2.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "(v1>0)&(v2>1)",
+      "values": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "~(v1<0)",
+      "values": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "getmask(v1/v1)",
+      "values": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "getmask(sqrt(v1))",
+      "values": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 / v2",
+      "values": [
+        0.0,
+        -0.5,
+        0.0,
+        0.125,
+        0.5,
+        0.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "getmask(v1**-1)",
+      "values": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 + v2",
+      "values": [
+        0.0,
+        1.0,
+        2.0,
+        2.25,
+        3.0,
+        0.0,
+        6.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 - v2",
+      "values": [
+        0.0,
+        -3.0,
+        -2.0,
+        -1.75,
+        -1.0,
+        0.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 * v2",
+      "values": [
+        0.0,
+        -2.0,
+        0.0,
+        0.5,
+        2.0,
+        0.0,
+        8.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 / v2",
+      "values": [
+        0.0,
+        -0.5,
+        0.0,
+        0.125,
+        0.5,
+        0.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 % v2",
+      "values": [
+        0.0,
+        1.0,
+        0.0,
+        0.25,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 ** v2",
+      "values": [
+        0.0,
+        1.0,
+        0.0,
+        0.0625,
+        1.0,
+        0.0,
+        16.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "v1 == v2",
+      "values": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 != v2",
+      "values": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 < v2",
+      "values": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 <= v2",
+      "values": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 > v2",
+      "values": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 >= v2",
+      "values": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "v1 | v2",
+      "error": "unexpected error while evaluating expression: ufunc 'bitwise_or' not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule ''safe''"
+    },
+    {
+      "expression": "v1 & v2",
+      "error": "unexpected error while evaluating expression: ufunc 'bitwise_and' not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule ''safe''"
+    },
+    {
+      "expression": "where(v1>0, v1, v2)",
+      "values": [
+        0.0,
+        2.0,
+        2.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "getmask(v1)",
+      "values": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "bool"
+    },
+    {
+      "expression": "setmask(v1, v2)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_equal(v1, v2)",
+      "values": [
+        0.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        0.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_greater(v1, v2)",
+      "values": [
+        0.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_greater_equal(v1, v2)",
+      "values": [
+        0.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_inside(v1, -1, 2)",
+      "values": [
+        -4.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0
+      ],
+      "mask": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_invalid(v1)",
+      "values": [
+        -4.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_less(v1, v2)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_less_equal(v1, v2)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_not_equal(v1, v2)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_outside(v1, -1, 2)",
+      "values": [
+        0.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        2.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "masked_where(v1, v2)",
+      "values": [
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "minimum(v1, v2)",
+      "values": [
+        0.0,
+        -1.0,
+        0.0,
+        0.25,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "maximum(v1, v2)",
+      "values": [
+        0.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        0.0,
+        4.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "abs(v1)",
+      "values": [
+        4.0,
+        1.0,
+        0.0,
+        0.25,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "mod(v1)",
+      "error": "unexpected error while evaluating expression: remainder() takes from 2 to 3 positional arguments but 1 were given"
+    },
+    {
+      "expression": "sqrt(v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        1.0,
+        1.4142135623730951,
+        2.0
+      ],
+      "mask": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "log(v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        -1.3862943611198906,
+        0.0,
+        0.6931471805599453,
+        1.3862943611198906
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "log10(v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        -0.6020599913279624,
+        0.0,
+        0.3010299956639812,
+        0.6020599913279624
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "exp(v1)",
+      "values": [
+        0.01831563888873418,
+        0.36787944117144233,
+        1.0,
+        1.2840254166877414,
+        2.718281828459045,
+        7.38905609893065,
+        54.598150033144236
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "sin(v1)",
+      "values": [
+        0.7568024953079282,
+        -0.8414709848078965,
+        0.0,
+        0.24740395925452294,
+        0.8414709848078965,
+        0.9092974268256817,
+        -0.7568024953079282
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "cos(v1)",
+      "values": [
+        -0.6536436208636119,
+        0.5403023058681398,
+        1.0,
+        0.9689124217106447,
+        0.5403023058681398,
+        -0.4161468365471424,
+        -0.6536436208636119
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "tan(v1)",
+      "values": [
+        -1.1578212823495775,
+        -1.5574077246549023,
+        0.0,
+        0.25534192122103627,
+        1.5574077246549023,
+        -2.185039863261519,
+        1.1578212823495775
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "sinh(v1)",
+      "values": [
+        -27.28991719712775,
+        -1.1752011936438014,
+        0.0,
+        0.2526123168081683,
+        1.1752011936438014,
+        3.626860407847019,
+        27.28991719712775
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "cosh(v1)",
+      "values": [
+        27.308232836016487,
+        1.5430806348152437,
+        1.0,
+        1.0314130998795732,
+        1.5430806348152437,
+        3.7621956910836314,
+        27.308232836016487
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "tanh(v1)",
+      "values": [
+        -0.999329299739067,
+        -0.7615941559557649,
+        0.0,
+        0.24491866240370913,
+        0.7615941559557649,
+        0.9640275800758169,
+        0.999329299739067
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arcsin(v1)",
+      "values": [
+        0.0,
+        -1.5707963267948966,
+        0.0,
+        0.25268025514207865,
+        1.5707963267948966,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arccos(v1)",
+      "values": [
+        0.0,
+        3.141592653589793,
+        1.5707963267948966,
+        1.318116071652818,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arctan(v1)",
+      "values": [
+        -1.3258176636680326,
+        -0.7853981633974483,
+        0.0,
+        0.24497866312686414,
+        0.7853981633974483,
+        1.1071487177940904,
+        1.3258176636680326
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arcsinh(v1)",
+      "values": [
+        -2.0947125472611012,
+        -0.881373587019543,
+        0.0,
+        0.24746646154726346,
+        0.881373587019543,
+        1.4436354751788103,
+        2.0947125472611012
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arccosh(v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.3169578969248166,
+        2.0634370688955608
+      ],
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "arctanh(v1)",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.25541281188299536,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mask": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "dtype": "float64"
+    },
+    {
+      "expression": "1",
+      "error": "expression does not return an array"
+    },
+    {
+      "expression": "pi",
+      "error": "expression does not return an array"
+    },
+    {
+      "expression": "v100",
+      "error": "unrecognized name 'v100' in expression"
+    },
+    {
+      "expression": "+v1",
+      "error": "unary operator UAdd not allowed in expressions"
+    },
+    {
+      "expression": "v1//2",
+      "error": "binary operator FloorDiv not allowed in expressions"
+    },
+    {
+      "expression": "v1^2",
+      "error": "binary operator BitXor not allowed in expressions"
+    },
+    {
+      "expression": "v1[0]",
+      "error": "Subscript not allowed in expressions"
+    },
+    {
+      "expression": "v1.mean()",
+      "error": "Attribute not allowed in expressions"
+    },
+    {
+      "expression": "v1 and v2",
+      "error": "BoolOp not allowed in expressions"
+    },
+    {
+      "expression": "v1<v2<3",
+      "error": "chained comparisons are not supported"
+    },
+    {
+      "expression": "abs(v1,v2)",
+      "error": "wrong number of arguments for function abs (got 2, expected 1)"
+    },
+    {
+      "expression": "mod(v1,v2)",
+      "error": "wrong number of arguments for function mod (got 2, expected 1)"
+    },
+    {
+      "expression": "__import__(\"os\")",
+      "error": "unrecognized name '__import__' in expression"
+    },
+    {
+      "expression": "[1]*1000",
+      "error": "List not allowed in expressions"
+    },
+    {
+      "expression": "v1; v2",
+      "error": "given string v1; v2 is not a valid expression"
+    },
+    {
+      "expression": "not v1",
+      "error": "unary operator Not not allowed in expressions"
+    },
+    {
+      "expression": "v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1+v1",
+      "values": [
+        -4000.0,
+        -1000.0,
+        0.0,
+        250.0,
+        1000.0,
+        2000.0,
+        4000.0
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "dtype": "float64"
+    }
+  ]
+}

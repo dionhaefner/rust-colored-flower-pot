@@ -1,0 +1,9 @@
+{
+  "passed": 3,
+  "checks": {
+    "skip_metadata_retains_previous": true,
+    "nested_insert_commits_before_outer_failure": true,
+    "same_length_key_mismatch_still_inserts": true
+  },
+  "mismatch_output": "Database file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p05-quirks/reference.sqlite has incompatible key names ('name',)\n"
+}

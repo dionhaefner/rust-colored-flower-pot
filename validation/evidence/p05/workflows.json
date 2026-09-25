@@ -1,0 +1,57 @@
+{
+  "passed": 13,
+  "checks": [
+    {
+      "name": "python-compute",
+      "passed": true
+    },
+    {
+      "name": "python-adapter-write",
+      "passed": true
+    },
+    {
+      "name": "python-adapter-rollback",
+      "passed": true
+    },
+    {
+      "name": "python-concurrent-lazy",
+      "passed": true
+    },
+    {
+      "name": "failed-lazy-rollback",
+      "passed": true
+    },
+    {
+      "name": "failed-lazy-recovery",
+      "passed": true
+    },
+    {
+      "name": "python-adapter-delete",
+      "passed": true
+    },
+    {
+      "name": "two-table-rollback",
+      "passed": true
+    },
+    {
+      "name": "serve-pattern-keys",
+      "passed": true
+    },
+    {
+      "name": "serve-concurrent-metadata",
+      "passed": true
+    },
+    {
+      "name": "serve-visible-/singleband/red/preview.png",
+      "passed": true
+    },
+    {
+      "name": "serve-visible-/singleband/red/12/2188/1466.png",
+      "passed": true
+    },
+    {
+      "name": "serve-visible-/singleband/red/preview.png?stretch_range=[\"p2\",\"p98\"]",
+      "passed": true
+    }
+  ]
+}

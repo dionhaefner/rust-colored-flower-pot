@@ -1,0 +1,18 @@
+WARNING: The directory '/home/dion/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Obtaining file:///home/dion/codes/rust-colored-flower-pot/.cache/reference
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: terracotta
+  Building editable for terracotta (pyproject.toml): started
+  Building editable for terracotta (pyproject.toml): finished with status 'done'
+  Created wheel for terracotta: filename=terracotta-0.10.1-0.editable-py3-none-any.whl size=6743 sha256=464dce40ecc0ebf1c95e83b84a8b78149b59028e85c61c76e501cae8970c1376
+  Stored in directory: /tmp/pip-ephem-wheel-cache-drxa2zil/wheels/bb/25/b5/ad321d2faafb2ce202c9a7d5ef3a1e6669fb0f139fe2c416e3
+Successfully built terracotta
+Installing collected packages: terracotta
+  Attempting uninstall: terracotta
+    Found existing installation: terracotta 0.10.1
+    Uninstalling terracotta-0.10.1:
+      Successfully uninstalled terracotta-0.10.1
+Successfully installed terracotta-0.10.1

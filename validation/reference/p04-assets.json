@@ -1,0 +1,885 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "records": [
+    {
+      "path": "src/assets/cmaps/accent_r_rgba.npy",
+      "sha256": "6421b6bb044562bdebe7eac80638a657c3158e5d50375a12c95e155923d4fad3",
+      "source": "terracotta/cmaps/data/accent_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/accent_rgba.npy",
+      "sha256": "06914f6a4e2ddee499afca5faf3e5ae473b1c22da8c277bf8d0e6a848da672a9",
+      "source": "terracotta/cmaps/data/accent_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/afmhot_r_rgba.npy",
+      "sha256": "8e7263b479bdad4c16bc443562726aead55335c858d19a844e8ab397271757cf",
+      "source": "terracotta/cmaps/data/afmhot_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/afmhot_rgba.npy",
+      "sha256": "d26f687dc5e9a549556a79cfdb424646a2ef1753fb75c40e30be5c8a8d23ed9d",
+      "source": "terracotta/cmaps/data/afmhot_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/autumn_r_rgba.npy",
+      "sha256": "0c2d361d7363be3caeba44984c3152929d212a7d13dae6d5581fd15c598a6ea3",
+      "source": "terracotta/cmaps/data/autumn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/autumn_rgba.npy",
+      "sha256": "5f272f2a77e80696cd6dd9862ce98d0d9711069efbff48e73ef7dee20fb15dfc",
+      "source": "terracotta/cmaps/data/autumn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/binary_r_rgba.npy",
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c",
+      "source": "terracotta/cmaps/data/binary_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/binary_rgba.npy",
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831",
+      "source": "terracotta/cmaps/data/binary_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/blues_r_rgba.npy",
+      "sha256": "73f4179cf12ce76aa35933ee57043bceede22cfae8d11d6ee6ff1b7a6374a5b5",
+      "source": "terracotta/cmaps/data/blues_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/blues_rgba.npy",
+      "sha256": "a9cfb48857700b8f43702eb84cc0476fd86cfe5e089cb876ba35d7efc7458550",
+      "source": "terracotta/cmaps/data/blues_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bone_r_rgba.npy",
+      "sha256": "2ed9d4c4af1bbafe7406689bf229bcee2cf1e3601e72a2c5e62ac3218f17f840",
+      "source": "terracotta/cmaps/data/bone_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bone_rgba.npy",
+      "sha256": "20d6621703ff2902db0239e781cf44f551dc34528b24c5691f145165acc93cbd",
+      "source": "terracotta/cmaps/data/bone_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/brbg_r_rgba.npy",
+      "sha256": "c6fc1dc61ad88c8cfd8dbb5d6fb5053da20fd5fca904280b0936bf6cb677dea2",
+      "source": "terracotta/cmaps/data/brbg_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/brbg_rgba.npy",
+      "sha256": "2a15f6cdbbf9de0217cfce7ed192be6056cd76f9da285139f4bcbc5a8934eabf",
+      "source": "terracotta/cmaps/data/brbg_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/brg_r_rgba.npy",
+      "sha256": "e977d1a0426dc77b72937855475d84b0e11a8144a680dd3473f53c70246e7b38",
+      "source": "terracotta/cmaps/data/brg_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/brg_rgba.npy",
+      "sha256": "90a6496f4ed5c13f5773ea78689cd0762c2b99c9a085a759636f7eac45469541",
+      "source": "terracotta/cmaps/data/brg_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bugn_r_rgba.npy",
+      "sha256": "fba24d4aa11608d60aeddf42ec6ec9356e178fe40314ae97b3d6a8b269fc25b4",
+      "source": "terracotta/cmaps/data/bugn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bugn_rgba.npy",
+      "sha256": "de4f476a910c44b4584b0ab93ab4487b5526d95745863fa743bf5fb96e756d69",
+      "source": "terracotta/cmaps/data/bugn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bupu_r_rgba.npy",
+      "sha256": "f791c7cc516dc996955c863b11eead4fd0a9f93b3db11ccb06e83931e8c4f70d",
+      "source": "terracotta/cmaps/data/bupu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bupu_rgba.npy",
+      "sha256": "07a2917dc9f4d73f50790777d71437c879ea6d1ec35f261307f7e17bfbe92d4a",
+      "source": "terracotta/cmaps/data/bupu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bwr_r_rgba.npy",
+      "sha256": "f456f8d416496bda15bbbc839b93139fa90840819de1ad156ebc693ecc9559f7",
+      "source": "terracotta/cmaps/data/bwr_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/bwr_rgba.npy",
+      "sha256": "0c82e71994ef53e40d75c539a2c4c4820a9c3cbc8899aaed52d01a8fc82ee6a3",
+      "source": "terracotta/cmaps/data/bwr_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cividis_r_rgba.npy",
+      "sha256": "5fb83e2fa0561bfcd87edda1347203bb8b0fad76cb517ee55a0b0c69f27cf241",
+      "source": "terracotta/cmaps/data/cividis_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cividis_rgba.npy",
+      "sha256": "ed835f7b091a02bf2d80167a3c97119392727a1a0b02e1ab3e58acebcad67c4d",
+      "source": "terracotta/cmaps/data/cividis_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cloud_rgba.npy",
+      "sha256": "04c219e814d1667f865c80fd69e537146e707af0ab8934f0cc3d399669bcfbe0",
+      "source": "terracotta/cmaps/data/cloud_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cmrmap_r_rgba.npy",
+      "sha256": "a4e57acd5eebc660396045f4e8e751326e31634a495415e88800c62514f8f1b5",
+      "source": "terracotta/cmaps/data/cmrmap_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cmrmap_rgba.npy",
+      "sha256": "02c5862c7bd74bea7fbf4dec015657aae76779e0fdcb074488bf99dd2f143b4a",
+      "source": "terracotta/cmaps/data/cmrmap_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cool_r_rgba.npy",
+      "sha256": "5c610b62f38125f531deff49621db08e1275352c22904a7c5326dd38334b4333",
+      "source": "terracotta/cmaps/data/cool_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cool_rgba.npy",
+      "sha256": "1ab9523aeedcbfc380b20a4712a5bfe33e9a34f91f85170c9accc563739c64c6",
+      "source": "terracotta/cmaps/data/cool_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/coolwarm_r_rgba.npy",
+      "sha256": "1778ec96a2b191621048b7e2f434cec59c789c29650badf7ea7e682785454e9e",
+      "source": "terracotta/cmaps/data/coolwarm_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/coolwarm_rgba.npy",
+      "sha256": "ff758756259b0f11a320990e1c24c3b967569c19297356d8eadb4d7d73d34e6b",
+      "source": "terracotta/cmaps/data/coolwarm_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/copper_r_rgba.npy",
+      "sha256": "5b6cec25df7549e20a6a1c7513ead75538d4acf93aefced9b70b799f5ffef5fb",
+      "source": "terracotta/cmaps/data/copper_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/copper_rgba.npy",
+      "sha256": "53f0f88596a8859bf2034574c989305b3cec040e6fab5d1217b4471993fa7be7",
+      "source": "terracotta/cmaps/data/copper_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cubehelix_r_rgba.npy",
+      "sha256": "ef0c2ab586409f48da1bb80511f09efb6a68fe75ecf4b07b74584ba2de7452fe",
+      "source": "terracotta/cmaps/data/cubehelix_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/cubehelix_rgba.npy",
+      "sha256": "ced4de28f83c9925c7b43d2e2b613b0999d55b801b3891a2cf641506d91b5da7",
+      "source": "terracotta/cmaps/data/cubehelix_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/dark2_r_rgba.npy",
+      "sha256": "d17fcd6d7453352130c08e13eb80a667693f278c3beddf22606a980d1eaa5dd2",
+      "source": "terracotta/cmaps/data/dark2_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/dark2_rgba.npy",
+      "sha256": "58402874fac7936c3a924cdb825951d481c906758cd819b4970bba20a61673ee",
+      "source": "terracotta/cmaps/data/dark2_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/flag_r_rgba.npy",
+      "sha256": "50c5641cb65eeb0d87479e6df16f4d49b7e5982313aa4a625548a6320dca4a6f",
+      "source": "terracotta/cmaps/data/flag_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/flag_rgba.npy",
+      "sha256": "596625894a0a1477cbf1f26b1f54685c7376857214116a3504d970931fd6f9ad",
+      "source": "terracotta/cmaps/data/flag_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_earth_r_rgba.npy",
+      "sha256": "d8f735bc29721957d51c9513559049693a02048c663b9c626d77630fa6e563a9",
+      "source": "terracotta/cmaps/data/gist_earth_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_earth_rgba.npy",
+      "sha256": "01e29af5967be39a17bd30839d331ab28de045d0c53a46bc78dbb14443091e67",
+      "source": "terracotta/cmaps/data/gist_earth_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_gray_r_rgba.npy",
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831",
+      "source": "terracotta/cmaps/data/gist_gray_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_gray_rgba.npy",
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c",
+      "source": "terracotta/cmaps/data/gist_gray_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_grey_rgba.npy",
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c",
+      "source": "terracotta/cmaps/data/gist_grey_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_heat_r_rgba.npy",
+      "sha256": "91f1dc7e32389f063b5261820573ce472d02be62ec35362df40ac9405c570d0d",
+      "source": "terracotta/cmaps/data/gist_heat_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_heat_rgba.npy",
+      "sha256": "c502f77137fe0ce48759873b52709755265dfe88210102ba5d0447046842df71",
+      "source": "terracotta/cmaps/data/gist_heat_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_ncar_r_rgba.npy",
+      "sha256": "418b9c9395026c5af71bd1a5eef1a1788e0273ab2f2a335d9c9812e3956e0932",
+      "source": "terracotta/cmaps/data/gist_ncar_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_ncar_rgba.npy",
+      "sha256": "d08ee9042d571e0e94fcf00631706bae12425c9540502a2d9362090a183dd52c",
+      "source": "terracotta/cmaps/data/gist_ncar_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_rainbow_r_rgba.npy",
+      "sha256": "1b722f8474a9310f4d32f5d39d13ea0c361bdc400599e47133cec7d6b6737070",
+      "source": "terracotta/cmaps/data/gist_rainbow_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_rainbow_rgba.npy",
+      "sha256": "01c02a661c0a7bc957b23e0c6cf91a81fa5b61a13373826cc8a2cc8047bc975a",
+      "source": "terracotta/cmaps/data/gist_rainbow_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_stern_r_rgba.npy",
+      "sha256": "60793f1724630ea458a53385b86e18a73e4991fe733b833fa49cccda19f477af",
+      "source": "terracotta/cmaps/data/gist_stern_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_stern_rgba.npy",
+      "sha256": "60a67d812d9890f065987d74cb4298f5af55757657cf028040608147eff2a62d",
+      "source": "terracotta/cmaps/data/gist_stern_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yarg_r_rgba.npy",
+      "sha256": "17402a8e9d3f273b66c2535a7fc7191a541dc271166317dfd369ffb179804356",
+      "source": "terracotta/cmaps/data/gist_yarg_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yarg_rgba.npy",
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831",
+      "source": "terracotta/cmaps/data/gist_yarg_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yerg_rgba.npy",
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831",
+      "source": "terracotta/cmaps/data/gist_yerg_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnbu_r_rgba.npy",
+      "sha256": "39c7618bf0ad7b6f20301ea4563092b95f1da6ecaafef65f53f61d78d7e45ef0",
+      "source": "terracotta/cmaps/data/gnbu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnbu_rgba.npy",
+      "sha256": "385b7dbff81d155d1ba2bce81aa8bb3d34b9543aebb38cf5538a0eb308a96ecd",
+      "source": "terracotta/cmaps/data/gnbu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot2_r_rgba.npy",
+      "sha256": "c038bd62d83bd6001e183c44f49746e9dbffc79eaaa6e3758319941a0d50cdf9",
+      "source": "terracotta/cmaps/data/gnuplot2_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot2_rgba.npy",
+      "sha256": "77fd0eb22c523d65ac65f22e773ee484505621599e21a37da8984d8e05d1d7e1",
+      "source": "terracotta/cmaps/data/gnuplot2_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot_r_rgba.npy",
+      "sha256": "e4c16d41862eaf793cba32a050bf0cc7c2716614447feed0e3430f1e4519ff2b",
+      "source": "terracotta/cmaps/data/gnuplot_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot_rgba.npy",
+      "sha256": "477267f48117dcc262a670aa6151dbe3b078d379910bf917b37cd17ca6343c0f",
+      "source": "terracotta/cmaps/data/gnuplot_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gray_r_rgba.npy",
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831",
+      "source": "terracotta/cmaps/data/gray_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/gray_rgba.npy",
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c",
+      "source": "terracotta/cmaps/data/gray_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/grays_rgba.npy",
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3",
+      "source": "terracotta/cmaps/data/grays_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/greens_r_rgba.npy",
+      "sha256": "64327b7aec16421e1da625d36a2e720cac3049a24e45545e57d1a4246572e672",
+      "source": "terracotta/cmaps/data/greens_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/greens_rgba.npy",
+      "sha256": "1036174a58c0a980c3c768da645c90c147af95555f8c24e9e59479c07ecd0416",
+      "source": "terracotta/cmaps/data/greens_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/grey_rgba.npy",
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c",
+      "source": "terracotta/cmaps/data/grey_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/greys_r_rgba.npy",
+      "sha256": "08115c8cef78b465d8a4b4a2ffd1968fe8f9f31101e57a1bba3484893a322f24",
+      "source": "terracotta/cmaps/data/greys_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/greys_rgba.npy",
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3",
+      "source": "terracotta/cmaps/data/greys_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/hot_r_rgba.npy",
+      "sha256": "614e8edaa921b59ab0491120ee735f7c212d79d863874af2e130f455d8e4c101",
+      "source": "terracotta/cmaps/data/hot_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/hot_rgba.npy",
+      "sha256": "6a1558784880da3b040a7e2fb1b5bbb365e04cf488117c65d148ebdc0eaf687b",
+      "source": "terracotta/cmaps/data/hot_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/hsv_r_rgba.npy",
+      "sha256": "5d86faafefdf8de908cc72406f5f1e4f60df2e410531a96dc0b00f943f4da91d",
+      "source": "terracotta/cmaps/data/hsv_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/hsv_rgba.npy",
+      "sha256": "6884024eb60888acffd2ce6207c53514b9bf1f67603e926b253116bd2b4cf512",
+      "source": "terracotta/cmaps/data/hsv_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/inferno_r_rgba.npy",
+      "sha256": "03fe5cf762e06ffc90776641d60f5e71beffcf1bc60f826f8ce07d97eb980e19",
+      "source": "terracotta/cmaps/data/inferno_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/inferno_rgba.npy",
+      "sha256": "f7361c117574bb0bfebf4c504f30eb669099d1bb5a32149111f612abfea4aa76",
+      "source": "terracotta/cmaps/data/inferno_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/jet_r_rgba.npy",
+      "sha256": "0c89d4594682a976c04ef16a9e645024e77c1e52b03f60bb51b98b39f985a026",
+      "source": "terracotta/cmaps/data/jet_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/jet_rgba.npy",
+      "sha256": "549b348beb0517d3a11c82ab52da1de39302a8347587123e009d06c665abd772",
+      "source": "terracotta/cmaps/data/jet_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/magma_r_rgba.npy",
+      "sha256": "075734fb1319aaf7a1adea42d793be392c66533aa808b4fb7240951c4db1b115",
+      "source": "terracotta/cmaps/data/magma_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/magma_rgba.npy",
+      "sha256": "392eca8523d8a327bbb1c21536c56a9bc3548cc4af0d71e6b5ed1415b1f1c7b3",
+      "source": "terracotta/cmaps/data/magma_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/nipy_spectral_r_rgba.npy",
+      "sha256": "8b056b4ea142504b82043dba8b2da41a3cfbb3516a87ff218bc96c2df15a1f54",
+      "source": "terracotta/cmaps/data/nipy_spectral_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/nipy_spectral_rgba.npy",
+      "sha256": "dd13eecd10f05fcbd72d9f5d92022878d214ae146c1ecf641890a7ffb5acabf7",
+      "source": "terracotta/cmaps/data/nipy_spectral_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ocean_r_rgba.npy",
+      "sha256": "fc576840f79611b77d4e2283979b63d4a26072be3f2a9cb14fd0f9b01ca4ec52",
+      "source": "terracotta/cmaps/data/ocean_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ocean_rgba.npy",
+      "sha256": "366e7500f35b8c6fc940813b9465beb6b529d9e304f3fd27759ea3f1c0e63234",
+      "source": "terracotta/cmaps/data/ocean_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/oranges_r_rgba.npy",
+      "sha256": "cbcfdebb191b0344a55d6b3464a4061ef7ba04d3e9b23bc343300c49cd66b32f",
+      "source": "terracotta/cmaps/data/oranges_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/oranges_rgba.npy",
+      "sha256": "7749aab6717e693d853016f8f691ce843e1c7aaf42d594eb329c90c9410e125a",
+      "source": "terracotta/cmaps/data/oranges_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/orrd_r_rgba.npy",
+      "sha256": "685d7e5313e24bcd08ca214dee66f0e909476ae5424135339c9cbfdf4bc168d0",
+      "source": "terracotta/cmaps/data/orrd_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/orrd_rgba.npy",
+      "sha256": "6748672dd9cd58f65d4f0ce3c3a6dcade59f3067dece50d703ef12e8d6f859b0",
+      "source": "terracotta/cmaps/data/orrd_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/paired_r_rgba.npy",
+      "sha256": "671deab05f35442037fc68a993489a40f41066e0ab88908786cafc188205a53b",
+      "source": "terracotta/cmaps/data/paired_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/paired_rgba.npy",
+      "sha256": "149d59a60b2b5685bdc2dd023668e4ec095c965de7406f90aa09003caf2b1798",
+      "source": "terracotta/cmaps/data/paired_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pastel1_r_rgba.npy",
+      "sha256": "c2fa953842922c0155d72d444fb84ccdbcd0c16e38e2e2f4da02a71516f61e12",
+      "source": "terracotta/cmaps/data/pastel1_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pastel1_rgba.npy",
+      "sha256": "b5c41d8f59c617c0b52f6756e7c1ff81edeca1124240295ea7e94cdcfdfe6732",
+      "source": "terracotta/cmaps/data/pastel1_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pastel2_r_rgba.npy",
+      "sha256": "d2b5de93a8f9c70c308db3ddeb89870525feed2ee353d1ea51eef17b20388808",
+      "source": "terracotta/cmaps/data/pastel2_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pastel2_rgba.npy",
+      "sha256": "8f6d99c2803aacc6bf1b273b965320f1358ebe7ed99d5cadf9eb773fb584dde3",
+      "source": "terracotta/cmaps/data/pastel2_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pink_r_rgba.npy",
+      "sha256": "a730d4ad098e99c0826a3e1aee1dbd128148d23e402538d908df703e6f6e3c92",
+      "source": "terracotta/cmaps/data/pink_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pink_rgba.npy",
+      "sha256": "0d4e261c97b5e8cf390744f656e7871f4de34a78c142136f6abfa9789aba19d2",
+      "source": "terracotta/cmaps/data/pink_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/piyg_r_rgba.npy",
+      "sha256": "d78edad614d57de476199836da46c95d8064c23c8d664af241f4772573483b79",
+      "source": "terracotta/cmaps/data/piyg_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/piyg_rgba.npy",
+      "sha256": "0f7c777d62df8196b3f6b6d442150cb1e9add2516d1aab88d6f63bd00fc0b630",
+      "source": "terracotta/cmaps/data/piyg_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/plasma_r_rgba.npy",
+      "sha256": "e46e0ddf097623620256c343d736eff9d921558ca19ac0af9c2e47b2ceba3358",
+      "source": "terracotta/cmaps/data/plasma_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/plasma_rgba.npy",
+      "sha256": "d7aa8efe6ad43d7edbf59e2a05278602edeae4f08e4a2ed855bd81f652737329",
+      "source": "terracotta/cmaps/data/plasma_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/prgn_r_rgba.npy",
+      "sha256": "33585ae18408f28ad5d71f92d10c7ba96d1ab2202679f9ee679d24b8c3472eda",
+      "source": "terracotta/cmaps/data/prgn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/prgn_rgba.npy",
+      "sha256": "f5ed0d2a1a8c7306f00a4ebf7ee16dc8a8fba8985f528fbe06176453b3d42fac",
+      "source": "terracotta/cmaps/data/prgn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/prism_r_rgba.npy",
+      "sha256": "898303d215a8394b2975a0df92d8bfbd8b27cef0fc2a8a51a5a14898e0fd614a",
+      "source": "terracotta/cmaps/data/prism_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/prism_rgba.npy",
+      "sha256": "15b2d118f76f746d612331d0c91c393cf96600ce70479bfc26f00d76869b52ab",
+      "source": "terracotta/cmaps/data/prism_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pubu_r_rgba.npy",
+      "sha256": "8b3acc96747b2acf25fc233cd850600c11c0e8c6dd9f2d6bf6fff6b6ad8f134f",
+      "source": "terracotta/cmaps/data/pubu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pubu_rgba.npy",
+      "sha256": "8da88cc38d9d97c9e88fcdda1fca5d61ee58f4ae1fc46762f848445137cc0f7e",
+      "source": "terracotta/cmaps/data/pubu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pubugn_r_rgba.npy",
+      "sha256": "4a1fa4616eeb8e547bccfba6d7d1392e493eba72ec812c6c24d0ba49b400eaf5",
+      "source": "terracotta/cmaps/data/pubugn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/pubugn_rgba.npy",
+      "sha256": "389f59fce4bcf786de005825ea6e2ff2962bc53565547fbb9fdde44cab5989f6",
+      "source": "terracotta/cmaps/data/pubugn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/puor_r_rgba.npy",
+      "sha256": "5b2ef06208bbf67adc75dab8e0c87c9351178a90566efae7fb95d71be3cf3de3",
+      "source": "terracotta/cmaps/data/puor_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/puor_rgba.npy",
+      "sha256": "ff9bad044c1ac67498da5f8dbff6cece129ae04e4401d02eabf35638318f9db0",
+      "source": "terracotta/cmaps/data/puor_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/purd_r_rgba.npy",
+      "sha256": "05f1d75f381b2d7bb50d9520356e9f11a0f72f2462052dc3784b3da56d9d0fc5",
+      "source": "terracotta/cmaps/data/purd_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/purd_rgba.npy",
+      "sha256": "511ee3d88e58cb0512527f0c0703c1cdaed2c8851d87994498e8f2567f6bf5f8",
+      "source": "terracotta/cmaps/data/purd_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/purples_r_rgba.npy",
+      "sha256": "a8c0d7526f09a521d446c8c7a51ca29a53cea8487a598d6652f701a6697b783f",
+      "source": "terracotta/cmaps/data/purples_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/purples_rgba.npy",
+      "sha256": "69364060a4edc11f9a50a15bf668b2bf21fdaee2c4571c03b1eaa386d944d000",
+      "source": "terracotta/cmaps/data/purples_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rainbow_r_rgba.npy",
+      "sha256": "ec2803589e874a85c558a649b1bf0ff2e0d61c74331d0f68d77a7e70dffd01da",
+      "source": "terracotta/cmaps/data/rainbow_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rainbow_rgba.npy",
+      "sha256": "1a943e8981495ede6c60f9cbd4e0c562f1edb274912a2bd2477cfd4f97ad5293",
+      "source": "terracotta/cmaps/data/rainbow_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdbu_r_rgba.npy",
+      "sha256": "b99a4644291b5039cfee052108a1f61810ddaaff52fb84a66e2df3e32dce0b42",
+      "source": "terracotta/cmaps/data/rdbu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdbu_rgba.npy",
+      "sha256": "8349ddbf2cf27a3228603f068065c5752f039d809f4d224fb07e435c54540a2e",
+      "source": "terracotta/cmaps/data/rdbu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdgy_r_rgba.npy",
+      "sha256": "cbd9b6603e40740b293eaecf9f9b6c0ca347494acf43b00e3137a87113f585a2",
+      "source": "terracotta/cmaps/data/rdgy_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdgy_rgba.npy",
+      "sha256": "cab22275abc151379a41b51a2a35cd6d05ccfe4f5615c942b685762a57eb41d6",
+      "source": "terracotta/cmaps/data/rdgy_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdpu_r_rgba.npy",
+      "sha256": "ef29db47a2686d398e3ad9535494ae40b3985380af1d2de2d8ee8faabfdc35c9",
+      "source": "terracotta/cmaps/data/rdpu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdpu_rgba.npy",
+      "sha256": "960339dbbf92e126ebda2712dcdfb84beaf937ba19104d61fc83c840dc2bbc11",
+      "source": "terracotta/cmaps/data/rdpu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdylbu_r_rgba.npy",
+      "sha256": "071c0c8d52f586a0d0e516c419b9ef31af0032bf7f8f875fc374b568cab5e733",
+      "source": "terracotta/cmaps/data/rdylbu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdylbu_rgba.npy",
+      "sha256": "d6fbf6b62d8aa266a12c7d9891b23ab0d7271cc42e842df24a769518a6fd89d9",
+      "source": "terracotta/cmaps/data/rdylbu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdylgn_r_rgba.npy",
+      "sha256": "22e2900c498971f1a7be82b2e97b60dff448061d65f98e630b895aa481d7615c",
+      "source": "terracotta/cmaps/data/rdylgn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/rdylgn_rgba.npy",
+      "sha256": "d952e4fc7026f46f0c1a254fbc487e2c1d1e4d92990ae1999fa63d143d6473f5",
+      "source": "terracotta/cmaps/data/rdylgn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/reds_r_rgba.npy",
+      "sha256": "beb8791be8c2542eba59eb7ed23daf7634c8333eeec9440967602012e31c4338",
+      "source": "terracotta/cmaps/data/reds_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/reds_rgba.npy",
+      "sha256": "d20baab32d1b50fc6ec38c5c7b6127e874190c1c1eb5d17b92a944942441b9ff",
+      "source": "terracotta/cmaps/data/reds_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/seismic_r_rgba.npy",
+      "sha256": "3cd566b3cf785ebbd9abbbb60bd842fe4bc571a58a0a7c67bc0564df6ec03fda",
+      "source": "terracotta/cmaps/data/seismic_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/seismic_rgba.npy",
+      "sha256": "a5dbd275203f9cc9d2374270bebc9acee07ec81d6921331558898a6a9cb04b79",
+      "source": "terracotta/cmaps/data/seismic_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set1_r_rgba.npy",
+      "sha256": "3b95643ba8fd9e72f7489efc74792eb8901ea3d8cd9b90af7c3a4cbe92e35479",
+      "source": "terracotta/cmaps/data/set1_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set1_rgba.npy",
+      "sha256": "103011fc5bea7d2b213a7129e22cc5587045ee77f186ed8fc6d7571cb883e684",
+      "source": "terracotta/cmaps/data/set1_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set2_r_rgba.npy",
+      "sha256": "b29b94ddd8c93f3fd816cd151ce6e3417c3c57a5b4c8909963ea943ee202fe93",
+      "source": "terracotta/cmaps/data/set2_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set2_rgba.npy",
+      "sha256": "c5c2a43e801a61f893a7ced02a89ec87ee28b0b262bd99e5a6c63ce2adcbaeb6",
+      "source": "terracotta/cmaps/data/set2_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set3_r_rgba.npy",
+      "sha256": "3249c7b5be1f020eb1b4e794f70ac689463c5c53ffad0026e2b11805fc8a3944",
+      "source": "terracotta/cmaps/data/set3_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/set3_rgba.npy",
+      "sha256": "de73a9bddfc8beeaa495849f22788e8a09594db852520ca9590df4b8c371ed4d",
+      "source": "terracotta/cmaps/data/set3_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/spectral_r_rgba.npy",
+      "sha256": "96b7d8e6455b147560574822691657c7f44774937ee36c66cfcfeaed2bf42406",
+      "source": "terracotta/cmaps/data/spectral_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/spectral_rgba.npy",
+      "sha256": "7e093c36e90bae695d7f757470f7f5027b7a2da773b0bbff5ba50424dc660364",
+      "source": "terracotta/cmaps/data/spectral_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/spring_r_rgba.npy",
+      "sha256": "ef24a7d7f98311d9fdfb2ae8988f400bca80b663eb0ff100709337a49cd95cb0",
+      "source": "terracotta/cmaps/data/spring_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/spring_rgba.npy",
+      "sha256": "6f993f49b91c78b0a9e7e889c274728ae9022b8a32ce2c73d7a76a4ac764811c",
+      "source": "terracotta/cmaps/data/spring_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/summer_r_rgba.npy",
+      "sha256": "015cc45bc3447b077b009ae22058428c640a745a1fe7b709d42b64ad2a5967e1",
+      "source": "terracotta/cmaps/data/summer_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/summer_rgba.npy",
+      "sha256": "3fadd52bec0c831ec765178b3a7566ba1b5ce5e3df845aa1632cba65d2893a1c",
+      "source": "terracotta/cmaps/data/summer_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab10_r_rgba.npy",
+      "sha256": "6e35fb6e562a363edd2be34f1d1948d35704fc357afefdba961dadbe91f1a5dc",
+      "source": "terracotta/cmaps/data/tab10_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab10_rgba.npy",
+      "sha256": "be4cf1f9bb5bca92ee704dcc90f248290225d91727e3969b52aa434839e7ec7c",
+      "source": "terracotta/cmaps/data/tab10_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20_r_rgba.npy",
+      "sha256": "7830584d3f779ee105c3180a0df391643a10069d0807da72b9124eff9ca75e99",
+      "source": "terracotta/cmaps/data/tab20_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20_rgba.npy",
+      "sha256": "a95eead4a6674941d46dd22e111006e9858fc573c1264c196b5a45ec6910a877",
+      "source": "terracotta/cmaps/data/tab20_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20b_r_rgba.npy",
+      "sha256": "fa700c70c99ecff68c74497000ea15956e3f1be6569e2576997711cb2e58a51e",
+      "source": "terracotta/cmaps/data/tab20b_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20b_rgba.npy",
+      "sha256": "65ffdb238dbf988b530639943818a9d10734b072a49ff59cd8fa3d4daef498e4",
+      "source": "terracotta/cmaps/data/tab20b_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20c_r_rgba.npy",
+      "sha256": "c35f669fcd705952057fe9e49c2cf045c51037e17e19dab9edbe28aa53acb83d",
+      "source": "terracotta/cmaps/data/tab20c_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/tab20c_rgba.npy",
+      "sha256": "ed6dc089babb51a625980f5f20732a99af8779c4cf7b4ced3e7c1601a04d820c",
+      "source": "terracotta/cmaps/data/tab20c_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/terrain_r_rgba.npy",
+      "sha256": "fd488dae084cca24eb28abfbd5d9da2eeb7c788d2a1373710ddcf98ce42c283f",
+      "source": "terracotta/cmaps/data/terrain_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/terrain_rgba.npy",
+      "sha256": "dab9f4ae0b2032839bdb2eaa6d1cc0f1a29abe96b7c29839e7fba42c9fbd1a74",
+      "source": "terracotta/cmaps/data/terrain_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/turbo_r_rgba.npy",
+      "sha256": "e3a29229db7491f7a1b39de1903443a87dc4c64a9563a6c07a6af54fe3a97522",
+      "source": "terracotta/cmaps/data/turbo_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/turbo_rgba.npy",
+      "sha256": "10ca669b1b6d01a03c662282e66711cb9bff39d73241ab4bc03f06d507ac6c7b",
+      "source": "terracotta/cmaps/data/turbo_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_r_rgba.npy",
+      "sha256": "f4be99d0c2267d4eef887de8d89bf847de6821b2207ba67910cff0cf21a1028f",
+      "source": "terracotta/cmaps/data/twilight_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_rgba.npy",
+      "sha256": "66ba6321acca30591f38add794892d310647bfb459b7fe1d9e51146325ea4fe3",
+      "source": "terracotta/cmaps/data/twilight_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_shifted_r_rgba.npy",
+      "sha256": "c272fc410ffba9e677bffe4824cea5c6d04c6348cba486066eaaa7f3924e2051",
+      "source": "terracotta/cmaps/data/twilight_shifted_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_shifted_rgba.npy",
+      "sha256": "14b3c2fe879ec003abca2db579811196ff05a28a252d6d0622a42c25c63c8cf6",
+      "source": "terracotta/cmaps/data/twilight_shifted_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/viridis_r_rgba.npy",
+      "sha256": "9a8c172d30533a18bdaf29f8075e7146880620137c7f235c3eaca34d488e771f",
+      "source": "terracotta/cmaps/data/viridis_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/viridis_rgba.npy",
+      "sha256": "a0a6f2a4af4ab3d8cd428f33613f16ba9f22e3e85dd9dcdbd984d9dccbe8e22f",
+      "source": "terracotta/cmaps/data/viridis_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/winter_r_rgba.npy",
+      "sha256": "f950654c439dd5ad74fce197c31e4360d9a579c95e19d1051377a0bd455235a7",
+      "source": "terracotta/cmaps/data/winter_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/winter_rgba.npy",
+      "sha256": "d377b163cdb428ca5702ac485c26fc431f754f87c8d828df89088c913a0f6bd3",
+      "source": "terracotta/cmaps/data/winter_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/wistia_r_rgba.npy",
+      "sha256": "265f505b373299b05ad0c401729ab473c26084973d952b1d17b19e2cb2d7bf1c",
+      "source": "terracotta/cmaps/data/wistia_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/wistia_rgba.npy",
+      "sha256": "4f3cedcde4e9fce337f3a5510655c11ff76deb36839a64bcc051ab7d50371fe5",
+      "source": "terracotta/cmaps/data/wistia_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylgn_r_rgba.npy",
+      "sha256": "d8838d6a0c910a67153e426d64fa23b8d32085b5423ff0be1b494505a1b6c2bd",
+      "source": "terracotta/cmaps/data/ylgn_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylgn_rgba.npy",
+      "sha256": "fb4811c882691da17bb61720036244bfd34492f272a5856d1104e6194b6f56c2",
+      "source": "terracotta/cmaps/data/ylgn_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylgnbu_r_rgba.npy",
+      "sha256": "3f455a1c6d1e3a41ce4f5840005aa94490cd9cdb2a4b2f27424589deeb02b630",
+      "source": "terracotta/cmaps/data/ylgnbu_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylgnbu_rgba.npy",
+      "sha256": "ee32d84adc9899514ed1722be71ea37dccfd3f9572a0cf23639d5df263b78b1b",
+      "source": "terracotta/cmaps/data/ylgnbu_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylorbr_r_rgba.npy",
+      "sha256": "2c2547d4b63e147965c1f372d51ced581d1d03b2189967fefbc5ae6237bc5aa7",
+      "source": "terracotta/cmaps/data/ylorbr_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylorbr_rgba.npy",
+      "sha256": "e77e21363def49cdb85d27ac57ff87d7992a11b7df021457902c457b3d3064ff",
+      "source": "terracotta/cmaps/data/ylorbr_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylorrd_r_rgba.npy",
+      "sha256": "db94e01678ddaa09e01ca718ec4bd886c1c44412cc52810dd029068c3ffcb9d9",
+      "source": "terracotta/cmaps/data/ylorrd_r_rgba.npy"
+    },
+    {
+      "path": "src/assets/cmaps/ylorrd_rgba.npy",
+      "sha256": "38e696e9300af5aa6495fa992a2e0c6578c0eada683556c4ea44d9b147294cbd",
+      "source": "terracotta/cmaps/data/ylorrd_rgba.npy"
+    },
+    {
+      "path": "src/assets/static/favicon.ico",
+      "sha256": "48367d4b9476a355027b9706d77e6d489a118b78a0c057f0f4e0aae03228d3f6",
+      "source": "terracotta/server/static/favicon.ico"
+    },
+    {
+      "path": "src/assets/static/redoc.standalone.js",
+      "sha256": "e1bc95ea886b6aa8c28d5a6c3e82bac11b9992ceb3194ab8723f3ed17f3d00fb",
+      "source": "terracotta/server/static/redoc.standalone.js"
+    },
+    {
+      "path": "src/assets/static/redoc.standalone.js.LICENSE.txt",
+      "sha256": "e95b12784bb4b5b349f39825e1ba8e3c0c661efafa7917818688605e6ede7709",
+      "source": "terracotta/server/static/redoc.standalone.js.LICENSE.txt"
+    },
+    {
+      "path": "src/assets/swagger.json",
+      "sha256": "5d09aca58cf87aaa1e5e5d4af9e846a04495ce7adf1e1aedc445f93463e8c099",
+      "source_route": "/swagger.json"
+    },
+    {
+      "path": "src/assets/apidoc.html",
+      "sha256": "d1acab68c3274c94116928c3a7409e9c5ab1cb1f70a08c0197f888b02c6d1161",
+      "source_route": "/apidoc"
+    }
+  ]
+}

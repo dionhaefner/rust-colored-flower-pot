@@ -1,0 +1,351 @@
+[
+  {
+    "id": "lagoon-red-preview",
+    "image": "images/lagoon-red-preview.png",
+    "url": "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-red",
+    "location": "Venice lagoon; western satellite footprint edge",
+    "kind": "preview",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-red-tile-0",
+    "image": "images/lagoon-red-tile-0.png",
+    "url": "/singleband/lagoon/red/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-red",
+    "location": "Venice lagoon; western satellite footprint edge",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-red-tile-1",
+    "image": "images/lagoon-red-tile-1.png",
+    "url": "/singleband/lagoon/red/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-red",
+    "location": "Venice lagoon; western satellite footprint edge",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-green-preview",
+    "image": "images/lagoon-green-preview.png",
+    "url": "/singleband/lagoon/green/preview.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-green",
+    "location": "Venice lagoon",
+    "kind": "preview",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-green-tile-0",
+    "image": "images/lagoon-green-tile-0.png",
+    "url": "/singleband/lagoon/green/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-green",
+    "location": "Venice lagoon",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-green-tile-1",
+    "image": "images/lagoon-green-tile-1.png",
+    "url": "/singleband/lagoon/green/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-green",
+    "location": "Venice lagoon",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-blue-preview",
+    "image": "images/lagoon-blue-preview.png",
+    "url": "/singleband/lagoon/blue/preview.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-blue",
+    "location": "Venice lagoon",
+    "kind": "preview",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-blue-tile-0",
+    "image": "images/lagoon-blue-tile-0.png",
+    "url": "/singleband/lagoon/blue/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-blue",
+    "location": "Venice lagoon",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-blue-tile-1",
+    "image": "images/lagoon-blue-tile-1.png",
+    "url": "/singleband/lagoon/blue/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-blue",
+    "location": "Venice lagoon",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-nir-preview",
+    "image": "images/lagoon-nir-preview.png",
+    "url": "/singleband/lagoon/nir/preview.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-nir",
+    "location": "Venice lagoon",
+    "kind": "preview",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-nir-tile-0",
+    "image": "images/lagoon-nir-tile-0.png",
+    "url": "/singleband/lagoon/nir/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-nir",
+    "location": "Venice lagoon",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-nir-tile-1",
+    "image": "images/lagoon-nir-tile-1.png",
+    "url": "/singleband/lagoon/nir/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-nir",
+    "location": "Venice lagoon",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "dolomites-preview",
+    "image": "images/dolomites-preview.png",
+    "url": "/singleband/dolomites/elevation/preview.png?colormap=viridis",
+    "subset": "dolomites",
+    "location": "Dolomites near Cortina d'Ampezzo",
+    "kind": "preview",
+    "settings": {
+      "colormap": "viridis"
+    }
+  },
+  {
+    "id": "dolomites-tile-0",
+    "image": "images/dolomites-tile-0.png",
+    "url": "/singleband/dolomites/elevation/12/2187/1448.png?colormap=viridis",
+    "subset": "dolomites",
+    "location": "Dolomites near Cortina d'Ampezzo",
+    "xyz": [
+      2187,
+      1448,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "colormap": "viridis"
+    }
+  },
+  {
+    "id": "dolomites-tile-1",
+    "image": "images/dolomites-tile-1.png",
+    "url": "/singleband/dolomites/elevation/12/2188/1448.png?colormap=viridis",
+    "subset": "dolomites",
+    "location": "Dolomites near Cortina d'Ampezzo",
+    "xyz": [
+      2188,
+      1448,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "colormap": "viridis"
+    }
+  },
+  {
+    "id": "landcover-preview",
+    "image": "images/landcover-preview.png",
+    "url": "/singleband/lagoon/classes/preview.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+    "subset": "landcover",
+    "location": "Venice lagoon",
+    "kind": "preview",
+    "settings": {
+      "colormap": "explicit",
+      "explicit_color_map": "{\"10\": \"006400\", \"20\": \"ffbb22\", \"30\": \"ffff4c\", \"40\": \"f096ff\", \"50\": \"fa0000\", \"60\": \"b4b4b4\", \"70\": \"f0f0f0\", \"80\": \"0064c8\", \"90\": \"0096a0\", \"95\": \"00cf75\", \"100\": \"fae6a0\"}"
+    }
+  },
+  {
+    "id": "landcover-tile-0",
+    "image": "images/landcover-tile-0.png",
+    "url": "/singleband/lagoon/classes/12/2188/1466.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+    "subset": "landcover",
+    "location": "Venice lagoon",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "colormap": "explicit",
+      "explicit_color_map": "{\"10\": \"006400\", \"20\": \"ffbb22\", \"30\": \"ffff4c\", \"40\": \"f096ff\", \"50\": \"fa0000\", \"60\": \"b4b4b4\", \"70\": \"f0f0f0\", \"80\": \"0064c8\", \"90\": \"0096a0\", \"95\": \"00cf75\", \"100\": \"fae6a0\"}"
+    }
+  },
+  {
+    "id": "landcover-tile-1",
+    "image": "images/landcover-tile-1.png",
+    "url": "/singleband/lagoon/classes/12/2189/1466.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+    "subset": "landcover",
+    "location": "Venice lagoon",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "colormap": "explicit",
+      "explicit_color_map": "{\"10\": \"006400\", \"20\": \"ffbb22\", \"30\": \"ffff4c\", \"40\": \"f096ff\", \"50\": \"fa0000\", \"60\": \"b4b4b4\", \"70\": \"f0f0f0\", \"80\": \"0064c8\", \"90\": \"0096a0\", \"95\": \"00cf75\", \"100\": \"fae6a0\"}"
+    }
+  },
+  {
+    "id": "lagoon-mask-preview",
+    "image": "images/lagoon-mask-preview.png",
+    "url": "/singleband/mask/red/preview.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-mask",
+    "location": "Venice lagoon; derived internal mask",
+    "kind": "preview",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-mask-tile-0",
+    "image": "images/lagoon-mask-tile-0.png",
+    "url": "/singleband/mask/red/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-mask",
+    "location": "Venice lagoon; derived internal mask",
+    "xyz": [
+      2188,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "lagoon-mask-tile-1",
+    "image": "images/lagoon-mask-tile-1.png",
+    "url": "/singleband/mask/red/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+    "subset": "lagoon-mask",
+    "location": "Venice lagoon; derived internal mask",
+    "xyz": [
+      2189,
+      1466,
+      12
+    ],
+    "kind": "adjacent tile",
+    "settings": {
+      "stretch_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "rgb",
+    "image": "images/rgb.png",
+    "url": "/rgb/lagoon/preview.png?r=red&g=green&b=blue&r_range=%5B0%2C3000%5D&g_range=%5B0%2C3000%5D&b_range=%5B0%2C3000%5D",
+    "subset": "lagoon-red/green/blue",
+    "location": "Venice lagoon",
+    "kind": "RGB preview",
+    "settings": {
+      "r": "red",
+      "g": "green",
+      "b": "blue",
+      "r_range": "[0,3000]",
+      "g_range": "[0,3000]",
+      "b_range": "[0,3000]"
+    }
+  },
+  {
+    "id": "ndvi",
+    "image": "images/ndvi.png",
+    "url": "/compute/lagoon/preview.png?expression=%28v1-v2%29%2F%28v1%2Bv2%29&v1=nir&v2=red&stretch_range=%5B-1%2C1%5D&colormap=viridis",
+    "subset": "lagoon-nir/red",
+    "location": "Venice lagoon",
+    "kind": "compute preview",
+    "settings": {
+      "expression": "(v1-v2)/(v1+v2)",
+      "v1": "nir",
+      "v2": "red",
+      "stretch_range": "[-1,1]",
+      "colormap": "viridis"
+    }
+  },
+  {
+    "id": "out-of-bounds",
+    "image": "images/out-of-bounds.png",
+    "url": "/singleband/lagoon/red/20/0/0.png?tile_size=%5B128%2C512%5D",
+    "subset": "lagoon-red",
+    "location": "Outside footprint",
+    "kind": "legacy empty tile dimensions",
+    "settings": {
+      "tile_size": [
+        128,
+        512
+      ]
+    }
+  }
+]

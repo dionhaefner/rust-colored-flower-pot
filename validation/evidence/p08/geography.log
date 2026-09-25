@@ -1,0 +1,70 @@
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/drivers/geotiff_raster_store.py:106: PerformanceWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N78_00_E015_00.tif is not a valid cloud-optimized GeoTIFF. Any interaction with it will be significantly slower. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
+  return raster.compute_metadata(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/raster.py:238: UserWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N78_00_E015_00.tif does not have a valid nodata value, and does not contain an alpha band. No data will be masked.
+  warnings.warn(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/drivers/geotiff_raster_store.py:106: PerformanceWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N51_00_E179_00.tif is not a valid cloud-optimized GeoTIFF. Any interaction with it will be significantly slower. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
+  return raster.compute_metadata(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/raster.py:238: UserWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N51_00_E179_00.tif does not have a valid nodata value, and does not contain an alpha band. No data will be masked.
+  warnings.warn(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/drivers/geotiff_raster_store.py:106: PerformanceWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N51_00_W180_00.tif is not a valid cloud-optimized GeoTIFF. Any interaction with it will be significantly slower. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
+  return raster.compute_metadata(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/raster.py:238: UserWarning: Raster file /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-geography/N51_00_W180_00.tif does not have a valid nodata value, and does not contain an alpha band. No data will be masked.
+  warnings.warn(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/raster.py:238: UserWarning: Raster file /home/dion/codes/rust-colored-flower-pot/.cache/corpus/p08/N51_00_E179_00.tif does not have a valid nodata value, and does not contain an alpha band. No data will be masked.
+  warnings.warn(
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/raster.py:238: UserWarning: Raster file /home/dion/codes/rust-colored-flower-pot/.cache/corpus/p08/N51_00_W180_00.tif does not have a valid nodata value, and does not contain an alpha band. No data will be masked.
+  warnings.warn(
+N78_00_E015_00-preview True 0
+N78_00_E015_00-nonsquare True 0
+N78_00_E015_00-z0-dx0 True 0
+N78_00_E015_00-z5-dx0 True 0
+N78_00_E015_00-z10-dx0 True 0
+N78_00_E015_00-z10-dx1 True 0
+N78_00_E015_00-z14-dx0 True 0
+N51_00_E179_00-preview True 0
+N51_00_E179_00-nonsquare True 0
+N51_00_E179_00-z0-dx0 True 0
+N51_00_E179_00-z5-dx0 True 0
+N51_00_E179_00-z10-dx0 True 0
+N51_00_E179_00-z10-dx1 True 0
+N51_00_E179_00-z14-dx0 True 0
+N51_00_W180_00-preview True 0
+N51_00_W180_00-nonsquare True 0
+N51_00_W180_00-z0-dx0 True 0
+N51_00_W180_00-z5-dx0 True 0
+N51_00_W180_00-z10-dx0 True 0
+N51_00_W180_00-z10-dx1 True 0
+N51_00_W180_00-z14-dx0 True 0
+N51_00_E179_00-full-edge-0 True 0
+N51_00_E179_00-full-edge-1023 True 0
+N51_00_W180_00-full-edge-0 True 0
+N51_00_W180_00-full-edge-1023 True 0
+Exception in thread Thread-1 (_sample):
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 1593, in wrapper
+    return fun(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 2253, in num_fds
+    return len(os.listdir(f"{self._procfs_path}/{self.pid}/fd"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/proc/376761/fd'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.12/threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_runtime.py", line 100, in _sample
+    self.samples.append(self.snapshot())
+                        ^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_runtime.py", line 91, in snapshot
+    fds += process.num_fds()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/__init__.py", line 824, in num_fds
+    return self._proc.num_fds()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/psutil/_pslinux.py", line 1595, in wrapper
+    raise AccessDenied(pid, name) from err
+psutil.AccessDenied: (pid=376761)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.390" timestamp="2026-09-24T08:46:07.837859+02:00" hostname="Ahab"><testcase classname="" name="tests.test_profile" time="0.000"><error message="collection failure">.cache/reference/tests/test_profile.py:6: in &lt;module&gt;
+    from moto.xray import XRaySegment
+.venv-reference/lib/python3.12/site-packages/moto/xray/__init__.py:1: in &lt;module&gt;
+    from .mock_client import MockXrayClient, XRaySegment  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv-reference/lib/python3.12/site-packages/moto/xray/mock_client.py:4: in &lt;module&gt;
+    import aws_xray_sdk.core
+.venv-reference/lib/python3.12/site-packages/aws_xray_sdk/core/__init__.py:5: in &lt;module&gt;
+    xray_recorder = AsyncAWSXRayRecorder()
+                    ^^^^^^^^^^^^^^^^^^^^^^
+.venv-reference/lib/python3.12/site-packages/aws_xray_sdk/core/recorder.py:67: in __init__
+    self._emitter = UDPEmitter()
+                    ^^^^^^^^^^^^
+.venv-reference/lib/python3.12/site-packages/aws_xray_sdk/core/emitters/udp_emitter.py:24: in __init__
+    self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/socket.py:233: in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+E   PermissionError: [Errno 1] Operation not permitted</error></testcase></testsuite></testsuites>

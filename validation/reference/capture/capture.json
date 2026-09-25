@@ -1,0 +1,4081 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "environment_sha256": "35811d3097bbeafd79c471b7ab9a59f86da92e90020441e4dfa5416b9a56f15d",
+  "input_checksums": {
+    "lagoon-red": "3a5cda80a27795b0dabeb80db1a44015c2c27d02c15704b96ba0dbcecd651f79",
+    "lagoon-green": "dc93aa83bf901faf8c82f34e7a75da7f5302f9693306bb0f007867f34caf6d4d",
+    "lagoon-blue": "0e5eeb0f3b1ebd393a06fda7263d938b330e4a898b3adf774104595d53873e9d",
+    "lagoon-nir": "2c52449cf61a027b5222f2c1e8808701e16853f7581f23956d0f1ee337faa8ee",
+    "dolomites": "692cb33d4adde5092dd6eb82261fa93894b2c4af00c31af472bdabbb155a62db",
+    "landcover": "0329b19d00302e8fc2c5b95c41c06422feb957b709959bdbbb0e5cce1c0708e4",
+    "lagoon-mask": "9641aaca1725a3a38cf6cf91defdb5d59bf5830b853f09d59f37fe9df6fc7e5a"
+  },
+  "contract": {
+    "format": 1,
+    "settings": {
+      "DRIVER_PROVIDER": "sqlite",
+      "RASTER_CACHE_SIZE": 0,
+      "USE_MULTIPROCESSING": false,
+      "RESAMPLING_METHOD": "average",
+      "REPROJECTION_METHOD": "linear",
+      "PNG_COMPRESS_LEVEL": 1
+    },
+    "requests": [
+      {
+        "id": "keys",
+        "method": "GET",
+        "url": "/keys",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "keys": [
+            {
+              "description": "Real source subset",
+              "key": "scene"
+            },
+            {
+              "description": "Physical band or class",
+              "key": "band"
+            }
+          ]
+        }
+      },
+      {
+        "id": "datasets",
+        "method": "GET",
+        "url": "/datasets",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "datasets": [
+            {
+              "band": "elevation",
+              "scene": "dolomites"
+            },
+            {
+              "band": "blue",
+              "scene": "lagoon"
+            },
+            {
+              "band": "classes",
+              "scene": "lagoon"
+            },
+            {
+              "band": "green",
+              "scene": "lagoon"
+            },
+            {
+              "band": "nir",
+              "scene": "lagoon"
+            },
+            {
+              "band": "red",
+              "scene": "lagoon"
+            },
+            {
+              "band": "red",
+              "scene": "mask"
+            }
+          ],
+          "limit": 100,
+          "page": 0
+        }
+      },
+      {
+        "id": "paging",
+        "method": "GET",
+        "url": "/datasets?limit=2&page=1&order_by=%5Bscene%2Cband%5D&ascending=false",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "datasets": [
+            {
+              "band": "nir",
+              "scene": "lagoon"
+            },
+            {
+              "band": "green",
+              "scene": "lagoon"
+            }
+          ],
+          "limit": 2,
+          "page": 1
+        }
+      },
+      {
+        "id": "filter",
+        "method": "GET",
+        "url": "/datasets?scene=lagoon&band=%5Bred%2Cnir%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "datasets": [
+            {
+              "band": "nir",
+              "scene": "lagoon"
+            },
+            {
+              "band": "red",
+              "scene": "lagoon"
+            }
+          ],
+          "limit": 100,
+          "page": 0
+        }
+      },
+      {
+        "id": "metadata",
+        "method": "GET",
+        "url": "/metadata/lagoon/red",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "bounds": [
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156
+          ],
+          "convex_hull": {
+            "coordinates": [
+              [
+                [
+                  12.262465234378006,
+                  45.35007985755291
+                ],
+                [
+                  12.262527257850172,
+                  45.35115826868899
+                ],
+                [
+                  12.305297210968837,
+                  45.475947930783384
+                ],
+                [
+                  12.324416574276777,
+                  45.5312010620133
+                ],
+                [
+                  12.325012795830386,
+                  45.532623906461566
+                ],
+                [
+                  12.52724757518983,
+                  45.526551120712256
+                ],
+                [
+                  12.515789360893814,
+                  45.34255438818542
+                ],
+                [
+                  12.262465234378006,
+                  45.35007985755291
+                ]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "keys": {
+            "band": "red",
+            "scene": "lagoon"
+          },
+          "mean": 553.5356213336893,
+          "metadata": {
+            "subset": "lagoon-red"
+          },
+          "percentiles": [
+            160.0,
+            169.0,
+            175.0,
+            180.0,
+            183.0,
+            186.0,
+            188.0,
+            190.0,
+            192.0,
+            193.0,
+            195.0,
+            196.0,
+            198.0,
+            199.0,
+            201.0,
+            202.0,
+            203.0,
+            205.0,
+            206.0,
+            207.0,
+            209.0,
+            210.0,
+            211.0,
+            212.0,
+            214.0,
+            215.0,
+            217.0,
+            218.0,
+            220.0,
+            222.0,
+            223.0,
+            225.0,
+            228.0,
+            230.0,
+            232.0,
+            235.0,
+            239.0,
+            242.0,
+            247.0,
+            252.0,
+            258.0,
+            264.0,
+            271.0,
+            279.0,
+            287.0,
+            296.0,
+            305.0,
+            316.0,
+            327.0,
+            339.0,
+            352.0,
+            364.0,
+            377.0,
+            389.0,
+            402.0,
+            416.0,
+            430.0,
+            443.0,
+            456.0,
+            470.0,
+            484.0,
+            497.0,
+            511.0,
+            526.0,
+            540.0,
+            555.0,
+            569.0,
+            583.0,
+            597.0,
+            611.0,
+            625.0,
+            640.0,
+            655.0,
+            670.0,
+            687.0,
+            703.0,
+            720.0,
+            739.0,
+            758.0,
+            779.0,
+            801.0,
+            823.0,
+            847.0,
+            875.0,
+            906.0,
+            943.0,
+            987.0,
+            1038.0,
+            1100.0,
+            1172.0,
+            1260.0,
+            1360.0,
+            1472.0,
+            1600.0,
+            1734.0,
+            1876.0,
+            2032.0,
+            2238.0,
+            2614.0
+          ],
+          "range": [
+            98.0,
+            14568.0
+          ],
+          "stdev": 528.0849754066677,
+          "valid_percentage": 87.17212677001953
+        }
+      },
+      {
+        "id": "columns",
+        "method": "GET",
+        "url": "/metadata/lagoon/red?columns=%5B%22range%22%2C%22bounds%22%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "bounds": [
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156
+          ],
+          "keys": {
+            "band": "red",
+            "scene": "lagoon"
+          },
+          "range": [
+            98.0,
+            14568.0
+          ]
+        }
+      },
+      {
+        "id": "colormap",
+        "method": "GET",
+        "url": "/colormap?stretch_range=%5B0%2C100%5D&colormap=viridis&num_values=5",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "colormap": [
+            {
+              "rgba": [
+                68.0,
+                1.0,
+                84.0,
+                255.0
+              ],
+              "value": 0.0
+            },
+            {
+              "rgba": [
+                59.0,
+                81.0,
+                138.0,
+                255.0
+              ],
+              "value": 25.0
+            },
+            {
+              "rgba": [
+                32.0,
+                144.0,
+                140.0,
+                255.0
+              ],
+              "value": 50.0
+            },
+            {
+              "rgba": [
+                94.0,
+                201.0,
+                97.0,
+                255.0
+              ],
+              "value": 75.0
+            },
+            {
+              "rgba": [
+                253.0,
+                231.0,
+                36.0,
+                255.0
+              ],
+              "value": 100.0
+            }
+          ]
+        }
+      },
+      {
+        "id": "swagger",
+        "method": "GET",
+        "url": "/swagger.json",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "json": {
+          "components": {
+            "schemas": {
+              "Colormap": {
+                "additionalProperties": false,
+                "properties": {
+                  "colormap": {
+                    "items": {
+                      "$ref": "#/components/schemas/ColormapEntry"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "colormap"
+                ],
+                "type": "object"
+              },
+              "ColormapEntry": {
+                "additionalProperties": false,
+                "properties": {
+                  "rgba": {
+                    "items": {
+                      "type": "number"
+                    },
+                    "maxItems": 4,
+                    "minItems": 4,
+                    "type": "array"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "rgba",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "Dataset": {
+                "additionalProperties": false,
+                "properties": {
+                  "datasets": {
+                    "description": "Array containing all available key combinations",
+                    "items": {
+                      "additionalProperties": {
+                        "example": "value1",
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "limit": {
+                    "description": "Maximum number of returned items",
+                    "type": "integer"
+                  },
+                  "page": {
+                    "description": "Current page",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "datasets",
+                  "limit",
+                  "page"
+                ],
+                "type": "object"
+              },
+              "Key": {
+                "additionalProperties": false,
+                "properties": {
+                  "keys": {
+                    "items": {
+                      "$ref": "#/components/schemas/KeyItem"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "keys"
+                ],
+                "type": "object"
+              },
+              "KeyItem": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "description": "Key description",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "Key name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key"
+                ],
+                "type": "object"
+              },
+              "Metadata": {
+                "additionalProperties": false,
+                "properties": {
+                  "bounds": {
+                    "description": "Physical bounds of dataset in WGS84 projection",
+                    "items": {
+                      "type": "number"
+                    },
+                    "maxItems": 4,
+                    "minItems": 4,
+                    "type": "array"
+                  },
+                  "convex_hull": {
+                    "additionalProperties": {},
+                    "description": "GeoJSON representation of the dataset's convex hull",
+                    "type": "object"
+                  },
+                  "keys": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Keys identifying dataset",
+                    "type": "object"
+                  },
+                  "mean": {
+                    "description": "Data mean",
+                    "type": "number"
+                  },
+                  "metadata": {
+                    "description": "Any additional (manually added) metadata"
+                  },
+                  "percentiles": {
+                    "description": "1st, 2nd, 3rd, ..., 99th data percentile",
+                    "items": {
+                      "type": "number"
+                    },
+                    "maxItems": 99,
+                    "minItems": 99,
+                    "type": "array"
+                  },
+                  "range": {
+                    "description": "Minimum and maximum data value",
+                    "items": {
+                      "type": "number"
+                    },
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "type": "array"
+                  },
+                  "stdev": {
+                    "description": "Data standard deviation",
+                    "type": "number"
+                  },
+                  "valid_percentage": {
+                    "description": "Percentage of valid data in the dataset",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "bounds",
+                  "convex_hull",
+                  "keys",
+                  "mean",
+                  "metadata",
+                  "percentiles",
+                  "range",
+                  "stdev"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "info": {
+            "description": "A modern XYZ Tile Server in Python",
+            "title": "Terracotta",
+            "version": "0.10.1"
+          },
+          "openapi": "3.0",
+          "paths": {
+            "/colormap": {
+              "get": {
+                "description": "Get a colormap mapping pixel values to colors. Use this to construct a color bar for a dataset.",
+                "parameters": [
+                  {
+                    "description": [
+                      "Minimum and maximum value of colormap as JSON array (same as for /singleband and /rgb)"
+                    ],
+                    "explode": true,
+                    "in": "query",
+                    "name": "stretch_range",
+                    "required": true,
+                    "schema": {
+                      "items": {
+                        "type": "number"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": [
+                      "Name of color map to use (for a preview see https://terracotta-python.readthedocs.io/en/latest/reference/colormaps.html)"
+                    ],
+                    "in": "query",
+                    "name": "colormap",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "enum": [
+                        "accent",
+                        "accent_r",
+                        "afmhot",
+                        "afmhot_r",
+                        "autumn",
+                        "autumn_r",
+                        "binary",
+                        "binary_r",
+                        "blues",
+                        "blues_r",
+                        "bone",
+                        "bone_r",
+                        "brbg",
+                        "brbg_r",
+                        "brg",
+                        "brg_r",
+                        "bugn",
+                        "bugn_r",
+                        "bupu",
+                        "bupu_r",
+                        "bwr",
+                        "bwr_r",
+                        "cividis",
+                        "cividis_r",
+                        "cloud",
+                        "cmrmap",
+                        "cmrmap_r",
+                        "cool",
+                        "cool_r",
+                        "coolwarm",
+                        "coolwarm_r",
+                        "copper",
+                        "copper_r",
+                        "cubehelix",
+                        "cubehelix_r",
+                        "dark2",
+                        "dark2_r",
+                        "flag",
+                        "flag_r",
+                        "gist_earth",
+                        "gist_earth_r",
+                        "gist_gray",
+                        "gist_gray_r",
+                        "gist_grey",
+                        "gist_heat",
+                        "gist_heat_r",
+                        "gist_ncar",
+                        "gist_ncar_r",
+                        "gist_rainbow",
+                        "gist_rainbow_r",
+                        "gist_stern",
+                        "gist_stern_r",
+                        "gist_yarg",
+                        "gist_yarg_r",
+                        "gist_yerg",
+                        "gnbu",
+                        "gnbu_r",
+                        "gnuplot",
+                        "gnuplot2",
+                        "gnuplot2_r",
+                        "gnuplot_r",
+                        "gray",
+                        "gray_r",
+                        "grays",
+                        "greens",
+                        "greens_r",
+                        "grey",
+                        "greys",
+                        "greys_r",
+                        "hot",
+                        "hot_r",
+                        "hsv",
+                        "hsv_r",
+                        "inferno",
+                        "inferno_r",
+                        "jet",
+                        "jet_r",
+                        "magma",
+                        "magma_r",
+                        "nipy_spectral",
+                        "nipy_spectral_r",
+                        "ocean",
+                        "ocean_r",
+                        "oranges",
+                        "oranges_r",
+                        "orrd",
+                        "orrd_r",
+                        "paired",
+                        "paired_r",
+                        "pastel1",
+                        "pastel1_r",
+                        "pastel2",
+                        "pastel2_r",
+                        "pink",
+                        "pink_r",
+                        "piyg",
+                        "piyg_r",
+                        "plasma",
+                        "plasma_r",
+                        "prgn",
+                        "prgn_r",
+                        "prism",
+                        "prism_r",
+                        "pubu",
+                        "pubu_r",
+                        "pubugn",
+                        "pubugn_r",
+                        "puor",
+                        "puor_r",
+                        "purd",
+                        "purd_r",
+                        "purples",
+                        "purples_r",
+                        "rainbow",
+                        "rainbow_r",
+                        "rdbu",
+                        "rdbu_r",
+                        "rdgy",
+                        "rdgy_r",
+                        "rdpu",
+                        "rdpu_r",
+                        "rdylbu",
+                        "rdylbu_r",
+                        "rdylgn",
+                        "rdylgn_r",
+                        "reds",
+                        "reds_r",
+                        "seismic",
+                        "seismic_r",
+                        "set1",
+                        "set1_r",
+                        "set2",
+                        "set2_r",
+                        "set3",
+                        "set3_r",
+                        "spectral",
+                        "spectral_r",
+                        "spring",
+                        "spring_r",
+                        "summer",
+                        "summer_r",
+                        "tab10",
+                        "tab10_r",
+                        "tab20",
+                        "tab20_r",
+                        "tab20b",
+                        "tab20b_r",
+                        "tab20c",
+                        "tab20c_r",
+                        "terrain",
+                        "terrain_r",
+                        "turbo",
+                        "turbo_r",
+                        "twilight",
+                        "twilight_r",
+                        "twilight_shifted",
+                        "twilight_shifted_r",
+                        "viridis",
+                        "viridis_r",
+                        "winter",
+                        "winter_r",
+                        "wistia",
+                        "wistia_r",
+                        "ylgn",
+                        "ylgn_r",
+                        "ylgnbu",
+                        "ylgnbu_r",
+                        "ylorbr",
+                        "ylorbr_r",
+                        "ylorrd",
+                        "ylorrd_r",
+                        null
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Number of values to return",
+                    "in": "query",
+                    "name": "num_values",
+                    "required": false,
+                    "schema": {
+                      "default": 255,
+                      "type": "integer"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Array containing data values and RGBA tuples",
+                    "schema": {
+                      "$ref": "#/components/schemas/Colormap"
+                    }
+                  },
+                  "400": {
+                    "description": "Query parameters are invalid"
+                  }
+                },
+                "summary": "/colormap"
+              }
+            },
+            "/compute/{keys}/preview.png": {
+              "get": {
+                "description": "Combine datasets into a single-band PNG image through a given mathematical expression",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Mathematical expression to execute.",
+                    "in": "query",
+                    "name": "expression",
+                    "required": true,
+                    "schema": {
+                      "example": "(v1 - v2) / (v1 + v2)",
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Stretch range to use as JSON array.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "stretch_range",
+                    "required": true,
+                    "schema": {
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true,
+                        "type": "number"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Colormap to apply to image (see /colormap).",
+                    "in": "query",
+                    "name": "colormap",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "enum": [
+                        "explicit",
+                        "accent",
+                        "accent_r",
+                        "afmhot",
+                        "afmhot_r",
+                        "autumn",
+                        "autumn_r",
+                        "binary",
+                        "binary_r",
+                        "blues",
+                        "blues_r",
+                        "bone",
+                        "bone_r",
+                        "brbg",
+                        "brbg_r",
+                        "brg",
+                        "brg_r",
+                        "bugn",
+                        "bugn_r",
+                        "bupu",
+                        "bupu_r",
+                        "bwr",
+                        "bwr_r",
+                        "cividis",
+                        "cividis_r",
+                        "cloud",
+                        "cmrmap",
+                        "cmrmap_r",
+                        "cool",
+                        "cool_r",
+                        "coolwarm",
+                        "coolwarm_r",
+                        "copper",
+                        "copper_r",
+                        "cubehelix",
+                        "cubehelix_r",
+                        "dark2",
+                        "dark2_r",
+                        "flag",
+                        "flag_r",
+                        "gist_earth",
+                        "gist_earth_r",
+                        "gist_gray",
+                        "gist_gray_r",
+                        "gist_grey",
+                        "gist_heat",
+                        "gist_heat_r",
+                        "gist_ncar",
+                        "gist_ncar_r",
+                        "gist_rainbow",
+                        "gist_rainbow_r",
+                        "gist_stern",
+                        "gist_stern_r",
+                        "gist_yarg",
+                        "gist_yarg_r",
+                        "gist_yerg",
+                        "gnbu",
+                        "gnbu_r",
+                        "gnuplot",
+                        "gnuplot2",
+                        "gnuplot2_r",
+                        "gnuplot_r",
+                        "gray",
+                        "gray_r",
+                        "grays",
+                        "greens",
+                        "greens_r",
+                        "grey",
+                        "greys",
+                        "greys_r",
+                        "hot",
+                        "hot_r",
+                        "hsv",
+                        "hsv_r",
+                        "inferno",
+                        "inferno_r",
+                        "jet",
+                        "jet_r",
+                        "magma",
+                        "magma_r",
+                        "nipy_spectral",
+                        "nipy_spectral_r",
+                        "ocean",
+                        "ocean_r",
+                        "oranges",
+                        "oranges_r",
+                        "orrd",
+                        "orrd_r",
+                        "paired",
+                        "paired_r",
+                        "pastel1",
+                        "pastel1_r",
+                        "pastel2",
+                        "pastel2_r",
+                        "pink",
+                        "pink_r",
+                        "piyg",
+                        "piyg_r",
+                        "plasma",
+                        "plasma_r",
+                        "prgn",
+                        "prgn_r",
+                        "prism",
+                        "prism_r",
+                        "pubu",
+                        "pubu_r",
+                        "pubugn",
+                        "pubugn_r",
+                        "puor",
+                        "puor_r",
+                        "purd",
+                        "purd_r",
+                        "purples",
+                        "purples_r",
+                        "rainbow",
+                        "rainbow_r",
+                        "rdbu",
+                        "rdbu_r",
+                        "rdgy",
+                        "rdgy_r",
+                        "rdpu",
+                        "rdpu_r",
+                        "rdylbu",
+                        "rdylbu_r",
+                        "rdylgn",
+                        "rdylgn_r",
+                        "reds",
+                        "reds_r",
+                        "seismic",
+                        "seismic_r",
+                        "set1",
+                        "set1_r",
+                        "set2",
+                        "set2_r",
+                        "set3",
+                        "set3_r",
+                        "spectral",
+                        "spectral_r",
+                        "spring",
+                        "spring_r",
+                        "summer",
+                        "summer_r",
+                        "tab10",
+                        "tab10_r",
+                        "tab20",
+                        "tab20_r",
+                        "tab20b",
+                        "tab20b_r",
+                        "tab20c",
+                        "tab20c_r",
+                        "terrain",
+                        "terrain_r",
+                        "turbo",
+                        "turbo_r",
+                        "twilight",
+                        "twilight_r",
+                        "twilight_shifted",
+                        "twilight_shifted_r",
+                        "viridis",
+                        "viridis_r",
+                        "winter",
+                        "winter_r",
+                        "wistia",
+                        "wistia_r",
+                        "ylgn",
+                        "ylgn_r",
+                        "ylgnbu",
+                        "ylgnbu_r",
+                        "ylorbr",
+                        "ylorbr_r",
+                        "ylorrd",
+                        "ylorrd_r",
+                        null
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Last key of variable v1 in given expression.",
+                    "in": "query",
+                    "name": "v1",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v2 in given expression.",
+                    "in": "query",
+                    "name": "v2",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v3 in given expression.",
+                    "in": "query",
+                    "name": "v3",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v4 in given expression.",
+                    "in": "query",
+                    "name": "v4",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v5 in given expression.",
+                    "in": "query",
+                    "name": "v5",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested data"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/compute (preview)"
+              }
+            },
+            "/compute/{keys}/{tile_z}/{tile_x}/{tile_y}.png": {
+              "get": {
+                "description": "Combine datasets into a single-band PNG image through a given mathematical expression",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Requested zoom level",
+                    "in": "path",
+                    "name": "tile_z",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "y coordinate",
+                    "in": "path",
+                    "name": "tile_y",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "x coordinate",
+                    "in": "path",
+                    "name": "tile_x",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "Mathematical expression to execute.",
+                    "in": "query",
+                    "name": "expression",
+                    "required": true,
+                    "schema": {
+                      "example": "(v1 - v2) / (v1 + v2)",
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Stretch range to use as JSON array.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "stretch_range",
+                    "required": true,
+                    "schema": {
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true,
+                        "type": "number"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Colormap to apply to image (see /colormap).",
+                    "in": "query",
+                    "name": "colormap",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "enum": [
+                        "explicit",
+                        "accent",
+                        "accent_r",
+                        "afmhot",
+                        "afmhot_r",
+                        "autumn",
+                        "autumn_r",
+                        "binary",
+                        "binary_r",
+                        "blues",
+                        "blues_r",
+                        "bone",
+                        "bone_r",
+                        "brbg",
+                        "brbg_r",
+                        "brg",
+                        "brg_r",
+                        "bugn",
+                        "bugn_r",
+                        "bupu",
+                        "bupu_r",
+                        "bwr",
+                        "bwr_r",
+                        "cividis",
+                        "cividis_r",
+                        "cloud",
+                        "cmrmap",
+                        "cmrmap_r",
+                        "cool",
+                        "cool_r",
+                        "coolwarm",
+                        "coolwarm_r",
+                        "copper",
+                        "copper_r",
+                        "cubehelix",
+                        "cubehelix_r",
+                        "dark2",
+                        "dark2_r",
+                        "flag",
+                        "flag_r",
+                        "gist_earth",
+                        "gist_earth_r",
+                        "gist_gray",
+                        "gist_gray_r",
+                        "gist_grey",
+                        "gist_heat",
+                        "gist_heat_r",
+                        "gist_ncar",
+                        "gist_ncar_r",
+                        "gist_rainbow",
+                        "gist_rainbow_r",
+                        "gist_stern",
+                        "gist_stern_r",
+                        "gist_yarg",
+                        "gist_yarg_r",
+                        "gist_yerg",
+                        "gnbu",
+                        "gnbu_r",
+                        "gnuplot",
+                        "gnuplot2",
+                        "gnuplot2_r",
+                        "gnuplot_r",
+                        "gray",
+                        "gray_r",
+                        "grays",
+                        "greens",
+                        "greens_r",
+                        "grey",
+                        "greys",
+                        "greys_r",
+                        "hot",
+                        "hot_r",
+                        "hsv",
+                        "hsv_r",
+                        "inferno",
+                        "inferno_r",
+                        "jet",
+                        "jet_r",
+                        "magma",
+                        "magma_r",
+                        "nipy_spectral",
+                        "nipy_spectral_r",
+                        "ocean",
+                        "ocean_r",
+                        "oranges",
+                        "oranges_r",
+                        "orrd",
+                        "orrd_r",
+                        "paired",
+                        "paired_r",
+                        "pastel1",
+                        "pastel1_r",
+                        "pastel2",
+                        "pastel2_r",
+                        "pink",
+                        "pink_r",
+                        "piyg",
+                        "piyg_r",
+                        "plasma",
+                        "plasma_r",
+                        "prgn",
+                        "prgn_r",
+                        "prism",
+                        "prism_r",
+                        "pubu",
+                        "pubu_r",
+                        "pubugn",
+                        "pubugn_r",
+                        "puor",
+                        "puor_r",
+                        "purd",
+                        "purd_r",
+                        "purples",
+                        "purples_r",
+                        "rainbow",
+                        "rainbow_r",
+                        "rdbu",
+                        "rdbu_r",
+                        "rdgy",
+                        "rdgy_r",
+                        "rdpu",
+                        "rdpu_r",
+                        "rdylbu",
+                        "rdylbu_r",
+                        "rdylgn",
+                        "rdylgn_r",
+                        "reds",
+                        "reds_r",
+                        "seismic",
+                        "seismic_r",
+                        "set1",
+                        "set1_r",
+                        "set2",
+                        "set2_r",
+                        "set3",
+                        "set3_r",
+                        "spectral",
+                        "spectral_r",
+                        "spring",
+                        "spring_r",
+                        "summer",
+                        "summer_r",
+                        "tab10",
+                        "tab10_r",
+                        "tab20",
+                        "tab20_r",
+                        "tab20b",
+                        "tab20b_r",
+                        "tab20c",
+                        "tab20c_r",
+                        "terrain",
+                        "terrain_r",
+                        "turbo",
+                        "turbo_r",
+                        "twilight",
+                        "twilight_r",
+                        "twilight_shifted",
+                        "twilight_shifted_r",
+                        "viridis",
+                        "viridis_r",
+                        "winter",
+                        "winter_r",
+                        "wistia",
+                        "wistia_r",
+                        "ylgn",
+                        "ylgn_r",
+                        "ylgnbu",
+                        "ylgnbu_r",
+                        "ylorbr",
+                        "ylorbr_r",
+                        "ylorrd",
+                        "ylorrd_r",
+                        null
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Last key of variable v1 in given expression.",
+                    "in": "query",
+                    "name": "v1",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v2 in given expression.",
+                    "in": "query",
+                    "name": "v2",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v3 in given expression.",
+                    "in": "query",
+                    "name": "v3",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v4 in given expression.",
+                    "in": "query",
+                    "name": "v4",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Last key of variable v5 in given expression.",
+                    "in": "query",
+                    "name": "v5",
+                    "required": false,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested data"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/compute (tile)"
+              }
+            },
+            "/datasets": {
+              "get": {
+                "description": "Get keys of all available datasets that match given key constraint. Constraints may be combined freely. Returns all known datasets if no query parameters are given.",
+                "parameters": [
+                  {
+                    "description": "Maximum number of returned datasets per page",
+                    "in": "query",
+                    "name": "limit",
+                    "required": false,
+                    "schema": {
+                      "default": 100,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "Current dataset page",
+                    "in": "query",
+                    "name": "page",
+                    "required": false,
+                    "schema": {
+                      "default": 0,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "Comma-separated list of keys to order datasets by",
+                    "in": "query",
+                    "name": "order_by",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[key1,key2]",
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Sort order of returned datasets",
+                    "in": "query",
+                    "name": "ascending",
+                    "required": false,
+                    "schema": {
+                      "default": true,
+                      "type": "boolean"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "All available key combinations",
+                    "schema": {
+                      "items": {
+                        "$ref": "#/components/schemas/Dataset"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "400": {
+                    "description": "Query parameters contain unrecognized keys"
+                  }
+                },
+                "summary": "/datasets"
+              }
+            },
+            "/keys": {
+              "get": {
+                "description": "List the names and descriptions (if available) of all known keys.",
+                "responses": {
+                  "200": {
+                    "description": "Array containing keys",
+                    "schema": {
+                      "$ref": "#/components/schemas/Key"
+                    }
+                  }
+                },
+                "summary": "/keys"
+              }
+            },
+            "/metadata/{keys}": {
+              "get": {
+                "description": "Retrieve metadata for given dataset (identified by keys).",
+                "parameters": [
+                  {
+                    "description": "Keys of dataset to retrieve metadata for (e.g. 'value1/value2')",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "type": "path"
+                  },
+                  {
+                    "description": "List of columns to return",
+                    "explode": true,
+                    "in": "query",
+                    "name": "columns",
+                    "required": false,
+                    "schema": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "style": "form"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "All metadata for given dataset",
+                    "schema": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/metadata"
+              }
+            },
+            "/rgb/{keys}/preview.png": {
+              "get": {
+                "description": "Combine three datasets to RGB image, and return preview as PNG",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Key value for red band",
+                    "in": "query",
+                    "name": "r",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Key value for green band",
+                    "in": "query",
+                    "name": "g",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Key value for blue band",
+                    "in": "query",
+                    "name": "b",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the red band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "r_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the green band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "g_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the blue band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "b_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Color transform DSL string from color-operations.",
+                    "in": "query",
+                    "name": "color_transform",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested tile"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/rgb (preview)"
+              }
+            },
+            "/rgb/{keys}/{tile_z}/{tile_x}/{tile_y}.png": {
+              "get": {
+                "description": "Combine three datasets to RGB image, and return tile as PNG",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Requested zoom level",
+                    "in": "path",
+                    "name": "tile_z",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "y coordinate",
+                    "in": "path",
+                    "name": "tile_y",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "x coordinate",
+                    "in": "path",
+                    "name": "tile_x",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "Key value for red band",
+                    "in": "query",
+                    "name": "r",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Key value for green band",
+                    "in": "query",
+                    "name": "g",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Key value for blue band",
+                    "in": "query",
+                    "name": "b",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the red band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "r_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the green band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "g_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use for the blue band as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "b_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Color transform DSL string from color-operations.",
+                    "in": "query",
+                    "name": "color_transform",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested tile"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/rgb (tile)"
+              }
+            },
+            "/singleband/{keys}/preview.png": {
+              "get": {
+                "description": "Return single-band PNG preview image of requested dataset",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "stretch_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Colormap to apply to image (see /colormap)",
+                    "in": "query",
+                    "name": "colormap",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "enum": [
+                        "explicit",
+                        "accent",
+                        "accent_r",
+                        "afmhot",
+                        "afmhot_r",
+                        "autumn",
+                        "autumn_r",
+                        "binary",
+                        "binary_r",
+                        "blues",
+                        "blues_r",
+                        "bone",
+                        "bone_r",
+                        "brbg",
+                        "brbg_r",
+                        "brg",
+                        "brg_r",
+                        "bugn",
+                        "bugn_r",
+                        "bupu",
+                        "bupu_r",
+                        "bwr",
+                        "bwr_r",
+                        "cividis",
+                        "cividis_r",
+                        "cloud",
+                        "cmrmap",
+                        "cmrmap_r",
+                        "cool",
+                        "cool_r",
+                        "coolwarm",
+                        "coolwarm_r",
+                        "copper",
+                        "copper_r",
+                        "cubehelix",
+                        "cubehelix_r",
+                        "dark2",
+                        "dark2_r",
+                        "flag",
+                        "flag_r",
+                        "gist_earth",
+                        "gist_earth_r",
+                        "gist_gray",
+                        "gist_gray_r",
+                        "gist_grey",
+                        "gist_heat",
+                        "gist_heat_r",
+                        "gist_ncar",
+                        "gist_ncar_r",
+                        "gist_rainbow",
+                        "gist_rainbow_r",
+                        "gist_stern",
+                        "gist_stern_r",
+                        "gist_yarg",
+                        "gist_yarg_r",
+                        "gist_yerg",
+                        "gnbu",
+                        "gnbu_r",
+                        "gnuplot",
+                        "gnuplot2",
+                        "gnuplot2_r",
+                        "gnuplot_r",
+                        "gray",
+                        "gray_r",
+                        "grays",
+                        "greens",
+                        "greens_r",
+                        "grey",
+                        "greys",
+                        "greys_r",
+                        "hot",
+                        "hot_r",
+                        "hsv",
+                        "hsv_r",
+                        "inferno",
+                        "inferno_r",
+                        "jet",
+                        "jet_r",
+                        "magma",
+                        "magma_r",
+                        "nipy_spectral",
+                        "nipy_spectral_r",
+                        "ocean",
+                        "ocean_r",
+                        "oranges",
+                        "oranges_r",
+                        "orrd",
+                        "orrd_r",
+                        "paired",
+                        "paired_r",
+                        "pastel1",
+                        "pastel1_r",
+                        "pastel2",
+                        "pastel2_r",
+                        "pink",
+                        "pink_r",
+                        "piyg",
+                        "piyg_r",
+                        "plasma",
+                        "plasma_r",
+                        "prgn",
+                        "prgn_r",
+                        "prism",
+                        "prism_r",
+                        "pubu",
+                        "pubu_r",
+                        "pubugn",
+                        "pubugn_r",
+                        "puor",
+                        "puor_r",
+                        "purd",
+                        "purd_r",
+                        "purples",
+                        "purples_r",
+                        "rainbow",
+                        "rainbow_r",
+                        "rdbu",
+                        "rdbu_r",
+                        "rdgy",
+                        "rdgy_r",
+                        "rdpu",
+                        "rdpu_r",
+                        "rdylbu",
+                        "rdylbu_r",
+                        "rdylgn",
+                        "rdylgn_r",
+                        "reds",
+                        "reds_r",
+                        "seismic",
+                        "seismic_r",
+                        "set1",
+                        "set1_r",
+                        "set2",
+                        "set2_r",
+                        "set3",
+                        "set3_r",
+                        "spectral",
+                        "spectral_r",
+                        "spring",
+                        "spring_r",
+                        "summer",
+                        "summer_r",
+                        "tab10",
+                        "tab10_r",
+                        "tab20",
+                        "tab20_r",
+                        "tab20b",
+                        "tab20b_r",
+                        "tab20c",
+                        "tab20c_r",
+                        "terrain",
+                        "terrain_r",
+                        "turbo",
+                        "turbo_r",
+                        "twilight",
+                        "twilight_r",
+                        "twilight_shifted",
+                        "twilight_shifted_r",
+                        "viridis",
+                        "viridis_r",
+                        "winter",
+                        "winter_r",
+                        "wistia",
+                        "wistia_r",
+                        "ylgn",
+                        "ylgn_r",
+                        "ylgnbu",
+                        "ylgnbu_r",
+                        "ylorbr",
+                        "ylorbr_r",
+                        "ylorrd",
+                        "ylorrd_r",
+                        null
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Explicit value-color mapping to use, encoded as JSON object. Must be given together with `colormap=explicit`. Color values can be specified either as RGB or RGBA tuple (in the range of [0, 255]), or as hex strings.",
+                    "in": "query",
+                    "name": "explicit_color_map",
+                    "required": false,
+                    "schema": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "number"
+                        },
+                        "maxItems": 4,
+                        "minItems": 3,
+                        "type": "array"
+                      },
+                      "example": "{\"0\": [255, 255, 255]}",
+                      "type": "object"
+                    }
+                  },
+                  {
+                    "description": "Color transform DSL string from color-operations.All color operations for singleband should specify band 1.",
+                    "in": "query",
+                    "name": "color_transform",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "gamma 1 1.5, sigmoidal 1 15 0.5",
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested tile"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/singleband (preview)"
+              }
+            },
+            "/singleband/{keys}/{tile_z}/{tile_x}/{tile_y}.png": {
+              "get": {
+                "description": "Return single-band PNG image of requested XYZ tile",
+                "parameters": [
+                  {
+                    "description": "Keys identifying dataset, in order",
+                    "in": "path",
+                    "name": "keys",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Requested zoom level",
+                    "in": "path",
+                    "name": "tile_z",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "y coordinate",
+                    "in": "path",
+                    "name": "tile_y",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "x coordinate",
+                    "in": "path",
+                    "name": "tile_x",
+                    "required": true,
+                    "schema": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "description": "Stretch range [min, max] to use as JSON array. Min and max may be numbers to use as absolute range, or strings of the format `p<digits>` with an integer between 0 and 100 to use percentiles of the image instead. Null values indicate global minimum / maximum.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "stretch_range",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "[0,1]",
+                      "items": {
+                        "nullable": true
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  },
+                  {
+                    "description": "Colormap to apply to image (see /colormap)",
+                    "in": "query",
+                    "name": "colormap",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "enum": [
+                        "explicit",
+                        "accent",
+                        "accent_r",
+                        "afmhot",
+                        "afmhot_r",
+                        "autumn",
+                        "autumn_r",
+                        "binary",
+                        "binary_r",
+                        "blues",
+                        "blues_r",
+                        "bone",
+                        "bone_r",
+                        "brbg",
+                        "brbg_r",
+                        "brg",
+                        "brg_r",
+                        "bugn",
+                        "bugn_r",
+                        "bupu",
+                        "bupu_r",
+                        "bwr",
+                        "bwr_r",
+                        "cividis",
+                        "cividis_r",
+                        "cloud",
+                        "cmrmap",
+                        "cmrmap_r",
+                        "cool",
+                        "cool_r",
+                        "coolwarm",
+                        "coolwarm_r",
+                        "copper",
+                        "copper_r",
+                        "cubehelix",
+                        "cubehelix_r",
+                        "dark2",
+                        "dark2_r",
+                        "flag",
+                        "flag_r",
+                        "gist_earth",
+                        "gist_earth_r",
+                        "gist_gray",
+                        "gist_gray_r",
+                        "gist_grey",
+                        "gist_heat",
+                        "gist_heat_r",
+                        "gist_ncar",
+                        "gist_ncar_r",
+                        "gist_rainbow",
+                        "gist_rainbow_r",
+                        "gist_stern",
+                        "gist_stern_r",
+                        "gist_yarg",
+                        "gist_yarg_r",
+                        "gist_yerg",
+                        "gnbu",
+                        "gnbu_r",
+                        "gnuplot",
+                        "gnuplot2",
+                        "gnuplot2_r",
+                        "gnuplot_r",
+                        "gray",
+                        "gray_r",
+                        "grays",
+                        "greens",
+                        "greens_r",
+                        "grey",
+                        "greys",
+                        "greys_r",
+                        "hot",
+                        "hot_r",
+                        "hsv",
+                        "hsv_r",
+                        "inferno",
+                        "inferno_r",
+                        "jet",
+                        "jet_r",
+                        "magma",
+                        "magma_r",
+                        "nipy_spectral",
+                        "nipy_spectral_r",
+                        "ocean",
+                        "ocean_r",
+                        "oranges",
+                        "oranges_r",
+                        "orrd",
+                        "orrd_r",
+                        "paired",
+                        "paired_r",
+                        "pastel1",
+                        "pastel1_r",
+                        "pastel2",
+                        "pastel2_r",
+                        "pink",
+                        "pink_r",
+                        "piyg",
+                        "piyg_r",
+                        "plasma",
+                        "plasma_r",
+                        "prgn",
+                        "prgn_r",
+                        "prism",
+                        "prism_r",
+                        "pubu",
+                        "pubu_r",
+                        "pubugn",
+                        "pubugn_r",
+                        "puor",
+                        "puor_r",
+                        "purd",
+                        "purd_r",
+                        "purples",
+                        "purples_r",
+                        "rainbow",
+                        "rainbow_r",
+                        "rdbu",
+                        "rdbu_r",
+                        "rdgy",
+                        "rdgy_r",
+                        "rdpu",
+                        "rdpu_r",
+                        "rdylbu",
+                        "rdylbu_r",
+                        "rdylgn",
+                        "rdylgn_r",
+                        "reds",
+                        "reds_r",
+                        "seismic",
+                        "seismic_r",
+                        "set1",
+                        "set1_r",
+                        "set2",
+                        "set2_r",
+                        "set3",
+                        "set3_r",
+                        "spectral",
+                        "spectral_r",
+                        "spring",
+                        "spring_r",
+                        "summer",
+                        "summer_r",
+                        "tab10",
+                        "tab10_r",
+                        "tab20",
+                        "tab20_r",
+                        "tab20b",
+                        "tab20b_r",
+                        "tab20c",
+                        "tab20c_r",
+                        "terrain",
+                        "terrain_r",
+                        "turbo",
+                        "turbo_r",
+                        "twilight",
+                        "twilight_r",
+                        "twilight_shifted",
+                        "twilight_shifted_r",
+                        "viridis",
+                        "viridis_r",
+                        "winter",
+                        "winter_r",
+                        "wistia",
+                        "wistia_r",
+                        "ylgn",
+                        "ylgn_r",
+                        "ylgnbu",
+                        "ylgnbu_r",
+                        "ylorbr",
+                        "ylorbr_r",
+                        "ylorrd",
+                        "ylorrd_r",
+                        null
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Explicit value-color mapping to use, encoded as JSON object. Must be given together with `colormap=explicit`. Color values can be specified either as RGB or RGBA tuple (in the range of [0, 255]), or as hex strings.",
+                    "in": "query",
+                    "name": "explicit_color_map",
+                    "required": false,
+                    "schema": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "number"
+                        },
+                        "maxItems": 4,
+                        "minItems": 3,
+                        "type": "array"
+                      },
+                      "example": "{\"0\": [255, 255, 255]}",
+                      "type": "object"
+                    }
+                  },
+                  {
+                    "description": "Color transform DSL string from color-operations.All color operations for singleband should specify band 1.",
+                    "in": "query",
+                    "name": "color_transform",
+                    "required": false,
+                    "schema": {
+                      "default": null,
+                      "example": "gamma 1 1.5, sigmoidal 1 15 0.5",
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "Pixel dimensions of the returned PNG image as JSON list.",
+                    "explode": true,
+                    "in": "query",
+                    "name": "tile_size",
+                    "required": false,
+                    "schema": {
+                      "example": "[256,256]",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "style": "form"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "PNG image of requested tile"
+                  },
+                  "400": {
+                    "description": "Invalid query parameters"
+                  },
+                  "404": {
+                    "description": "No dataset found for given key combination"
+                  }
+                },
+                "summary": "/singleband (tile)"
+              }
+            }
+          },
+          "servers": [
+            {
+              "url": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "apidoc",
+        "method": "GET",
+        "url": "/apidoc",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "text/html; charset=utf-8"
+        },
+        "text": "<!DOCTYPE html>\n<html>\n  <head>\n    <title>Terracotta API Documentation</title>\n    <meta charset=\"utf-8\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <link href=\"https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700\" rel=\"stylesheet\">\n    <link rel=\"shortcut icon\" href=\"/static/favicon.ico\">\n    <style> body { margin: 0; padding: 0; } </style>\n  </head>\n  <body>\n    <redoc spec-url=\"/swagger.json\" hide-loading></redoc>\n    <script src=\"/static/redoc.standalone.js\"> </script>\n  </body>\n</html>"
+      },
+      {
+        "id": "metadata-batch",
+        "method": "POST",
+        "url": "/metadata",
+        "body": {
+          "keys": [
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "dolomites",
+              "elevation"
+            ]
+          ]
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": [
+          {
+            "bounds": [
+              12.254818102684911,
+              45.34255438818542,
+              12.52724757518983,
+              45.53434456898156
+            ],
+            "convex_hull": {
+              "coordinates": [
+                [
+                  [
+                    12.262465234378006,
+                    45.35007985755291
+                  ],
+                  [
+                    12.262527257850172,
+                    45.35115826868899
+                  ],
+                  [
+                    12.305297210968837,
+                    45.475947930783384
+                  ],
+                  [
+                    12.324416574276777,
+                    45.5312010620133
+                  ],
+                  [
+                    12.325012795830386,
+                    45.532623906461566
+                  ],
+                  [
+                    12.52724757518983,
+                    45.526551120712256
+                  ],
+                  [
+                    12.515789360893814,
+                    45.34255438818542
+                  ],
+                  [
+                    12.262465234378006,
+                    45.35007985755291
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            },
+            "keys": {
+              "band": "red",
+              "scene": "lagoon"
+            },
+            "mean": 553.5356213336893,
+            "metadata": {
+              "subset": "lagoon-red"
+            },
+            "percentiles": [
+              160.0,
+              169.0,
+              175.0,
+              180.0,
+              183.0,
+              186.0,
+              188.0,
+              190.0,
+              192.0,
+              193.0,
+              195.0,
+              196.0,
+              198.0,
+              199.0,
+              201.0,
+              202.0,
+              203.0,
+              205.0,
+              206.0,
+              207.0,
+              209.0,
+              210.0,
+              211.0,
+              212.0,
+              214.0,
+              215.0,
+              217.0,
+              218.0,
+              220.0,
+              222.0,
+              223.0,
+              225.0,
+              228.0,
+              230.0,
+              232.0,
+              235.0,
+              239.0,
+              242.0,
+              247.0,
+              252.0,
+              258.0,
+              264.0,
+              271.0,
+              279.0,
+              287.0,
+              296.0,
+              305.0,
+              316.0,
+              327.0,
+              339.0,
+              352.0,
+              364.0,
+              377.0,
+              389.0,
+              402.0,
+              416.0,
+              430.0,
+              443.0,
+              456.0,
+              470.0,
+              484.0,
+              497.0,
+              511.0,
+              526.0,
+              540.0,
+              555.0,
+              569.0,
+              583.0,
+              597.0,
+              611.0,
+              625.0,
+              640.0,
+              655.0,
+              670.0,
+              687.0,
+              703.0,
+              720.0,
+              739.0,
+              758.0,
+              779.0,
+              801.0,
+              823.0,
+              847.0,
+              875.0,
+              906.0,
+              943.0,
+              987.0,
+              1038.0,
+              1100.0,
+              1172.0,
+              1260.0,
+              1360.0,
+              1472.0,
+              1600.0,
+              1734.0,
+              1876.0,
+              2032.0,
+              2238.0,
+              2614.0
+            ],
+            "range": [
+              98.0,
+              14568.0
+            ],
+            "stdev": 528.0849754066677,
+            "valid_percentage": 87.17212677001953
+          },
+          {
+            "bounds": [
+              12.10763888888889,
+              46.407916666666665,
+              12.392083333333334,
+              46.69236111111111
+            ],
+            "convex_hull": {
+              "coordinates": [
+                [
+                  [
+                    12.10763888888889,
+                    46.407916666666665
+                  ],
+                  [
+                    12.392083333333334,
+                    46.407916666666665
+                  ],
+                  [
+                    12.392083333333334,
+                    46.69236111111111
+                  ],
+                  [
+                    12.10763888888889,
+                    46.69236111111111
+                  ],
+                  [
+                    12.10763888888889,
+                    46.407916666666665
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            },
+            "keys": {
+              "band": "elevation",
+              "scene": "dolomites"
+            },
+            "mean": 1800.9281005859375,
+            "metadata": {
+              "subset": "dolomites"
+            },
+            "percentiles": [
+              796.81884765625,
+              874.2990112304688,
+              938.0859375,
+              983.408203125,
+              1019.33056640625,
+              1053.5205078125,
+              1086.17236328125,
+              1112.4476318359375,
+              1137.3377685546875,
+              1162.07177734375,
+              1184.868896484375,
+              1206.5391845703125,
+              1228.4200439453125,
+              1250.849853515625,
+              1272.330078125,
+              1291.7669677734375,
+              1309.7896728515625,
+              1326.6180419921875,
+              1343.169677734375,
+              1360.3243408203125,
+              1377.4722900390625,
+              1394.71435546875,
+              1410.541015625,
+              1426.3486328125,
+              1442.3837890625,
+              1458.376708984375,
+              1473.7364501953125,
+              1488.5155029296875,
+              1503.1224365234375,
+              1517.4759521484375,
+              1531.657470703125,
+              1545.864013671875,
+              1561.1136474609375,
+              1576.86181640625,
+              1592.9912109375,
+              1609.5166015625,
+              1625.7144775390625,
+              1641.5767822265625,
+              1657.2177734375,
+              1672.590576171875,
+              1687.90380859375,
+              1702.6693115234375,
+              1717.0665283203125,
+              1731.707763671875,
+              1745.9884033203125,
+              1759.068603515625,
+              1772.64453125,
+              1786.177001953125,
+              1799.917724609375,
+              1813.580810546875,
+              1827.302001953125,
+              1840.83447265625,
+              1854.295654296875,
+              1867.5518798828125,
+              1881.16748046875,
+              1894.6236572265625,
+              1907.85595703125,
+              1921.0030517578125,
+              1934.241455078125,
+              1946.8927001953125,
+              1959.8507080078125,
+              1972.8961181640625,
+              1985.702880859375,
+              1998.7911376953125,
+              2012.0186767578125,
+              2025.300537109375,
+              2038.9844970703125,
+              2052.925048828125,
+              2067.122802734375,
+              2081.7373046875,
+              2096.713623046875,
+              2111.955810546875,
+              2127.697998046875,
+              2143.75537109375,
+              2159.824951171875,
+              2175.86181640625,
+              2191.5029296875,
+              2207.808349609375,
+              2224.10400390625,
+              2239.955078125,
+              2255.69384765625,
+              2270.93701171875,
+              2286.896240234375,
+              2303.20361328125,
+              2320.3193359375,
+              2337.70068359375,
+              2355.650390625,
+              2375.015869140625,
+              2395.923095703125,
+              2418.109375,
+              2441.689697265625,
+              2466.833740234375,
+              2494.53955078125,
+              2525.1142578125,
+              2558.859375,
+              2598.01025390625,
+              2647.728515625,
+              2710.109130859375,
+              2802.385498046875
+            ],
+            "range": [
+              548.8402709960938,
+              3136.123291015625
+            ],
+            "stdev": 474.42962646484375,
+            "valid_percentage": 100.0
+          }
+        ]
+      },
+      {
+        "id": "lagoon-red-preview",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-red-tile-0",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-red-tile-1",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-green-preview",
+        "method": "GET",
+        "url": "/singleband/lagoon/green/preview.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-green-tile-0",
+        "method": "GET",
+        "url": "/singleband/lagoon/green/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-green-tile-1",
+        "method": "GET",
+        "url": "/singleband/lagoon/green/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-blue-preview",
+        "method": "GET",
+        "url": "/singleband/lagoon/blue/preview.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-blue-tile-0",
+        "method": "GET",
+        "url": "/singleband/lagoon/blue/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-blue-tile-1",
+        "method": "GET",
+        "url": "/singleband/lagoon/blue/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-nir-preview",
+        "method": "GET",
+        "url": "/singleband/lagoon/nir/preview.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-nir-tile-0",
+        "method": "GET",
+        "url": "/singleband/lagoon/nir/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-nir-tile-1",
+        "method": "GET",
+        "url": "/singleband/lagoon/nir/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "dolomites-preview",
+        "method": "GET",
+        "url": "/singleband/dolomites/elevation/preview.png?colormap=viridis",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "dolomites-tile-0",
+        "method": "GET",
+        "url": "/singleband/dolomites/elevation/12/2187/1448.png?colormap=viridis",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "dolomites-tile-1",
+        "method": "GET",
+        "url": "/singleband/dolomites/elevation/12/2188/1448.png?colormap=viridis",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "landcover-preview",
+        "method": "GET",
+        "url": "/singleband/lagoon/classes/preview.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "landcover-tile-0",
+        "method": "GET",
+        "url": "/singleband/lagoon/classes/12/2188/1466.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "landcover-tile-1",
+        "method": "GET",
+        "url": "/singleband/lagoon/classes/12/2189/1466.png?colormap=explicit&explicit_color_map=%7B%2210%22%3A+%22006400%22%2C+%2220%22%3A+%22ffbb22%22%2C+%2230%22%3A+%22ffff4c%22%2C+%2240%22%3A+%22f096ff%22%2C+%2250%22%3A+%22fa0000%22%2C+%2260%22%3A+%22b4b4b4%22%2C+%2270%22%3A+%22f0f0f0%22%2C+%2280%22%3A+%220064c8%22%2C+%2290%22%3A+%220096a0%22%2C+%2295%22%3A+%2200cf75%22%2C+%22100%22%3A+%22fae6a0%22%7D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-mask-preview",
+        "method": "GET",
+        "url": "/singleband/mask/red/preview.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-mask-tile-0",
+        "method": "GET",
+        "url": "/singleband/mask/red/12/2188/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "lagoon-mask-tile-1",
+        "method": "GET",
+        "url": "/singleband/mask/red/12/2189/1466.png?stretch_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "rgb",
+        "method": "GET",
+        "url": "/rgb/lagoon/preview.png?r=red&g=green&b=blue&r_range=%5B0%2C3000%5D&g_range=%5B0%2C3000%5D&b_range=%5B0%2C3000%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "ndvi",
+        "method": "GET",
+        "url": "/compute/lagoon/preview.png?expression=%28v1-v2%29%2F%28v1%2Bv2%29&v1=nir&v2=red&stretch_range=%5B-1%2C1%5D&colormap=viridis",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "nonsquare",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/preview.png?tile_size=%5B128%2C256%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          128
+        ]
+      },
+      {
+        "id": "out-of-bounds",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/20/0/0.png?tile_size=%5B128%2C512%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "missing-dataset",
+        "method": "GET",
+        "url": "/singleband/absent/red/preview.png",
+        "body": null,
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "No dataset found"
+        }
+      },
+      {
+        "id": "invalid-json",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/preview.png?tile_size=%5B",
+        "body": null,
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "{'_schema': ['Could not decode value [ for tile_size as JSON']}"
+        }
+      },
+      {
+        "id": "invalid-keys",
+        "method": "GET",
+        "url": "/datasets?unknown=value",
+        "body": null,
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "Encountered unrecognized keys {'unknown'} (available keys: ('scene', 'band'))"
+        }
+      },
+      {
+        "id": "missing-rgb-band",
+        "method": "GET",
+        "url": "/rgb/lagoon/preview.png?r=red",
+        "body": null,
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "{'g': ['Missing data for required field.'], 'b': ['Missing data for required field.']}"
+        }
+      },
+      {
+        "id": "bad-expression",
+        "method": "GET",
+        "url": "/compute/lagoon/preview.png?expression=nope%28v1%29&v1=red&stretch_range=%5B0%2C1%5D",
+        "body": null,
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "error while executing expression: unrecognized name 'nope' in expression"
+        }
+      },
+      {
+        "id": "percentile-p98",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/preview.png?stretch_range=%5B%22p2%22%2C%22p98%22%5D",
+        "body": null,
+        "status": 200,
+        "headers": {
+          "content-type": "image/png",
+          "cache-control": "no-cache",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "dimensions": [
+          256,
+          256
+        ]
+      },
+      {
+        "id": "percentile-p99",
+        "method": "GET",
+        "url": "/singleband/lagoon/red/preview.png?stretch_range=%5B%22p2%22%2C%22p99%22%5D",
+        "body": null,
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "Invalid percentile, out of range: p99"
+        }
+      },
+      {
+        "id": "post-limit",
+        "method": "POST",
+        "url": "/metadata",
+        "body": {
+          "keys": [
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ],
+            [
+              "lagoon",
+              "red"
+            ]
+          ]
+        },
+        "status": 400,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://localhost:8080",
+          "vary": "Origin"
+        },
+        "json": {
+          "message": "Maximum number of keys exceeded (100). This limit can be configured in the server settings."
+        }
+      },
+      {
+        "id": "method-error",
+        "method": "POST",
+        "url": "/keys",
+        "body": null,
+        "status": 405,
+        "headers": {
+          "content-type": "text/html; charset=utf-8"
+        },
+        "text": "<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n"
+      },
+      {
+        "id": "missing-route",
+        "method": "GET",
+        "url": "/does-not-exist",
+        "body": null,
+        "status": 404,
+        "headers": {
+          "content-type": "text/html; charset=utf-8"
+        },
+        "text": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+      }
+    ],
+    "storage": [
+      {
+        "table": "datasets",
+        "sql": "CREATE TABLE datasets (\n\tscene VARCHAR(256) NOT NULL, \n\tband VARCHAR(256) NOT NULL, \n\tpath VARCHAR(8000), \n\tPRIMARY KEY (scene, band)\n)",
+        "columns": [
+          "scene",
+          "band",
+          "path"
+        ],
+        "rows": [
+          [
+            "lagoon",
+            "red",
+            ".cache/corpus/subsets/lagoon-red.tif"
+          ],
+          [
+            "lagoon",
+            "green",
+            ".cache/corpus/subsets/lagoon-green.tif"
+          ],
+          [
+            "lagoon",
+            "blue",
+            ".cache/corpus/subsets/lagoon-blue.tif"
+          ],
+          [
+            "lagoon",
+            "nir",
+            ".cache/corpus/subsets/lagoon-nir.tif"
+          ],
+          [
+            "dolomites",
+            "elevation",
+            ".cache/corpus/subsets/dolomites.tif"
+          ],
+          [
+            "lagoon",
+            "classes",
+            ".cache/corpus/subsets/landcover.tif"
+          ],
+          [
+            "mask",
+            "red",
+            ".cache/corpus/subsets/lagoon-mask.tif"
+          ]
+        ]
+      },
+      {
+        "table": "key_names",
+        "sql": "CREATE TABLE key_names (\n\tkey_name VARCHAR(256) NOT NULL, \n\tdescription VARCHAR(8000), \n\tidx INTEGER, \n\tPRIMARY KEY (key_name), \n\tUNIQUE (idx)\n)",
+        "columns": [
+          "key_name",
+          "description",
+          "idx"
+        ],
+        "rows": [
+          [
+            "scene",
+            "Real source subset",
+            0
+          ],
+          [
+            "band",
+            "Physical band or class",
+            1
+          ]
+        ]
+      },
+      {
+        "table": "metadata",
+        "sql": "CREATE TABLE metadata (\n\tscene VARCHAR(256) NOT NULL, \n\tband VARCHAR(256) NOT NULL, \n\tbounds_north FLOAT, \n\tbounds_east FLOAT, \n\tbounds_south FLOAT, \n\tbounds_west FLOAT, \n\tconvex_hull TEXT, \n\tvalid_percentage FLOAT, \n\tmin FLOAT, \n\tmax FLOAT, \n\tmean FLOAT, \n\tstdev FLOAT, \n\tpercentiles BLOB, \n\tmetadata TEXT, \n\tPRIMARY KEY (scene, band)\n)",
+        "columns": [
+          "scene",
+          "band",
+          "bounds_north",
+          "bounds_east",
+          "bounds_south",
+          "bounds_west",
+          "convex_hull",
+          "valid_percentage",
+          "min",
+          "max",
+          "mean",
+          "stdev",
+          "percentiles",
+          "metadata"
+        ],
+        "rows": [
+          [
+            "lagoon",
+            "red",
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.262465234378006, 45.35007985755291], [12.262527257850172, 45.35115826868899], [12.305297210968837, 45.475947930783384], [12.324416574276777, 45.5312010620133], [12.325012795830386, 45.532623906461566], [12.52724757518983, 45.526551120712256], [12.515789360893814, 45.34255438818542], [12.262465234378006, 45.35007985755291]]]}",
+            87.17212677001953,
+            98.0,
+            14568.0,
+            553.5356213336893,
+            528.0849754066677,
+            {
+              "blob_hex": "000020430000294300002f43000034430000374300003a4300003c4300003e430000404300004143000043430000444300004643000047430000494300004a4300004b4300004d4300004e4300004f430000514300005243000053430000544300005643000057430000594300005a4300005c4300005e4300005f430000614300006443000066430000684300006b4300006f43000072430000774300007c4300008143000084430080874300808b4300808f43000094430080984300009e430080a3430080a9430000b0430000b6430080bc430080c2430000c9430000d0430000d7430080dd430000e4430000eb430000f2430080f8430080ff43008003440000074400c00a4400400e4400c011440040154400c0184400401c440000204400c023440080274400c02b4400c02f440000344400c0384400803d4400c042440040484400c04d4400c0534400c05a440080624400c06b4400c0764400c08144008089440080924400809d440000aa440000b8440000c84400c0d8440080ea440000fe4400e00b4500602345"
+            },
+            "{\"subset\": \"lagoon-red\"}"
+          ],
+          [
+            "lagoon",
+            "green",
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.262465234378006, 45.35007985755291], [12.262527257850172, 45.35115826868899], [12.305297210968837, 45.475947930783384], [12.324416574276777, 45.5312010620133], [12.325012795830386, 45.532623906461566], [12.52724757518983, 45.526551120712256], [12.515789360893814, 45.34255438818542], [12.262465234378006, 45.35007985755291]]]}",
+            87.17212677001953,
+            142.0,
+            8864.0,
+            705.8326485724226,
+            417.4707273823345,
+            {
+              "blob_hex": "00809c430080a5430000aa430000ad430000b0430000b2430080b3430000b5430080b6430080b7430000b9430000ba430080bb430080bc430080bd430080be430080bf430080c0430080c1430080c2430080c3430000c5430000c6430000c7430080c8430080c9430000cb430080cc430000ce430080cf430080d1430000d3430080d5430000d8430080da430080dd430080e1430000e6430000eb430000f1430000f7430000fd43008001440040044400c006440080094400000c4400800e440000114400c01344008016440000194400001c4400801e44004021440000244400c026440080294400002c4400802e44004031440000344400c036440080394400403c4400c03e4400804144008044440040474400404a4400404d44008050440080534400c0564400005a4400805d4400406144000065440000694400006d440040714400c0754400807a4400c07f4400808244000085440000884400008b4400008e44008091440080954400c09a4400c0a1440080aa440080b5440040c3440040d6440040f24400e01145"
+            },
+            "{\"subset\": \"lagoon-green\"}"
+          ],
+          [
+            "lagoon",
+            "blue",
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.262465234378006, 45.35007985755291], [12.262527257850172, 45.35115826868899], [12.305297210968837, 45.475947930783384], [12.324416574276777, 45.5312010620133], [12.325012795830386, 45.532623906461566], [12.52724757518983, 45.526551120712256], [12.515789360893814, 45.34255438818542], [12.262465234378006, 45.35007985755291]]]}",
+            87.17212677001953,
+            4.0,
+            7848.0,
+            537.4743240641267,
+            332.27112708705823,
+            {
+              "blob_hex": "0000804300008b430080904300009443008096430080984300809a4300809b4300009d4300009e4300009f430080a0430000a1430000a2430000a3430000a4430000a5430080a5430080a6430080a7430000a8430000a9430080a9430080aa430080ab430000ac430000ad430000ae430000af430000b0430000b1430080b1430080b2430000b4430000b5430080b6430080b7430000b9430000ba430080bb430080bd430080bf430080c1430080c3430080c6430000c9430000cc430000cf430000d2430080d5430080d8430000dc430080df430080e2430000e6430080e9430080ed430000f1430080f4430080f8430000fc430000004400c0014400c0034400c0054400c0074400c0094400c00b4400000e44000010440040124400801444008016440000194400401b4400c01d440040204400002344000026440000294400402c4400802f44000033440080364400403a4400803e440000434400c0474400c04c4400405244000059440000624400006e4400007e440040894400c095440040a7440000c3440080f344"
+            },
+            "{\"subset\": \"lagoon-blue\"}"
+          ],
+          [
+            "lagoon",
+            "nir",
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.262465234378006, 45.35007985755291], [12.262527257850172, 45.35115826868899], [12.305297210968837, 45.475947930783384], [12.324416574276777, 45.5312010620133], [12.325012795830386, 45.532623906461566], [12.52724757518983, 45.526551120712256], [12.515789360893814, 45.34255438818542], [12.262465234378006, 45.35007985755291]]]}",
+            87.17212677001953,
+            1.0,
+            7780.0,
+            820.6216189531171,
+            1236.8962487854037,
+            {
+              "blob_hex": "00007842000096420000a8420000b8420000c4420000d0420000da420000e2420000e8420000f0420000f4420000f8420000fc42000000430000014300000343000004430000064300000743000008430000094300000a4300000b4300000c4300000d4300000e4300000f43000010430000104300001143000012430000134300001443000015430000164300001743000018430000194300001a4300001b4300001c4300001c4300001e4300001f430000204300002143000022430000244300002543000027430000284300002a4300002c4300002f4300003243000034430000384300003c43000040430000454300004a4300004f430000554300005c430000644300006d43000077430000824300808a43000095430080a1430000b2430000cc430080f44300401d4400005544004092440000ba440080d7440000ed440080fe440000074500800e450080164500601e4500e0254500e02c45004033450080394500a03f4500e0454500604c4500e0524500005a4500a0614500a06a4500e075450020824500e08d45"
+            },
+            "{\"subset\": \"lagoon-nir\"}"
+          ],
+          [
+            "dolomites",
+            "elevation",
+            12.10763888888889,
+            46.407916666666665,
+            12.392083333333334,
+            46.69236111111111,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.10763888888889, 46.407916666666665], [12.392083333333334, 46.407916666666665], [12.392083333333334, 46.69236111111111], [12.10763888888889, 46.69236111111111], [12.10763888888889, 46.407916666666665]]]}",
+            100.0,
+            548.8402709960938,
+            3136.123291015625,
+            1800.9281005859375,
+            474.42962646484375,
+            {
+              "blob_hex": "6834474423935a4480856a4420da754428d57e44a8b0834484c58744530e8b44cf2a8e444c429144ce1b944441d19644718d9944325b9c44900a9f448b78a14445b9a344c7d3a5446ee5a744610aaa441d2fac44dc56ae445051b044284bb244484cb4440e4cb6449137b8447f10ba44ebe3bb443bafbd440a75bf44a63bc144a323c344941bc544b81fc7448830c944dd36cb447532cd44f826cf44e612d144ecfcd2446bd5d44421a2d644a676d844a13fda4432e2db44a094dd44aa45df445efde04496b2e244aa69e444b41ae64476c9e744a971e9445c25eb44f5d3ec44647bee441920f044bac7f144915cf34439fbf444ad9cf6447e36f84451d9f9449980fb449e29fd4481dffe44cd4e0045f7310145cc1b02456b0b03454bff03452bfb044516fc054533fd0645cafd07450cf80845effc0945aa010b4548ff0b451afb0c45feee0d4557ee0e4542f30f451c051145361b1245683a134541701445c5be1545c0211745099b1845572d1a45a2e81b45d4d11d45c0ed1f452a602245a87b2545bf6129452b262f45"
+            },
+            "{\"subset\": \"dolomites\"}"
+          ],
+          [
+            "lagoon",
+            "classes",
+            12.244666666666667,
+            45.35466666666667,
+            12.415333333333335,
+            45.525333333333336,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.244666666666667, 45.35466666666667], [12.415333333333335, 45.35466666666667], [12.415333333333335, 45.525333333333336], [12.244666666666667, 45.525333333333336], [12.244666666666667, 45.35466666666667]]]}",
+            100.0,
+            10.0,
+            90.0,
+            68.05088996887207,
+            21.199040252838916,
+            {
+              "blob_hex": "000020410000204100002041000020410000f0410000f0410000f0410000f0410000f0410000f0410000f0410000f04100002042000020420000204200002042000020420000484200004842000048420000484200004842000048420000484200004842000048420000484200004842000070420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000a0420000b4420000b4420000b4420000b442"
+            },
+            "{\"subset\": \"landcover\"}"
+          ],
+          [
+            "mask",
+            "red",
+            12.254818102684911,
+            45.34255438818542,
+            12.52724757518983,
+            45.53434456898156,
+            "{\"type\": \"Polygon\", \"coordinates\": [[[12.262465234378006, 45.35007985755291], [12.262527257850172, 45.35115826868899], [12.305297210968837, 45.475947930783384], [12.324416574276777, 45.5312010620133], [12.325012795830386, 45.532623906461566], [12.52724757518983, 45.526551120712256], [12.515789360893814, 45.34255438818542], [12.262465234378006, 45.35007985755291]]]}",
+            87.17212677001953,
+            98.0,
+            14568.0,
+            553.5356213336893,
+            528.0849754066677,
+            {
+              "blob_hex": "000020430000294300002f43000034430000374300003a4300003c4300003e430000404300004143000043430000444300004643000047430000494300004a4300004b4300004d4300004e4300004f430000514300005243000053430000544300005643000057430000594300005a4300005c4300005e4300005f430000614300006443000066430000684300006b4300006f43000072430000774300007c4300008143000084430080874300808b4300808f43000094430080984300009e430080a3430080a9430000b0430000b6430080bc430080c2430000c9430000d0430000d7430080dd430000e4430000eb430000f2430080f8430080ff43008003440000074400c00a4400400e4400c011440040154400c0184400401c440000204400c023440080274400c02b4400c02f440000344400c0384400803d4400c042440040484400c04d4400c0534400c05a440080624400c06b4400c0764400c08144008089440080924400809d440000aa440000b8440000c84400c0d8440080ea440000fe4400e00b4500602345"
+            },
+            "{\"subset\": \"lagoon-mask\"}"
+          ]
+        ]
+      },
+      {
+        "table": "terracotta",
+        "sql": "CREATE TABLE terracotta (\n\tversion VARCHAR(255) NOT NULL, \n\tPRIMARY KEY (version)\n)",
+        "columns": [
+          "version"
+        ],
+        "rows": [
+          [
+            "0.10.1"
+          ]
+        ]
+      }
+    ]
+  },
+  "images": [
+    "images/lagoon-red-preview.png",
+    "images/lagoon-red-tile-0.png",
+    "images/lagoon-red-tile-1.png",
+    "images/lagoon-green-preview.png",
+    "images/lagoon-green-tile-0.png",
+    "images/lagoon-green-tile-1.png",
+    "images/lagoon-blue-preview.png",
+    "images/lagoon-blue-tile-0.png",
+    "images/lagoon-blue-tile-1.png",
+    "images/lagoon-nir-preview.png",
+    "images/lagoon-nir-tile-0.png",
+    "images/lagoon-nir-tile-1.png",
+    "images/dolomites-preview.png",
+    "images/dolomites-tile-0.png",
+    "images/dolomites-tile-1.png",
+    "images/landcover-preview.png",
+    "images/landcover-tile-0.png",
+    "images/landcover-tile-1.png",
+    "images/lagoon-mask-preview.png",
+    "images/lagoon-mask-tile-0.png",
+    "images/lagoon-mask-tile-1.png",
+    "images/rgb.png",
+    "images/ndvi.png",
+    "images/nonsquare.png",
+    "images/out-of-bounds.png",
+    "images/percentile-p98.png"
+  ],
+  "arrays": [
+    "arrays/lagoon-red.npz",
+    "arrays/lagoon-green.npz",
+    "arrays/lagoon-blue.npz",
+    "arrays/lagoon-nir.npz",
+    "arrays/dolomites.npz",
+    "arrays/landcover.npz",
+    "arrays/lagoon-mask.npz"
+  ]
+}

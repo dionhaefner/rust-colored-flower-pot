@@ -1,0 +1,41 @@
+Usage: python -m terracotta.scripts.cli [OPTIONS] [COMMAND] [ARGS]...
+
+  The command line interface for the Terracotta tile server.
+
+  All flags must be passed before specifying a subcommand.
+
+  Example:
+
+      $ terracotta -c config.toml connect localhost:5000
+
+Options:
+  -c, --config TOML-FILE          Update global settings from this TOML file.
+  --loglevel [debug|info|warning|error|critical]
+                                  Set level for log messages
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
+
+Commands:
+  connect           Connect to a running Terracotta instance and interactively
+                    explore data in it.
+  ingest            Ingest a collection of raster files into a SQLite
+                    database.
+  migrate           Migrate databases between Terracotta versions.
+  optimize-rasters  Optimize a collection of raster files for use with
+                    Terracotta.
+  serve             Serve rasters through a local Flask development server.
+{
+  "passed": true,
+  "checks": [
+    "native-create-insert-lambda-render-exact",
+    "installed-python-future-array",
+    "wsgi-exact",
+    "flask-keys"
+  ],
+  "platform": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "rasterio": "1.4.3",
+  "gdal": "3.9.3",
+  "binary_sha256": "312e577b531708d93694816f3d60999c8cd16d5c36b6fee3010074ba606f9581"
+}

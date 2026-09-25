@@ -1,0 +1,706 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "alpha-full-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-full-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-full-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-full-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-full-stdev",
+      "passed": true,
+      "details": 1.1368683772161603e-13
+    },
+    {
+      "name": "alpha-full-percentiles",
+      "passed": true,
+      "details": 1.9531260477378964e-05
+    },
+    {
+      "name": "alpha-full-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-full-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-sample-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-percentiles",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-sample-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-chunk-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-percentiles",
+      "passed": true,
+      "details": 9.003606328406022e-05
+    },
+    {
+      "name": "alpha-chunk-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "alpha-chunk-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-False-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-False-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-False-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-True-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-True-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "alpha-optimize-True-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-full-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-percentiles",
+      "passed": true,
+      "details": 6.835936801508069e-05
+    },
+    {
+      "name": "multinodata-full-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-full-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-sample-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-percentiles",
+      "passed": true,
+      "details": 0.00011718749919964466
+    },
+    {
+      "name": "multinodata-sample-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-sample-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-chunk-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-percentiles",
+      "passed": true,
+      "details": 0.00011407410875108326
+    },
+    {
+      "name": "multinodata-chunk-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "multinodata-chunk-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-False-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-False-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-False-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-True-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-True-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "multinodata-optimize-True-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-full-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-percentiles",
+      "passed": true,
+      "details": 6.835936801508069e-05
+    },
+    {
+      "name": "nan-full-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-full-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-sample-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-percentiles",
+      "passed": true,
+      "details": 0.00011718749919964466
+    },
+    {
+      "name": "nan-sample-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-sample-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-chunk-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-percentiles",
+      "passed": true,
+      "details": 0.00011407410875108326
+    },
+    {
+      "name": "nan-chunk-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "nan-chunk-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-False-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-False-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-False-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-True-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-True-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nan-optimize-True-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-full-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-percentiles",
+      "passed": true,
+      "details": 6.835936801508069e-05
+    },
+    {
+      "name": "rotated-full-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-full-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-sample-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-percentiles",
+      "passed": true,
+      "details": 0.00011718749919964466
+    },
+    {
+      "name": "rotated-sample-geometry",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-sample-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-chunk-bounds",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-chunk-range",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-chunk-valid_percentage",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-chunk-mean",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-chunk-stdev",
+      "passed": true,
+      "details": 0.0
+    },
+    {
+      "name": "rotated-chunk-percentiles",
+      "passed": true,
+      "details": 0.00011407410875108326
+    },
+    {
+      "name": "rotated-chunk-geometry",
+      "passed": true,
+      "details": 2.421493266718035e-10
+    },
+    {
+      "name": "rotated-chunk-extra",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-False-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-False-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-False-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-True-values",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-True-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "rotated-optimize-True-cog",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nearest-base",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nearest-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nearest-overview-2",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nearest-overview-4",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "nearest-overview-8",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "bilinear-base",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "bilinear-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "bilinear-overview-2",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "bilinear-overview-4",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "bilinear-overview-8",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cubic-base",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cubic-mask",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cubic-overview-2",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cubic-overview-4",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cubic-overview-8",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "parallel-quiet",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "parallel-lagoon-red",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "parallel-cog-lagoon-red",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "parallel-landcover",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "parallel-cog-landcover",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "passed": 140
+}

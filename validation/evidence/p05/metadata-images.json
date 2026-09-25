@@ -1,0 +1,366 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "lagoon-red-full-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-full-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-full-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-full-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-full-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-full-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-sample-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-red-chunk-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-full-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-sample-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "lagoon-mask-chunk-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-full-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-sample-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "dolomites-chunk-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-full-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-sample-percentile-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-default-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-default-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-default-visible",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-percentile-python-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-percentile-rust-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "landcover-chunk-percentile-visible",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "passed": 72
+}

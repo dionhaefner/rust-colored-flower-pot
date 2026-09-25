@@ -1,0 +1,223 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "mysql normalization mysql://root@localhost:5000/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql normalization root@localhost:5000/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql normalization mysql://root:<redacted>@localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql normalization mysql://localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql normalization localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql invalid path http://localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql invalid path mysql://localhost",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql invalid path mysql://localhost/test/foo/bar",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql settings credentials",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql invalid credentials redacted",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql engine SELECT-only existing metadata",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql engine SELECT-only lazy failure",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql before connection retirement",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql reconnect stale connection",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql delete second-table rollback",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql relational CLI ingestion",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql normalization postgresql://root@localhost:5000/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql normalization root@localhost:5000/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql normalization postgresql://root:<redacted>@localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql normalization postgresql://localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql normalization localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql invalid path http://localhost/test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql invalid path postgresql://localhost",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql invalid path postgresql://localhost/test/foo/bar",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql settings credentials",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql invalid credentials redacted",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql engine SELECT-only existing metadata",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql engine SELECT-only lazy failure",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql before connection retirement",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql reconnect stale connection",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql delete second-table rollback",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql relational CLI ingestion",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sqlite normalize /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p06-paths/new.sqlite",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sqlite normalize /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p06-paths/missing/../new.sqlite",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sqlite normalize sqlite:////home/dion/codes/rust-colored-flower-pot/validation/artifacts/p06-paths/new.sqlite",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider sqlite-remote",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider sqlite-remote",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider postgresql",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider mysql",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider postgresql",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "auto provider sqlite",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "empty path rejected",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "unknown provider rejected",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "external": {
+    "real_s3": "not-run: no credentials/account provided"
+  }
+}

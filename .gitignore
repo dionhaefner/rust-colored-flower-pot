@@ -1,0 +1,7 @@
+/.cache/
+/.venv-reference/
+/target/
+/validation/artifacts/
+__pycache__/
+.pytest_cache/
+*.pyc

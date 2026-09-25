@@ -1,0 +1,4 @@
+ERROR 4: /nonexistent/p05.tif: No such file or directory
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/drivers/geotiff_raster_store.py:106: PerformanceWarning: Raster file /home/dion/codes/rust-colored-flower-pot/.cache/corpus/subsets/lagoon-red.tif is not a valid cloud-optimized GeoTIFF. Any interaction with it will be significantly slower. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
+  return raster.compute_metadata(
+PASS 13

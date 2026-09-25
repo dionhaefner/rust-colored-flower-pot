@@ -1,0 +1,58 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "mysql packaged Python metadata",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql packaged Python->oracle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql packaged batch rollback",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql packaged render",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql packaged delete",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql packaged Python metadata",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql packaged Python->oracle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql packaged batch rollback",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql packaged render",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql packaged delete",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "external": {
+    "real_s3": "not-run: no credentials/account provided"
+  }
+}

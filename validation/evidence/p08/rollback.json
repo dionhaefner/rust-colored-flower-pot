@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    "frozen-Python-reads-native-optimized-and-ingested-catalog",
+    "frozen-Python-reads-Rust-overwrite-delete-extra-metadata-and-float32-blobs",
+    "return-to-frozen-Python-serves-exact-Rust-written-catalog-image",
+    "Python-after-rollback-write-readable-by-native",
+    "historical-upgrade-read-by-current-Python-and-byte-exact-backup-restore"
+  ],
+  "ordinary_backup_sha256": "ed90ca00a02cab5b05deac5130f7dc3bc5134a425c9f4dbaec73b2d5aa432236",
+  "historical_backup_sha256": "806703643e5c00c8794c0832bddf4a5487cba86ab355dc5167dcfd38f6c43f92",
+  "scope": "SQLite complete prepare/ingest/write/serve/return path. Real MySQL/PostgreSQL cross-language transaction/migration results are separate P08 engine reports. Historical restore preserves bytes; it does not claim the current 0.10 oracle can run a 0.7 schema."
+}

@@ -1,0 +1,103 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "checks": [
+    {
+      "name": "mysql Python 0.8 chain",
+      "passed": true,
+      "details": "None"
+    },
+    {
+      "name": "mysql migrated version python",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql migrated version rust",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql migrated Rust write Python read",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql migration language equivalence",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql failed migration unchanged marker",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "mysql DDL failure semantics",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "MySQL legacy 0.7 unsupported SQL preserved",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "MySQL 0.7 failed marker retained",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql Python 0.8 chain",
+      "passed": true,
+      "details": "None"
+    },
+    {
+      "name": "postgresql migrated version python",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql migrated version rust",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql migrated Rust write Python read",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql migration language equivalence",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql failed migration unchanged marker",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "postgresql DDL failure semantics",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "PostgreSQL actual historical import upgrades",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "PostgreSQL historical key order",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "PostgreSQL historical metadata readable",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "external": {
+    "real_s3": "not-run: no credentials/account provided"
+  }
+}

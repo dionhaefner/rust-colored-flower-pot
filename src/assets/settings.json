@@ -1,0 +1,41 @@
+{
+  "DRIVER_PATH": "",
+  "DRIVER_PROVIDER": null,
+  "DEBUG": false,
+  "FLASK_PROFILE": false,
+  "XRAY_PROFILE": false,
+  "LOGLEVEL": "warning",
+  "RASTER_CACHE_SIZE": 513802240,
+  "RASTER_CACHE_COMPRESS_LEVEL": 9,
+  "RASTER_AWS_ACCESS_KEY": null,
+  "RASTER_AWS_SECRET_KEY": null,
+  "RASTER_AWS_S3_ENDPOINT": null,
+  "DEFAULT_TILE_SIZE": [
+    256,
+    256
+  ],
+  "LAZY_LOADING_MAX_SHAPE": [
+    1024,
+    1024
+  ],
+  "PNG_COMPRESS_LEVEL": 1,
+  "DB_CONNECTION_TIMEOUT": 10,
+  "REMOTE_DB_CACHE_DIR": "/tmp/terracotta",
+  "REMOTE_DB_CACHE_TTL": 600,
+  "RESAMPLING_METHOD": "average",
+  "REPROJECTION_METHOD": "linear",
+  "ALLOWED_ORIGINS_METADATA": [
+    "*"
+  ],
+  "ALLOWED_ORIGINS_TILES": [
+    "http[s]?://(localhost|127\\.0\\.0\\.1):*"
+  ],
+  "SQL_USER": null,
+  "SQL_PASSWORD": null,
+  "MYSQL_USER": null,
+  "MYSQL_PASSWORD": null,
+  "POSTGRESQL_USER": null,
+  "POSTGRESQL_PASSWORD": null,
+  "USE_MULTIPROCESSING": true,
+  "MAX_POST_METADATA_KEYS": 100
+}

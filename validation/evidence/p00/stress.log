@@ -1,0 +1,93 @@
+{
+  "command": [
+    "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+    "/home/dion/codes/rust-colored-flower-pot/validation/tools/stress.py",
+    "--worker",
+    "--out",
+    "/home/dion/codes/rust-colored-flower-pot/validation/artifacts/stress"
+  ],
+  "exit_code": 0,
+  "budget_bytes": 536870912,
+  "sampled_peak_rss_bytes": 103321600,
+  "budget_exceeded": false,
+  "source": {
+    "width": 36000,
+    "height": 36000,
+    "dtype": "uint8",
+    "overviews": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ]
+  },
+  "results": [
+    {
+      "name": "preview",
+      "seconds": 0.02352919200075121,
+      "masked": 1101,
+      "classes": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100
+      ],
+      "bounds": null,
+      "io_delta": {
+        "read_count": 214,
+        "write_count": 0,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "read_chars": 820235,
+        "write_chars": 0
+      }
+    },
+    {
+      "name": "detail",
+      "seconds": 0.006982660000176111,
+      "masked": 0,
+      "classes": [
+        10,
+        30,
+        50,
+        60,
+        80
+      ],
+      "bounds": [
+        1372197.5317754857,
+        5690583.881774803,
+        1373420.5242280485,
+        5691806.8742273655
+      ],
+      "io_delta": {
+        "read_count": 31,
+        "write_count": 0,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "read_chars": 180358,
+        "write_chars": 0
+      }
+    }
+  ],
+  "peak_rss_bytes": 104165376,
+  "detail_xyz": [
+    17506,
+    11730,
+    15
+  ],
+  "file_bytes": 85040674,
+  "decoded_value_bytes": 1296000000,
+  "decoded_value_plus_mask_bytes": 2592000000,
+  "float32_work_array_bytes": 5184000000,
+  "io_notes": "Linux process counters: read_chars includes cached read syscalls; read_bytes is actual storage I/O. Checksum warms OS cache before measurements. No remote traffic.",
+  "overview_notes": "Native full source has overviews. Broad preview permits automatic overview selection; z15 detail is finer than source 10m sampling and touches base-resolution data. No downsampled copy.",
+  "passed": true
+}

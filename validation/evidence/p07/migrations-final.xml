@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.388" timestamp="2026-09-24T12:42:07.922151+02:00" hostname="Ahab"><testcase classname="tests.scripts.test_migrate" name="test_migrate" time="0.289" /><testcase classname="tests.scripts.test_migrate" name="test_migrate_next" time="0.026"><failure message="terracotta.exceptions.InvalidDatabaseError: Version conflict: database was created in v0.11.0, but this is compatible with v0.10.1">self = &lt;terracotta._bridge.Session object at 0x7ed41d1ef200&gt;, kind = 'store'
+path = '/tmp/pytest-of-dion/pytest-20/db1/db-outdated.sqlite'
+provider = 'sqlite', config = None
+
+    def __init__(self, kind, path="", provider=None, config=None):
+        try:
+&gt;           self._handle = _native.session_open(json.dumps(dict(kind=kind, path=str(path), provider=provider,
+                                                                settings=settings() if config is None else config)))
+E                                                               RuntimeError: Version conflict: database was created in v0.11.0, but this is compatible with v0.10.1
+
+validation/artifacts/p07-python/terracotta/_bridge.py:44: RuntimeError
+
+The above exception was the direct cause of the following exception:
+
+v07_db = local('/tmp/pytest-of-dion/pytest-20/db1/db-outdated.sqlite')
+raster_file = local('/tmp/pytest-of-dion/pytest-20/raster0/img.tif')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7ed41a28c140&gt;
+force_reload = None
+
+    def test_migrate_next(v07_db, raster_file, monkeypatch, force_reload):
+        """Test database migration to next major version if one is available."""
+        with monkeypatch.context() as m:
+            # pretend we are at the next major version
+            import terracotta
+    
+            current_version = parse_version(terracotta.__version__)
+            next_major_version = (current_version[0], current_version[1] + 1, 0)
+            m.setattr(terracotta, "__version__", ".".join(map(str, next_major_version)))
+    
+&gt;           migration_testfunc(v07_db, raster_file)
+
+.cache/reference/tests/scripts/test_migrate.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.cache/reference/tests/scripts/test_migrate.py:39: in migration_testfunc
+    assert driver_updated.key_names == ("key1", "akey", "key2")
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+validation/artifacts/p07-python/terracotta/drivers/terracotta_driver.py:73: in key_names
+    return self.meta_store.key_names
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+validation/artifacts/p07-python/terracotta/drivers/relational_meta_store.py:122: in key_names
+    self._db_keys = self.get_keys()
+                    ^^^^^^^^^^^^^^^
+validation/artifacts/p07-python/terracotta/drivers/relational_meta_store.py:141: in get_keys
+    return OrderedDict((k['key'], k['description']) for k in self._call(operation='keys'))
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+validation/artifacts/p07-python/terracotta/drivers/relational_meta_store.py:110: in _call
+    with self.connect() as connection:
+/usr/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+validation/artifacts/p07-python/terracotta/drivers/relational_meta_store.py:90: in connect
+    self._session = Session('store', self._native_path, self.SQL_DIALECT)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;terracotta._bridge.Session object at 0x7ed41d1ef200&gt;, kind = 'store'
+path = '/tmp/pytest-of-dion/pytest-20/db1/db-outdated.sqlite'
+provider = 'sqlite', config = None
+
+    def __init__(self, kind, path="", provider=None, config=None):
+        try:
+            self._handle = _native.session_open(json.dumps(dict(kind=kind, path=str(path), provider=provider,
+                                                                settings=settings() if config is None else config)))
+        except RuntimeError as error:
+&gt;           raise translate(str(error)) from error
+E           terracotta.exceptions.InvalidDatabaseError: Version conflict: database was created in v0.11.0, but this is compatible with v0.10.1
+
+validation/artifacts/p07-python/terracotta/_bridge.py:47: InvalidDatabaseError</failure></testcase></testsuite></testsuites>

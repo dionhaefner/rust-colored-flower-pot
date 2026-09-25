@@ -1,0 +1,23 @@
+Source: https://raw.githubusercontent.com/OSGeo/gdal/v3.9.3/alg/gdaltransformer.cpp
+
+1816:  * </li>
+1817:  * <li> Other RPC related options. See GDALCreateRPCTransformerV2()
+1818:  * </li>
+1819:  * <li>
+1820:  * INSERT_CENTER_LONG: May be set to FALSE to disable setting up a CENTER_LONG
+1821:  * value on the coordinate system to rewrap things around the center of the
+1822:  * image.
+1823:  * </li>
+1824:  * <li> SRC_APPROX_ERROR_IN_SRS_UNIT=err_threshold_in_SRS_units. (GDAL
+1825:  * &gt;= 2.2) Use an approximate transformer for the source transformer. Must be
+
+2449:     }
+2450: 
+2451:     const bool bMayInsertCenterLong =
+2452:         (bCanUseSrcGeoTransform && !oSrcSRS.IsEmpty() && hSrcDS &&
+2453:          CPLFetchBool(papszOptions, "INSERT_CENTER_LONG", true));
+2454:     const char *pszSrcCoordEpoch =
+2455:         CSLFetchNameValue(papszOptions, "SRC_COORDINATE_EPOCH");
+2456:     const char *pszDstCoordEpoch =
+2457:         CSLFetchNameValue(papszOptions, "DST_COORDINATE_EPOCH");
+2458:     if ((!oSrcSRS.IsEmpty() && !oDstSRS.IsEmpty() &&

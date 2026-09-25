@@ -1,0 +1,14 @@
+   Compiling terracotta v0.1.0 (/home/dion/codes/rust-colored-flower-pot)
+error[E0433]: failed to resolve: use of undeclared type `CStr`
+   --> src/raster.rs:402:37
+    |
+402 |                     eprintln!("{}", CStr::from_ptr(*xml).to_string_lossy());
+    |                                     ^^^^ use of undeclared type `CStr`
+    |
+help: consider importing this struct
+    |
+3   + use std::ffi::CStr;
+    |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `terracotta` (lib) due to 1 previous error

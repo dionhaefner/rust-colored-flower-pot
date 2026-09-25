@@ -1,0 +1,45 @@
+/usr/lib/python3.12/contextlib.py:81: PerformanceWarning: Raster file .cache/corpus/subsets/lagoon-red.tif is not a valid cloud-optimized GeoTIFF. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
+  return func(*args, **kwds)
+--------------------------------------------------------------------------------
+PATH: '/keys'
+         946 function calls (842 primitive calls) in 0.001 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 229 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.001    0.001 {built-in method terracotta_rust._native.session_open}
+     37/1    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+        1    0.000    0.000    0.001    0.001 /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-final-python/terracotta/server/flask_api.py:156(native_request)
+        1    0.000    0.000    0.000    0.000 {built-in method terracotta_rust._native.session_operation}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.12/json/encoder.py:205(iterencode)
+        8    0.000    0.000    0.000    0.000 {built-in method posix.lstat}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+     29/1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/routing/matcher.py:60(_update_state)
+        1    0.000    0.000    0.000    0.000 <frozen posixpath>:428(realpath)
+        1    0.000    0.000    0.000    0.000 <frozen posixpath>:437(_joinrealpath)
+       43    0.000    0.000    0.000    0.000 {method 'sort' of 'list' objects}
+       68    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        2    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/utils.py:88(__get__)
+        1    0.000    0.000    0.001    0.001 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/flask/app.py:1271(preprocess_request)
+        4    0.000    0.000    0.000    0.000 <frozen abc>:117(__instancecheck__)
+        1    0.000    0.000    0.001    0.001 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/flask/app.py:1479(wsgi_app)
+        8    0.000    0.000    0.000    0.000 <frozen posixpath>:71(join)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.12/json/decoder.py:343(raw_decode)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-final-python/terracotta_rust/__init__.py:173(request)
+        3    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/datastructures/headers.py:644(__iter__)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-final-python/terracotta/drivers/__init__.py:61(get_driver)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/wrappers/response.py:144(__init__)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/routing/map.py:492(match)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/flask/ctx.py:406(pop)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/routing/map.py:252(bind_to_environ)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/wrappers/request.py:113(__init__)
+        3    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/werkzeug/datastructures/headers.py:375(set)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/flask/ctx.py:377(push)
+        1    0.000    0.000    0.000    0.000 /home/dion/codes/rust-colored-flower-pot/.venv-reference/lib/python3.12/site-packages/flask/app.py:1298(process_response)
+        1    0.000    0.000    0.001    0.001 /home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-final-python/terracotta_rust/__init__.py:170(__init__)
+
+
+--------------------------------------------------------------------------------
+
+27 checks passed

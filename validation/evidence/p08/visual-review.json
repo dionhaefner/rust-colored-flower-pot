@@ -1,0 +1,11 @@
+{
+  "phase": "P08",
+  "geography": {
+    "path": "images/p08-geography-final/side-by-side.png",
+    "finding": "Inspected native-size polar and east/west dateline crops. Terrain features, framing and transparency match Python/Rust side by side. Thirty decoded comparisons separately check all channels."
+  },
+  "initial_final_browser": {
+    "path": "browser-final/rgb.png",
+    "finding": "Retained client RGB lagoon scene is recognizable and intact, with matching preview and normal controls. One request overload in the network log prompted a stricter rerun at queue 64; this screenshot alone does not qualify all requests."
+  }
+}

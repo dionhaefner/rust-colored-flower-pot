@@ -1,0 +1,3 @@
+/home/dion/codes/rust-colored-flower-pot/.cache/reference/terracotta/expressions.py:126: RuntimeWarning: invalid value encountered in sqrt
+  return func(*map(self.visit, node.args))
+{'passed': 526, 'failed': 0, 'total': 526}

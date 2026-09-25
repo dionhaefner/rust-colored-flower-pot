@@ -1,0 +1,91 @@
+name: Platform qualification
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['src/**', 'python/**', 'packaging/**', 'Cargo.*', 'validation/tools/p07_platform_smoke.py', '.github/workflows/platforms.yml']
+permissions:
+  contents: read
+jobs:
+  installed-wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-14, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: qualification
+          create-args: >-
+            python=3.12 pip setuptools wheel gdal=3.9.3 rasterio=1.4.3 numpy=2 pillow
+          cache-environment: true
+          init-shell: bash
+      - name: Install Rust toolchain
+        run: rustup toolchain install 1.85.1 --profile minimal --component clippy,rustfmt
+      - name: Build and check core
+        run: |
+          cargo fmt --check
+          cargo test --locked
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo build --locked --release
+      - name: Locate external GDAL runtime
+        run: python packaging/ci-gdal-env.py
+      - name: Build wheel and install
+        run: |
+          python packaging/stage-platform-python.py --output validation/artifacts/ci-package
+          cd validation/artifacts/ci-package
+          python setup.py bdist_wheel --dist-dir ../ci-wheels
+          python -m pip install ../ci-wheels/*.whl
+      - name: Real-raster install smoke
+        run: python validation/tools/p07_platform_smoke.py --binary target/release/terracotta --out validation/artifacts/ci-smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qualification-${{ matrix.os }}
+          path: |
+            validation/artifacts/ci-wheels/
+            validation/artifacts/ci-smoke/
+          retention-days: 14
+  lambda:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install rasterio==1.4.3 numpy==2.2.6 pillow
+      - name: Build native AL2023 artifact
+        run: |
+          docker build -f packaging/lambda/Dockerfile.ci -t terracotta-lambda-build .
+          id=$(docker create terracotta-lambda-build)
+          mkdir -p validation/artifacts
+          docker cp "$id:/bundle" validation/artifacts/ci-lambda-bundle
+          docker rm "$id"
+      - name: Real-raster native smoke and zip
+        run: |
+          python validation/tools/p07_platform_smoke.py --native-only --binary validation/artifacts/ci-lambda-bundle/bin/terracotta --out validation/artifacts/ci-native-smoke
+          mkdir -p validation/artifacts/capture-reproduction
+          cp validation/artifacts/ci-native-smoke/platform.sqlite validation/artifacts/capture-reproduction/reference.sqlite
+          packaging/build-lambda.sh validation/artifacts/ci-lambda-bundle validation/artifacts/ci-lambda
+      - name: Official runtime image smoke (no AWS deployment)
+        run: |
+          python validation/tools/p03_lambda_runtime.py --bundle validation/artifacts/ci-lambda-bundle --lambda-zip validation/artifacts/ci-lambda/terracotta-lambda.zip --image public.ecr.aws/lambda/provided:al2023 --out validation/artifacts/ci-lambda-smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lambda-${{ matrix.os }}
+          path: |
+            validation/artifacts/ci-lambda/*.zip
+            validation/artifacts/ci-lambda-smoke/
+            validation/artifacts/ci-native-smoke/report.json
+          retention-days: 14

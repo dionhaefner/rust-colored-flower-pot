@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_rollback.py", line 79, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p08_rollback.py", line 69, in main
+    assert tc.get_driver(historic).db_version=='0.10.1'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

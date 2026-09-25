@@ -1,0 +1,54 @@
+   Compiling terracotta v0.1.0 (/home/dion/codes/rust-colored-flower-pot)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.00s
+     Running unittests src/lib.rs (target/debug/deps/terracotta_core-a637a1b13c4c2239)
+
+running 20 tests
+test execution::tests::recognizes_supported_remote_paths ... ok
+test execution::tests::cache_identity_covers_rendering_inputs_and_file_generation ... ok
+test http::tests::decodes_query_values ... ok
+test http::tests::preserves_palette_order ... ok
+test image::tests::reserves_zero_for_transparency_and_uses_even_rounding ... ok
+test image::tests::writes_legacy_rgb_transparency ... ok
+test image::tests::writes_valid_non_square_png ... ok
+test ingest::tests::repeated_adjacent_keys_backtrack_and_anonymous_fields_are_lazy ... ok
+test raster::tests::web_mercator_world_is_symmetric ... ok
+test raster::tests::matches_known_venice_tile ... ok
+test lambda::tests::base64_matches_rfc_examples ... ok
+test storage::tests::checks_major_minor_versions ... ok
+test lambda::tests::builds_stable_v1_queries ... ok
+test storage::provider::tests::scheme_case_and_ipv6_match_urlparse ... ok
+test storage::migrations::tests::supported_chain ... ok
+test storage::tests::reads_python_created_database_and_legacy_encodings ... ok
+test expressions::tests::frozen_expression_vectors ... ok
+test execution::tests::pool_drop_drains_jobs_and_waits_for_thread_local_cleanup ... ok
+test storage::tests::rust_compatibility_write_round_trips ... ok
+test storage::write_tests::nested_write_failure_and_unwind_restore_the_original_dataset ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running unittests src/main.rs (target/debug/deps/terracotta-ae45d4ce88dfc219)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p06_remote.rs (target/debug/deps/p06_remote-ec9d6532e0fc3767)
+
+running 1 test
+test leases_failed_refresh_and_signing ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.30s
+
+     Running tests/p06_sql.rs (target/debug/deps/p06_sql-a0b32110e11eacdd)
+
+running 1 test
+test transaction_unwind_and_savepoint_recovery ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+   Doc-tests terracotta_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,13 @@
+{
+  "subsets": [
+    {"id":"lagoon-red", "parent":"s2-red", "window":[5500,5250,2048,2048], "band":1, "location":"Venice lagoon; western satellite footprint edge", "keys":["lagoon","red"]},
+    {"id":"lagoon-green", "parent":"s2-green", "window":[5500,5250,2048,2048], "band":1, "location":"Venice lagoon", "keys":["lagoon","green"]},
+    {"id":"lagoon-blue", "parent":"s2-blue", "window":[5500,5250,2048,2048], "band":1, "location":"Venice lagoon", "keys":["lagoon","blue"]},
+    {"id":"lagoon-nir", "parent":"s2-nir", "window":[5500,5250,2048,2048], "band":1, "location":"Venice lagoon", "keys":["lagoon","nir"]},
+    {"id":"dolomites", "parent":"dem", "window":[388,1108,1024,1024], "band":1, "location":"Dolomites near Cortina d'Ampezzo", "keys":["dolomites","elevation"]},
+    {"id":"landcover", "parent":"worldcover", "window":[2936,29696,2048,2048], "band":1, "location":"Venice lagoon", "keys":["lagoon","classes"]},
+    {"id":"lagoon-mask", "parent":"s2-red", "window":[5500,5250,2048,2048], "band":1, "location":"Venice lagoon; derived internal mask", "keys":["mask","red"], "internal_mask":true}
+  ],
+  "creation": {"driver":"GTiff", "compress":"deflate", "tiled":false},
+  "changed_properties":"Derived ordinary stripped GeoTIFFs; parent blocks, overviews and COG ordering are not preserved. Values, dtype, CRS, native transform and masks are checked exactly. lagoon-mask alone replaces nodata metadata with an equivalent internal validity mask. No scale/offset correction, resampling or warping."
+}

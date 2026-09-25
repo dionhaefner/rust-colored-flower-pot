@@ -1,0 +1,956 @@
+{
+  "rasterio": "1.4.3",
+  "GDAL": "3.9.3",
+  "parents": {
+    "s2-red": {
+      "bytes": 93791539,
+      "sha256": "816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c",
+      "width": 10980,
+      "height": 10980,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        699960.0,
+        0.0,
+        -10.0,
+        5100000.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        699960.0,
+        4990200.0,
+        809760.0,
+        5100000.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 3562,
+      "max_block_offset": 93147822,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND",
+        "PREDICTOR": "2"
+      }
+    },
+    "s2-green": {
+      "bytes": 93770488,
+      "sha256": "f4966fd5f16270cf0192e9a2e06e90679806993e3886bdc0f5652debbf8af893",
+      "width": 10980,
+      "height": 10980,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        699960.0,
+        0.0,
+        -10.0,
+        5100000.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        699960.0,
+        4990200.0,
+        809760.0,
+        5100000.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 3562,
+      "max_block_offset": 93107524,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND",
+        "PREDICTOR": "2"
+      }
+    },
+    "s2-blue": {
+      "bytes": 94502218,
+      "sha256": "adf88aa4000396e43bc780524e16c27c19e84d1122aabc7c7523521bb5c86f54",
+      "width": 10980,
+      "height": 10980,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        699960.0,
+        0.0,
+        -10.0,
+        5100000.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        699960.0,
+        4990200.0,
+        809760.0,
+        5100000.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 3562,
+      "max_block_offset": 93820227,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND",
+        "PREDICTOR": "2"
+      }
+    },
+    "s2-nir": {
+      "bytes": 91219108,
+      "sha256": "cffb6749394dcd7de713d7f0ca5de8b5b84d524d9a3cbba940126ccf6c38fe60",
+      "width": 10980,
+      "height": 10980,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        699960.0,
+        0.0,
+        -10.0,
+        5100000.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        699960.0,
+        4990200.0,
+        809760.0,
+        5100000.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 3562,
+      "max_block_offset": 90592554,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND",
+        "PREDICTOR": "2"
+      }
+    },
+    "dem": {
+      "bytes": 43246901,
+      "sha256": "46b61212f5850f75b5878ea1e14daaa53d3f734820adcb73f2f4f345c1130f33",
+      "width": 3600,
+      "height": 3600,
+      "bands": 1,
+      "dtypes": [
+        "float32"
+      ],
+      "crs": "EPSG:4326",
+      "transform": [
+        0.0002777777777777778,
+        0.0,
+        11.99986111111111,
+        0.0,
+        -0.0002777777777777778,
+        47.00013888888889,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        11.99986111111111,
+        46.00013888888889,
+        12.99986111111111,
+        47.00013888888889
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": null,
+      "masks": [
+        [
+          "all_valid"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 1260,
+      "max_block_offset": 42513242,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "LAYOUT": "COG",
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND",
+        "PREDICTOR": "3"
+      }
+    },
+    "worldcover": {
+      "bytes": 85040674,
+      "sha256": "80f665ce258f470e3d18facf5842f3451c5d66e7010d130bc2d3b1e387f8b7b4",
+      "width": 36000,
+      "height": 36000,
+      "bands": 1,
+      "dtypes": [
+        "uint8"
+      ],
+      "crs": "EPSG:4326",
+      "transform": [
+        8.333333333333333e-05,
+        0.0,
+        12.0,
+        0.0,
+        -8.333333333333333e-05,
+        48.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        12.0,
+        45.0,
+        15.0,
+        48.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          1024,
+          1024
+        ]
+      ],
+      "overviews": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 27560,
+      "max_block_offset": 85038280,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "LAYOUT": "COG",
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      }
+    }
+  },
+  "subsets": {
+    "lagoon-red": {
+      "bytes": 5071590,
+      "sha256": "3a5cda80a27795b0dabeb80db1a44015c2c27d02c15704b96ba0dbcecd651f79",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        754960.0,
+        0.0,
+        -10.0,
+        5047500.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        754960.0,
+        5027020.0,
+        775440.0,
+        5047500.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 8576,
+      "max_block_offset": 5058209,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 3656264,
+      "invalid_pixels": 538040,
+      "valid_zeros": 0,
+      "valid_range": [
+        98.0,
+        14568.0
+      ]
+    },
+    "lagoon-green": {
+      "bytes": 5141788,
+      "sha256": "dc93aa83bf901faf8c82f34e7a75da7f5302f9693306bb0f007867f34caf6d4d",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        754960.0,
+        0.0,
+        -10.0,
+        5047500.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        754960.0,
+        5027020.0,
+        775440.0,
+        5047500.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 8576,
+      "max_block_offset": 5128134,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 3656264,
+      "invalid_pixels": 538040,
+      "valid_zeros": 0,
+      "valid_range": [
+        142.0,
+        8864.0
+      ]
+    },
+    "lagoon-blue": {
+      "bytes": 5068518,
+      "sha256": "0e5eeb0f3b1ebd393a06fda7263d938b330e4a898b3adf774104595d53873e9d",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        754960.0,
+        0.0,
+        -10.0,
+        5047500.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        754960.0,
+        5027020.0,
+        775440.0,
+        5047500.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 8576,
+      "max_block_offset": 5054934,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 3656264,
+      "invalid_pixels": 538040,
+      "valid_zeros": 0,
+      "valid_range": [
+        4.0,
+        7848.0
+      ]
+    },
+    "lagoon-nir": {
+      "bytes": 4990136,
+      "sha256": "2c52449cf61a027b5222f2c1e8808701e16853f7581f23956d0f1ee337faa8ee",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        754960.0,
+        0.0,
+        -10.0,
+        5047500.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        754960.0,
+        5027020.0,
+        775440.0,
+        5047500.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 8576,
+      "max_block_offset": 4976965,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 3656264,
+      "invalid_pixels": 538040,
+      "valid_zeros": 0,
+      "valid_range": [
+        1.0,
+        7780.0
+      ]
+    },
+    "dolomites": {
+      "bytes": 3664486,
+      "sha256": "692cb33d4adde5092dd6eb82261fa93894b2c4af00c31af472bdabbb155a62db",
+      "width": 1024,
+      "height": 1024,
+      "bands": 1,
+      "dtypes": [
+        "float32"
+      ],
+      "crs": "EPSG:4326",
+      "transform": [
+        0.0002777777777777778,
+        0.0,
+        12.10763888888889,
+        0.0,
+        -0.0002777777777777778,
+        46.69236111111111,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        12.10763888888889,
+        46.407916666666665,
+        12.392083333333334,
+        46.69236111111111
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": null,
+      "masks": [
+        [
+          "all_valid"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          1024
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 4474,
+      "max_block_offset": 3652947,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 1048576,
+      "invalid_pixels": 0,
+      "valid_zeros": 0,
+      "valid_range": [
+        548.8402709960938,
+        3136.123291015625
+      ]
+    },
+    "landcover": {
+      "bytes": 197054,
+      "sha256": "0329b19d00302e8fc2c5b95c41c06422feb957b709959bdbbb0e5cce1c0708e4",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint8"
+      ],
+      "crs": "EPSG:4326",
+      "transform": [
+        8.333333333333333e-05,
+        0.0,
+        12.244666666666667,
+        0.0,
+        -8.333333333333333e-05,
+        45.525333333333336,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        12.244666666666667,
+        45.35466666666667,
+        12.415333333333335,
+        45.525333333333336
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": 0.0,
+      "masks": [
+        [
+          "nodata"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          4,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 4486,
+      "max_block_offset": 192469,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 4194304,
+      "invalid_pixels": 0,
+      "valid_zeros": 0,
+      "valid_range": [
+        10.0,
+        90.0
+      ],
+      "categories": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        80,
+        90
+      ]
+    },
+    "lagoon-mask": {
+      "bytes": 5099363,
+      "sha256": "9641aaca1725a3a38cf6cf91defdb5d59bf5830b853f09d59f37fe9df6fc7e5a",
+      "width": 2048,
+      "height": 2048,
+      "bands": 1,
+      "dtypes": [
+        "uint16"
+      ],
+      "crs": "EPSG:32632",
+      "transform": [
+        10.0,
+        0.0,
+        754960.0,
+        0.0,
+        -10.0,
+        5047500.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bounds": [
+        754960.0,
+        5027020.0,
+        775440.0,
+        5047500.0
+      ],
+      "scales": [
+        1.0
+      ],
+      "offsets": [
+        0.0
+      ],
+      "nodata": null,
+      "masks": [
+        [
+          "per_dataset"
+        ]
+      ],
+      "compression": "deflate",
+      "blocks": [
+        [
+          2,
+          2048
+        ]
+      ],
+      "overviews": [],
+      "tiff_variant": "classic TIFF",
+      "min_block_offset": 8564,
+      "max_block_offset": 5099343,
+      "blocks_beyond_4GiB": 0,
+      "image_structure": {
+        "COMPRESSION": "DEFLATE",
+        "INTERLEAVE": "BAND"
+      },
+      "valid_pixels": 3656264,
+      "invalid_pixels": 538040,
+      "valid_zeros": 0,
+      "valid_range": [
+        98.0,
+        14568.0
+      ]
+    }
+  },
+  "recipe": {
+    "subsets": [
+      {
+        "id": "lagoon-red",
+        "parent": "s2-red",
+        "window": [
+          5500,
+          5250,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon; western satellite footprint edge",
+        "keys": [
+          "lagoon",
+          "red"
+        ]
+      },
+      {
+        "id": "lagoon-green",
+        "parent": "s2-green",
+        "window": [
+          5500,
+          5250,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon",
+        "keys": [
+          "lagoon",
+          "green"
+        ]
+      },
+      {
+        "id": "lagoon-blue",
+        "parent": "s2-blue",
+        "window": [
+          5500,
+          5250,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon",
+        "keys": [
+          "lagoon",
+          "blue"
+        ]
+      },
+      {
+        "id": "lagoon-nir",
+        "parent": "s2-nir",
+        "window": [
+          5500,
+          5250,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon",
+        "keys": [
+          "lagoon",
+          "nir"
+        ]
+      },
+      {
+        "id": "dolomites",
+        "parent": "dem",
+        "window": [
+          388,
+          1108,
+          1024,
+          1024
+        ],
+        "band": 1,
+        "location": "Dolomites near Cortina d'Ampezzo",
+        "keys": [
+          "dolomites",
+          "elevation"
+        ]
+      },
+      {
+        "id": "landcover",
+        "parent": "worldcover",
+        "window": [
+          2936,
+          29696,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon",
+        "keys": [
+          "lagoon",
+          "classes"
+        ]
+      },
+      {
+        "id": "lagoon-mask",
+        "parent": "s2-red",
+        "window": [
+          5500,
+          5250,
+          2048,
+          2048
+        ],
+        "band": 1,
+        "location": "Venice lagoon; derived internal mask",
+        "keys": [
+          "mask",
+          "red"
+        ],
+        "internal_mask": true
+      }
+    ],
+    "creation": {
+      "driver": "GTiff",
+      "compress": "deflate",
+      "tiled": false
+    },
+    "changed_properties": "Derived ordinary stripped GeoTIFFs; parent blocks, overviews and COG ordering are not preserved. Values, dtype, CRS, native transform and masks are checked exactly. lagoon-mask alone replaces nodata metadata with an equivalent internal validity mask. No scale/offset correction, resampling or warping."
+  }
+}

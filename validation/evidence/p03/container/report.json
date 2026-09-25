@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "image_tag": "terracotta-p03-local:20260922-2",
+  "image_id": "sha256:5927ca5051d93c1d7b9927827d51ea991f66702a9b3da4bcd5dc23e8a456516e",
+  "image_os": "linux",
+  "image_architecture": "amd64",
+  "image_size_bytes": 156313238,
+  "base_image": "debian:bookworm-slim",
+  "network_at_runtime": "none",
+  "decoded_rgba_exact": true,
+  "response_status": 200,
+  "png_sha256": "a1646594c4e5d06d19dc31c8645b554cfea7e45a2ae814180ee1f6b6fb97e7a8",
+  "build_stdout_tail": "",
+  "build_stderr_tail": "cates (20250419~deb12u1) ...\n#6 3.343 Selecting previously unselected package libexpat1:amd64.\n#6 3.344 Preparing to unpack .../libexpat1_2.5.0-1+deb12u3_amd64.deb ...\n#6 3.346 Unpacking libexpat1:amd64 (2.5.0-1+deb12u3) ...\n#6 3.371 Setting up libexpat1:amd64 (2.5.0-1+deb12u3) ...\n#6 3.377 Setting up libssl3:amd64 (3.0.20-1~deb12u2) ...\n#6 3.384 Setting up openssl (3.0.20-1~deb12u2) ...\n#6 3.397 Setting up ca-certificates (20250419~deb12u1) ...\n#6 3.451 debconf: unable to initialize frontend: Dialog\n#6 3.451 debconf: (TERM is not set, so the dialog frontend is not usable.)\n#6 3.451 debconf: falling back to frontend: Readline\n#6 3.451 debconf: unable to initialize frontend: Readline\n#6 3.451 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)\n#6 3.451 debconf: falling back to frontend: Teletype\n#6 3.774 Updating certificates in /etc/ssl/certs...\n#6 4.246 150 added, 0 removed; done.\n#6 4.272 Processing triggers for libc-bin (2.36-9+deb12u14) ...\n#6 4.283 Processing triggers for ca-certificates (20250419~deb12u1) ...\n#6 4.288 Updating certificates in /etc/ssl/certs...\n#6 4.660 0 added, 0 removed; done.\n#6 4.660 Running hooks in /etc/ca-certificates/update.d...\n#6 4.661 done.\n#6 DONE 4.7s\n\n#7 [3/4] COPY bundle /opt/terracotta\n#7 DONE 0.1s\n\n#8 [4/4] COPY fixture /data\n#8 DONE 0.0s\n\n#9 exporting to image\n#9 exporting layers 0.1s done\n#9 writing image sha256:5927ca5051d93c1d7b9927827d51ea991f66702a9b3da4bcd5dc23e8a456516e done\n#9 naming to docker.io/library/terracotta-p03-local:20260922-2 done\n#9 DONE 0.1s\n\nView build details: docker-desktop://dashboard/build/default/default/iig9t5gtz5kfvmfcpsxjicjb7\n",
+  "claim": "The relocatable Linux x86_64 bundle loads in a clean Debian container and reads/renders the pinned real Sentinel-2 subset without the reference venv."
+}

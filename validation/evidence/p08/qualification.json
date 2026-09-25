@@ -1,0 +1,340 @@
+{
+  "checks": [
+    {
+      "name": "fmt",
+      "command": [
+        "validation/tools/cargo.sh",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 0.15952158698928542,
+      "completed_at": "2026-09-25T05:51:15.182921+00:00",
+      "log": "validation/evidence/p08/fmt-final.log"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "validation/tools/cargo.sh",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 1.4148115469724871,
+      "completed_at": "2026-09-25T05:51:16.598121+00:00",
+      "log": "validation/evidence/p08/clippy-final.log"
+    },
+    {
+      "name": "native",
+      "command": [
+        "validation/tools/cargo.sh",
+        "test",
+        "--locked",
+        "--offline",
+        "--features",
+        "storage-integration"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 14.022160202992382,
+      "completed_at": "2026-09-25T05:51:30.620749+00:00",
+      "log": "validation/evidence/p08/native-final.log"
+    },
+    {
+      "name": "http",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p04_validate.py",
+        "--out",
+        "validation/artifacts/p08-http-final"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 77.80377359801787,
+      "completed_at": "2026-09-25T05:52:48.424952+00:00",
+      "log": "validation/evidence/p08/http-final.log"
+    },
+    {
+      "name": "adapters",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p04_adapters.py",
+        "--bundle",
+        "validation/artifacts/p08-final",
+        "--package",
+        "validation/artifacts/p08-final-python",
+        "--out",
+        "validation/artifacts/p08-adapters-final"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 5.656785625993507,
+      "completed_at": "2026-09-25T05:52:54.082278+00:00",
+      "log": "validation/evidence/p08/adapters-final.log"
+    },
+    {
+      "name": "upstream",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "-m",
+        "pytest",
+        ".cache/reference/tests",
+        "--ignore=.cache/reference/tests/drivers/test_sqlite_remote.py",
+        "--mysql-server",
+        "root:p06-disposable@127.0.0.1:53316",
+        "--postgresql-server",
+        "postgres:p06-disposable@127.0.0.1:55436",
+        "--junitxml=validation/evidence/p08/upstream-final.xml"
+      ],
+      "exit_code": 1,
+      "accepted": true,
+      "classification": "526 passed, 2 frozen-oracle ANSI failures (RW-036); 6 boto-mock cases excluded explicitly (RW-037)",
+      "seconds": 37.101451055001235,
+      "completed_at": "2026-09-25T05:53:31.184133+00:00",
+      "log": "validation/evidence/p08/upstream-final.log"
+    },
+    {
+      "name": "integration",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p07_validate.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 4.073998337989906,
+      "completed_at": "2026-09-25T05:53:35.258538+00:00",
+      "log": "validation/evidence/p08/integration-final.log"
+    },
+    {
+      "name": "settings",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p07_settings.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 13.428100024990272,
+      "completed_at": "2026-09-25T05:53:48.687058+00:00",
+      "log": "validation/evidence/p08/settings-final.log"
+    },
+    {
+      "name": "remote",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p07_remote.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 2.8818640270037577,
+      "completed_at": "2026-09-25T05:53:51.569357+00:00",
+      "log": "validation/evidence/p08/remote-final.log"
+    },
+    {
+      "name": "preparation",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p05_validate.py",
+        "--binary",
+        "validation/artifacts/p08-final/bin/terracotta",
+        "--output",
+        "validation/artifacts/p08-preparation"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 24.26002184598474,
+      "completed_at": "2026-09-25T05:54:15.829824+00:00",
+      "log": "validation/evidence/p08/preparation-final.log"
+    },
+    {
+      "name": "engines",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p06_validate.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 4.769112478999887,
+      "completed_at": "2026-09-25T05:54:20.599450+00:00",
+      "log": "validation/evidence/p08/engines-final.log"
+    },
+    {
+      "name": "migrations",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p06_migrations.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 2.258222183008911,
+      "completed_at": "2026-09-25T05:54:22.858167+00:00",
+      "log": "validation/evidence/p08/migrations-final.log"
+    },
+    {
+      "name": "rollback",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_rollback.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 1.5181108090037014,
+      "completed_at": "2026-09-25T05:54:24.376784+00:00",
+      "log": "validation/evidence/p08/rollback-final.log"
+    },
+    {
+      "name": "geography",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_geography.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 4.6207690089941025,
+      "completed_at": "2026-09-25T05:54:28.998053+00:00",
+      "log": "validation/evidence/p08/geography-final.log"
+    },
+    {
+      "name": "bigtiff",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_bigtiff.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 14.572384058992611,
+      "completed_at": "2026-09-25T05:54:43.571030+00:00",
+      "log": "validation/evidence/p08/bigtiff-final.log"
+    },
+    {
+      "name": "resources",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p07_resources.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 6.514066845003981,
+      "completed_at": "2026-09-25T05:54:50.085637+00:00",
+      "log": "validation/evidence/p08/resources-final.log"
+    },
+    {
+      "name": "failure",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p02_failure.py",
+        "--binary",
+        "validation/artifacts/p08-final/bin/terracotta",
+        "--out",
+        "validation/artifacts/p08-failure-final"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 1.4664163890120108,
+      "completed_at": "2026-09-25T05:54:51.552571+00:00",
+      "log": "validation/evidence/p08/failure-final.log"
+    },
+    {
+      "name": "soak",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_soak.py",
+        "--out",
+        "validation/artifacts/p08-soak-final"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 183.47118979299557,
+      "completed_at": "2026-09-25T05:57:55.024388+00:00",
+      "log": "validation/evidence/p08/soak-final.log"
+    },
+    {
+      "name": "shutdown",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_shutdown.py"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 58.531783397018444,
+      "completed_at": "2026-09-25T05:58:53.556656+00:00",
+      "log": "validation/evidence/p08/shutdown-final.log"
+    },
+    {
+      "name": "container",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p03_container.py",
+        "--bundle",
+        "validation/artifacts/p08-final",
+        "--out",
+        "validation/artifacts/p08-container-final",
+        "--tag",
+        "terracotta-p08-final:local"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 3.321849443978863,
+      "completed_at": "2026-09-25T05:58:56.879011+00:00",
+      "log": "validation/evidence/p08/container-final.log"
+    },
+    {
+      "name": "lambda",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p03_lambda_runtime.py",
+        "--bundle",
+        "validation/artifacts/p08-final",
+        "--lambda-zip",
+        "validation/artifacts/p08-final-lambda/terracotta-lambda.zip",
+        "--out",
+        "validation/artifacts/p08-lambda-final"
+      ],
+      "exit_code": 0,
+      "accepted": true,
+      "classification": "passed",
+      "seconds": 1.1701106079854071,
+      "completed_at": "2026-09-25T05:58:58.049667+00:00",
+      "log": "validation/evidence/p08/lambda-final.log"
+    },
+    {
+      "name": "geographic-metadata",
+      "command": [
+        "/home/dion/codes/rust-colored-flower-pot/.venv-reference/bin/python",
+        "validation/tools/p08_geographic_metadata.py"
+      ],
+      "exit_code": 1,
+      "accepted": false,
+      "classification": "failed",
+      "seconds": 2.3054516830015928,
+      "completed_at": "2026-09-25T06:11:54.906823+00:00",
+      "log": "validation/evidence/p08/geographic-metadata-final.log"
+    }
+  ],
+  "complete": false
+}
