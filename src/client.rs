@@ -12,7 +12,7 @@ pub fn command(args: &[String]) -> Result<()> {
     while i < args.len() {
         match args[i].as_str() {
             "--help" | "-h" => {
-                println!("Usage: terracotta connect HOSTNAME [--no-browser] [--port PORT]");
+                println!("Usage: rcfp connect HOSTNAME [--no-browser] [--port PORT]");
                 return Ok(());
             }
             "--no-browser" => browser = false,
@@ -86,8 +86,8 @@ pub fn command(args: &[String]) -> Result<()> {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#39;");
-    let index = include_str!("../python/terracotta/client/templates/index.html")
-        .replace("{{ hostname }}", &escaped);
+    let index =
+        include_str!("assets/client/templates/index.html").replace("{{ hostname }}", &escaped);
     for request in server.incoming_requests() {
         let path = request.url().split('?').next().unwrap_or("/");
         let (status, mime, data) =

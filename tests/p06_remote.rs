@@ -1,4 +1,5 @@
 //! Socket-based integration executable: run separately with local socket permission.
+use rcfp_core::storage::Store;
 use std::{
     io::{Read, Write},
     net::TcpListener,
@@ -9,7 +10,6 @@ use std::{
     thread,
     time::Duration,
 };
-use terracotta_core::storage::Store;
 #[test]
 fn leases_failed_refresh_and_signing() {
     let root = std::env::temp_dir().join(format!("tc-p06-lease-{}", std::process::id()));

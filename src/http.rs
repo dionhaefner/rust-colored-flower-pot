@@ -11,6 +11,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::mpsc::{self, TrySendError};
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use tiny_http::{Header, Method, Response, Server, StatusCode};
 
 pub struct Application {
@@ -267,8 +268,14 @@ impl Application {
             respond(request, json_error(413, "Request body is too large"));
             return;
         }
+        let is_tile =
+            request.url().starts_with("/singleband/") || request.url().starts_with("/rgb/");
         let response = self.request_full(request.method().as_str(), request.url(), &headers, &body);
+        let delivered = response.status == 200 && is_tile;
         respond(request, response);
+        if delivered {
+            self.executor.wake_prefetch();
+        }
     }
 
     fn handle(
@@ -634,6 +641,7 @@ impl Application {
     }
 
     fn singleband(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        let started = Instant::now();
         let components = path
             .trim_start_matches("/singleband/")
             .split('/')
@@ -656,6 +664,7 @@ impl Application {
             .ok_or_else(|| "No dataset found".to_string())?;
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
+        let metadata_at = Instant::now();
         let size = parameters
             .get("tile_size")
             .map(|value| parse_size(value))
@@ -718,6 +727,7 @@ impl Application {
                 preserve_values,
             },
         )?;
+        let raster_at = Instant::now();
         let png = if let Some(palette) = explicit {
             let pixels = image::label_values(&raster, &palette);
             let colors = palette.iter().map(|(_, color)| *color).collect::<Vec<_>>();
@@ -745,6 +755,15 @@ impl Application {
                 image::grayscale_png(raster.width, raster.height, &pixels)?
             }
         };
+        if std::env::var_os("TC_PROFILE_HTTP").is_some() {
+            eprintln!(
+                "http_profile mode=singleband metadata_us={} raster_us={} render_us={} path={}",
+                (metadata_at - started).as_micros(),
+                (raster_at - metadata_at).as_micros(),
+                raster_at.elapsed().as_micros(),
+                path,
+            );
+        }
         Ok(AppResponse {
             status: 200,
             content_type: "image/png",
@@ -755,6 +774,7 @@ impl Application {
     }
 
     fn rgb(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        let started = Instant::now();
         let operations = parameters
             .get("color_transform")
             .map(|v| color::parse(v, 3))
@@ -814,6 +834,7 @@ impl Application {
         }
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
+        let metadata_at = Instant::now();
 
         let tile_bounds = if preview {
             None
@@ -912,6 +933,7 @@ impl Application {
                 .collect()
         });
         let rasters = results.into_iter().collect::<Result<Vec<_>>>()?;
+        let raster_at = Instant::now();
         let mut normalized = channel_sources
             .iter()
             .enumerate()
@@ -933,6 +955,15 @@ impl Application {
             first.height,
             [&channels[0], &channels[1], &channels[2]],
         )?;
+        if std::env::var_os("TC_PROFILE_HTTP").is_some() {
+            eprintln!(
+                "http_profile mode=rgb metadata_us={} raster_us={} render_us={} path={}",
+                (metadata_at - started).as_micros(),
+                (raster_at - metadata_at).as_micros(),
+                raster_at.elapsed().as_micros(),
+                path,
+            );
+        }
         Ok(AppResponse {
             status: 200,
             content_type: "image/png",

@@ -1,5 +1,5 @@
 [package]
-name = "terracotta"
+name = "rcfp"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
@@ -28,12 +28,12 @@ flate2 = "=1.1.10"
 crc32fast = "=1.5.2"
 
 [lib]
-name = "terracotta_core"
+name = "rcfp_core"
 path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
-name = "terracotta"
+name = "rcfp"
 path = "src/main.rs"
 
 [features]

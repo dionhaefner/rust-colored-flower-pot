@@ -15,8 +15,8 @@ mkdir -p "$output/package"
 cp -a "$bundle" "$output/package/runtime"
 if [[ -n "${TERRACOTTA_LAMBDA_TARGET:-}" ]]; then
     lambda_target=$(realpath "$TERRACOTTA_LAMBDA_TARGET")
-    cp "$lambda_target/release/terracotta" "$output/package/runtime/bin/terracotta"
-    cp "$lambda_target/release/libterracotta_core.so" "$output/package/runtime/lib/libterracotta_core.so"
+    cp "$lambda_target/release/rcfp" "$output/package/runtime/bin/rcfp"
+    cp "$lambda_target/release/librcfp_core.so" "$output/package/runtime/lib/librcfp_core.so"
     cp -a "$lambda_target/runtime-libs/." "$output/package/runtime/lib/"
     if [[ -d "$lambda_target/licenses" ]]; then
         cp -a "$lambda_target/licenses/." "$output/package/runtime/licenses/"
@@ -26,6 +26,6 @@ cp "$root/packaging/lambda/bootstrap" "$output/package/bootstrap"
 chmod +x "$output/package/bootstrap"
 (
     cd "$output/package"
-    zip -q -r "$output/terracotta-lambda.zip" bootstrap runtime
+    zip -q -r "$output/rcfp-lambda.zip" bootstrap runtime
 )
-sha256sum "$output/terracotta-lambda.zip" > "$output/terracotta-lambda.zip.sha256"
+sha256sum "$output/rcfp-lambda.zip" > "$output/rcfp-lambda.zip.sha256"

@@ -50,7 +50,7 @@ fn local_rasterio_libs() -> Option<PathBuf> {
     None
 }
 
-fn configured_run(args: &[String]) -> terracotta_core::Result<()> {
+fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     let mut config = serde_json::Map::new();
     let mut index = 0;
     while index < args.len() {
@@ -73,18 +73,18 @@ fn configured_run(args: &[String]) -> terracotta_core::Result<()> {
             _ => break,
         }
     }
-    let config = terracotta_core::settings::parse(config)?;
-    terracotta_core::settings::scope(config, || run(&args[index..]))
+    let config = rcfp_core::settings::parse(config)?;
+    rcfp_core::settings::scope(config, || run(&args[index..]))
 }
 
-fn run(args: &[String]) -> terracotta_core::Result<()> {
+fn run(args: &[String]) -> rcfp_core::Result<()> {
     match args {
         [flag] if flag == "--version" => {
             println!(
-                "terracotta {} (P07; protocol {}; database {})",
-                terracotta_core::IMPLEMENTATION_VERSION,
-                terracotta_core::REFERENCE_VERSION,
-                terracotta_core::DATABASE_COMPATIBILITY
+                "rcfp {} (P07; protocol {}; database {})",
+                rcfp_core::IMPLEMENTATION_VERSION,
+                rcfp_core::REFERENCE_VERSION,
+                rcfp_core::DATABASE_COMPATIBILITY
             );
             Ok(())
         }
@@ -92,10 +92,10 @@ fn run(args: &[String]) -> terracotta_core::Result<()> {
             println!(
                 "{}",
                 serde_json::json!({
-                    "implementation": terracotta_core::IMPLEMENTATION_VERSION,
-                    "protocol_compatibility": terracotta_core::REFERENCE_VERSION,
-                    "database_compatibility": terracotta_core::DATABASE_COMPATIBILITY,
-                    "reference_commit": terracotta_core::REFERENCE_COMMIT,
+                    "implementation": rcfp_core::IMPLEMENTATION_VERSION,
+                    "protocol_compatibility": rcfp_core::REFERENCE_VERSION,
+                    "database_compatibility": rcfp_core::DATABASE_COMPATIBILITY,
+                    "reference_commit": rcfp_core::REFERENCE_COMMIT,
                     "phase": "P07"
                 })
             );
@@ -106,18 +106,18 @@ fn run(args: &[String]) -> terracotta_core::Result<()> {
             Ok(())
         }
         [command, rest @ ..] if command == "serve" => serve(rest),
-        [command, rest @ ..] if command == "connect" => terracotta_core::client::command(rest),
+        [command, rest @ ..] if command == "connect" => rcfp_core::client::command(rest),
         [command, rest @ ..] if command == "migrate" => {
-            terracotta_core::storage::migrations::command(rest)
+            rcfp_core::storage::migrations::command(rest)
         }
-        [command, rest @ ..] if command == "ingest" => terracotta_core::cli::ingest_command(rest),
+        [command, rest @ ..] if command == "ingest" => rcfp_core::cli::ingest_command(rest),
         [command, rest @ ..] if command == "optimize-rasters" => {
-            terracotta_core::cli::optimize_command(rest)
+            rcfp_core::cli::optimize_command(rest)
         }
         [command, file] if command == "data-operation" => {
             let request = serde_json::from_slice(&std::fs::read(file).map_err(|e| e.to_string())?)
                 .map_err(|e| e.to_string())?;
-            println!("{}", terracotta_core::cli::data_operation(&request)?);
+            println!("{}", rcfp_core::cli::data_operation(&request)?);
             Ok(())
         }
         [command, rest @ ..] if command == "lambda-event" => lambda_event(rest),
@@ -131,7 +131,7 @@ fn run(args: &[String]) -> terracotta_core::Result<()> {
     }
 }
 
-fn lambda_event(args: &[String]) -> terracotta_core::Result<()> {
+fn lambda_event(args: &[String]) -> rcfp_core::Result<()> {
     let mut database = None;
     let mut event = None;
     let mut index = 0;
@@ -155,7 +155,7 @@ fn lambda_event(args: &[String]) -> terracotta_core::Result<()> {
             .map_err(|error| format!("could not read event {}: {error}", event.display()))?,
     )
     .map_err(|error| format!("invalid event JSON: {error}"))?;
-    let response = terracotta_core::lambda::handle_event(&database, &event)?;
+    let response = rcfp_core::lambda::handle_event(&database, &event)?;
     println!(
         "{}",
         serde_json::to_string(&response).map_err(|error| error.to_string())?
@@ -163,16 +163,16 @@ fn lambda_event(args: &[String]) -> terracotta_core::Result<()> {
     Ok(())
 }
 
-fn lambda_runtime() -> terracotta_core::Result<()> {
-    let database = terracotta_core::settings::var_os("TC_DRIVER_PATH")
+fn lambda_runtime() -> rcfp_core::Result<()> {
+    let database = rcfp_core::settings::var_os("TC_DRIVER_PATH")
         .map(PathBuf::from)
         .ok_or_else(|| "lambda-runtime requires TC_DRIVER_PATH".to_string())?;
     let runtime_api = std::env::var("AWS_LAMBDA_RUNTIME_API")
         .map_err(|_| "lambda-runtime requires AWS_LAMBDA_RUNTIME_API".to_string())?;
-    terracotta_core::lambda::run_runtime(&database, &runtime_api)
+    rcfp_core::lambda::run_runtime(&database, &runtime_api)
 }
 
-fn compat_copy(args: &[String]) -> terracotta_core::Result<()> {
+fn compat_copy(args: &[String]) -> rcfp_core::Result<()> {
     let mut source = None;
     let mut output = None;
     let mut keys = Vec::new();
@@ -196,16 +196,16 @@ fn compat_copy(args: &[String]) -> terracotta_core::Result<()> {
     }
     let source = source.ok_or_else(|| "compat-copy requires --source".to_string())?;
     let output = output.ok_or_else(|| "compat-copy requires --output".to_string())?;
-    terracotta_core::storage::copy_dataset(source, output, &keys)
+    rcfp_core::storage::copy_dataset(source, output, &keys)
 }
 
-fn serve(args: &[String]) -> terracotta_core::Result<()> {
+fn serve(args: &[String]) -> rcfp_core::Result<()> {
     let mut database = None;
     let mut bind = "127.0.0.1:5000".to_owned();
     let mut pattern = None;
     let mut rgb = None;
     let mut allow_all = false;
-    let mut settings = terracotta_core::settings::snapshot();
+    let mut settings = rcfp_core::settings::snapshot();
     let mut explicit_bind = false;
     let mut index = 0;
     while index < args.len() {
@@ -274,7 +274,7 @@ fn serve(args: &[String]) -> terracotta_core::Result<()> {
         ))
     });
     if let (Some(pattern), Some(path)) = (pattern, temporary.as_ref()) {
-        terracotta_core::ingest::ingest(&pattern, path, rgb.as_deref(), true, false)?;
+        rcfp_core::ingest::ingest(&pattern, path, rgb.as_deref(), true, false)?;
         database = Some(path.clone());
     }
     let database = database.unwrap();
@@ -287,9 +287,8 @@ fn serve(args: &[String]) -> terracotta_core::Result<()> {
     } else if allow_all {
         bind = bind.replace("127.0.0.1", "0.0.0.0");
     }
-    let application = terracotta_core::settings::scope(settings, || {
-        terracotta_core::http::Application::open(&database)
-    })?;
+    let application =
+        rcfp_core::settings::scope(settings, || rcfp_core::http::Application::open(&database))?;
     eprintln!("GDAL {}", application.gdal_version());
     let result = application.serve(&bind);
     if let Some(path) = temporary {
@@ -300,7 +299,7 @@ fn serve(args: &[String]) -> terracotta_core::Result<()> {
 
 fn print_help() {
     println!(
-        "Usage:\n  terracotta [-c CONFIG.toml] [--loglevel LEVEL] COMMAND\n  terracotta connect HOSTNAME [--no-browser] [--port PORT]\n  terracotta --version[|-json]\n  terracotta serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  terracotta ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  terracotta migrate DATABASE [--from VERSION] [--to VERSION] [-y]\n  terracotta optimize-rasters FILES... -o FOLDER [--help]\n  terracotta lambda-event -d DATABASE --event EVENT.json\n  terracotta lambda-runtime\n\nP07 adds MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
+        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nP07 adds MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
     );
 }
 

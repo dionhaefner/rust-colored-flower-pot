@@ -132,6 +132,11 @@ struct Job {
     result: SyncSender<Result<Arc<Raster>>>,
 }
 
+enum Work {
+    Read(Job),
+    Wake,
+}
+
 #[derive(Clone, Eq)]
 struct CacheKey {
     path: String,
@@ -244,9 +249,87 @@ impl RasterCache {
     }
 }
 
+struct Neighbor {
+    key: CacheKey,
+    path: PathBuf,
+    request: ReadRequest,
+}
+
+struct NeighborQueue {
+    pending: VecDeque<Neighbor>,
+    keys: std::collections::HashSet<CacheKey>,
+}
+
+impl NeighborQueue {
+    fn new() -> Self {
+        Self {
+            pending: VecDeque::new(),
+            keys: std::collections::HashSet::new(),
+        }
+    }
+
+    fn schedule(&mut self, path: &Path, request: ReadRequest, cache: &RasterCache) {
+        if is_remote(path) || request.preserve_values || request.size != [256, 256] {
+            return;
+        }
+        let Some(bounds) = request.bounds_mercator else {
+            return;
+        };
+        let width = bounds[2] - bounds[0];
+        if !width.is_finite() || width <= 0.0 {
+            return;
+        }
+        let half = std::f64::consts::PI * 6_378_137.0;
+        let zoom = (2.0 * half / width).log2().round() as u32;
+        if zoom > 30 {
+            return;
+        }
+        let count = 2.0f64.powi(zoom as i32);
+        let span = 2.0 * half / count;
+        let x = ((bounds[0] + half) / span).round();
+        let y = ((half - bounds[3]) / span).round();
+        if crate::raster::mercator_tile_bounds(x, y, zoom) != bounds {
+            return;
+        }
+        // All directions are treated equally; the browser may pan in any direction.
+        for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
+            let nx = x + dx as f64;
+            let ny = y + dy as f64;
+            if nx < 0.0 || ny < 0.0 || nx >= count || ny >= count {
+                continue;
+            }
+            let shifted = ReadRequest {
+                bounds_mercator: Some(crate::raster::mercator_tile_bounds(nx, ny, zoom)),
+                ..request
+            };
+            let key = cache_key(path, shifted, false);
+            if cache.entries.contains_key(&key) || !self.keys.insert(key.clone()) {
+                continue;
+            }
+            if self.pending.len() >= 128 {
+                if let Some(oldest) = self.pending.pop_back() {
+                    self.keys.remove(&oldest.key);
+                }
+            }
+            self.pending.push_front(Neighbor {
+                key,
+                path: path.to_path_buf(),
+                request: shifted,
+            });
+        }
+    }
+
+    fn pop(&mut self) -> Option<Neighbor> {
+        let neighbor = self.pending.pop_front()?;
+        self.keys.remove(&neighbor.key);
+        Some(neighbor)
+    }
+}
+
 pub struct RasterExecutor {
     pool: WorkerPool,
     cache: Arc<Mutex<RasterCache>>,
+    neighbors: Arc<Mutex<NeighborQueue>>,
     counters: Arc<Counters>,
     config: ExecutionConfig,
     gdal_version: String,
@@ -255,7 +338,7 @@ pub struct RasterExecutor {
 // Keep threads owned until their GDAL thread-local destructors have finished.
 // Detaching them allows process/library finalization to race native cleanup.
 struct WorkerPool {
-    sender: Option<SyncSender<Job>>,
+    sender: Option<SyncSender<Work>>,
     workers: Vec<thread::JoinHandle<()>>,
 }
 
@@ -271,7 +354,7 @@ impl Drop for WorkerPool {
 
 impl RasterExecutor {
     pub fn start(config: ExecutionConfig) -> Result<Self> {
-        let (sender, receiver) = mpsc::sync_channel::<Job>(config.queue_capacity);
+        let (sender, receiver) = mpsc::sync_channel::<Work>(config.queue_capacity);
         let mut pool = WorkerPool {
             sender: Some(sender),
             workers: Vec::with_capacity(config.workers),
@@ -282,19 +365,30 @@ impl RasterExecutor {
             config.remote_cache_ttl,
         )));
         let counters = Arc::new(Counters::new());
+        let neighbors = Arc::new(Mutex::new(NeighborQueue::new()));
+        let source_blocks = Gdal::new_shared_blocks();
         let (ready_sender, ready_receiver) = mpsc::channel();
         let mut gdal_version = None;
         for worker_id in 0..config.workers {
             let receiver = receiver.clone();
             let cache = cache.clone();
             let counters = counters.clone();
+            let neighbors = neighbors.clone();
+            let source_blocks = source_blocks.clone();
             let ready_sender = ready_sender.clone();
             let settings = crate::settings::snapshot();
             let worker = thread::Builder::new()
                 .name(format!("terracotta-gdal-{worker_id}"))
                 .spawn(move || {
                     crate::settings::scope(settings, || {
-                        worker_loop(receiver, cache, counters, ready_sender)
+                        worker_loop(
+                            receiver,
+                            cache,
+                            neighbors,
+                            source_blocks,
+                            counters,
+                            ready_sender,
+                        )
                     })
                 })
                 .map_err(|error| format!("could not start raster worker: {error}"))?;
@@ -311,10 +405,22 @@ impl RasterExecutor {
         Ok(Self {
             pool,
             cache,
+            neighbors,
             counters,
             config,
             gdal_version: gdal_version.unwrap_or_else(|| "unknown".into()),
         })
+    }
+
+    pub fn wake_prefetch(&self) {
+        if std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
+            let _ = self
+                .pool
+                .sender
+                .as_ref()
+                .expect("live executor")
+                .try_send(Work::Wake);
+        }
     }
 
     pub fn version(&self) -> &str {
@@ -324,8 +430,16 @@ impl RasterExecutor {
     pub fn read(&self, path: &Path, request: ReadRequest) -> Result<Arc<Raster>> {
         let remote = is_remote(path);
         let key = cache_key(path, request, remote);
-        if let Some(raster) = self.cache.lock().expect("cache lock").get(&key) {
+        let cached = self.cache.lock().expect("cache lock").get(&key);
+        if let Some(raster) = cached {
             self.counters.cache_hits.fetch_add(1, Ordering::Relaxed);
+            if std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
+                let cache = self.cache.lock().expect("cache lock");
+                self.neighbors
+                    .lock()
+                    .expect("neighbor queue")
+                    .schedule(path, request, &cache);
+            }
             return Ok(raster);
         }
         self.counters.cache_misses.fetch_add(1, Ordering::Relaxed);
@@ -340,7 +454,7 @@ impl RasterExecutor {
             .sender
             .as_ref()
             .expect("live executor")
-            .try_send(job)
+            .try_send(Work::Read(job))
         {
             Ok(()) => {
                 self.counters.submitted.fetch_add(1, Ordering::Relaxed);
@@ -392,12 +506,14 @@ impl RasterExecutor {
 }
 
 fn worker_loop(
-    receiver: Arc<Mutex<Receiver<Job>>>,
+    receiver: Arc<Mutex<Receiver<Work>>>,
     cache: Arc<Mutex<RasterCache>>,
+    neighbors: Arc<Mutex<NeighborQueue>>,
+    source_blocks: Arc<Mutex<crate::raster::SharedBlocks>>,
     counters: Arc<Counters>,
     ready: mpsc::Sender<Result<String>>,
 ) {
-    let gdal = match Gdal::load() {
+    let gdal = match Gdal::load_with_shared_blocks(source_blocks) {
         Ok(gdal) => {
             let _ = ready.send(Ok(gdal.version()));
             gdal
@@ -407,32 +523,87 @@ fn worker_loop(
             return;
         }
     };
+    let mut next_job = None;
     loop {
-        let job = {
+        let work = if let Some(work) = next_job.take() {
+            work
+        } else {
             let receiver = receiver.lock().expect("raster receiver lock");
-            receiver.recv()
+            let Ok(work) = receiver.recv() else { return };
+            work
         };
-        let Ok(job) = job else {
-            return;
-        };
-        counters.begin();
-        let remote = is_remote(&job.path);
-        let key = cache_key(&job.path, job.request, remote);
-        let result = gdal.read(&job.path, job.request).map(Arc::new);
-        match &result {
-            Ok(raster) => {
-                cache
-                    .lock()
-                    .expect("cache lock")
-                    .insert(key, raster.clone(), remote);
-                counters.completed.fetch_add(1, Ordering::Relaxed);
+        let foreground = matches!(work, Work::Read(_));
+        if let Work::Read(job) = work {
+            counters.begin();
+            let remote = is_remote(&job.path);
+            let key = cache_key(&job.path, job.request, remote);
+            let result = gdal.read(&job.path, job.request).map(Arc::new);
+            match &result {
+                Ok(raster) => {
+                    cache
+                        .lock()
+                        .expect("cache lock")
+                        .insert(key, raster.clone(), remote);
+                    counters.completed.fetch_add(1, Ordering::Relaxed);
+                }
+                Err(_) => {
+                    counters.failed.fetch_add(1, Ordering::Relaxed);
+                }
             }
-            Err(_) => {
-                counters.failed.fetch_add(1, Ordering::Relaxed);
+            counters.end();
+            let successful = result.is_ok();
+            let _ = job.result.send(result);
+            if successful && std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
+                let cache_guard = cache.lock().expect("cache lock");
+                neighbors.lock().expect("neighbor queue").schedule(
+                    &job.path,
+                    job.request,
+                    &cache_guard,
+                );
             }
         }
-        counters.end();
-        let _ = job.result.send(result);
+        // Serving requests always takes priority. Idle workers may decode
+        // neighboring source blocks after a response is delivered.
+        loop {
+            let pending = receiver.try_lock().ok().map(|receiver| receiver.try_recv());
+            match pending {
+                Some(Ok(work)) => {
+                    next_job = Some(work);
+                    break;
+                }
+                Some(Err(mpsc::TryRecvError::Disconnected)) => return,
+                _ => {
+                    if foreground && std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
+                        break;
+                    }
+                    if std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
+                        let candidate = neighbors.lock().expect("neighbor queue").pop();
+                        if let Some(candidate) = candidate {
+                            if candidate.key == cache_key(&candidate.path, candidate.request, false)
+                                && !cache
+                                    .lock()
+                                    .expect("cache lock")
+                                    .entries
+                                    .contains_key(&candidate.key)
+                            {
+                                if let Ok(raster) = gdal.read(&candidate.path, candidate.request) {
+                                    cache.lock().expect("cache lock").insert(
+                                        candidate.key,
+                                        Arc::new(raster),
+                                        false,
+                                    );
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                    if gdal.prefetch_idle_block() {
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -520,7 +691,7 @@ mod tests {
         }
         let cleaned = Arc::new(AtomicUsize::new(0));
         let completed = Arc::new(AtomicUsize::new(0));
-        let (sender, receiver) = mpsc::sync_channel::<Job>(4);
+        let (sender, receiver) = mpsc::sync_channel::<Work>(4);
         let worker_cleaned = cleaned.clone();
         let worker_completed = completed.clone();
         let worker = thread::spawn(move || {
@@ -539,11 +710,11 @@ mod tests {
             pool.sender
                 .as_ref()
                 .unwrap()
-                .send(Job {
+                .send(Work::Read(Job {
                     path: PathBuf::new(),
                     request: ReadRequest::default(),
                     result,
-                })
+                }))
                 .unwrap();
         }
         drop(pool);

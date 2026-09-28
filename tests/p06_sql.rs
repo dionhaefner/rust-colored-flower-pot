@@ -1,5 +1,5 @@
 //! Disposable engine integrations; requires the P06 containers described in evidence.
-use terracotta_core::storage::{Dataset, KeyDefinition, Store};
+use rcfp_core::storage::{Dataset, KeyDefinition, Store};
 #[test]
 fn transaction_unwind_and_savepoint_recovery() {
     for base in [

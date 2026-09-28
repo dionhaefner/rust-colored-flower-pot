@@ -1,7 +1,8 @@
 # Migration and return to Python
 
-Use separate Python environments for the old package and this replacement:
-both provide `import terracotta`. Preserve the old executable/environment,
+The frozen Python package uses `import terracotta`; this replacement installs
+`import rcfp`. They can be kept in separate environments to rehearse rollback.
+Preserve the old executable/environment,
 configuration, custom palettes and raster paths until qualification is complete.
 The implementation version is 0.1.0; compatible protocol/database identity stays
 0.10.1. Ordinary Rust writes do not migrate that format.

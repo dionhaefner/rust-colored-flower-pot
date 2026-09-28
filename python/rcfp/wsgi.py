@@ -1,4 +1,4 @@
-"""Small WSGI boundary backed by :func:`terracotta_rust.request`."""
+"""Small WSGI boundary backed by the RCFP native application."""
 
 from __future__ import annotations
 

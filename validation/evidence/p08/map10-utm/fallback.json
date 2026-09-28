@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "binary": "/home/dion/codes/rust-colored-flower-pot/target/release/terracotta",
+  "cases": [
+    {
+      "label": "overview_zoom12",
+      "path": "/singleband/scene/red/12/2190/1458.png?stretch_range=[0,3000]",
+      "exact_rgba": true,
+      "opaque_fraction": 1.0
+    },
+    {
+      "label": "magnification_zoom14",
+      "path": "/singleband/scene/red/14/8762/5834.png?stretch_range=[0,3000]",
+      "exact_rgba": true,
+      "opaque_fraction": 1.0
+    },
+    {
+      "label": "east_edge_3pct",
+      "path": "/singleband/scene/red/13/4391/2930.png?stretch_range=[0,3000]",
+      "exact_rgba": true,
+      "opaque_fraction": 0.033111572265625
+    },
+    {
+      "label": "south_edge_29pct",
+      "path": "/singleband/scene/red/13/4375/2946.png?stretch_range=[0,3000]",
+      "exact_rgba": true,
+      "opaque_fraction": 0.2863922119140625
+    },
+    {
+      "label": "transparent_edge",
+      "path": "/singleband/scene/red/13/4359/2930.png?stretch_range=[0,3000]",
+      "exact_rgba": true,
+      "opaque_fraction": 0.0
+    },
+    {
+      "label": "rgb_east_edge",
+      "path": "/rgb/scene/13/4391/2930.png?r=red&g=green&b=blue&r_range=%5B0%2C3000%5D&g_range=%5B0%2C3000%5D&b_range=%5B0%2C3000%5D",
+      "exact_rgba": true,
+      "opaque_fraction": 0.033111572265625
+    }
+  ]
+}

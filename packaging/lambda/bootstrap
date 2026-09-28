@@ -5,4 +5,4 @@ export TERRACOTTA_RUNTIME_ROOT="$runtime_root"
 export LD_LIBRARY_PATH="$runtime_root/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export GDAL_DATA="$runtime_root/share/gdal"
 export PROJ_DATA="$runtime_root/share/proj"
-exec "$runtime_root/bin/terracotta" lambda-runtime
+exec "$runtime_root/bin/rcfp" lambda-runtime

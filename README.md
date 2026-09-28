@@ -1,6 +1,6 @@
 # Rust-colored flower pot (RCFP)
 
-Execution workspace for the Terracotta Rust rewrite. The objective is full
+RCFP is a Rust implementation of the Terracotta API. The objective is full
 feature coverage and practical drop-in compatibility, with the visual-fidelity
 policy in [REWRITE.md](REWRITE.md).
 
@@ -14,8 +14,10 @@ lazy pattern serving and COG optimization are verified. Native MySQL/PostgreSQL
 read/write stores, safe S3 SQLite snapshot refresh and historical migrations
 are implemented and locally qualified; real S3 remains unverified. It also has
 a relocatable Linux bundle, clean container, Lambda custom-runtime artifact,
-complete legacy Python/Flask/WSGI/CLI integration, an unchanged browser client,
-and an installable wheel. Platform CI is prepared; nonlocal results are pending.
+historical legacy Python/Flask/WSGI/CLI integration evidence, an unchanged
+browser client, and an installable RCFP wheel. The current RCFP Python package
+exposes native request, data-store and WSGI APIs; the original Terracotta
+driver/Flask interface has not been ported under the RCFP namespace. Platform CI is prepared; nonlocal results are pending.
 P08 adds release qualification, shutdown and dateline-preview repairs, physical
 BigTIFF/antimeridian checks, measured performance and a tested return to Python.
 See the [candidate release notes](packaging/RELEASE_NOTES.md) and
@@ -24,6 +26,61 @@ platform runs and external basemap integration remain release gates.
 See [operator instructions](packaging/OPERATIONS.md) for installation/configuration. See
 [validation/README.md](validation/README.md) for exact commands and
 [execution/STATUS.md](execution/STATUS.md) for the current handoff.
+
+## Install from source and try the CLI
+
+The repository is a Python source package. On the locally qualified Linux x86_64
+setup, use CPython 3.12, the pinned Rust 1.85.1 toolchain (`rustup` reads
+`rust-toolchain.toml`), a C compiler, and `pip`. The build downloads Python and
+Cargo dependencies on first use. Rasterio supplies the bundled GDAL/PROJ runtime;
+the resulting wheel is specific to the building Python ABI and platform. The
+previously qualified P08 Linux artifact targets glibc 2.34 or newer; a
+locally built wheel inherits the build host's native-library requirements.
+
+From this repository's root, in a fresh environment:
+
+```sh
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+rcfp --help
+python -c "import rcfp; print(rcfp.__version__)"
+```
+
+That single `pip install .` builds the Rust executable and shared core, compiles
+the CPython extension, packages the native runtime and browser assets, installs
+the pinned Rasterio dependency, and creates the `rcfp` console command. The installed distribution and import
+package are both `rcfp`. The CLI launches the bundled Rust executable; Python
+exposes native request, data-store, and WSGI APIs. The original Terracotta
+Python source in `python/terracotta` remains unchanged for comparison and is
+excluded from the wheel. RCFP lives in `python/rcfp`; the obsolete `python/terracotta_rust` adapter has been
+removed.
+
+For a first interactive check against a catalog you already have:
+
+```sh
+rcfp serve -d /absolute/path/catalog.sqlite
+# In another terminal: curl http://127.0.0.1:5000/keys
+```
+
+To build a reusable wheel and install that exact file in another compatible
+CPython 3.12 environment:
+
+```sh
+python -m pip wheel --no-deps . --wheel-dir dist
+python -m pip install dist/rcfp-0.1.0-*.whl
+rcfp --version
+```
+
+The source build uses the existing Linux standalone bundle path. Set
+`TERRACOTTA_CARGO_OFFLINE=1` only when the Cargo registry is already cached.
+For an offline local build with Python build requirements already installed, add
+`--no-build-isolation` to `pip wheel` or `pip install`. macOS and Windows builds
+use the existing platform stage and require GDAL/PROJ installed in the build and
+run environment; their CI qualification is still pending. A wheel is installed
+with one `pip install` command, but it is not yet published to an index. See
+[operator instructions](packaging/OPERATIONS.md) for configuration and the
+existing prebuilt artifact flow.
 
 ## Resume qualification
 

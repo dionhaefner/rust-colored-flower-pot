@@ -2,13 +2,20 @@
 
 use crate::Result;
 use libloading::Library;
+use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::ffi::{CString, c_char, c_double, c_int, c_void};
 use std::path::{Path, PathBuf};
 use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
+mod fast;
+pub(crate) use fast::SharedBlocks;
 mod metadata;
 mod optimize;
+mod utm;
 pub use metadata::MetadataOptions;
 pub use optimize::OptimizeOptions;
 
@@ -58,6 +65,9 @@ impl Default for ReadRequest {
 }
 
 pub struct Gdal {
+    profile_reads: bool,
+    sources: RefCell<VecDeque<SourceEntry>>,
+    source_blocks: Option<Arc<Mutex<fast::SharedBlocks>>>,
     target_crs: String,
     reprojection: (c_int, &'static str),
     resampling: c_int,
@@ -223,6 +233,9 @@ impl Gdal {
             ) -> DatasetHandle = *library.get(b"GDALWarp\0").map_err(symbol_error)?;
             GDAL_REGISTERED.call_once(|| all_register());
             Ok(Self {
+                profile_reads: std::env::var_os("TC_PROFILE_RASTER").is_some(),
+                sources: RefCell::new(VecDeque::new()),
+                source_blocks: None,
                 _thread_config: ThreadConfig::new(library)?,
                 target_crs: crate::settings::var("TC_TARGET_CRS")
                     .unwrap_or_else(|_| "EPSG:3857".into()),
@@ -253,6 +266,12 @@ impl Gdal {
                 _library: library,
             })
         }
+    }
+
+    pub(crate) fn load_with_shared_blocks(blocks: Arc<Mutex<fast::SharedBlocks>>) -> Result<Self> {
+        let mut gdal = Self::load()?;
+        gdal.source_blocks = Some(blocks);
+        Ok(gdal)
     }
 
     pub fn version(&self) -> String {
@@ -288,20 +307,16 @@ impl Gdal {
         }
     }
 
-    pub fn read(&self, path: &Path, request: ReadRequest) -> Result<Raster> {
-        if request.size[0] == 0 || request.size[1] == 0 {
-            return Err("tile dimensions must be positive".into());
-        }
-        let source = self.open_dataset(path)?;
+    fn suggested_geometry(
+        &self,
+        source: DatasetHandle,
+        algorithm: c_int,
+        path: &Path,
+    ) -> Result<SuggestedGeometry> {
         let target = CString::new(self.target_crs.as_str()).map_err(|_| "invalid target CRS")?;
-        let algorithm = if request.preserve_values {
-            GRA_NEAREST
-        } else {
-            self.reprojection.0
-        };
         let warped = unsafe {
             (self.auto_warp)(
-                source.handle,
+                source,
                 ptr::null(),
                 target.as_ptr(),
                 algorithm,
@@ -319,10 +334,9 @@ impl Gdal {
             handle: warped,
             close: self.close,
         };
-
         unsafe {
-            let source_width = (self.raster_x_size)(warped.handle) as usize;
-            let source_height = (self.raster_y_size)(warped.handle) as usize;
+            let width = (self.raster_x_size)(warped.handle) as usize;
+            let height = (self.raster_y_size)(warped.handle) as usize;
             let mut transform = [0.0; 6];
             if (self.geo_transform)(warped.handle, transform.as_mut_ptr()) != 0 {
                 return Err("GDAL warped dataset has no transform".into());
@@ -332,15 +346,122 @@ impl Gdal {
                     "rotated warped datasets are not supported by this raster slice".into(),
                 );
             }
-            let warped_bounds = [
-                transform[0],
-                transform[3] + transform[5] * source_height as f64,
-                transform[0] + transform[1] * source_width as f64,
-                transform[3],
-            ];
+            Ok(SuggestedGeometry {
+                transform,
+                bounds: [
+                    transform[0],
+                    transform[3] + transform[5] * height as f64,
+                    transform[0] + transform[1] * width as f64,
+                    transform[3],
+                ],
+            })
+        }
+    }
+
+    fn cached_suggested_geometry(
+        &self,
+        source: DatasetHandle,
+        algorithm: c_int,
+        path: &Path,
+        stamp: Option<(u64, std::time::SystemTime)>,
+        suggested_index: usize,
+    ) -> Result<SuggestedGeometry> {
+        if stamp.is_some() {
+            let cached = self
+                .sources
+                .borrow()
+                .front()
+                .expect("source cached")
+                .suggested[suggested_index];
+            if let Some(cached) = cached {
+                return Ok(cached);
+            }
+            let geometry = self.suggested_geometry(source, algorithm, path)?;
+            self.sources
+                .borrow_mut()
+                .front_mut()
+                .expect("source cached")
+                .suggested[suggested_index] = Some(geometry);
+            Ok(geometry)
+        } else {
+            self.suggested_geometry(source, algorithm, path)
+        }
+    }
+
+    pub fn read(&self, path: &Path, request: ReadRequest) -> Result<Raster> {
+        if request.size[0] == 0 || request.size[1] == 0 {
+            return Err("tile dimensions must be positive".into());
+        }
+        let started = Instant::now();
+        // A GDAL block cache entry belongs to its open dataset. Keep local
+        // sources worker-owned so adjacent map tiles can reuse decoded blocks.
+        // Remote sources retain their request lifetime for credential refresh.
+        let path_text = path.to_string_lossy();
+        let local = !["http://", "https://", "s3://"]
+            .iter()
+            .any(|prefix| path_text.starts_with(prefix));
+        let stamp = if local {
+            std::fs::metadata(path)
+                .ok()
+                .and_then(|metadata| Some((metadata.len(), metadata.modified().ok()?)))
+        } else {
+            None
+        };
+        let uncached_source = if stamp.is_none() {
+            Some(self.open_dataset(path)?)
+        } else {
+            None
+        };
+        let source_handle = if let Some(source) = &uncached_source {
+            source.handle
+        } else {
+            let mut sources = self.sources.borrow_mut();
+            let stamp = stamp.expect("cached local file has metadata");
+            let position = sources
+                .iter()
+                .position(|entry| entry.path == path && entry.stamp == stamp);
+            if let Some(position) = position {
+                let entry = sources.remove(position).expect("existing source entry");
+                sources.push_front(entry);
+            } else {
+                let dataset = self.open_dataset(path)?;
+                sources.push_front(SourceEntry {
+                    path: path.to_path_buf(),
+                    stamp,
+                    suggested: [None, None],
+                    dataset,
+                });
+                sources.truncate(12);
+            }
+            sources.front().expect("source just cached").dataset.handle
+        };
+        let opened = Instant::now();
+        if let Some(raster) = self.read_utm_fast(path, stamp, source_handle, request)? {
+            return Ok(raster);
+        }
+        if let Some(raster) = self.read_mercator_fast(path, stamp, source_handle, request)? {
+            return Ok(raster);
+        }
+        let algorithm = if request.preserve_values {
+            GRA_NEAREST
+        } else {
+            self.reprojection.0
+        };
+        let geometry = self.cached_suggested_geometry(
+            source_handle,
+            algorithm,
+            path,
+            stamp,
+            usize::from(request.preserve_values),
+        )?;
+        let suggested = Instant::now();
+
+        unsafe {
+            let transform = geometry.transform;
+            let warped_bounds = geometry.bounds;
             let requested = match request.bounds_mercator {
                 Some(bounds) => bounds,
-                None => self.source_mercator_bounds(source.handle)?,
+                None => self.source_mercator_bounds(source_handle)?,
             };
             if requested[2] <= requested[0] || requested[3] <= requested[1] {
                 return Err("legacy internal error".into());
@@ -383,7 +504,7 @@ impl Gdal {
                 requested[3] + padding * actual_y_resolution,
             ];
             let custom = self.create_warped_dataset(
-                source.handle,
+                source_handle,
                 padded_bounds,
                 [intermediate_height + 4, intermediate_width + 4],
                 if request.preserve_values {
@@ -392,6 +513,7 @@ impl Gdal {
                     self.reprojection.1
                 },
             )?;
+            let warped_at = Instant::now();
             let band = (self.raster_band)(custom.handle, 1);
             if band.is_null() {
                 return Err("GDAL warped dataset has no first band".into());
@@ -414,6 +536,7 @@ impl Gdal {
                     ],
                 },
             )?;
+            let values_at = Instant::now();
 
             let alpha_index = (self.raster_count)(custom.handle);
             let mask_band = (self.raster_band)(custom.handle, alpha_index);
@@ -437,6 +560,7 @@ impl Gdal {
                     },
                 )?;
             }
+            let validity_at = Instant::now();
             let mut has_nodata = 0;
             let nodata = (self.nodata)(band, &mut has_nodata);
             let mask = values
@@ -446,13 +570,26 @@ impl Gdal {
                     valid == 0 || (has_nodata != 0 && value == nodata) || !value.is_finite()
                 })
                 .collect();
-            Ok(Raster {
+            let raster = Raster {
                 data_type: (self.band_data_type)(band),
                 width,
                 height,
                 values,
                 mask,
-            })
+            };
+            if self.profile_reads {
+                eprintln!(
+                    "raster_profile open_us={} suggested_us={} warp_us={} values_us={} validity_us={} finish_us={} path={}",
+                    (opened - started).as_micros(),
+                    (suggested - opened).as_micros(),
+                    (warped_at - suggested).as_micros(),
+                    (values_at - warped_at).as_micros(),
+                    (validity_at - values_at).as_micros(),
+                    validity_at.elapsed().as_micros(),
+                    path.display(),
+                );
+            }
+            Ok(raster)
         }
     }
 
@@ -561,6 +698,19 @@ struct DatasetGuard {
     handle: DatasetHandle,
     close: unsafe extern "C" fn(DatasetHandle),
 }
+#[derive(Clone, Copy)]
+struct SuggestedGeometry {
+    transform: [f64; 6],
+    bounds: [f64; 4],
+}
+
+struct SourceEntry {
+    path: PathBuf,
+    stamp: (u64, std::time::SystemTime),
+    suggested: [Option<SuggestedGeometry>; 2],
+    dataset: DatasetGuard,
+}
+
 impl Drop for DatasetGuard {
     fn drop(&mut self) {
         unsafe { (self.close)(self.handle) }

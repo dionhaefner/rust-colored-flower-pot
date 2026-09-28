@@ -6,6 +6,10 @@ by the pinned Rasterio 1.4.3 manylinux wheel recorded in
 as `licenses/RASTERIO-LICENSE.txt` in every bundle. The bundle also retains this
 project's upstream MIT notice as `licenses/TERRACOTTA-LICENSE.txt`.
 
+New wheel builds use Rasterio 1.4.4; its license is copied from the wheel's
+`.dist-info/licenses` directory. Platform repair may add more native libraries,
+whose licenses require a final artifact-specific audit before publication.
+
 The copied runtime contains GDAL, PROJ, GEOS, libcurl, OpenSSL and raster codec
 libraries. Their upstream projects and license families are documented in the
 Rasterio binary-distribution project and GDAL dependency license inventory:

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "s2-red",
+    "source": ".cache/corpus/s2-red.tif",
+    "output": ".cache/map10-mercator/s2-red.tif",
+    "size": 89835797,
+    "shape": [
+      11434,
+      11397
+    ],
+    "source_sha256": "816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c",
+    "output_sha256": "7a6a432e66deed7257797796acccc9898cd9ead9f8080dd20ee1e326b086f70a",
+    "cog": ".cache/map10-mercator-cog/s2-red.tif",
+    "cog_size": 94801392,
+    "cog_sha256": "4e69124231330c2b322fb8fec50d406948dcb7cc439bb213ba237e5d13ff73bf"
+  },
+  {
+    "name": "s2-green",
+    "source": ".cache/corpus/s2-green.tif",
+    "output": ".cache/map10-mercator/s2-green.tif",
+    "size": 89702907,
+    "shape": [
+      11434,
+      11397
+    ],
+    "source_sha256": "f4966fd5f16270cf0192e9a2e06e90679806993e3886bdc0f5652debbf8af893",
+    "output_sha256": "1183d35db82b6b0ed6f92330d65aa588a45ac95a60df579e5a2891f467dc144f",
+    "cog": ".cache/map10-mercator-cog/s2-green.tif",
+    "cog_size": 94921391,
+    "cog_sha256": "c452a7637188b3fe8398188f7c36e4e9a79339ae89b3c941e0e513a45ce35b98"
+  },
+  {
+    "name": "s2-blue",
+    "source": ".cache/corpus/s2-blue.tif",
+    "output": ".cache/map10-mercator/s2-blue.tif",
+    "size": 89793503,
+    "shape": [
+      11434,
+      11397
+    ],
+    "source_sha256": "adf88aa4000396e43bc780524e16c27c19e84d1122aabc7c7523521bb5c86f54",
+    "output_sha256": "d27882a5fd53c5e43c6a0833854e92cd433d0e762d32c02ec476ec2532d0fc45",
+    "cog": ".cache/map10-mercator-cog/s2-blue.tif",
+    "cog_size": 93793355,
+    "cog_sha256": "2aaea0b0de26e2cd6f15c3687a0cd1976e388bfeed7a311b3f11d1fc754c956d"
+  }
+]

@@ -3,6 +3,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import io
 import json
+from pathlib import Path
 import threading
 import time
 from urllib.parse import urlencode
@@ -13,7 +14,8 @@ import psutil
 import rasterio
 import terracotta as tc
 from common import ROOT, COMMIT, sha256, write_json
-from p08_runtime import Service, fetch, image_hash
+import p08_runtime
+from p08_runtime import BINARY, Service, fetch, image_hash
 
 
 def tracks(users,mode):
@@ -44,32 +46,56 @@ def distribution(values):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out',default='validation/artifacts/p08-navigation')
+    p.add_argument('--rust-binary',default=str(BINARY),help='Exact candidate executable to launch and hash')
     p.add_argument('--repetitions',type=int,default=3)
     p.add_argument('--users',type=int,nargs='+',default=[1,4,8])
-    args=p.parse_args();out=ROOT/args.out;out.mkdir(parents=True,exist_ok=False)
+    p.add_argument('--native-env',action='append',default=[],metavar='KEY=VALUE')
+    p.add_argument('--allow-mismatch',action='store_true',help='Exploratory timing only; never mark a mismatched run passed')
+    p.add_argument('--compare-pixels',action='store_true',help='Retain image bodies for a separate per-pixel comparison after timing')
+    p.add_argument('--rust-gdal-mib',type=int,default=96)
+    p.add_argument('--python-gdal-mib-per-worker',type=int,default=32)
+    p.add_argument('--rust-app-mib',type=int,default=64)
+    p.add_argument('--rust-source-cache-mib',type=int,default=0)
+    p.add_argument('--python-app-mib',type=int,default=64)
+    p.add_argument('--source-dir',default='.cache/corpus')
+    args=p.parse_args();p08_runtime.BINARY=Path(args.rust_binary).resolve();assert p08_runtime.BINARY.is_file()
+    out=ROOT/args.out;out.mkdir(parents=True,exist_ok=False)
+    native_extra=dict(item.split('=',1) for item in args.native_env)
+    assert all(key.startswith(('TC_','GDAL_')) for key in native_extra)
+    assert args.rust_gdal_mib+args.rust_app_mib+args.rust_source_cache_mib==3*args.python_gdal_mib_per_worker+args.python_app_mib
+    if args.rust_source_cache_mib:native_extra['TC_SOURCE_BLOCK_CACHE_BYTES']=str(args.rust_source_cache_mib*1024**2)
+    source_dir=(ROOT/args.source_dir).resolve()
+    assert source_dir.is_dir()
     assets=json.loads((ROOT/'validation/reference/assets.json').read_text())['assets']
     database=out/'catalog.sqlite';driver=tc.get_driver(database);driver.create(['scene','band'])
     sources=[]
     for band in ['red','green','blue']:
-        asset=next(a for a in assets if a['id']=='s2-'+band);path=ROOT/'.cache/corpus'/('s2-'+band+'.tif')
-        assert sha256(path)==asset['sha256']
+        asset=next(a for a in assets if a['id']=='s2-'+band);path=source_dir/('s2-'+band+'.tif')
+        digest=sha256(path)
+        if source_dir==(ROOT/'.cache/corpus').resolve():assert digest==asset['sha256']
         driver.insert(('scene',band),str(path),metadata=driver.compute_metadata(str(path),max_shape=[512,512]))
-        with rasterio.open(path) as src:sources.append(dict(path=str(path.relative_to(ROOT)),sha256=asset['sha256'],shape=list(src.shape),overviews=src.overviews(1)))
+        with rasterio.open(path) as src:sources.append(dict(path=str(path.relative_to(ROOT)),sha256=digest,shape=list(src.shape),overviews=src.overviews(1),crs=str(src.crs)))
     cpus=psutil.Process().cpu_affinity()[:3];assert len(cpus)==3
-    report=dict(reference_commit=COMMIT,native_sha256=sha256(ROOT/'validation/artifacts/p08-final/bin/terracotta'),sources=sources,cpu_affinity=cpus,
+    report=dict(reference_commit=COMMIT,native_sha256=sha256(p08_runtime.BINARY),sources=sources,cpu_affinity=cpus,
         conditions=dict(viewport=[1024,768],tile_size=256,zoom=13,requests_in_flight_per_user=6,pan_pause_seconds=.1,views_per_session=7,
-            total_gdal_cache_mib=96,total_application_cache_mib=64,rust_raster_workers=3,python_gunicorn_workers=3,
-            rust_queue_capacity=256,access='local original COGs, warm OS disk cache; fresh service for every trial',
+            rust_gdal_cache_mib=args.rust_gdal_mib,python_gdal_cache_mib=3*args.python_gdal_mib_per_worker,
+            rust_app_cache_mib=args.rust_app_mib,rust_source_cache_mib=args.rust_source_cache_mib,python_app_cache_mib=args.python_app_mib,
+            aggregate_cache_mib=args.rust_gdal_mib+args.rust_app_mib+args.rust_source_cache_mib,
+            rust_raster_workers=int(native_extra.get('TC_RASTER_WORKERS','3')),python_gunicorn_workers=3,
+            rust_queue_capacity=256,native_extra=native_extra,access=f'local {source_dir.relative_to(ROOT)} rasters, warm OS disk cache; fresh service for every trial',
             scope='Server-side newly visible tile completion, not browser animation/paint or WAN latency. Sessions keep downloaded tiles. Spatially offset concurrent tracks have natural overlap. No retries or cancelled requests. Python cache compressed per process; native uncompressed shared. RSS sums shared Python pages.'),runs=[])
-    golden={};coverage={};golden_lock=threading.Lock()
+    golden={};coverage={};mismatches=set();golden_lock=threading.Lock()
+    reference_bodies={};native_bodies={}
     for trial in range(args.repetitions):
         for users in args.users:
             for mode in ['singleband','rgb']:
                 routes=tracks(users,mode)
                 for engine in (['python','rust'] if trial%2==0 else ['rust','python']):
                     label=f'{trial}-{users}-{mode}-{engine}'
-                    extra=dict(GDAL_CACHEMAX='96' if engine=='rust' else '32',TC_RASTER_QUEUE_CAPACITY='256')
-                    with Service(database,out/label,engine,64*1024**2,cpus,extra) as service:
+                    extra=dict(GDAL_CACHEMAX=str(args.rust_gdal_mib if engine=='rust' else args.python_gdal_mib_per_worker),TC_RASTER_QUEUE_CAPACITY='256')
+                    if engine=='rust':extra.update(native_extra)
+                    app_mib=args.rust_app_mib if engine=='rust' else args.python_app_mib
+                    with Service(database,out/label,engine,app_mib*1024**2,cpus,extra) as service:
                         barrier=threading.Barrier(users)
                         cpu_start=sum(p.cpu_times().user+p.cpu_times().system for p in [service.root,*service.root.children(recursive=True)])
                         def session(user):
@@ -86,10 +112,14 @@ def main():
                                                 if path not in golden:
                                                     assert engine=='python','golden must come from Python'
                                                     golden[path]=digest
+                                                    if args.compare_pixels:reference_bodies[path]=body
                                                     with Image.open(io.BytesIO(body)) as im:
                                                         a=np.asarray(im.convert('RGBA'));coverage[path]=float(np.count_nonzero(a[:,:,3]))/(a.shape[0]*a.shape[1])
                                                 assert coverage[path]>=.95,(path,'insufficient real-image coverage',coverage[path])
-                                                assert digest==golden[path],(engine,path,'decoded pixels differ')
+                                                if engine=='rust' and args.compare_pixels and path not in native_bodies:native_bodies[path]=body
+                                                if digest!=golden[path]:
+                                                    mismatches.add(path)
+                                                    if not args.allow_mismatch:raise AssertionError((engine,path,'decoded pixels differ'))
                                         return row
                                     started=time.perf_counter();responses=list(requests.map(request,view['paths']))
                                     elapsed=max(r['received'] for r in responses)-started
@@ -109,12 +139,35 @@ def main():
                             seconds=elapsed,cpu_seconds=cpu_end-cpu_start,resources=service.resources(),
                             requests=len(responses),failures=sum(r['status']!=200 for r in responses),
                             native_metrics=service.metrics() if engine=='rust' else None)
-                    report['runs'].append(row);report['coverage']=coverage;report['decoded_image_hashes']=golden
+                    report['runs'].append(row);report['coverage']=coverage;report['decoded_image_hashes']=golden;report['mismatch_paths']=sorted(mismatches)
                     write_json(out/'report.json',report)
                     print(label,'first',round(row['first_view']['p50_ms']),'pan',round(row['pan']['p50_ms']),'p95',round(row['pan']['p95_ms']),'failures',row['failures'],flush=True)
-    report['passed']=all(r['failures']==0 for r in report['runs'])
+    if args.compare_pixels:
+        comparisons={}
+        for path,reference in reference_bodies.items():
+            with Image.open(io.BytesIO(reference)) as image:
+                expected=np.asarray(image.convert('RGBA')).astype(np.int16)
+            with Image.open(io.BytesIO(native_bodies[path])) as image:
+                observed=np.asarray(image.convert('RGBA')).astype(np.int16)
+            delta=np.abs(expected-observed)
+            rgb=delta[:,:,:3]
+            comparisons[path]=dict(
+                changed_pixel_fraction=float(np.any(delta!=0,axis=2).mean()),
+                alpha_changed_pixels=int(np.count_nonzero(delta[:,:,3])),
+                rgb_mean_absolute=float(rgb.mean()),
+                rgb_p99_absolute=float(np.percentile(rgb,99)),
+                rgb_max_absolute=int(rgb.max()),
+            )
+        report['pixel_comparison']=comparisons
+        picks=[path for path in sorted(comparisons) if '/4381/2917.png' in path or '/4385/2917.png' in path]
+        pairs=out/'image-pairs';pairs.mkdir(exist_ok=True)
+        for index,path in enumerate(picks):
+            for label,body in [('python',reference_bodies[path]),('rust',native_bodies[path])]:
+                (pairs/f'{index}-{label}.png').write_bytes(body)
+        write_json(out/'report.json',report)
+    report['passed']=all(r['failures']==0 for r in report['runs']) and not mismatches
     write_json(out/'report.json',report)
-    assert report['passed'],'HTTP failures retained; this is not a successful viewport qualification'
+    if not args.allow_mismatch:assert report['passed'],'HTTP or image failures retained; this is not a successful viewport qualification'
 
 
 if __name__=='__main__':main()

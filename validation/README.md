@@ -305,7 +305,7 @@ retains existing metadata on overwrite, matching the reference. Optimize require
 10980²-pixel threshold. All four reference resamplers and compression choices
 are supported. Source masks and first-band behavior follow the reference.
 
-`terracotta_rust.compute_metadata` and `terracotta_rust.DataStore` expose P05
+`rcfp.compute_metadata` and `rcfp.DataStore` expose P05
 preparation through the in-process core; `DataStore.batch` is atomic. The
 `data-operation REQUEST.json` native diagnostic adapter supports the same
 create/insert/delete/metadata/compute/optimize/batch operations for reproducible

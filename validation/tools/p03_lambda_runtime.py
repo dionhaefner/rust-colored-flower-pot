@@ -42,7 +42,7 @@ def run(lambda_zip, bundle, out, image):
     database = fixture / "terracotta.sqlite"
     subprocess.run(
         [
-            str(bundle / "bin/terracotta"), "compat-copy",
+            str(bundle / "bin/rcfp"), "compat-copy",
             "--source", str(ROOT / "validation/artifacts/capture-reproduction/reference.sqlite"),
             "--output", str(database), "--key", "lagoon", "--key", "red",
         ],
@@ -61,8 +61,8 @@ def run(lambda_zip, bundle, out, image):
     invocation = subprocess.run(
         [
             "docker", "run", "--rm", "--network", "none",
-            "--entrypoint", "/opt/terracotta/bin/terracotta",
-            "-v", f"{package / 'runtime'}:/opt/terracotta:ro",
+            "--entrypoint", "/opt/rcfp/bin/rcfp",
+            "-v", f"{package / 'runtime'}:/opt/rcfp:ro",
             "-v", f"{fixture}:/data:ro",
             image,
             "lambda-event", "-d", "/data/terracotta.sqlite", "--event", "/data/event.json",
@@ -77,7 +77,7 @@ def run(lambda_zip, bundle, out, image):
     (out / "lambda-al2023.png").write_bytes(png)
     golden = (ROOT / "validation/reference/capture/images/lagoon-red-preview.png").read_bytes()
     exact = bool(np.array_equal(decoded(png), decoded(golden)))
-    binary = package / "runtime/bin/terracotta"
+    binary = package / "runtime/bin/rcfp"
     versions = subprocess.run(
         ["objdump", "-T", str(binary)], check=True, text=True, capture_output=True
     ).stdout
@@ -111,7 +111,7 @@ def run(lambda_zip, bundle, out, image):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--lambda-zip", type=Path, default=ROOT / "validation/artifacts/p03-lambda/terracotta-lambda.zip")
+    parser.add_argument("--lambda-zip", type=Path, default=ROOT / "validation/artifacts/p03-lambda/rcfp-lambda.zip")
     parser.add_argument("--bundle", type=Path, default=ROOT / "validation/artifacts/p03-bundle")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--image", default=DEFAULT_IMAGE)

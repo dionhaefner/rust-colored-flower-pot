@@ -1,7 +1,4 @@
-"""Native Python adapter over the shared Rust request core.
-
-The legacy public API is provided by the sibling ``terracotta`` package.
-"""
+"""RCFP Python API backed by the shared Rust core."""
 
 from __future__ import annotations
 
@@ -10,6 +7,9 @@ import os
 from pathlib import Path
 from typing import Sequence
 from urllib.parse import quote, urlencode
+
+__version__ = "0.1.0"
+__protocol_version__ = "0.10.1"
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 _RUNTIME_ROOT = _PACKAGE_ROOT / "runtime"
@@ -20,14 +20,20 @@ if _RUNTIME_ROOT.is_dir():
             os.environ.setdefault(variable, str(_RUNTIME_ROOT / "share" / directory))
     if os.name == "nt":
         _dll_directory = os.add_dll_directory(str(_RUNTIME_ROOT / "lib"))
-    gdal_libraries = sorted((_RUNTIME_ROOT / "lib").glob("libgdal*.so*"))
+    if os.name == "nt":
+        pattern = "gdal*.dll"
+    elif os.sys.platform == "darwin":
+        pattern = "libgdal*.dylib"
+    else:
+        pattern = "libgdal*.so*"
+    gdal_libraries = sorted((_RUNTIME_ROOT / "lib").glob(pattern))
     if gdal_libraries:
         os.environ.setdefault("TERRACOTTA_GDAL_LIBRARY", str(gdal_libraries[0]))
 
 from . import _native
 
 
-class TerracottaError(RuntimeError):
+class RcfpError(RuntimeError):
     """An error returned by the native Terracotta adapter."""
 
 
@@ -65,7 +71,7 @@ def render_preview(
             message = json.loads(body)["message"]
         except Exception:
             message = body.decode("utf-8", errors="replace")
-        raise TerracottaError(f"native render failed with HTTP {status}: {message}")
+        raise RcfpError(f"native render failed with HTTP {status}: {message}")
     return body
 
 
@@ -89,12 +95,14 @@ def identity(database: os.PathLike[str] | str) -> dict[str, str]:
         database, "GET", "/__terracotta/identity"
     )
     if status != 200:
-        raise TerracottaError(f"identity request failed with HTTP {status}")
+        raise RcfpError(f"identity request failed with HTTP {status}")
     return json.loads(body)
 
 
 __all__ = [
-    "TerracottaError",
+    "RcfpError",
+    "__version__",
+    "__protocol_version__",
     "copy_dataset",
     "identity",
     "render_preview",
@@ -113,7 +121,7 @@ def data_operation(request):
     """Execute a structured native data operation, including atomic batches."""
     response = json.loads(_native.data_operation(json.dumps(request)))
     if "error" in response:
-        raise TerracottaError(response["error"])
+        raise RcfpError(response["error"])
     return response["ok"]
 
 
@@ -137,7 +145,7 @@ class DataStore:
     def create(self, keys, *, key_descriptions=None):
         descriptions = key_descriptions or {}
         if set(descriptions) - set(keys):
-            raise TerracottaError("key description dict contains unknown keys")
+            raise RcfpError("key description dict contains unknown keys")
         return data_operation(dict(operation="create", path=self.path, provider=self.provider,
                                    keys=[dict(key=k, description=descriptions.get(k, "")) for k in keys]))
 
@@ -152,7 +160,7 @@ class DataStore:
     def get_metadata(self, keys):
         value = data_operation(dict(operation="metadata", path=self.path, provider=self.provider, keys=list(keys)))
         if value is None:
-            raise TerracottaError("No dataset found")
+            raise RcfpError("No dataset found")
         value.pop("keys", None)
         value["bounds"] = tuple(value["bounds"])
         value["range"] = tuple(value["range"])
@@ -174,6 +182,6 @@ class NativeApplication:
         value = json.loads(_native.session_operation(self._session, json.dumps(dict(
             method=method, url=url, headers={k.lower(): v for k, v in (headers or {}).items()}, body=list(body)))))
         if "error" in value:
-            raise TerracottaError(value["error"])
+            raise RcfpError(value["error"])
         status, content_type, data, cache, headers = value["ok"]
         return status, content_type, bytes(data), cache, headers

@@ -114,7 +114,7 @@ extern char *tc_session_operation(const void *, const char *);
 extern void tc_session_free(void *);
 
 static void session_destroy(PyObject *capsule) {
-    void *session = PyCapsule_GetPointer(capsule, "terracotta.session");
+    void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
     if (session != NULL) tc_session_free(session);
 }
 static PyObject *session_open(PyObject *self, PyObject *args) {
@@ -131,7 +131,7 @@ static PyObject *session_open(PyObject *self, PyObject *args) {
         tc_string_free(error);
         return NULL;
     }
-    PyObject *capsule = PyCapsule_New(session, "terracotta.session", session_destroy);
+    PyObject *capsule = PyCapsule_New(session, "rcfp.session", session_destroy);
     if (!capsule) tc_session_free(session);
     return capsule;
 }
@@ -140,7 +140,7 @@ static PyObject *session_operation(PyObject *self, PyObject *args) {
     const char *request;
     PyObject *capsule;
     if (!PyArg_ParseTuple(args, "Os", &capsule, &request)) return NULL;
-    void *session = PyCapsule_GetPointer(capsule, "terracotta.session");
+    void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
     if (!session) return NULL;
     char *response;
     Py_BEGIN_ALLOW_THREADS

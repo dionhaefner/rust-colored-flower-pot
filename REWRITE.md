@@ -1,4 +1,4 @@
-# Terracotta Rust rewrite: guiding policy
+# RCFP rewrite: guiding policy
 
 This document guides implementation and review of the Rust rewrite. Read it
 before choosing architecture, changing behavior, or deciding whether a mismatch
@@ -38,6 +38,14 @@ changed categorical meaning, or workflows that no longer run.
 | Storage | Read existing databases and raster paths correctly. Preserve metadata encoding and supported write/read workflows, including rollback to the Python implementation for unchanged database formats. |
 | CLI and Python | Preserve commands, important flags, configuration precedence, public call semantics, return types, exceptions, and integration workflows. Terminal progress formatting and implementation internals need not be identical. |
 | Deployment | Preserve supported use cases. A changed installation or launch procedure must be explicit; native service support alone does not satisfy Python/WSGI compatibility. |
+
+**User-directed package identity exception (2026-09-28):** This project
+installs the `rcfp` distribution, exposes `import rcfp`, and registers the
+`rcfp` command. It does not install a `terracotta` Python import shim. Existing
+Python applications must change their import and command names when switching.
+The legacy database encoding, protocol version, routes, and raster behavior
+remain compatibility targets. The API document title is RCFP. This accepted
+namespace difference is recorded as RW-052/D-016.
 
 Existing behavior is the reference, including inconvenient quirks. Do not use the
 port as an opportunity to silently fix old bugs, rename interfaces, introduce a

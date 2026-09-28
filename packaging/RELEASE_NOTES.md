@@ -1,4 +1,4 @@
-# Terracotta Rust 0.1.0 — local review candidate
+# RCFP 0.1.0 — local review candidate
 
 The replacement preserves protocol and database identity **0.10.1**. The native
 service, legacy Python imports/CLI, Flask/WSGI adapter and Lambda event adapter

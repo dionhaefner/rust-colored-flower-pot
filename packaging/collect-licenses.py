@@ -10,7 +10,7 @@ output=Path(sys.argv[1])
 metadata=json.loads(subprocess.check_output([str(root/'validation/tools/cargo.sh'),'metadata','--locked','--offline','--format-version','1'],cwd=root))
 manifest=[]
 for package in metadata['packages']:
-    if package['name']=='terracotta':continue
+    if package['name']=='rcfp':continue
     source=Path(package['manifest_path']).parent
     candidates=[p for p in source.iterdir() if p.is_file() and p.name.upper().startswith(('LICENSE','COPYING','NOTICE'))]
     if package['name']=='openssl-src':candidates.append(source/'openssl/LICENSE.txt')

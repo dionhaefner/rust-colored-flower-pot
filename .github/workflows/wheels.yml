@@ -1,0 +1,158 @@
+name: Build and test wheels
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/wheels.yml'
+      - 'Cargo.*'
+      - 'rust-toolchain.toml'
+      - 'src/**'
+      - 'python/**'
+      - 'packaging/**'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'MANIFEST.in'
+      - 'validation/tools/p07_platform_smoke.py'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            id: linux-x86_64
+          - os: ubuntu-24.04-arm
+            id: linux-aarch64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build AL2023 bundle and repaired CPython 3.12 wheel
+        run: |
+          docker build -f packaging/lambda/Dockerfile.ci -t rcfp-wheel .
+          id=$(docker create rcfp-wheel)
+          mkdir -p validation/artifacts
+          docker cp "$id:/wheelhouse" validation/artifacts/ci-wheels
+          docker rm "$id"
+      - name: Check wheel contents and tag
+        run: |
+          for wheel in validation/artifacts/ci-wheels/*.whl; do
+            python3 packaging/verify-wheel.py "$wheel" --version 0.1.0
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.id }}
+          path: validation/artifacts/ci-wheels/*.whl
+          if-no-files-found: error
+
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            id: macos-x86_64
+          - os: macos-14
+            id: macos-arm64
+          - os: windows-2022
+            id: windows-amd64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: wheel-build
+          create-args: >-
+            python=3.12 pip setuptools=80.9.0 wheel=0.45.1 gdal=3.10.3 numpy=2 pillow
+          init-shell: bash
+      - name: Install wheel repair tool
+        run: |
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            python -m pip install delocate==0.13.0
+          else
+            python -m pip install delvewheel==1.13.1
+          fi
+      - name: Install Rust and build the core
+        run: |
+          rustup toolchain install 1.85.1 --profile minimal
+          cargo build --locked --release
+      - name: Build and repair wheel
+        run: |
+          python packaging/stage-platform-python.py --output validation/artifacts/ci-package
+          cd validation/artifacts/ci-package
+          python setup.py bdist_wheel --dist-dir ../ci-wheels-raw
+          cd ../../..
+          mkdir -p validation/artifacts/ci-wheels
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            export DYLD_LIBRARY_PATH="$CONDA_PREFIX/lib:${DYLD_LIBRARY_PATH:-}"
+            delocate-wheel --require-archs "$(uname -m)" -w validation/artifacts/ci-wheels validation/artifacts/ci-wheels-raw/*.whl
+          else
+            delvewheel repair --analyze-existing --add-path "$CONDA_PREFIX/Library/bin" -w validation/artifacts/ci-wheels validation/artifacts/ci-wheels-raw/*.whl
+          fi
+      - name: Check wheel contents and tag
+        run: |
+          for wheel in validation/artifacts/ci-wheels/*.whl; do
+            python packaging/verify-wheel.py "$wheel" --version 0.1.0
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.id }}
+          path: validation/artifacts/ci-wheels/*.whl
+          if-no-files-found: error
+
+  installed-wheel:
+    needs: [linux, desktop]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            id: linux-x86_64
+          - os: ubuntu-24.04-arm
+            id: linux-aarch64
+          - os: macos-15-intel
+            id: macos-x86_64
+          - os: macos-14
+            id: macos-arm64
+          - os: windows-2022
+            id: windows-amd64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ matrix.id }}
+          path: validation/artifacts/ci-wheels
+      - name: Install final wheel with pip and verify runtime
+        run: |
+          python -m pip install validation/artifacts/ci-wheels/*.whl Pillow==11.3.0
+          python -m pip install numpy pillow rasterio==1.4.4
+          for wheel in validation/artifacts/ci-wheels/*.whl; do
+            python packaging/verify-wheel.py "$wheel" --version 0.1.0
+          done
+          python validation/tools/p07_platform_smoke.py --out validation/artifacts/ci-wheel-smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wheel-test-${{ matrix.id }}
+          path: validation/artifacts/ci-wheel-smoke/
+          retention-days: 14
