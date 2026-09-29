@@ -47,7 +47,7 @@ pub unsafe extern "C" fn tc_http_request_full(
     body: *const u8,
     body_len: usize,
 ) -> *mut TcResponse {
-    let result: crate::Result<crate::http::AppResponse> = (|| {
+    let result: crate::Result<crate::http::AppResponse> = std::panic::catch_unwind(|| {
         let database = c_string(database, "database")?;
         let method = c_string(method, "method")?;
         let url = c_string(url, "URL")?;
@@ -67,7 +67,50 @@ pub unsafe extern "C" fn tc_http_request_full(
             unsafe { std::slice::from_raw_parts(body, body_len) }
         };
         Ok(application.request_full(&method, &url, &headers, body))
-    })();
+    })
+    .unwrap_or_else(|_| Err("native request panic".into()));
+    response_pointer(result)
+}
+
+/// Execute one request on an existing Python-owned HTTP session.
+/// # Safety
+/// Session must remain live during this call. Strings and body obey the same
+/// requirements as tc_http_request_full. Free the response once.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn tc_session_http_request_full(
+    session: *const crate::python::Session,
+    method: *const c_char,
+    url: *const c_char,
+    headers: *const c_char,
+    body: *const u8,
+    body_len: usize,
+) -> *mut TcResponse {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if session.is_null() {
+            return Err("null session".into());
+        }
+        let method = c_string(method, "method")?;
+        let url = c_string(url, "URL")?;
+        let headers: std::collections::BTreeMap<String, String> =
+            serde_json::from_str(&c_string(headers, "headers")?).map_err(|e| e.to_string())?;
+        if body_len > 1024 * 1024 {
+            return Err("request body exceeds 1 MiB".into());
+        }
+        let body = if body_len == 0 {
+            &[]
+        } else {
+            if body.is_null() {
+                return Err("body pointer is null".into());
+            }
+            unsafe { std::slice::from_raw_parts(body, body_len) }
+        };
+        unsafe { &*session }.http_request(&method, &url, &headers, body)
+    }))
+    .unwrap_or_else(|_| Err("native session panic".into()));
+    response_pointer(result)
+}
+
+fn response_pointer(result: crate::Result<crate::http::AppResponse>) -> *mut TcResponse {
     match result {
         Ok(response) => {
             let mut body = response.body.into_boxed_slice();
@@ -166,13 +209,17 @@ fn owned_c_string(value: &str) -> *mut c_char {
 /// string exactly once with `tc_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_data_operation(request: *const c_char) -> *mut c_char {
-    let result = c_string(request, "request").and_then(|text| {
-        let request: serde_json::Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
-        crate::settings::scope(
-            request["settings"].as_object().cloned().unwrap_or_default(),
-            || crate::cli::data_operation(&request),
-        )
-    });
+    let result = std::panic::catch_unwind(|| {
+        c_string(request, "request").and_then(|text| {
+            let request: serde_json::Value =
+                serde_json::from_str(&text).map_err(|e| e.to_string())?;
+            crate::settings::scope(
+                request["settings"].as_object().cloned().unwrap_or_default(),
+                || crate::cli::data_operation(&request),
+            )
+        })
+    })
+    .unwrap_or_else(|_| Err("native data operation panic".into()));
     let response = match result {
         Ok(value) => serde_json::json!({"ok":value}),
         Err(error) => serde_json::json!({"error":error}),
@@ -235,6 +282,8 @@ pub unsafe extern "C" fn tc_session_operation(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_session_free(session: *mut crate::python::Session) {
     if !session.is_null() {
-        drop(unsafe { Box::from_raw(session) });
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            drop(unsafe { Box::from_raw(session) });
+        }));
     }
 }

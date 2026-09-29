@@ -30,7 +30,16 @@ class Application:
         }
         if environ.get("CONTENT_TYPE"):
             request_headers["content-type"] = environ["CONTENT_TYPE"]
-        length = int(environ.get("CONTENT_LENGTH") or 0)
+        try:
+            length = int(environ.get("CONTENT_LENGTH") or 0)
+        except (TypeError, ValueError):
+            length = -1
+        if length < 0:
+            start_response(
+                "400 Bad Request",
+                [("Content-Type", "text/plain"), ("Content-Length", "0")],
+            )
+            return [b""]
         body = (
             environ["wsgi.input"].read(min(length, 1024 * 1024 + 1)) if length else b""
         )

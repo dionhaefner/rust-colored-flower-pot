@@ -82,7 +82,9 @@ validates eagerly, refreshes on reconnect after TTL expiry, and pins its current
 generation inside a connection context. RCFP native HTTP refreshes between
 requests. Failed refreshes preserve the previous file but return an error.
 Standard AWS credentials and `AWS_ENDPOINT_URL_S3` govern metadata; legacy
-`TC_RASTER_AWS_*` settings govern raster access.
+`TC_RASTER_AWS_*` settings govern raster access. MySQL and PostgreSQL
+connections require TLS with certificate and hostname verification. PostgreSQL
+accepts `sslmode=verify-full`; `sslrootcert` can add a private CA certificate.
 
 ## Logs, profiling and resource limits
 
@@ -102,9 +104,15 @@ Native bounds: `TC_RASTER_WORKERS` (default 3, or 1 with multiprocessing disable
 `TC_RASTER_CACHE_BYTES` (overrides the legacy `RASTER_CACHE_SIZE`). Native caches
 count uncompressed arrays; Terracotta 0.10.1 uses a compressed LFU cache and
 compression setting. Budgets with the same number need not retain the same number of images.
-Inspect `/__terracotta/metrics` for queue, cache, worker, drain and resource data.
-Restrict this diagnostic endpoint at the service boundary if required by the
-deployment. Queue saturation returns 503. A response deadline returns 504;
+The HTTP socket adapter admits a fixed number of connections, limits request
+headers to 16 KiB and bodies to 1 MiB, and closes requests that take more than
+five seconds to arrive. Render requests are limited to two at a time. Tile
+sizes are limited to 1,048,576 pixels; `/colormap` accepts at most 4,096
+samples and `/datasets` returns at most 1,000 items per page.
+
+`/__terracotta/metrics` is hidden by default. Set `TC_EXPOSE_METRICS=true`
+to expose queue, cache, worker, drain and resource data to clients.
+Queue saturation returns 503. A response deadline returns 504;
 neither it nor a client disconnect forcibly cancels GDAL. Submitted work drains
 and remains accounted. Dropping an application closes its queue and releases
 workers/cache once outstanding native work finishes. Worker threads are joined

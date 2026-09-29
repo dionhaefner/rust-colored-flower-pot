@@ -46,6 +46,9 @@ Python applications must change their import and command names when switching.
 The legacy database encoding, protocol version, routes, and raster behavior
 remain compatibility targets. The API document title is RCFP. This accepted
 namespace difference is recorded as RW-052/D-016.
+A proposed opt-in Terracotta 0.10.1 compatibility profile is specified in
+[the compatibility plan](execution/plans/compatibility-profile.md); it is not
+implemented or qualified in the current wheel.
 
 Existing behavior is the reference, including inconvenient quirks. Do not use the
 port as an opportunity to silently fix old bugs, rename interfaces, introduce a

@@ -13,8 +13,8 @@ must be installable on the oldest runner in the supported matrix.
 | Workflow | Trigger | Gate |
 | --- | --- | --- |
 | [Native platforms](../.github/workflows/platforms.yml) | PR, main, manual, release reuse | Rust fmt, tests, Clippy, native real-raster smoke on Linux x86_64/aarch64, macOS x86_64/arm64, and Windows x86_64; AL2023 Lambda runtime smoke on both Linux architectures. |
-| [Wheels](../.github/workflows/wheels.yml) | PR, main, manual, release reuse | Build and repair five `cp312-abi3` wheels; install each exact artifact on CPython 3.12, 3.13, and 3.14; run the standalone contract, range-read, and packaging smoke suites. |
-| [Correctness](../.github/workflows/correctness.yml) | PR, main, manual, scheduled, release reuse | Candidate-versus-pinned-Terracotta HTTP/image comparison, live MySQL/PostgreSQL and remote-storage checks, upstream reference baseline, and Chromium client workflow. Scheduled, manual, and tag runs also verify a physical >4 GiB BigTIFF and concurrent resource behavior. |
+| [Wheels](../.github/workflows/wheels.yml) | PR, main, manual, release reuse | Build and repair five `cp312-abi3` wheels; install each exact artifact on CPython 3.12, 3.13, and 3.14; run the standalone contract, range-read, and packaging smoke suites. The Linux x86_64 / CPython 3.12 contract run also reports Python adapter coverage. |
+| [Correctness](../.github/workflows/correctness.yml) | PR, main, manual, scheduled, release reuse | Candidate-versus-pinned-Terracotta HTTP/image comparison, live MySQL/PostgreSQL and remote-storage checks, Rust source coverage from unit/integration/native catalog operations, upstream reference baseline, and Chromium client workflow. Scheduled, manual, and tag runs also verify a physical >4 GiB BigTIFF and concurrent resource behavior. |
 | [Release](../.github/workflows/release.yml) | `v*` tag | Require all three qualification workflows, build and validate the sdist, verify exactly five tested wheels and version/RECORD metadata, then publish those artifacts to PyPI with trusted publishing. |
 
 The standalone installed-wheel suite uses seven checksum-pinned real raster
@@ -24,6 +24,18 @@ Its required case manifest rejects missing or skipped cases. SQL and browser
 checks run through separate native jobs; their reports are retained as CI
 artifacts. Test-only NumPy, Pillow, Rasterio, and Playwright are not package
 runtime dependencies.
+
+Coverage is visible in the GitHub job summaries. The correctness storage
+artifact contains `rust.lcov` for product `src/` lines exercised by Rust unit,
+SQL/remote integration, and instrumented native catalog operations. The
+Linux x86_64 / CPython 3.12 wheel artifact contains `python.json` and
+`python.xml` for in-process `rcfp` adapter lines and branches exercised by the
+installed-wheel contract suite. Keep the two percentages separate: the Python
+report does not measure Rust or native extension code, and the Rust report does
+not reliably include terminated HTTP server subprocesses, browser, Lambda,
+or all installed-wheel cases. The suite's pass/fail reports remain the
+correctness gates. No coverage threshold is
+set before a hosted baseline is measured.
 
 The pinned Terracotta 0.10.1 sdist is installed into a separate environment.
 The differential job compares HTTP responses and decoded images. The upstream

@@ -187,7 +187,16 @@ jobs:
               raise AssertionError("missing raster unexpectedly opened")
           PYCODE
           "$wheel_python" -m pip install "numpy>=2.2,<3" "Pillow>=11.3,<13"
-          "$wheel_python" tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+          if [[ "${{ matrix.platform.id }}" == linux-x86_64 && "${{ matrix.python-version }}" == 3.12 ]]; then
+            "$wheel_python" -m pip install coverage==7.10.7
+            "$wheel_python" -m coverage run --branch --source=rcfp tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+            mkdir -p build/ci/coverage
+            "$wheel_python" -m coverage json -o build/ci/coverage/python.json
+            "$wheel_python" -m coverage xml -o build/ci/coverage/python.xml
+            "$wheel_python" packaging/coverage-summary.py python build/ci/coverage/python.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            "$wheel_python" tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+          fi
           "$wheel_python" tests/remote_contracts.py --out build/ci/ci-remote
           if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
             "$wheel_python" -m pip install rasterio==1.4.4
@@ -203,4 +212,5 @@ jobs:
             build/ci/ci-wheel-smoke/
             build/ci/ci-contracts/
             build/ci/ci-remote/
+            build/ci/coverage/
           retention-days: 14

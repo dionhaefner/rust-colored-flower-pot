@@ -20,26 +20,12 @@ extern TcResponse *tc_http_request_full(const char *, const char *, const char *
 extern void tc_response_free(TcResponse *);
 extern void tc_string_free(char *);
 extern char *tc_data_operation(const char *);
+extern TcResponse *tc_session_http_request_full(const void *, const char *, const char *,
+                                                const char *, const unsigned char *, size_t);
 
-static PyObject *request_common(PyObject *self, PyObject *args, int full) {
-    (void)self;
-    const char *database;
-    const char *method;
-    const char *url;
-    const char *headers = "{}";
-    const char *request_body = "";
-    Py_ssize_t request_body_len = 0;
-    if (full) {
-        if (!PyArg_ParseTuple(args, "ssssy#:request_full", &database, &method, &url, &headers,
-                              &request_body, &request_body_len))
-            return NULL;
-    } else if (!PyArg_ParseTuple(args, "sss:request", &database, &method, &url))
-        return NULL;
-    TcResponse *response;
-    Py_BEGIN_ALLOW_THREADS response =
-        tc_http_request_full(database, method, url, headers, (const unsigned char *)request_body,
-                             (size_t)request_body_len);
-    Py_END_ALLOW_THREADS if (response == NULL) { return PyErr_NoMemory(); }
+static PyObject *response_to_python(TcResponse *response, int full) {
+    if (response == NULL)
+        return PyErr_NoMemory();
     if (response->error != NULL) {
         PyErr_SetString(PyExc_RuntimeError, response->error);
         tc_response_free(response);
@@ -70,6 +56,28 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
     Py_XDECREF(response_headers);
     tc_response_free(response);
     return result;
+}
+
+static PyObject *request_common(PyObject *self, PyObject *args, int full) {
+    (void)self;
+    const char *database;
+    const char *method;
+    const char *url;
+    const char *headers = "{}";
+    const char *request_body = "";
+    Py_ssize_t request_body_len = 0;
+    if (full) {
+        if (!PyArg_ParseTuple(args, "ssssy#:request_full", &database, &method, &url, &headers,
+                              &request_body, &request_body_len))
+            return NULL;
+    } else if (!PyArg_ParseTuple(args, "sss:request", &database, &method, &url))
+        return NULL;
+    TcResponse *response;
+    Py_BEGIN_ALLOW_THREADS response =
+        tc_http_request_full(database, method, url, headers, (const unsigned char *)request_body,
+                             (size_t)request_body_len);
+    Py_END_ALLOW_THREADS if (response == NULL) { return PyErr_NoMemory(); }
+    return response_to_python(response, full);
 }
 
 static PyObject *native_request(PyObject *self, PyObject *args) {
@@ -136,9 +144,28 @@ static PyObject *session_operation(PyObject *self, PyObject *args) {
     return result;
 }
 
+static PyObject *session_request_full(PyObject *self, PyObject *args) {
+    (void)self;
+    PyObject *capsule;
+    const char *method, *url, *headers, *body;
+    Py_ssize_t body_len;
+    if (!PyArg_ParseTuple(args, "Osssy#:session_request_full", &capsule, &method, &url, &headers,
+                          &body, &body_len))
+        return NULL;
+    void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
+    if (!session)
+        return NULL;
+    TcResponse *response;
+    Py_BEGIN_ALLOW_THREADS response = tc_session_http_request_full(
+        session, method, url, headers, (const unsigned char *)body, (size_t)body_len);
+    Py_END_ALLOW_THREADS return response_to_python(response, 1);
+}
+
 static PyMethodDef methods[] = {
     {"session_open", session_open, METH_VARARGS, "Create an owned native session."},
     {"session_operation", session_operation, METH_VARARGS, "Execute on an owned session."},
+    {"session_request_full", session_request_full, METH_VARARGS,
+     "Request on an owned HTTP session."},
     {"data_operation", native_data_operation, METH_VARARGS, "Execute native data preparation."},
     {"request_full", native_request_full, METH_VARARGS, "Execute a request with headers and body."},
     {"request", native_request, METH_VARARGS, "Execute one native request."},

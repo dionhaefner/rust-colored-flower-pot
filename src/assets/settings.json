@@ -3,6 +3,7 @@
   "DRIVER_PROVIDER": null,
   "DEBUG": false,
   "FLASK_PROFILE": false,
+  "EXPOSE_METRICS": false,
   "XRAY_PROFILE": false,
   "LOGLEVEL": "warning",
   "RASTER_CACHE_SIZE": 513802240,

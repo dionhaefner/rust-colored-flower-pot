@@ -9,10 +9,14 @@ use crate::{color, expressions, palettes::Palettes};
 use serde_json::{Map, Value, json};
 use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
-use std::sync::mpsc::{self, TrySendError};
-use std::sync::{Arc, Mutex};
+use std::sync::{
+    Arc, Mutex,
+    atomic::{AtomicUsize, Ordering},
+};
 use std::time::Instant;
-use tiny_http::{Header, Method, Response, Server, StatusCode};
+use tiny_http::Method;
+
+mod transport;
 
 pub struct Application {
     settings: Map<String, Value>,
@@ -23,6 +27,14 @@ pub struct Application {
     executor: RasterExecutor,
     http_workers: usize,
     http_queue_capacity: usize,
+    render_in_flight: AtomicUsize,
+}
+
+struct RenderPermit<'a>(&'a AtomicUsize);
+impl Drop for RenderPermit<'_> {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::Release);
+    }
 }
 
 pub struct AppResponse {
@@ -63,6 +75,7 @@ impl Application {
             executor: RasterExecutor::start(config)?,
             http_workers,
             http_queue_capacity,
+            render_in_flight: AtomicUsize::new(0),
         })
     }
 
@@ -97,9 +110,37 @@ impl Application {
     ) -> AppResponse {
         let started = std::time::Instant::now();
         let trace_start = std::time::SystemTime::now();
-        if body.len() > 1024 * 1024 {
-            return json_error(413, "Request body is too large");
+        if body.len() > 1024 * 1024
+            || url.len() > 8192
+            || method.len() > 16
+            || headers
+                .iter()
+                .try_fold(0usize, |total, (name, value)| {
+                    total.checked_add(name.len())?.checked_add(value.len())
+                })
+                .is_none_or(|total| total > 16 * 1024)
+        {
+            return json_error(413, "Request is too large");
         }
+        let raw_path = url.split('?').next().unwrap_or(url);
+        let decoded_path = percent_decode_path(raw_path).unwrap_or_else(|_| raw_path.to_owned());
+        let _render_permit = if ["/singleband/", "/rgb/", "/compute/"]
+            .iter()
+            .any(|prefix| decoded_path.starts_with(prefix))
+        {
+            if self
+                .render_in_flight
+                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+                    (current < 2).then_some(current + 1)
+                })
+                .is_err()
+            {
+                return json_error(503, "render capacity is full");
+            }
+            Some(RenderPermit(&self.render_in_flight))
+        } else {
+            None
+        };
         let parsed_method = method.parse::<Method>().unwrap_or(Method::Post);
         let mut response = self.handle(
             &parsed_method,
@@ -195,87 +236,7 @@ impl Application {
     }
 
     pub fn serve(self, address: &str) -> Result<()> {
-        let server =
-            Server::http(address).map_err(|error| format!("could not bind {address}: {error}"))?;
-        let http_workers = self.http_workers;
-        let http_queue_capacity = self.http_queue_capacity;
-        let application = Arc::new(self);
-        let (sender, receiver) = mpsc::sync_channel(http_queue_capacity);
-        let receiver = Arc::new(Mutex::new(receiver));
-        for worker_id in 0..http_workers {
-            let application = application.clone();
-            let receiver = receiver.clone();
-            std::thread::Builder::new()
-                .name(format!("terracotta-http-{worker_id}"))
-                .spawn(move || {
-                    loop {
-                        let request = {
-                            let receiver = receiver.lock().expect("HTTP receiver lock");
-                            receiver.recv()
-                        };
-                        let Ok(request) = request else {
-                            return;
-                        };
-                        application.respond(request);
-                    }
-                })
-                .map_err(|error| format!("could not start HTTP worker: {error}"))?;
-        }
-        eprintln!(
-            "RCFP listening on http://{address} (HTTP workers {}, raster workers {}, queue {})",
-            http_workers,
-            application.executor.metrics().workers,
-            http_queue_capacity
-        );
-        for request in server.incoming_requests() {
-            match sender.try_send(request) {
-                Ok(()) => {}
-                Err(TrySendError::Full(request)) => {
-                    respond(request, json_error(503, "HTTP request queue is full"));
-                }
-                Err(TrySendError::Disconnected(request)) => {
-                    respond(request, json_error(503, "HTTP workers are unavailable"));
-                    return Err("HTTP worker pool stopped".into());
-                }
-            }
-        }
-        Ok(())
-    }
-
-    fn respond(&self, mut request: tiny_http::Request) {
-        let headers = request
-            .headers()
-            .iter()
-            .map(|h| {
-                (
-                    h.field.as_str().as_str().to_ascii_lowercase(),
-                    h.value.as_str().to_owned(),
-                )
-            })
-            .collect();
-        let mut body = Vec::new();
-        use std::io::Read;
-        if request
-            .as_reader()
-            .take(1024 * 1024 + 1)
-            .read_to_end(&mut body)
-            .is_err()
-        {
-            respond(request, json_error(400, "Could not read request body"));
-            return;
-        }
-        if body.len() > 1024 * 1024 {
-            respond(request, json_error(413, "Request body is too large"));
-            return;
-        }
-        let is_tile =
-            request.url().starts_with("/singleband/") || request.url().starts_with("/rgb/");
-        let response = self.request_full(request.method().as_str(), request.url(), &headers, &body);
-        let delivered = response.status == 200 && is_tile;
-        respond(request, response);
-        if delivered {
-            self.executor.wake_prefetch();
-        }
+        transport::serve(self, address)
     }
 
     fn handle(
@@ -301,11 +262,12 @@ impl Application {
             "/static/favicon.ico",
             "/static/redoc.standalone.js.LICENSE.txt",
             "/__terracotta/identity",
-            "/__terracotta/metrics",
         ]
         .contains(&path)
             || path.starts_with("/metadata/")
-            || render_route(path);
+            || render_route(path)
+            || (path == "/__terracotta/metrics"
+                && crate::settings::var("TC_EXPOSE_METRICS").is_ok_and(|value| value == "true"));
         if !known {
             return html_error(404);
         }
@@ -545,6 +507,9 @@ impl Application {
         }
         let page = parse_usize(parameters.get("page"), 0, "page")?;
         let limit = parse_usize(parameters.get("limit"), 100, "limit")?;
+        if limit > 1000 || page.checked_mul(limit).is_none() {
+            return Err("invalid dataset page or limit".into());
+        }
         let order = parameters
             .get("order_by")
             .map(|value| {
@@ -1037,7 +1002,7 @@ impl Application {
             })
             .transpose()?
             .unwrap_or(255);
-        if count > 1_000_000 {
+        if count > 4096 {
             return Err("num_values exceeds response resource limit".into());
         }
         let colors = parameters
@@ -1189,25 +1154,6 @@ impl Application {
         );
         object.insert("remote_traffic_note".into(), json!("remote_jobs counts admitted GDAL URL/S3 reads; exact HTTP request/byte traffic is measured at the range server"));
         json_response(200, &value)
-    }
-}
-
-fn respond(request: tiny_http::Request, response: AppResponse) {
-    let mut outgoing =
-        Response::from_data(response.body).with_status_code(StatusCode(response.status));
-    outgoing.add_header(
-        Header::from_bytes("Content-Type", response.content_type).expect("valid header"),
-    );
-    if response.cache {
-        outgoing.add_header(Header::from_bytes("Cache-Control", "no-cache").unwrap());
-    }
-    for (key, value) in response.headers {
-        if let Ok(header) = Header::from_bytes(key, value) {
-            outgoing.add_header(header);
-        }
-    }
-    if let Err(error) = request.respond(outgoing) {
-        eprintln!("response error: {error}");
     }
 }
 
@@ -1412,8 +1358,13 @@ fn parse_size(value: &str) -> Result<[usize; 2]> {
         || size
             .iter()
             .any(|dimension| *dimension == 0 || *dimension > 4096)
+        || size[0]
+            .checked_mul(size[1])
+            .is_none_or(|pixels| pixels > 1024 * 1024)
     {
-        return Err("tile_size must contain two positive dimensions no larger than 4096".into());
+        return Err(
+            "tile_size must contain two positive dimensions with at most 1048576 pixels".into(),
+        );
     }
     Ok([size[0], size[1]])
 }
@@ -1542,6 +1493,12 @@ mod tests {
     #[test]
     fn decodes_query_values() {
         assert_eq!(percent_decode("%5B128%2C+256%5D").unwrap(), "[128, 256]");
+    }
+    #[test]
+    fn rejects_tile_allocations_above_pixel_budget() {
+        assert_eq!(parse_size("[1024,1024]").unwrap(), [1024, 1024]);
+        assert!(parse_size("[4096,4096]").is_err());
+        assert!(parse_size("[4096,256]").is_ok());
     }
     #[test]
     fn preserves_palette_order() {

@@ -36,6 +36,19 @@ impl Session {
         })?;
         Ok(Self { settings, kind })
     }
+    pub fn http_request(
+        &self,
+        method: &str,
+        url: &str,
+        headers: &std::collections::BTreeMap<String, String>,
+        body: &[u8],
+    ) -> Result<crate::http::AppResponse> {
+        match &self.kind {
+            Kind::Http(app) => Ok(app.request_full(method, url, headers, body)),
+            _ => Err("session is not an HTTP application".into()),
+        }
+    }
+
     pub fn operation(&self, r: &Value) -> Result<Value> {
         crate::settings::scope(self.settings.clone(), || match &self.kind {
             Kind::Store(store) => {
@@ -87,7 +100,12 @@ impl Session {
                     .map_err(|e| e.to_string())?,
                     preserve_values: r["preserve_values"].as_bool().unwrap_or(false),
                 };
-                if request.size.contains(&0) || request.size.iter().any(|s| *s > 8192) {
+                if request.size.contains(&0)
+                    || request.size.iter().any(|s| *s > 4096)
+                    || request.size[0]
+                        .checked_mul(request.size[1])
+                        .is_none_or(|pixels| pixels > 1024 * 1024)
+                {
                     return Err("invalid tile dimensions".into());
                 }
                 let raster = executor.read(

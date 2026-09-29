@@ -2,6 +2,12 @@
 
 ## Current position
 
+- [CI source coverage](handoffs/ci-source-coverage.md) now reports separate Rust and Python adapter line coverage in CI summaries and artifacts; YAML and parser checks pass locally, while hosted execution awaits available Actions minutes.
+- [Terracotta compatibility profile design](plans/compatibility-profile.md)
+  defines an opt-in, pinned `terracotta-0.10.1` contract, native-mode boundary,
+  data safety, migration guides, and mandatory installed-wheel CI gates. It is
+  design only: the flag and legacy Python/CLI facade are not yet implemented,
+  so no drop-in claim is currently qualified (D-023).
 - [CI correctness-suite implementation](handoffs/ci-correctness-suite.md) adds
   53 required installed-wheel cases, 26 pinned Terracotta differential cases,
   live SQL and remote-storage checks, browser and HTTP-range tests, and scheduled

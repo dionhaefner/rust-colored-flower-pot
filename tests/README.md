@@ -1,4 +1,29 @@
-# Release smoke fixtures
+# Test suites and fixtures
+
+Tests are organized by the interface they exercise. The Python end-to-end
+runners are standalone scripts that write JSON reports; the installed-wheel
+contract runner also writes JUnit XML. They are not collected by `pytest`.
+
+| Layer | Entry point | CI lane | What it checks |
+| --- | --- | --- | --- |
+| Rust unit tests | `cargo test --locked` | Native platforms | Core parser, expression, raster, settings, and storage logic on five OS/architecture cells. |
+| Rust SQL/remote integration | `cargo test --locked --features storage-integration --test storage_sql --test storage_remote` | Correctness services | Disposable MySQL/PostgreSQL databases and remote storage with real services. |
+| Installed-wheel end-to-end | `python tests/contract_suite.py --wheel WHEEL --out OUT` | Wheels: 5 platforms × 3 Python versions | 53 required public Python, WSGI, CLI, HTTP, raster, metadata, and SQLite cases. |
+| Other standalone end-to-end | `tests/storage_contracts.py`, `remote_contracts.py`, `browser_contracts.py`, `platform_smoke.py`, `lambda_runtime_smoke.py` | Correctness, wheels, native platforms | Live databases, HTTP ranges, Chromium UI, real raster, and official local Lambda runtime. |
+| Large-file and resource tests | `tests/large_raster_contracts.py`, `resource_contracts.py` | Scheduled, manual, or tag correctness | Physical BigTIFF reads above 4 GiB and concurrent server resource behavior. |
+| Transitional reference comparison | `process/validation/tools/ci_differential.py`, `ci_upstream.py` | Correctness | 26 candidate comparisons against pinned Terracotta and the pinned reference test baseline. |
+
+The correctness services job publishes Rust source line coverage from its unit,
+SQL/remote integration, and instrumented native catalog operations. The Linux
+x86_64 / CPython 3.12 installed-wheel job publishes separate Python adapter line
+and branch coverage from the in-process contract suite. GitHub job summaries show
+the totals and lowest-covered files; downloadable artifacts contain Rust LCOV and
+Python JSON/XML. These numbers exclude wheel native extension, browser, Lambda, and other
+platform runs. Terminated HTTP server subprocesses may not flush Rust counters.
+Coverage is reported as a baseline, with no percentage gate until hosted
+reports establish a stable value.
+
+## Real-raster smoke fixtures
 
 `platform_smoke.py` exercises the native binary and installed wheel against a
 real Sentinel-2 red-band crop. `fixtures/platform-smoke.json` pins the source URL,

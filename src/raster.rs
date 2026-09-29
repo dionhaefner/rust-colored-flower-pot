@@ -311,7 +311,7 @@ impl Gdal {
         &self,
         source: DatasetHandle,
         algorithm: c_int,
-        path: &Path,
+        _path: &Path,
     ) -> Result<SuggestedGeometry> {
         let target = CString::new(self.target_crs.as_str()).map_err(|_| "invalid target CRS")?;
         let warped = unsafe {
@@ -325,10 +325,7 @@ impl Gdal {
             )
         };
         if warped.is_null() {
-            return Err(format!(
-                "GDAL could not create a Web Mercator view of {}",
-                path.display()
-            ));
+            return Err("GDAL could not create a Web Mercator view".into());
         }
         let warped = DatasetGuard {
             handle: warped,
@@ -579,14 +576,13 @@ impl Gdal {
             };
             if self.profile_reads {
                 eprintln!(
-                    "raster_profile open_us={} suggested_us={} warp_us={} values_us={} validity_us={} finish_us={} path={}",
+                    "raster_profile open_us={} suggested_us={} warp_us={} values_us={} validity_us={} finish_us={}",
                     (opened - started).as_micros(),
                     (suggested - opened).as_micros(),
                     (warped_at - suggested).as_micros(),
                     (values_at - warped_at).as_micros(),
                     (validity_at - values_at).as_micros(),
                     validity_at.elapsed().as_micros(),
-                    path.display(),
                 );
             }
             Ok(raster)
@@ -685,7 +681,7 @@ impl Gdal {
             .map_err(|_| "raster path contains a NUL byte".to_string())?;
         let handle = unsafe { (self.open)(c_path.as_ptr(), GA_READ_ONLY) };
         if handle.is_null() {
-            return Err(format!("error while reading file {}", path.display()));
+            return Err("error while reading raster file".into());
         }
         Ok(DatasetGuard {
             handle,
@@ -745,7 +741,20 @@ struct ReadSpec {
     window: [f64; 4],
 }
 
-unsafe fn read_window<T>(
+trait GdalPixel {
+    const DATA_TYPE: c_int;
+}
+impl GdalPixel for u8 {
+    const DATA_TYPE: c_int = GDT_BYTE;
+}
+impl GdalPixel for u16 {
+    const DATA_TYPE: c_int = 2;
+}
+impl GdalPixel for f64 {
+    const DATA_TYPE: c_int = GDT_FLOAT64;
+}
+
+unsafe fn read_window<T: GdalPixel>(
     function: unsafe extern "C" fn(
         BandHandle,
         c_int,
@@ -765,6 +774,17 @@ unsafe fn read_window<T>(
     output: &mut [T],
     spec: ReadSpec,
 ) -> Result<()> {
+    if band.is_null()
+        || spec.width == 0
+        || spec.height == 0
+        || spec.data_type != T::DATA_TYPE
+        || spec.width.checked_mul(spec.height) != Some(output.len())
+        || c_int::try_from(spec.width).is_err()
+        || c_int::try_from(spec.height).is_err()
+        || spec.window.iter().any(|value| !value.is_finite())
+    {
+        return Err("invalid GDAL raster buffer or dimensions".into());
+    }
     let [x_offset, y_offset, x_size, y_size] = spec.window;
     let mut extra = RasterIoExtraArg {
         version: 1,

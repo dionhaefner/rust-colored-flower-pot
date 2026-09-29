@@ -117,7 +117,7 @@ impl Remote {
             .map_err(|e| e.to_string())?;
         let (aws, profile_region) = runtime
             .block_on(async {
-                let config = aws_config::load_from_env().await;
+                let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
                 let credentials = config
                     .credentials_provider()
                     .ok_or("credentials unavailable")?

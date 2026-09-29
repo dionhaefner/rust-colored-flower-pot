@@ -45,6 +45,7 @@ slice, use [REVIEW.md](execution/prompts/REVIEW.md).
 | [STATUS.md](execution/STATUS.md)         | Current progress, ownership, blockers, and next action.                                      |
 | [COVERAGE.md](execution/COVERAGE.md)     | Feature inventory and implementation/evidence status.                                        |
 | [DECISIONS.md](execution/DECISIONS.md)   | Architectural choices and reasons to revisit them.                                           |
+| [Compatibility profile](execution/plans/compatibility-profile.md) | Proposed Terracotta trial contract, native adoption, and release gates.                    |
 | [TEMPLATES.md](execution/TEMPLATES.md)   | Brief, plan, evidence, blocker, and handoff formats.                                         |
 
 ## Frozen Terracotta reference

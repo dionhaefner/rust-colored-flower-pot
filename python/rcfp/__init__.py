@@ -228,20 +228,13 @@ class NativeApplication:
         )
 
     def request(self, method, url, headers=None, body=b""):
-        value = json.loads(
-            _native.session_operation(
+        status, content_type, data, cache, response_headers = (
+            _native.session_request_full(
                 self._session,
-                json.dumps(
-                    {
-                        "method": method,
-                        "url": url,
-                        "headers": {k.lower(): v for k, v in (headers or {}).items()},
-                        "body": list(body),
-                    }
-                ),
+                method,
+                url,
+                json.dumps({k.lower(): v for k, v in (headers or {}).items()}),
+                body,
             )
         )
-        if "error" in value:
-            raise RcfpError(value["error"])
-        status, content_type, data, cache, headers = value["ok"]
-        return status, content_type, bytes(data), cache, headers
+        return status, content_type, data, cache, json.loads(response_headers)

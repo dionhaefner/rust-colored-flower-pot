@@ -132,6 +132,9 @@ impl Gdal {
             let width = (self.raster_x_size)(src.handle) as usize;
             let height = (self.raster_y_size)(src.handle) as usize;
             let band = (self.raster_band)(src.handle, 1);
+            if band.is_null() {
+                return Err("raster has no first band".into());
+            }
             let dtype = (self.band_data_type)(band);
             let get_mask: unsafe extern "C" fn(BandHandle) -> BandHandle =
                 self.symbol(b"GDALGetMaskBand\0")?;
@@ -273,10 +276,7 @@ impl Gdal {
                 }
             }
             if moments.count == 0 {
-                return Err(format!(
-                    "Raster file {} does not contain any valid data",
-                    path.display()
-                ));
+                return Err("Raster file does not contain any valid data".into());
             }
             let (mean, stdev, percentiles) = if chunked {
                 (

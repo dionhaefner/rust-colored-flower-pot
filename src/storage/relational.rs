@@ -27,6 +27,7 @@ impl Connection {
                 .db_name(Some(database))
                 .prefer_socket(false)
                 .tcp_connect_timeout(Some(timeout()?))
+                .ssl_opts(Some(mysql::SslOpts::default()))
                 .init(vec![
                     "SET NAMES utf8mb4",
                     "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED",
@@ -56,29 +57,18 @@ impl Connection {
                 config.password(p);
             }
             let mut tls = native_tls::TlsConnector::builder();
-            let mode = path
+            // The server identity must be verified before credentials or queries are sent.
+            config.ssl_mode(postgres::config::SslMode::Require);
+            if path
                 .query
                 .iter()
-                .find(|(k, _)| k == "sslmode")
-                .map(|(_, v)| v.as_str())
-                .unwrap_or("prefer");
-            let has_root = path.query.iter().any(|(k, _)| k == "sslrootcert");
-            tls.danger_accept_invalid_certs(
-                !has_root && !["verify-ca", "verify-full"].contains(&mode),
-            );
-            tls.danger_accept_invalid_hostnames(mode != "verify-full");
+                .any(|(key, value)| key == "sslmode" && value != "verify-full")
+            {
+                return Err("PostgreSQL connections require sslmode=verify-full".into());
+            }
             for (k, v) in &path.query {
                 match k.as_str() {
-                    "sslmode" => {
-                        config.ssl_mode(match v.as_str() {
-                            "disable" => postgres::config::SslMode::Disable,
-                            "prefer" => postgres::config::SslMode::Prefer,
-                            "require" | "verify-ca" | "verify-full" => {
-                                postgres::config::SslMode::Require
-                            }
-                            _ => return Err("invalid sslmode".into()),
-                        });
-                    }
+                    "sslmode" => {}
                     "sslrootcert" => {
                         tls.add_root_certificate(
                             native_tls::Certificate::from_pem(
