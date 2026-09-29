@@ -56,3 +56,13 @@ backend, then uses Chromium to select a dataset, render singleband and RGB
 layers, and open the metadata view. It records response statuses, page errors,
 metadata, and screenshots. The test serves an offline map style so it does not
 require a Mapbox token.
+
+`large_raster_contracts.py` acquires the checksum-pinned full ESA WorldCover
+source when needed, writes a physical tiled uint32 BigTIFF, checks all 5,041
+source blocks and masks, and compares rendered tiles from the original, local
+derivative, and a byte-range HTTP server. It requires an actual range request
+above 4 GiB. `resource_contracts.py` repeatedly requests a real tile with
+concurrent clients, checks image stability and error recovery, and bounds RSS
+and file descriptor growth. These larger checks run on scheduled, manual, and
+tag qualification; their reports are retained without uploading the multi-GB
+fixture.

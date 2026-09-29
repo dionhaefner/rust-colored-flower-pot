@@ -2,20 +2,19 @@
 
 ## Current position
 
-- [CI correctness-suite plan](plans/ci-correctness-suite.md) specifies the
-  standalone public-contract, real-storage and real-raster tests that must
-  become release gates, plus a separate frozen-Terracotta differential lane.
-  It is a plan only: no new correctness jobs or hosted passes are claimed.
-  [Handoff](handoffs/ci-correctness-suite.md).
+- [CI correctness-suite implementation](handoffs/ci-correctness-suite.md) adds
+  53 required installed-wheel cases, 26 pinned Terracotta differential cases,
+  live SQL and remote-storage checks, browser and HTTP-range tests, and scheduled
+  large-raster/resource qualification. Local Linux contract, differential,
+  SQLite, range, browser, BigTIFF, and short resource runs pass. The current
+  unpushed wheel-builder and stress changes still need hosted qualification;
+  Windows wheel build and the full installed-wheel matrix are unverified.
 - Active rewrite records now live under `process/`; the root README describes the installable product. Source archives exclude the process tree, while the Cargo helper remains under `packaging/`. CI smokes and Rust tests use enduring `tests/` fixtures and generated databases; product code and release workflows have no dependency on the process tree. [Boundary handoff](handoffs/process-artifact-boundary.md), D-021.
-- [CI/GDAL wheel pipeline](../CI.md) now has five platform
-  build/test cells, repaired wheel checks, native/Lambda qualification, and a
-  protected-tag PyPI workflow. Local Linux CPython 3.12 clean-wheel rendering
-  passed with no Rasterio runtime dependency; rendering still passed after
-  uninstalling Rasterio, NumPy and Pillow. Hosted platform jobs,
-  PyPI trusted-publisher configuration, and the broader frozen-oracle CI gate
-  remain pending. [Handoff](handoffs/ci-testing-stack.md),
-  [local evidence](../validation/evidence/p08/ci-wheels/README.md).
+- [CI/GDAL wheel pipeline](../CI.md) separates Ubuntu-built repaired Linux
+  wheels from AL2023 Lambda bundles, retains five-platform builds and a
+  CPython 3.12–3.14 installed-wheel matrix, and gates tag publishing on native,
+  wheel and correctness workflows. PyPI trusted-publisher setup is external.
+  [Handoff](handoffs/ci-testing-stack.md).
 - P08 implementation is locally qualified, but post-qualification investigation
   found unequal aggregate GDAL cache budgets in the benchmark (RW-043). A
   corrected full benchmark remains local follow-up work; external gates remain. [Handoff](handoffs/P08.md), [evidence](../validation/evidence/p08/README.md).

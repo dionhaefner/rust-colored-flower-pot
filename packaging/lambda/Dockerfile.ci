@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.12 AS build
 RUN dnf install -y gcc gcc-c++ make perl-core expat zlib tar gzip && dnf clean all
-RUN python -m pip install build==1.3.0 hatchling hatch-vcs rustup==1.29.0.1 zstandard==0.25.0 auditwheel==6.5.0 patchelf==0.17.2.4
+RUN python -m pip install rustup==1.29.0.1 zstandard==0.25.0
 WORKDIR /workspace
 COPY Cargo.toml Cargo.lock rust-toolchain.toml pyproject.toml ./
 COPY src ./src
@@ -11,8 +11,6 @@ COPY LICENSE THIRD_PARTY_NOTICES.md README.md ./
 RUN cargo --version && cargo fetch --locked && RUSTFLAGS='-C link-arg=-Wl,--disable-new-dtags,-rpath,$ORIGIN' cargo build --locked --release
 RUN RCFP_NATIVE_TARGET=/workspace/target RCFP_BUILD_PYTHON=/var/lang/bin/python packaging/build-bundle.sh /bundle && \
     cp -aL /usr/lib64/libstdc++.so.6 /usr/lib64/libgcc_s.so.1 /usr/lib64/libexpat.so.1 /usr/lib64/libz.so.1 /bundle/lib/
-RUN PYTHON=/var/lang/bin/python packaging/build-wheel.sh /bundle /wheelhouse-raw && LD_LIBRARY_PATH=/bundle/lib auditwheel repair --disable-isa-ext-check /wheelhouse-raw/*.whl -w /wheelhouse
 FROM scratch
 COPY --from=build /bundle /bundle
-COPY --from=build /wheelhouse /wheelhouse
 CMD ["/bundle/bin/rcfp", "--version-json"]

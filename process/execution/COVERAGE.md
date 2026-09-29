@@ -87,3 +87,18 @@ rerun of the complete legacy matrix. C27 remains partial under the RCFP
 namespace; C28 lacks legacy Flask in the current wheel. C32 remains partial
 until hosted Linux arm64, macOS and Windows results exist.
 [Local wheel evidence](../validation/evidence/p08/ci-wheels/README.md).
+
+## CI correctness implementation addendum (2026-09-29)
+
+[Case-to-family map](ci-case-map.json) names the standalone installed-wheel,
+SQL, remote, browser, resource and large-raster cases. The portable suite has
+53 required cases; the separate frozen-release differential job has 26 cases.
+Local Linux runs passed those lanes, a 5.29 GB physical BigTIFF with all 5,041
+real WorldCover blocks checked, and a short concurrent server run. Hosted
+candidate differential, browser, SQL services, macOS desktop wheels and both
+Lambda/native Linux lanes passed on the latest pushed commit; the Windows
+wheel and installed-wheel matrix did not. The current builder/stress changes
+remain local and unqualified on hosted runners. Family-level verification does
+not follow from these counts alone: detailed boundary and external AWS cases
+remain open where the [CI implementation handoff](handoffs/ci-correctness-suite.md)
+identifies them.

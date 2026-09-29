@@ -800,3 +800,13 @@ not runtime reproductions, and no rewrite deviations have yet been validated.
 
 - **Kind:** packaging dependency correction. `python/rcfp` imports only its native extension and standard-library modules. Its Rust core loads the GDAL library copied into `rcfp/runtime`; no installed Rasterio Python package is needed for normal use. The prior `Requires-Dist: rasterio==1.4.4` forced users to install a second vendored GDAL/PROJ copy.
 - Rasterio 1.4.4 remains pinned as a Linux build dependency and test fixture tool. The wheel metadata now rejects a Rasterio runtime dependency, and clean-wheel CI removes Rasterio/NumPy/Pillow before a native raster request. D-020 records the revised boundary.
+
+### RW-057: AL2023 wheel tags exceed the Ubuntu installation baseline
+
+- **Kind:** packaging qualification failure. Auditwheel on the AL2023 image selected `manylinux_2_41_x86_64` and identified an x86_64-v2 requirement in the native executable. Disabling auditwheel's ISA check let that build finish but did not make its glibc/CPU baseline appropriate for a general PyPI wheel or the Ubuntu 24.04 install cell.
+- The wheel workflow now builds on the Ubuntu architecture runner and retains the strict ISA check. A local x86_64 build repaired to `manylinux_2_39_x86_64`, installed in a clean venv, and passed 53 portable cases plus the HTTP range test. AL2023 remains the separate Lambda bundle/runtime-image builder. Hosted x86_64/aarch64 installed-wheel results for this change are pending.
+
+### RW-058: Python rustup shims can shadow hosted Cargo during a Windows wheel build
+
+- **Kind:** build-tool ordering hypothesis pending hosted validation. The Windows desktop lane exited after downloading a few crates without producing `rcfp.exe`; the same native Windows lane built successfully without installing the Python `rustup` package first. The pip `rustup==1.29.0.1` package installs a `cargo` shim into Python's scripts directory, so the desktop lane now builds native artifacts before installing it for hatch's declared build requirement.
+- The workflow checks for `rcfp.exe` and `rcfp_core.dll` immediately after Cargo. The fix is unverified on a hosted Windows runner; no successful Windows wheel is claimed.

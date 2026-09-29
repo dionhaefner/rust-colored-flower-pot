@@ -428,6 +428,28 @@
         "C31",
         "C32"
       ]
+    },
+    {
+      "id": "browser.client-selection-render-metadata",
+      "families": [
+        "C24",
+        "C33"
+      ]
+    },
+    {
+      "id": "raster.full-source-bigtiff-range",
+      "families": [
+        "C12",
+        "C36"
+      ]
+    },
+    {
+      "id": "native.raster-concurrency-resources",
+      "families": [
+        "C29",
+        "C30",
+        "C34"
+      ]
     }
   ]
 }
