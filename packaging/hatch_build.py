@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import subprocess
 import sys
 import sysconfig
@@ -75,6 +76,12 @@ class CustomBuildHook(BuildHookInterface):
         build_data["force_include"][str(runtime)] = "rcfp/runtime"
         build_data["force_include"][str(extensions[0])] = f"rcfp/{extensions[0].name}"
         platform_tag = sysconfig.get_platform().replace("-", "_").replace(".", "_")
+        if sys.platform == "darwin":
+            architecture = platform.machine()
+            if architecture not in {"arm64", "x86_64"}:
+                raise RuntimeError(f"unsupported macOS architecture: {architecture}")
+            minimum = "11_0" if architecture == "arm64" else "10_15"
+            platform_tag = f"macosx_{minimum}_{architecture}"
         build_data["tag"] = f"cp312-abi3-{platform_tag}"
         build_data["pure_python"] = False
 
