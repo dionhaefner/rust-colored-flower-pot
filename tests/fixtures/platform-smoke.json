@@ -9,22 +9,10 @@
     "terms": "https://registry.opendata.aws/sentinel-2-l2a-cogs/",
     "attribution": "Contains modified Copernicus Sentinel data 2021"
   },
-  "window": [
-    5500,
-    5250,
-    2048,
-    2048
-  ],
+  "window": [5500, 5250, 2048, 2048],
   "subset": {
     "crs": "EPSG:32632",
-    "transform": [
-      10.0,
-      0.0,
-      754960.0,
-      0.0,
-      -10.0,
-      5047500.0
-    ],
+    "transform": [10.0, 0.0, 754960.0, 0.0, -10.0, 5047500.0],
     "width": 2048,
     "height": 2048,
     "pixel_sha256": "486704bbae2beab33f255ef3f31afa8dad3993ece659b5a46cdb19afe7eb387d"

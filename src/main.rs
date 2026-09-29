@@ -280,6 +280,7 @@ fn bundled_runtime_root() -> Option<PathBuf> {
     root.join("lib").is_dir().then_some(root)
 }
 
+#[cfg(unix)]
 fn bundled_lib_dir() -> Option<PathBuf> {
     bundled_runtime_root().map(|root| root.join("lib"))
 }

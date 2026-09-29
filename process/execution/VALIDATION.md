@@ -56,15 +56,15 @@ reproduction or a durable artifact reference before marking a contract verified.
 
 ## Compare the right things
 
-| Contract | Comparison |
-| --- | --- |
-| HTTP | Route/method, query parsing/defaults, status, content type, meaningful headers/CORS, JSON structure/types/ordering where contractual, error meaning and version negotiation. Normalize only proven irrelevant fields. |
-| Raster/PNG | Dimensions, decoded color/transparency, masks and classes, bounds/geographic placement, seams, and visible changes at ordinary display scales. PNG compressed bytes can differ. |
-| Compute/color | Parser semantics, operations, invalid results, mask propagation, categories, channel ordering; compare intermediate arrays to diagnose failures, without imposing unnecessary bit equality. |
-| Metadata | Ranges, precision/storage round trips, statistic definitions, finite/invalid behavior, geometry and percentile effects. Use separate checks for full, sampled, and chunked modes. |
-| Database | Legacy encodings, ordered keys, paths, precision, transactions, updates/deletes, migrations, and Python↔Rust reads/writes on real supported engines. |
-| CLI/Python | Real invocation/import, flags/defaults, configuration precedence, exit/error behavior, documented types and contexts/futures, and complete ingestion/serving flows. |
-| Deployment | Clean artifact installation/loading, native libraries/data, request/response path, platform/runtime, credentials and remote I/O. Emulator and event-unit evidence do not prove a deployed service. |
+| Contract      | Comparison                                                                                                                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP          | Route/method, query parsing/defaults, status, content type, meaningful headers/CORS, JSON structure/types/ordering where contractual, error meaning and version negotiation. Normalize only proven irrelevant fields. |
+| Raster/PNG    | Dimensions, decoded color/transparency, masks and classes, bounds/geographic placement, seams, and visible changes at ordinary display scales. PNG compressed bytes can differ.                                       |
+| Compute/color | Parser semantics, operations, invalid results, mask propagation, categories, channel ordering; compare intermediate arrays to diagnose failures, without imposing unnecessary bit equality.                           |
+| Metadata      | Ranges, precision/storage round trips, statistic definitions, finite/invalid behavior, geometry and percentile effects. Use separate checks for full, sampled, and chunked modes.                                     |
+| Database      | Legacy encodings, ordered keys, paths, precision, transactions, updates/deletes, migrations, and Python↔Rust reads/writes on real supported engines.                                                                  |
+| CLI/Python    | Real invocation/import, flags/defaults, configuration precedence, exit/error behavior, documented types and contexts/futures, and complete ingestion/serving flows.                                                   |
+| Deployment    | Clean artifact installation/loading, native libraries/data, request/response path, platform/runtime, credentials and remote I/O. Emulator and event-unit evidence do not prove a deployed service.                    |
 
 ## Handle numerical and visual differences
 

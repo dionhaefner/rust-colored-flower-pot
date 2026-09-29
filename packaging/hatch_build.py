@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import subprocess
 import sys
 import sysconfig
 import tempfile
+from pathlib import Path
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
@@ -22,22 +22,51 @@ class CustomBuildHook(BuildHookInterface):
         env["RCFP_BUILD_PYTHON"] = sys.executable
 
         if sys.platform.startswith("linux"):
-            bundle = Path(env["RCFP_BUNDLE_DIR"]).resolve() if env.get("RCFP_BUNDLE_DIR") else work / "bundle"
+            bundle = (
+                Path(env["RCFP_BUNDLE_DIR"]).resolve()
+                if env.get("RCFP_BUNDLE_DIR")
+                else work / "bundle"
+            )
             if not env.get("RCFP_BUNDLE_DIR"):
-                subprocess.run([str(root / "packaging/build-bundle.sh"), str(bundle)],
-                               cwd=root, env=env, check=True)
+                subprocess.run(
+                    [str(root / "packaging/build-bundle.sh"), str(bundle)],
+                    cwd=root,
+                    env=env,
+                    check=True,
+                )
             staged = work / "package"
-            subprocess.run([str(root / "packaging/build-python.sh"), str(bundle), str(staged)],
-                           cwd=root, env=env, check=True)
+            subprocess.run(
+                [str(root / "packaging/build-python.sh"), str(bundle), str(staged)],
+                cwd=root,
+                env=env,
+                check=True,
+            )
         else:
             if not env.get("RCFP_NATIVE_TARGET"):
-                subprocess.run(["cargo", "build", "--locked", "--release"],
-                               cwd=root, env=env, check=True)
-            target = Path(env.get("RCFP_NATIVE_TARGET", str(root / "target"))).resolve() / "release"
+                subprocess.run(
+                    ["cargo", "build", "--locked", "--release"],
+                    cwd=root,
+                    env=env,
+                    check=True,
+                )
+            target = (
+                Path(env.get("RCFP_NATIVE_TARGET", str(root / "target"))).resolve()
+                / "release"
+            )
             staged = work / "package"
-            subprocess.run([sys.executable, str(root / "packaging/stage-platform-python.py"),
-                            "--target", str(target), "--output", str(staged)],
-                           cwd=root, env=env, check=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "packaging/stage-platform-python.py"),
+                    "--target",
+                    str(target),
+                    "--output",
+                    str(staged),
+                ],
+                cwd=root,
+                env=env,
+                check=True,
+            )
 
         runtime = staged / "rcfp" / "runtime"
         extensions = list((staged / "rcfp").glob("_native*"))

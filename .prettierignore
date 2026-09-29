@@ -1,4 +1,5 @@
 src/assets/client/
 src/assets/static/
 src/assets/swagger.json
-rewrite/validation/evidence/
+process/validation/evidence/
+process/validation/reference/

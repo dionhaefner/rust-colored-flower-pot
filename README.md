@@ -23,14 +23,16 @@ installation and configuration, see [operator instructions](packaging/OPERATIONS
 
 ## Install from source and try the CLI
 
-The repository is a Python source package. On Linux x86_64, use CPython 3.12,
+The repository is a Python source package. Use CPython 3.12–3.14,
 a C/C++ compiler, and `pip`. The PyPI `rustup` build dependency fetches the
 pinned Rust 1.85.1 toolchain from `rust-toolchain.toml`; the build downloads
-Python and Cargo dependencies on first use. On Linux, the build downloads
-SHA-256-locked GDAL/PROJ archives directly from conda-forge and bundles their
-native libraries and data. No conda executable or environment is needed. The
-resulting wheel is specific to the building Python ABI and platform. The Linux
-artifact targets glibc 2.34 or newer; a locally built wheel inherits the build host's native-library requirements.
+Python and Cargo dependencies on first use. On Linux, macOS, and Windows,
+the build downloads SHA-256-locked GDAL/PROJ archives directly from
+conda-forge and bundles their native libraries and data.
+No conda executable or environment is needed. The CPython limited-API extension
+produces an `abi3` wheel that runs on Python 3.12–3.14 on the matching platform.
+The Linux release artifact targets glibc 2.34 or newer; a locally built wheel
+inherits the build host's native-library requirements.
 
 From this repository's root, in a fresh environment:
 
@@ -40,6 +42,14 @@ python3.12 -m venv .venv
 python -m pip install .
 rcfp --help
 python -c "import rcfp; print(rcfp.__version__)"
+```
+
+On Windows PowerShell, use the virtual environment executables directly:
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install .
+.venv\Scripts\rcfp.exe --help
 ```
 
 That single `pip install .` builds the Rust executable and shared core, compiles
@@ -57,7 +67,7 @@ rcfp serve -d /absolute/path/catalog.sqlite
 ```
 
 To build a reusable wheel and install that exact file in another compatible
-CPython 3.12 environment:
+CPython 3.12–3.14 environment:
 
 ```sh
 python -m pip wheel --no-deps . --wheel-dir dist
@@ -70,8 +80,8 @@ The source build uses the Linux standalone bundle path. Set
 `RCFP_GDAL_PREFIX` to reuse an existing GDAL/PROJ prefix. Set
 `RCFP_CARGO_OFFLINE=1` when the Cargo registry is already cached.
 For an offline local build with Python build requirements already installed, add
-`--no-build-isolation` to `pip wheel` or `pip install`. macOS and Windows builds
-use the platform staging path and require GDAL/PROJ in the build environment;
-wheel repair embeds their native dependencies for installation. A wheel is installed with one `pip install` command. See
+`--no-build-isolation` to `pip wheel` or `pip install`. macOS and Windows release
+wheels use delocate or delvewheel to repair native-library references. A wheel
+is installed with one `pip install` command. See
 [operator instructions](packaging/OPERATIONS.md) for configuration and the
 prebuilt artifact flow.

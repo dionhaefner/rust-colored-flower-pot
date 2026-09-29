@@ -44,14 +44,14 @@ When a single phase is complete, deliver its result and identify the next phase.
 
 ## Decisions and clarification
 
-| Situation | Action |
-| --- | --- |
-| Reversible implementation detail, dependency choice, test organization, internal type or module layout | Use the policy, inspect existing conventions, make a reasonable choice, and continue. Record a decision only if it materially shapes later work. |
-| Existing behavior is ambiguous | Inspect Python code/tests, reproduce it against the reference, and record what was learned. Ask only if evidence cannot resolve a material product choice. |
-| Explained numerical difference with no visible or material semantic impact | Apply the agreed tolerance policy, retain evidence and a regression bound, log it, and continue. No separate confirmation is needed. |
-| Missing preference with a safe reversible default | State the assumption, optionally ask asynchronously, and continue independent work. If no reply arrives, use the stated default only when the answer is optional. |
-| Material scope conflict, incompatible public behavior, unclear destructive action, unavailable credential/account choice | Ask a concise specific question with evidence, a recommended option, and its consequences. Keep dependent work pending while advancing independent tasks. |
-| Tool permission or external-action authorization is required | Follow the actual tool/session policy. Prepare a concrete reviewable result first where possible; identify the action and why permission is required. Do not add a second permission step after authorization. |
+| Situation                                                                                                                | Action                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reversible implementation detail, dependency choice, test organization, internal type or module layout                   | Use the policy, inspect existing conventions, make a reasonable choice, and continue. Record a decision only if it materially shapes later work.                                                               |
+| Existing behavior is ambiguous                                                                                           | Inspect Python code/tests, reproduce it against the reference, and record what was learned. Ask only if evidence cannot resolve a material product choice.                                                     |
+| Explained numerical difference with no visible or material semantic impact                                               | Apply the agreed tolerance policy, retain evidence and a regression bound, log it, and continue. No separate confirmation is needed.                                                                           |
+| Missing preference with a safe reversible default                                                                        | State the assumption, optionally ask asynchronously, and continue independent work. If no reply arrives, use the stated default only when the answer is optional.                                              |
+| Material scope conflict, incompatible public behavior, unclear destructive action, unavailable credential/account choice | Ask a concise specific question with evidence, a recommended option, and its consequences. Keep dependent work pending while advancing independent tasks.                                                      |
+| Tool permission or external-action authorization is required                                                             | Follow the actual tool/session policy. Prepare a concrete reviewable result first where possible; identify the action and why permission is required. Do not add a second permission step after authorization. |
 
 Do not ask which framework or crate to use merely to avoid engineering judgment.
 Do not repeatedly ask a settled question or ask whether to run tests, fix your

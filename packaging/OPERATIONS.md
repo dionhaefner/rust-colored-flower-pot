@@ -1,7 +1,7 @@
 # Running RCFP
 
 The Linux x86_64 native artifact requires glibc 2.34 or newer; wheels require
-a matching CPython 3.12 ABI and operating system. Protocol and database
+CPython 3.12–3.14 and a matching operating system. Protocol and database
 compatibility is 0.10.1; the RCFP release version is 0.1.0.
 
 ## Install and run
@@ -18,7 +18,7 @@ rcfp connect localhost:5000
 The source-built wheel installs the `rcfp` distribution, the `rcfp` Python
 package, and the `rcfp` CLI. Its native extension, GDAL/PROJ runtime, and
 Rust executable are bundled inside that package. The pip-installed command uses
-the bundled Rust CLI. The source build needs Rust 1.85.1 and a C compiler; the wheel needs a matching Python ABI and OS.
+the bundled Rust CLI. The source build needs Rust 1.85.1 and a C compiler; the abi3 wheel supports CPython 3.12–3.14 on its matching OS.
 
 The independent executable uses the same native raster/storage core:
 

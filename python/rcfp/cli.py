@@ -3,25 +3,34 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 from . import __version__
 
 
 def main() -> int:
-    executable = Path(__file__).resolve().parent / "runtime" / "bin" / (
-        "rcfp.exe" if os.name == "nt" else "rcfp"
+    executable = (
+        Path(__file__).resolve().parent
+        / "runtime"
+        / "bin"
+        / ("rcfp.exe" if os.name == "nt" else "rcfp")
     )
     if not executable.is_file():
         raise SystemExit(f"RCFP native executable is missing: {executable}")
     args = sys.argv[1:]
     env = os.environ.copy()
     if os.name == "nt":
-        env["PATH"] = str(executable.parent.parent / "lib") + os.pathsep + env.get("PATH", "")
+        env["PATH"] = (
+            str(executable.parent.parent / "lib") + os.pathsep + env.get("PATH", "")
+        )
     elif sys.platform == "darwin":
-        env["DYLD_LIBRARY_PATH"] = str(executable.parent.parent / "lib") + os.pathsep + env.get("DYLD_LIBRARY_PATH", "")
+        env["DYLD_LIBRARY_PATH"] = (
+            str(executable.parent.parent / "lib")
+            + os.pathsep
+            + env.get("DYLD_LIBRARY_PATH", "")
+        )
     if args == ["--version"]:
         print(f"rcfp {__version__}")
         return 0

@@ -533,7 +533,7 @@ not runtime reproductions, and no rewrite deviations have yet been validated.
   session uses one GDAL worker. This avoids inheriting live native mutexes and
   queues through fork. `USE_MULTIPROCESSING=False` uses one calling thread.
   Executable ingestion scripts must use Python's usual `if __name__ ==
-  "__main__"` guard for process-based raster retrieval, or disable multiprocessing.
+"__main__"` guard for process-based raster retrieval, or disable multiprocessing.
 
 ### RW-035: P07 found public array precision and preview-bounds gaps
 

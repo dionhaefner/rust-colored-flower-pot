@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def main() -> None:
@@ -22,11 +22,21 @@ def main() -> None:
         destination = args.output / f"{name}-{version}"
         if source.is_dir():
             shutil.copytree(source, destination)
-        manifest.append({"name": name, "version": version,
-                         "license": package.get("license"), "url": package.get("url"),
-                         "license_files": sorted(str(path.relative_to(destination))
-                                                 for path in destination.rglob("*") if path.is_file())
-                         if destination.is_dir() else []})
+        manifest.append(
+            {
+                "name": name,
+                "version": version,
+                "license": package.get("license"),
+                "url": package.get("url"),
+                "license_files": sorted(
+                    str(path.relative_to(destination))
+                    for path in destination.rglob("*")
+                    if path.is_file()
+                )
+                if destination.is_dir()
+                else [],
+            }
+        )
     if not manifest:
         raise RuntimeError("native prefix contains no conda package metadata")
     (args.output / "packages.json").write_text(json.dumps(manifest, indent=2) + "\n")

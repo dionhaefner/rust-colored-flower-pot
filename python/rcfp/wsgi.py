@@ -18,19 +18,33 @@ class Application:
 
     def __call__(self, environ, start_response):
         method = environ.get("REQUEST_METHOD", "GET")
-        path = quote(environ.get("PATH_INFO", "/").encode("latin-1").decode("utf-8"), safe="/")
+        path = quote(
+            environ.get("PATH_INFO", "/").encode("latin-1").decode("utf-8"), safe="/"
+        )
         query = environ.get("QUERY_STRING", "")
         url = f"{path}?{query}" if query else path
-        request_headers = {k[5:].lower().replace("_", "-"): v for k, v in environ.items() if k.startswith("HTTP_")}
+        request_headers = {
+            k[5:].lower().replace("_", "-"): v
+            for k, v in environ.items()
+            if k.startswith("HTTP_")
+        }
         if environ.get("CONTENT_TYPE"):
             request_headers["content-type"] = environ["CONTENT_TYPE"]
         length = int(environ.get("CONTENT_LENGTH") or 0)
-        body = environ["wsgi.input"].read(min(length, 1024*1024+1)) if length else b""
-        status, content_type, body, cacheable, extra_headers = self.native.request(method, url, request_headers, body)
-        phrase = HTTPStatus(status).phrase if status in HTTPStatus._value2member_map_ else "Unknown"
+        body = (
+            environ["wsgi.input"].read(min(length, 1024 * 1024 + 1)) if length else b""
+        )
+        status, content_type, body, cacheable, extra_headers = self.native.request(
+            method, url, request_headers, body
+        )
+        phrase = (
+            HTTPStatus(status).phrase
+            if status in HTTPStatus._value2member_map_
+            else "Unknown"
+        )
         headers = [("Content-Type", content_type), ("Content-Length", str(len(body)))]
         if "Content-Length" in extra_headers:
-            headers = [(k,v) for k,v in headers if k != "Content-Length"]
+            headers = [(k, v) for k, v in headers if k != "Content-Length"]
         headers.extend(extra_headers.items())
         if cacheable:
             headers.append(("Cache-Control", "no-cache"))

@@ -1,0 +1,105 @@
+name: Correctness qualification
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 3 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  differential:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: qualification
+          create-args: >-
+            python=3.12 pip gdal=3.10.3 numpy pillow
+          cache-environment: true
+          init-shell: bash
+      - name: Install Rust toolchain
+        run: rustup toolchain install 1.85.1 --profile minimal
+      - name: Locate GDAL runtime
+        run: python packaging/ci-gdal-env.py
+      - name: Build candidate
+        run: cargo build --locked --release
+      - name: Prepare pinned reference release
+        run: process/validation/tools/bootstrap-reference.sh
+      - name: Compare HTTP and images
+        run: |
+          python process/validation/tools/ci_differential.py \
+            --binary target/release/rcfp \
+            --reference-python .venv-reference/bin/python \
+            --out build/ci/differential
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: correctness-differential
+          path: build/ci/differential/
+          retention-days: 14
+
+  services:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      mysql:
+        image: mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
+        env:
+          MYSQL_ROOT_PASSWORD: rcfp-ci
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -prcfp-ci"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+      postgres:
+        image: postgres@sha256:21f6013073bc6b92830a2129570e2f5ec42a6c734b5a985a41e83aa58f54c3c1
+        env:
+          POSTGRES_PASSWORD: rcfp-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    env:
+      RCFP_TEST_MYSQL_URL: mysql://root:rcfp-ci@127.0.0.1:3306
+      RCFP_TEST_POSTGRESQL_URL: postgresql://postgres:rcfp-ci@127.0.0.1:5432
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: qualification
+          create-args: >-
+            python=3.12 pip gdal=3.10.3 pillow
+          cache-environment: true
+          init-shell: bash
+      - name: Install Rust toolchain
+        run: rustup toolchain install 1.85.1 --profile minimal
+      - name: Locate GDAL runtime
+        run: python packaging/ci-gdal-env.py
+      - name: Build native adapter
+        run: cargo build --locked --release
+      - name: Run SQL and remote-storage integration tests
+        run: cargo test --locked --features storage-integration --test storage_sql --test storage_remote -- --nocapture
+      - name: Run catalog and HTTP contracts on each engine
+        run: python tests/storage_contracts.py --binary target/release/rcfp --out build/ci/storage-contracts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: correctness-storage
+          path: build/ci/storage-contracts/
+          retention-days: 14

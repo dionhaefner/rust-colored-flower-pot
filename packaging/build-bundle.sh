@@ -32,7 +32,7 @@ if [[ -n "${RCFP_GDAL_PREFIX:-}" ]]; then
     gdal_prefix=$(realpath "$RCFP_GDAL_PREFIX")
     shopt -s nullglob
     libraries=("$gdal_prefix"/lib/*.so*)
-    if (( ${#libraries[@]} == 0 )) || [[ ! -f "$gdal_prefix/share/proj/proj.db" ]]; then
+    if ((${#libraries[@]} == 0)) || [[ ! -f "$gdal_prefix/share/proj/proj.db" ]]; then
         echo "GDAL/PROJ prefix is incomplete: $gdal_prefix" >&2
         exit 2
     fi

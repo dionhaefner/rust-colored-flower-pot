@@ -79,11 +79,11 @@ legacy per-operation commits; use the explicit native batch API for atomic batch
 
 ## Remaining release gates
 
-| Gate | Missing condition | Resume action |
-| --- | --- | --- |
-| B08-PLATFORMS | Linux/Lambda arm64, macOS Intel/arm64 and Windows x86_64 CI results | Run the prepared Platform qualification workflow when the user resumes deferred platform execution; retain each uploaded result. |
-| B08-AWS | Authorized account/resources/credentials for real S3, custom endpoint, role/SSO, actual Lambda invocation and X-Ray delivery | Supply the intended test account and explicit deployment/spend scope; validate signed remote raster and snapshot refresh, credential rotation, Lambda binary replies and trace ingestion on disposable resources. |
-| B08-BASEMAP | External Mapbox token/network workflow | Exercise the unchanged client against the intended external basemap deployment; retain the browser result. Offline exploration remains the qualified local scope. |
+| Gate          | Missing condition                                                                                                            | Resume action                                                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B08-PLATFORMS | Linux/Lambda arm64, macOS Intel/arm64 and Windows x86_64 CI results                                                          | Run the prepared Platform qualification workflow when the user resumes deferred platform execution; retain each uploaded result.                                                                                  |
+| B08-AWS       | Authorized account/resources/credentials for real S3, custom endpoint, role/SSO, actual Lambda invocation and X-Ray delivery | Supply the intended test account and explicit deployment/spend scope; validate signed remote raster and snapshot refresh, credential rotation, Lambda binary replies and trace ingestion on disposable resources. |
+| B08-BASEMAP   | External Mapbox token/network workflow                                                                                       | Exercise the unchanged client against the intended external basemap deployment; retain the browser result. Offline exploration remains the qualified local scope.                                                 |
 
 No unsupported operating system, cloud credential path or service deployment is
 cleared by local emulators or documentation. Publisher-native alpha acquisition

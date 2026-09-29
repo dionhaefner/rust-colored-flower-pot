@@ -19,7 +19,29 @@ runtime-image pass. The Rust expression vectors in `fixtures/` are retained
 contract examples used by the unit suite. Rust storage tests create disposable
 SQLite databases rather than depending on a preexisting database.
 
-
 The optional `storage-integration` Cargo feature runs disposable engine tests.
 Set `RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` to database server
 URLs before enabling it; the tests create their own database names.
+
+## Installed-wheel contract suite
+
+`contract_suite.py` runs the public Python, WSGI, CLI, HTTP, raster, metadata,
+and SQLite workflows against the installed wheel. It accepts the tested wheel
+path with `--wheel` and writes JSON and JUnit reports with the wheel SHA-256.
+The checked-in `fixtures/contract-cases.json` lists every required case ID;
+removing or skipping a case fails the suite. NumPy and Pillow are test tools,
+not runtime dependencies of the package.
+
+`fixtures/corpus/` contains seven 512-pixel native windows of Sentinel-2,
+Copernicus DEM, and ESA WorldCover source rasters. Their manifest records exact
+parent URLs and hashes, pixel windows, TIFF hashes, pixel/mask hashes,
+coordinate transforms, geographic bounds, and attribution. The crops retain
+source values and masks; they were written as DEFLATE GeoTIFFs without warping,
+resampling, or stretching. The suite verifies every fixture before it builds a
+catalog. Keep the manifest and files together when changing the corpus.
+
+`storage_contracts.py` drives the native executable through catalog operations
+and live HTTP on disposable SQLite, MySQL, and PostgreSQL databases. It checks
+transaction rollback and compares decoded images across backends. Set
+`RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` for the SQL run; use
+`--sqlite-only` for local feedback without server containers.

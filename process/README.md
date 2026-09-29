@@ -33,19 +33,19 @@ slice, use [REVIEW.md](execution/prompts/REVIEW.md).
 
 ## Context map
 
-| Document | Purpose |
-| --- | --- |
-| [AGENTS.md](AGENTS.md) | Agent entry point and required reading. |
-| [REWRITE.md](REWRITE.md) | Objectives, compatibility policy, trade-offs, and pitfalls. |
-| [REWRITE_LOG.md](REWRITE_LOG.md) | Legacy findings, accepted deviations, and later opportunities. |
-| [WORKFLOW.md](execution/WORKFLOW.md) | Planning, execution, clarification, blockers, and handoffs. |
-| [PHASES.md](execution/PHASES.md) | Ordered delivery phases with concrete outputs and exit evidence. |
-| [VALIDATION.md](execution/VALIDATION.md) | Reference capture, comparison rules, and validation discipline. |
-| [DATASETS.md](execution/DATASETS.md) | Small real-world raster corpus, subset recipes, visual examples, and large-file stress tier. |
-| [STATUS.md](execution/STATUS.md) | Current progress, ownership, blockers, and next action. |
-| [COVERAGE.md](execution/COVERAGE.md) | Feature inventory and implementation/evidence status. |
-| [DECISIONS.md](execution/DECISIONS.md) | Architectural choices and reasons to revisit them. |
-| [TEMPLATES.md](execution/TEMPLATES.md) | Brief, plan, evidence, blocker, and handoff formats. |
+| Document                                 | Purpose                                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [AGENTS.md](AGENTS.md)                   | Agent entry point and required reading.                                                      |
+| [REWRITE.md](REWRITE.md)                 | Objectives, compatibility policy, trade-offs, and pitfalls.                                  |
+| [REWRITE_LOG.md](REWRITE_LOG.md)         | Legacy findings, accepted deviations, and later opportunities.                               |
+| [WORKFLOW.md](execution/WORKFLOW.md)     | Planning, execution, clarification, blockers, and handoffs.                                  |
+| [PHASES.md](execution/PHASES.md)         | Ordered delivery phases with concrete outputs and exit evidence.                             |
+| [VALIDATION.md](execution/VALIDATION.md) | Reference capture, comparison rules, and validation discipline.                              |
+| [DATASETS.md](execution/DATASETS.md)     | Small real-world raster corpus, subset recipes, visual examples, and large-file stress tier. |
+| [STATUS.md](execution/STATUS.md)         | Current progress, ownership, blockers, and next action.                                      |
+| [COVERAGE.md](execution/COVERAGE.md)     | Feature inventory and implementation/evidence status.                                        |
+| [DECISIONS.md](execution/DECISIONS.md)   | Architectural choices and reasons to revisit them.                                           |
+| [TEMPLATES.md](execution/TEMPLATES.md)   | Brief, plan, evidence, blocker, and handoff formats.                                         |
 
 ## Frozen Terracotta reference
 

@@ -27,12 +27,12 @@ select exact asset IDs/URLs, inspect actual metadata, confirm anonymous access a
 reuse terms, and freeze them in a manifest. Do not assume every collection member
 has the desired dtype, mask, size, or TIFF organization.
 
-| Source | Why select it | Selection instruction |
-| --- | --- | --- |
-| [Sentinel-2 COGs / Earth Search](https://registry.opendata.aws/sentinel-2-l2a-cogs/) | Real optical imagery and separate spectral bands for RGB and compute. Public COG archive with STAC discovery. | Pin one scene and RGB/NIR assets; prefer recognizable terrain and retain a native footprint edge. Inspect band grids and any scale/offset metadata; do not silently apply radiometric corrections the legacy path does not apply. |
-| [Copernicus DEM](https://registry.opendata.aws/copernicus-dem/) | Continuous elevation and geographic-coordinate COG input from a separate provider. | Pin a terrain-rich tile, inspect its dtype and valid-data behavior, and crop a legible region. Do not assume an absent ocean tile is an actual raster with nodata pixels. |
-| [ESA WorldCover](https://esa-worldcover.org/en/data-access) | Categorical land cover, native geographic projection, and high pixel counts. Products are distributed as 3-degree COG tiles. | Pin product year/version and Map asset; preserve category values and use the published legend for inspection. A full tile is a candidate for decoded-memory stress; inspect actual file bytes before calling it a large-file test. |
-| [USGS 3DEP raster products](https://www.usgs.gov/3d-elevation-program/about-3dep-products-services) | Alternative elevation source or additional native projection/resolution when the three core sources leave a gap. | Choose a downloadable DEM, not lidar point clouds or a rendered map service. Inspect the individual asset before selecting it for size, masks, or float coverage; do not fetch an entire regional archive. |
+| Source                                                                                              | Why select it                                                                                                                | Selection instruction                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Sentinel-2 COGs / Earth Search](https://registry.opendata.aws/sentinel-2-l2a-cogs/)                | Real optical imagery and separate spectral bands for RGB and compute. Public COG archive with STAC discovery.                | Pin one scene and RGB/NIR assets; prefer recognizable terrain and retain a native footprint edge. Inspect band grids and any scale/offset metadata; do not silently apply radiometric corrections the legacy path does not apply.  |
+| [Copernicus DEM](https://registry.opendata.aws/copernicus-dem/)                                     | Continuous elevation and geographic-coordinate COG input from a separate provider.                                           | Pin a terrain-rich tile, inspect its dtype and valid-data behavior, and crop a legible region. Do not assume an absent ocean tile is an actual raster with nodata pixels.                                                          |
+| [ESA WorldCover](https://esa-worldcover.org/en/data-access)                                         | Categorical land cover, native geographic projection, and high pixel counts. Products are distributed as 3-degree COG tiles. | Pin product year/version and Map asset; preserve category values and use the published legend for inspection. A full tile is a candidate for decoded-memory stress; inspect actual file bytes before calling it a large-file test. |
+| [USGS 3DEP raster products](https://www.usgs.gov/3d-elevation-program/about-3dep-products-services) | Alternative elevation source or additional native projection/resolution when the three core sources leave a gap.             | Choose a downloadable DEM, not lidar point clouds or a rendered map service. Inspect the individual asset before selecting it for size, masks, or float coverage; do not fetch an entire regional archive.                         |
 
 An accessible regional orthophoto can replace the optional fourth source when
 it adds useful native byte imagery, masks, or storage diversity. Do not assume
@@ -49,14 +49,14 @@ reason rather than asking the user to choose a scene. No collection-wide syncs.
 Use a small matrix, not a Cartesian product. Record which source/subset covers
 each dimension, and which required cases remain absent.
 
-| Dimension | Desired coverage across the corpus |
-| --- | --- |
-| Meaning and dtype | Recognizable imagery with RGB/compute bands, continuous values including native floating-point data, categorical integer data; byte and wider-integer inputs where available. |
-| Geography | Native projected and geographic inputs; differing resolutions; nontrivial reprojection and boundary behavior. Add a high-latitude/antimeridian case only where it closes a real gap. |
-| Validity | Actual nodata/footprint edges, valid zero values, and a native mask/alpha case where obtainable. Derived mask cases are explicitly labeled. |
-| Storage | Preserve some source block/overview/codec characteristics; compare ordinary GeoTIFF and COG paths when supported. Avoid normalizing every input to the same generated format. |
-| Scale | Quick visual crops plus a full/large real raster exceeding the chosen decoding memory budget; physical file size and BigTIFF offsets tracked separately. |
-| Access | Cached local assets and range-capable remote reads of the same data; detailed reads and overview-backed previews. |
+| Dimension         | Desired coverage across the corpus                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Meaning and dtype | Recognizable imagery with RGB/compute bands, continuous values including native floating-point data, categorical integer data; byte and wider-integer inputs where available.        |
+| Geography         | Native projected and geographic inputs; differing resolutions; nontrivial reprojection and boundary behavior. Add a high-latitude/antimeridian case only where it closes a real gap. |
+| Validity          | Actual nodata/footprint edges, valid zero values, and a native mask/alpha case where obtainable. Derived mask cases are explicitly labeled.                                          |
+| Storage           | Preserve some source block/overview/codec characteristics; compare ordinary GeoTIFF and COG paths when supported. Avoid normalizing every input to the same generated format.        |
+| Scale             | Quick visual crops plus a full/large real raster exceeding the chosen decoding memory budget; physical file size and BigTIFF offsets tracked separately.                             |
+| Access            | Cached local assets and range-capable remote reads of the same data; detailed reads and overview-backed previews.                                                                    |
 
 Multi-band source imagery does not imply new Terracotta multi-band dataset
 semantics: keep the parent and extract bands as separate compatible datasets

@@ -1,0 +1,370 @@
+{
+  "cases": [
+    {
+      "id": "fixture.red",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.green",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.blue",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.nir",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.edge",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.elevation",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "fixture.classes",
+      "families": [
+        "C35"
+      ]
+    },
+    {
+      "id": "storage.create",
+      "families": [
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.red",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.green",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.blue",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.nir",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.classes",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.elevation",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.insert.edge",
+      "families": [
+        "C13",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "http.keys.order-description",
+      "families": [
+        "C01",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.datasets.filter-order",
+      "families": [
+        "C02"
+      ]
+    },
+    {
+      "id": "http.datasets.paging-partition",
+      "families": [
+        "C02"
+      ]
+    },
+    {
+      "id": "http.datasets.multivalue",
+      "families": [
+        "C02"
+      ]
+    },
+    {
+      "id": "http.metadata.geometry-range",
+      "families": [
+        "C03",
+        "C13"
+      ]
+    },
+    {
+      "id": "http.metadata.batch",
+      "families": [
+        "C03"
+      ]
+    },
+    {
+      "id": "http.metadata.columns",
+      "families": [
+        "C03"
+      ]
+    },
+    {
+      "id": "http.colormap.legend",
+      "families": [
+        "C04",
+        "C09"
+      ]
+    },
+    {
+      "id": "raster.singleband.preview",
+      "families": [
+        "C05",
+        "C08",
+        "C10"
+      ]
+    },
+    {
+      "id": "raster.rgb.distinct-channels",
+      "families": [
+        "C06",
+        "C08"
+      ]
+    },
+    {
+      "id": "raster.rgb.channel-permutation",
+      "families": [
+        "C06"
+      ]
+    },
+    {
+      "id": "raster.compute.ndvi",
+      "families": [
+        "C07",
+        "C10"
+      ]
+    },
+    {
+      "id": "raster.compute.identity",
+      "families": [
+        "C07"
+      ]
+    },
+    {
+      "id": "raster.categories.exact-palette",
+      "families": [
+        "C05",
+        "C09",
+        "C10"
+      ]
+    },
+    {
+      "id": "raster.edge.alpha",
+      "families": [
+        "C05",
+        "C10"
+      ]
+    },
+    {
+      "id": "raster.dem.geographic",
+      "families": [
+        "C05",
+        "C10",
+        "C13"
+      ]
+    },
+    {
+      "id": "raster.preview.nonsquare",
+      "families": [
+        "C05",
+        "C10"
+      ]
+    },
+    {
+      "id": "raster.tile.outside",
+      "families": [
+        "C05",
+        "C10"
+      ]
+    },
+    {
+      "id": "http.error.datasets.invalid-page",
+      "families": [
+        "C02",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.datasets.invalid-order",
+      "families": [
+        "C02",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.metadata.invalid-columns",
+      "families": [
+        "C03",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.singleband.invalid-size",
+      "families": [
+        "C05",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.singleband.invalid-palette",
+      "families": [
+        "C09",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.rgb.missing-channel",
+      "families": [
+        "C06",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.compute.invalid-syntax",
+      "families": [
+        "C07",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.compute.invalid-operation",
+      "families": [
+        "C07",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.error.missing-dataset",
+      "families": [
+        "C03",
+        "C11"
+      ]
+    },
+    {
+      "id": "http.cors.preflight",
+      "families": [
+        "C11"
+      ]
+    },
+    {
+      "id": "adapter.wsgi.keys",
+      "families": [
+        "C28",
+        "C31"
+      ]
+    },
+    {
+      "id": "adapter.cli.http-render",
+      "families": [
+        "C21",
+        "C28",
+        "C31"
+      ]
+    },
+    {
+      "id": "storage.delete-reinsert",
+      "families": [
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "storage.batch.rollback",
+      "families": [
+        "C14",
+        "C15",
+        "C27"
+      ]
+    },
+    {
+      "id": "python.compute-metadata",
+      "families": [
+        "C13",
+        "C27"
+      ]
+    },
+    {
+      "id": "python.metadata.full-chunk-sample",
+      "families": [
+        "C13",
+        "C27"
+      ]
+    },
+    {
+      "id": "cli.ingest.skip-existing",
+      "families": [
+        "C22"
+      ]
+    },
+    {
+      "id": "cli.optimize.lossless-pixels",
+      "families": [
+        "C23"
+      ]
+    },
+    {
+      "id": "cli.migrate.current-schema",
+      "families": [
+        "C25"
+      ]
+    },
+    {
+      "id": "package.identity-version",
+      "families": [
+        "C26",
+        "C27",
+        "C31"
+      ]
+    }
+  ]
+}

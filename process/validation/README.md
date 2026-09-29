@@ -28,7 +28,6 @@ fixtures, browser assets and `apidoc.html` needed by this harness. Its only
 source difference from the frozen Git snapshot is release generated
 `terracotta/_version.py`; the package and test files otherwise compare exactly.
 
-
 Rust 1.85.1 is pinned in `rust-toolchain.toml`. A normal Rust installation can
 run `cargo build --locked`. The helper also recognizes the workspace-local
 toolchain used for the P00 evidence:
@@ -393,7 +392,6 @@ Reopened MySQL metadata has the legacy ten-decimal HTTP conversion. Default
 singleband/RGB stretches also retain the reference's Decimal/NumPy failure;
 explicit complete numeric or percentile ranges work (RW-028). These quirks are
 recorded for later correction, not silently changed in this port.
-
 
 ## P07 integrated workflows and platform CI
 

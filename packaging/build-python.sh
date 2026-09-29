@@ -34,6 +34,7 @@ cc -shared -fPIC -DPy_LIMITED_API=0x030C0000 -I"$include" \
     "$root/python/native.c" \
     -L"$bundle/lib" -lrcfp_core \
     -Wl,--no-as-needed -Wl,-l:"$gdal_library" -Wl,--as-needed \
+    -Wl,--no-as-needed -Wl,--undefined=getpid -lc -Wl,--as-needed \
     -Wl,--disable-new-dtags,-rpath,'$ORIGIN/runtime/lib' \
     -o "$output/rcfp/_native$suffix"
 

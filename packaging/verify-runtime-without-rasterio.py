@@ -27,24 +27,42 @@ def main() -> None:
     import rcfp
 
     if not Path(rcfp.__file__).resolve().is_relative_to(Path(sys.prefix).resolve()):
-        raise RuntimeError(f"RCFP was not imported from the installed wheel: {rcfp.__file__}")
+        raise RuntimeError(
+            f"RCFP was not imported from the installed wheel: {rcfp.__file__}"
+        )
     status, kind, body, _ = rcfp.request(args.database, "GET", "/keys")
     if status != 200 or kind != "application/json":
         raise RuntimeError(f"discovery failed: {status}, {kind}")
     if [row["key"] for row in json.loads(body)["keys"]] != ["scene", "band"]:
         raise RuntimeError("catalog keys changed")
     status, kind, image, _ = rcfp.request(
-        args.database, "GET",
+        args.database,
+        "GET",
         "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D",
     )
-    if status != 200 or kind != "image/png" or not image.startswith(b"\x89PNG\r\n\x1a\n"):
+    if (
+        status != 200
+        or kind != "image/png"
+        or not image.startswith(b"\x89PNG\r\n\x1a\n")
+    ):
         raise RuntimeError(f"raster render failed: {status}, {kind}")
     if struct.unpack(">II", image[16:24]) != (256, 256):
         raise RuntimeError("raster dimensions changed")
-    subprocess.run([sys.executable, "-m", "rcfp.cli", "--help"], check=True,
-                   stdout=subprocess.DEVNULL)
-    print(json.dumps({"passed": True, "requirements": requirements,
-                      "rasterio_installed": False, "png_bytes": len(image)}))
+    subprocess.run(
+        [sys.executable, "-m", "rcfp.cli", "--help"],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    print(
+        json.dumps(
+            {
+                "passed": True,
+                "requirements": requirements,
+                "rasterio_installed": False,
+                "png_bytes": len(image),
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

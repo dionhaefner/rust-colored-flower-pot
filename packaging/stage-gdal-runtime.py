@@ -31,7 +31,9 @@ def stage(prefix: Path, runtime: Path) -> dict[str, Path]:
     # Choose the unversioned link name when available; retain only one GDAL
     # payload so that a wheel cannot accidentally load two different versions.
     preferred = "gdal.dll" if sys.platform == "win32" else "libgdal.dylib"
-    selected = next((path for path in candidates if path.name == preferred), candidates[0])
+    selected = next(
+        (path for path in candidates if path.name == preferred), candidates[0]
+    )
     lib_out = runtime / "lib"
     lib_out.mkdir(parents=True, exist_ok=True)
     target = lib_out / selected.name

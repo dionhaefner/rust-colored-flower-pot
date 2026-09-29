@@ -76,7 +76,7 @@ def metadata_tests():
     for extra in [None,False,0,"",[],{},["truthy"],"text"]:
         native=operation(dict(operation='compute_metadata',path=str(path),options={'max_shape':[10,10],'extra_metadata':extra}))
         check('extra-'+repr(extra),native['metadata']==(extra or {}))
-    base=ROOT/'.cache/corpus/subsets/dolomites.tif' 
+    base=ROOT/'.cache/corpus/subsets/dolomites.tif'
     for label,value in [('constant',7),('negative',-7),('invalid',np.nan)]:
         path=OUT/f'{label}.tif'
         with rasterio.open(base) as src:

@@ -28,4 +28,4 @@ chmod +x "$output/package/bootstrap"
     cd "$output/package"
     zip -q -r "$output/rcfp-lambda.zip" bootstrap runtime
 )
-sha256sum "$output/rcfp-lambda.zip" > "$output/rcfp-lambda.zip.sha256"
+sha256sum "$output/rcfp-lambda.zip" >"$output/rcfp-lambda.zip.sha256"

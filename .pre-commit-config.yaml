@@ -1,4 +1,4 @@
-exclude: ^(rewrite/validation/evidence/|src/assets/(client/|static/|swagger\.json$))
+exclude: ^(process/validation/(evidence/|reference/)|src/assets/(client/|static/|swagger\.json$))
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

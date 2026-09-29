@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 from urllib.parse import quote, urlencode
 
 from ._version import __version__
@@ -70,7 +70,7 @@ def render_preview(
     if status != 200:
         try:
             message = json.loads(body)["message"]
-        except Exception:
+        except (KeyError, TypeError, ValueError):
             message = body.decode("utf-8", errors="replace")
         raise RcfpError(f"native render failed with HTTP {status}: {message}")
     return body
@@ -87,8 +87,8 @@ def identity(database: os.PathLike[str] | str) -> dict[str, str]:
 
 __all__ = [
     "RcfpError",
-    "__version__",
     "__protocol_version__",
+    "__version__",
     "identity",
     "render_preview",
     "request",
@@ -97,8 +97,13 @@ __all__ = [
 
 def request_full(database, method, url, headers=None, body=b""):
     """Execute the HTTP contract including request/response headers and body."""
-    result = _native.request_full(os.fspath(database), method, url,
-                                 json.dumps({k.lower(): v for k, v in (headers or {}).items()}), body)
+    result = _native.request_full(
+        os.fspath(database),
+        method,
+        url,
+        json.dumps({k.lower(): v for k, v in (headers or {}).items()}),
+        body,
+    )
     return (*result[:4], json.loads(result[4]))
 
 
@@ -112,9 +117,17 @@ def data_operation(request):
 
 def compute_metadata(path, *, extra_metadata=None, use_chunks=None, max_shape=None):
     """Compute native full, sampled or chunked metadata."""
-    result = data_operation(dict(operation="compute_metadata", path=os.fspath(path),
-                                 options=dict(extra_metadata=extra_metadata,
-                                              use_chunks=use_chunks, max_shape=max_shape)))
+    result = data_operation(
+        {
+            "operation": "compute_metadata",
+            "path": os.fspath(path),
+            "options": {
+                "extra_metadata": extra_metadata,
+                "use_chunks": use_chunks,
+                "max_shape": max_shape,
+            },
+        }
+    )
     result.pop("keys", None)
     result["bounds"] = tuple(result["bounds"])
     result["range"] = tuple(result["range"])
@@ -123,6 +136,7 @@ def compute_metadata(path, *, extra_metadata=None, use_chunks=None, max_shape=No
 
 class DataStore:
     """Create, query, and update a raster catalog."""
+
     def __init__(self, path, *, provider=None):
         self.path = os.fspath(path)
         self.provider = provider
@@ -131,19 +145,52 @@ class DataStore:
         descriptions = key_descriptions or {}
         if set(descriptions) - set(keys):
             raise RcfpError("key description dict contains unknown keys")
-        return data_operation(dict(operation="create", path=self.path, provider=self.provider,
-                                   keys=[dict(key=k, description=descriptions.get(k, "")) for k in keys]))
+        return data_operation(
+            {
+                "operation": "create",
+                "path": self.path,
+                "provider": self.provider,
+                "keys": [
+                    {"key": k, "description": descriptions.get(k, "")} for k in keys
+                ],
+            }
+        )
 
-    def insert(self, keys, path, *, override_path=None, metadata=None, skip_metadata=False):
-        return data_operation(dict(operation="insert", path=self.path, provider=self.provider, keys=list(keys),
-                                   raster=os.fspath(path), override_path=override_path,
-                                   metadata=metadata, skip_metadata=skip_metadata))
+    def insert(
+        self, keys, path, *, override_path=None, metadata=None, skip_metadata=False
+    ):
+        return data_operation(
+            {
+                "operation": "insert",
+                "path": self.path,
+                "provider": self.provider,
+                "keys": list(keys),
+                "raster": os.fspath(path),
+                "override_path": override_path,
+                "metadata": metadata,
+                "skip_metadata": skip_metadata,
+            }
+        )
 
     def delete(self, keys):
-        return data_operation(dict(operation="delete", path=self.path, provider=self.provider, keys=list(keys)))
+        return data_operation(
+            {
+                "operation": "delete",
+                "path": self.path,
+                "provider": self.provider,
+                "keys": list(keys),
+            }
+        )
 
     def get_metadata(self, keys):
-        value = data_operation(dict(operation="metadata", path=self.path, provider=self.provider, keys=list(keys)))
+        value = data_operation(
+            {
+                "operation": "metadata",
+                "path": self.path,
+                "provider": self.provider,
+                "keys": list(keys),
+            }
+        )
         if value is None:
             raise RcfpError("No dataset found")
         value.pop("keys", None)
@@ -153,19 +200,47 @@ class DataStore:
 
     def batch(self, operations):
         """Atomically apply structured insert/delete operations, rolling back on error."""
-        return data_operation(dict(operation="batch", path=self.path, provider=self.provider, operations=list(operations)))
+        return data_operation(
+            {
+                "operation": "batch",
+                "path": self.path,
+                "provider": self.provider,
+                "operations": list(operations),
+            }
+        )
 
-__all__ += ["data_operation", "compute_metadata", "DataStore"]
+
+__all__ += ["DataStore", "compute_metadata", "data_operation"]
 
 
 class NativeApplication:
     """Own workers, remote snapshot leases and caches for an application lifetime."""
+
     def __init__(self, database, settings=None):
-        self._session = _native.session_open(json.dumps(dict(kind="http", path=os.fspath(database), settings=settings or {})))
+        self._session = _native.session_open(
+            json.dumps(
+                {
+                    "kind": "http",
+                    "path": os.fspath(database),
+                    "settings": settings or {},
+                }
+            )
+        )
 
     def request(self, method, url, headers=None, body=b""):
-        value = json.loads(_native.session_operation(self._session, json.dumps(dict(
-            method=method, url=url, headers={k.lower(): v for k, v in (headers or {}).items()}, body=list(body)))))
+        value = json.loads(
+            _native.session_operation(
+                self._session,
+                json.dumps(
+                    {
+                        "method": method,
+                        "url": url,
+                        "headers": {k.lower(): v for k, v in (headers or {}).items()},
+                        "body": list(body),
+                    }
+                ),
+            )
+        )
         if "error" in value:
             raise RcfpError(value["error"])
         status, content_type, data, cache, headers = value["ok"]

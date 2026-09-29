@@ -30,14 +30,14 @@ This visual standard applies to numerical and rendering fidelity. It does not
 excuse broken API contracts, incorrect dataset selection, unreadable databases,
 changed categorical meaning, or workflows that no longer run.
 
-| Surface | Required fidelity |
-| --- | --- |
-| HTTP and client behavior | Preserve routes, methods, query semantics, defaults, response structure, meaningful status codes, headers, CORS, and version negotiation. Preserve error meaning; exact wording matters where consumers depend on it. |
-| Images | Preserve appearance, location, seams, coverage, transparency, categorical meaning, dimensions, stretches, and color operations at ordinary application viewing scales. Compressed PNG bytes need not match. |
-| Numerical results | Preserve the algorithm's meaning and validity/mask behavior. Small explained differences are acceptable when they do not materially affect displayed imagery, metadata use, or downstream behavior. |
-| Storage | Read existing databases and raster paths correctly. Preserve metadata encoding and supported write/read workflows, including rollback to the Python implementation for unchanged database formats. |
-| CLI and Python | Preserve commands, important flags, configuration precedence, public call semantics, return types, exceptions, and integration workflows. Terminal progress formatting and implementation internals need not be identical. |
-| Deployment | Preserve supported use cases. A changed installation or launch procedure must be explicit; native service support alone does not satisfy Python/WSGI compatibility. |
+| Surface                  | Required fidelity                                                                                                                                                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP and client behavior | Preserve routes, methods, query semantics, defaults, response structure, meaningful status codes, headers, CORS, and version negotiation. Preserve error meaning; exact wording matters where consumers depend on it.      |
+| Images                   | Preserve appearance, location, seams, coverage, transparency, categorical meaning, dimensions, stretches, and color operations at ordinary application viewing scales. Compressed PNG bytes need not match.                |
+| Numerical results        | Preserve the algorithm's meaning and validity/mask behavior. Small explained differences are acceptable when they do not materially affect displayed imagery, metadata use, or downstream behavior.                        |
+| Storage                  | Read existing databases and raster paths correctly. Preserve metadata encoding and supported write/read workflows, including rollback to the Python implementation for unchanged database formats.                         |
+| CLI and Python           | Preserve commands, important flags, configuration precedence, public call semantics, return types, exceptions, and integration workflows. Terminal progress formatting and implementation internals need not be identical. |
+| Deployment               | Preserve supported use cases. A changed installation or launch procedure must be explicit; native service support alone does not satisfy Python/WSGI compatibility.                                                        |
 
 **User-directed package identity exception (2026-09-28):** This project
 installs the `rcfp` distribution, exposes `import rcfp`, and registers the
@@ -80,15 +80,15 @@ authorized by this policy.
 An early milestone may support only part of this list. The complete replacement
 must account for every surface; unsupported items remain visible work.
 
-| Area | Coverage |
-| --- | --- |
-| Discovery and metadata | Keys; dataset filtering, ordering, and pagination; individual and batch metadata; column selection; colormap discovery; API specification and documentation endpoints. |
-| Rendering | Singleband, RGB, and compute tiles and previews; existing reprojection/resampling choices; explicit categorical maps; built-in and custom colormaps; percentile stretches; color-transform language; tile dimensions; empty tiles. |
-| Raster workflows | Local and supported remote rasters; metadata calculation; sampled/lazy and chunked statistics; coverage geometry; raster optimization, masks, compression, and overviews. |
-| Metadata backends | SQLite, S3-hosted read-only SQLite, MySQL, PostgreSQL, supported migration paths, dynamic dataset keys, and stored raster paths. |
-| CLI | `serve` from a database or raster pattern, `ingest`, `optimize-rasters`, `connect`, `migrate`, and configuration through flags, TOML, and environment variables. |
-| Python integration | Public settings and driver APIs, connection contexts, ingestion and retrieval, errors, masked arrays, asynchronous results, and documented Flask/WSGI integration. |
-| Client and operations | Browser exploration, containers, Lambda, credentials, custom endpoints, caches, logging, profiling/tracing behavior, and the supported operating-system matrix. |
+| Area                   | Coverage                                                                                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Discovery and metadata | Keys; dataset filtering, ordering, and pagination; individual and batch metadata; column selection; colormap discovery; API specification and documentation endpoints.                                                             |
+| Rendering              | Singleband, RGB, and compute tiles and previews; existing reprojection/resampling choices; explicit categorical maps; built-in and custom colormaps; percentile stretches; color-transform language; tile dimensions; empty tiles. |
+| Raster workflows       | Local and supported remote rasters; metadata calculation; sampled/lazy and chunked statistics; coverage geometry; raster optimization, masks, compression, and overviews.                                                          |
+| Metadata backends      | SQLite, S3-hosted read-only SQLite, MySQL, PostgreSQL, supported migration paths, dynamic dataset keys, and stored raster paths.                                                                                                   |
+| CLI                    | `serve` from a database or raster pattern, `ingest`, `optimize-rasters`, `connect`, `migrate`, and configuration through flags, TOML, and environment variables.                                                                   |
+| Python integration     | Public settings and driver APIs, connection contexts, ingestion and retrieval, errors, masked arrays, asynchronous results, and documented Flask/WSGI integration.                                                                 |
+| Client and operations  | Browser exploration, containers, Lambda, credentials, custom endpoints, caches, logging, profiling/tracing behavior, and the supported operating-system matrix.                                                                    |
 
 Freeze the reference commit and dependency environment before building the
 compatibility corpus. The initial assessment used commit `6db38d5`; this is a

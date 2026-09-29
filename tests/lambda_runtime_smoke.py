@@ -4,21 +4,21 @@ import argparse
 import base64
 import io
 import json
-import os
-from pathlib import Path
 import shutil
 import sqlite3
 import stat
 import subprocess
 import zipfile
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 
+
 def write_json(path, value):
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_text(json.dumps(value, indent=2) + "\n")
 
 
 DEFAULT_IMAGE = "public.ecr.aws/lambda/provided@sha256:6e44223227dfb00686065ab66db7c4ce86f1483a8f69e40bcba5ebdb0f4d5fd7"
@@ -55,12 +55,23 @@ def run(lambda_zip, bundle, database_source, out, image):
     write_json(fixture / "event.json", event)
     invocation = subprocess.run(
         [
-            "docker", "run", "--rm", "--network", "none",
-            "--entrypoint", "/opt/rcfp/bin/rcfp",
-            "-v", f"{package / 'runtime'}:/opt/rcfp:ro",
-            "-v", f"{fixture}:/data:ro",
+            "docker",
+            "run",
+            "--rm",
+            "--network",
+            "none",
+            "--entrypoint",
+            "/opt/rcfp/bin/rcfp",
+            "-v",
+            f"{package / 'runtime'}:/opt/rcfp:ro",
+            "-v",
+            f"{fixture}:/data:ro",
             image,
-            "lambda-event", "-d", "/data/catalog.sqlite", "--event", "/data/event.json",
+            "lambda-event",
+            "-d",
+            "/data/catalog.sqlite",
+            "--event",
+            "/data/event.json",
         ],
         cwd=ROOT,
         check=True,
@@ -78,10 +89,14 @@ def run(lambda_zip, bundle, database_source, out, image):
     ).stdout
     glibc_versions = sorted(
         {part.split(")")[0] for part in versions.split("GLIBC_")[1:]},
-        key=lambda value: tuple(int(item) for item in value.split(".") if item.isdigit()),
+        key=lambda value: tuple(
+            int(item) for item in value.split(".") if item.isdigit()
+        ),
     )
     report = {
-        "passed": response["statusCode"] == 200 and response["isBase64Encoded"] and exact,
+        "passed": response["statusCode"] == 200
+        and response["isBase64Encoded"]
+        and exact,
         "runtime_image": image,
         "runtime_family": "provided.al2023",
         "architecture": "x86_64",
@@ -91,7 +106,9 @@ def run(lambda_zip, bundle, database_source, out, image):
         "bundled_base_libraries": sorted(
             path.name
             for path in (package / "runtime/lib").iterdir()
-            if path.name.startswith(("libexpat.so", "libgcc_s.so", "libstdc++.so", "libz.so"))
+            if path.name.startswith(
+                ("libexpat.so", "libgcc_s.so", "libstdc++.so", "libz.so")
+            )
         ),
         "claim": "The Lambda zip's x86_64 binary and native GDAL dependency set load and render the pinned real raster in the official provided.al2023 runtime image.",
         "not_claimed": "This local runtime-image smoke is not an AWS Lambda service invocation.",
@@ -106,10 +123,20 @@ def run(lambda_zip, bundle, database_source, out, image):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--lambda-zip", type=Path, default=ROOT / "build/ci/ci-lambda/rcfp-lambda.zip")
-    parser.add_argument("--bundle", type=Path, default=ROOT / "build/ci/ci-lambda-bundle")
+    parser.add_argument(
+        "--lambda-zip", type=Path, default=ROOT / "build/ci/ci-lambda/rcfp-lambda.zip"
+    )
+    parser.add_argument(
+        "--bundle", type=Path, default=ROOT / "build/ci/ci-lambda-bundle"
+    )
     parser.add_argument("--database", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--image", default=DEFAULT_IMAGE)
     args = parser.parse_args()
-    run(args.lambda_zip.resolve(), args.bundle.resolve(), args.database.resolve(), args.out.resolve(), args.image)
+    run(
+        args.lambda_zip.resolve(),
+        args.bundle.resolve(),
+        args.database.resolve(),
+        args.out.resolve(),
+        args.image,
+    )

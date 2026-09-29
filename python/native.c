@@ -15,7 +15,8 @@ typedef struct {
 } TcResponse;
 
 extern TcResponse *tc_http_request(const char *, const char *, const char *);
-extern TcResponse *tc_http_request_full(const char *, const char *, const char *, const char *, const unsigned char *, size_t);
+extern TcResponse *tc_http_request_full(const char *, const char *, const char *, const char *,
+                                        const unsigned char *, size_t);
 extern void tc_response_free(TcResponse *);
 extern void tc_string_free(char *);
 extern char *tc_data_operation(const char *);
@@ -29,15 +30,16 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
     const char *request_body = "";
     Py_ssize_t request_body_len = 0;
     if (full) {
-        if (!PyArg_ParseTuple(args, "ssssy#:request_full", &database, &method, &url, &headers, &request_body, &request_body_len)) return NULL;
-    } else if (!PyArg_ParseTuple(args, "sss:request", &database, &method, &url)) return NULL;
+        if (!PyArg_ParseTuple(args, "ssssy#:request_full", &database, &method, &url, &headers,
+                              &request_body, &request_body_len))
+            return NULL;
+    } else if (!PyArg_ParseTuple(args, "sss:request", &database, &method, &url))
+        return NULL;
     TcResponse *response;
-    Py_BEGIN_ALLOW_THREADS
-    response = tc_http_request_full(database, method, url, headers, (const unsigned char *)request_body, (size_t)request_body_len);
-    Py_END_ALLOW_THREADS
-    if (response == NULL) {
-        return PyErr_NoMemory();
-    }
+    Py_BEGIN_ALLOW_THREADS response =
+        tc_http_request_full(database, method, url, headers, (const unsigned char *)request_body,
+                             (size_t)request_body_len);
+    Py_END_ALLOW_THREADS if (response == NULL) { return PyErr_NoMemory(); }
     if (response->error != NULL) {
         PyErr_SetString(PyExc_RuntimeError, response->error);
         tc_response_free(response);
@@ -45,9 +47,8 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
     }
     PyObject *status = PyLong_FromLong(response->status);
     PyObject *content_type = PyUnicode_FromString(response->content_type);
-    PyObject *body = PyBytes_FromStringAndSize(
-        (const char *)response->body, (Py_ssize_t)response->body_len
-    );
+    PyObject *body =
+        PyBytes_FromStringAndSize((const char *)response->body, (Py_ssize_t)response->body_len);
     PyObject *cache = PyBool_FromLong(response->cache);
     PyObject *response_headers = full ? PyUnicode_FromString(response->headers_json) : NULL;
     if (status == NULL || content_type == NULL || body == NULL || cache == NULL ||
@@ -60,9 +61,8 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
         tc_response_free(response);
         return NULL;
     }
-    PyObject *result = full
-        ? PyTuple_Pack(5, status, content_type, body, cache, response_headers)
-        : PyTuple_Pack(4, status, content_type, body, cache);
+    PyObject *result = full ? PyTuple_Pack(5, status, content_type, body, cache, response_headers)
+                            : PyTuple_Pack(4, status, content_type, body, cache);
     Py_DECREF(status);
     Py_DECREF(content_type);
     Py_DECREF(body);
@@ -72,18 +72,21 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
     return result;
 }
 
-static PyObject *native_request(PyObject *self, PyObject *args) { return request_common(self, args, 0); }
-static PyObject *native_request_full(PyObject *self, PyObject *args) { return request_common(self, args, 1); }
+static PyObject *native_request(PyObject *self, PyObject *args) {
+    return request_common(self, args, 0);
+}
+static PyObject *native_request_full(PyObject *self, PyObject *args) {
+    return request_common(self, args, 1);
+}
 
 static PyObject *native_data_operation(PyObject *self, PyObject *args) {
     (void)self;
     const char *request;
-    if (!PyArg_ParseTuple(args, "s:data_operation", &request)) return NULL;
+    if (!PyArg_ParseTuple(args, "s:data_operation", &request))
+        return NULL;
     char *response;
-    Py_BEGIN_ALLOW_THREADS
-    response = tc_data_operation(request);
-    Py_END_ALLOW_THREADS
-    if (response == NULL) return PyErr_NoMemory();
+    Py_BEGIN_ALLOW_THREADS response = tc_data_operation(request);
+    Py_END_ALLOW_THREADS if (response == NULL) return PyErr_NoMemory();
     PyObject *result = PyUnicode_FromString(response);
     tc_string_free(response);
     return result;
@@ -95,38 +98,39 @@ extern void tc_session_free(void *);
 
 static void session_destroy(PyObject *capsule) {
     void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
-    if (session != NULL) tc_session_free(session);
+    if (session != NULL)
+        tc_session_free(session);
 }
 static PyObject *session_open(PyObject *self, PyObject *args) {
     (void)self;
     const char *request;
-    if (!PyArg_ParseTuple(args, "s", &request)) return NULL;
+    if (!PyArg_ParseTuple(args, "s", &request))
+        return NULL;
     char *error = NULL;
     void *session;
-    Py_BEGIN_ALLOW_THREADS
-    session = tc_session_open(request, &error);
-    Py_END_ALLOW_THREADS
-    if (session == NULL) {
+    Py_BEGIN_ALLOW_THREADS session = tc_session_open(request, &error);
+    Py_END_ALLOW_THREADS if (session == NULL) {
         PyErr_SetString(PyExc_RuntimeError, error ? error : "session allocation failed");
         tc_string_free(error);
         return NULL;
     }
     PyObject *capsule = PyCapsule_New(session, "rcfp.session", session_destroy);
-    if (!capsule) tc_session_free(session);
+    if (!capsule)
+        tc_session_free(session);
     return capsule;
 }
 static PyObject *session_operation(PyObject *self, PyObject *args) {
     (void)self;
     const char *request;
     PyObject *capsule;
-    if (!PyArg_ParseTuple(args, "Os", &capsule, &request)) return NULL;
+    if (!PyArg_ParseTuple(args, "Os", &capsule, &request))
+        return NULL;
     void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
-    if (!session) return NULL;
+    if (!session)
+        return NULL;
     char *response;
-    Py_BEGIN_ALLOW_THREADS
-    response = tc_session_operation(session, request);
-    Py_END_ALLOW_THREADS
-    if (!response) return PyErr_NoMemory();
+    Py_BEGIN_ALLOW_THREADS response = tc_session_operation(session, request);
+    Py_END_ALLOW_THREADS if (!response) return PyErr_NoMemory();
     PyObject *result = PyUnicode_FromString(response);
     tc_string_free(response);
     return result;
@@ -142,11 +146,7 @@ static PyMethodDef methods[] = {
 };
 
 static struct PyModuleDef module = {
-    PyModuleDef_HEAD_INIT,
-    "_native",
-    "RCFP native adapter.",
-    -1,
-    methods,
+    PyModuleDef_HEAD_INIT, "_native", "RCFP native adapter.", -1, methods,
 };
 
 PyMODINIT_FUNC PyInit__native(void) { return PyModule_Create(&module); }
