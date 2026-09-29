@@ -1,0 +1,128 @@
+"""Download the locked conda-forge GDAL runtime without a conda environment."""
+
+from __future__ import annotations
+
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import platform
+import shutil
+import tarfile
+import urllib.request
+import zipfile
+
+import zstandard
+
+LOCK = Path(__file__).with_name("gdal-packages.lock.json")
+CHANNEL = "https://conda.anaconda.org/conda-forge"
+
+
+def download(package: dict, cache: Path) -> Path:
+    archive = cache / package["filename"]
+    expected = package["sha256"]
+    if archive.is_file() and hashlib.sha256(archive.read_bytes()).hexdigest() == expected:
+        return archive
+    url = f'{CHANNEL}/{package["subdir"]}/{package["filename"]}'
+    partial = archive.with_name(archive.name + ".part")
+    digest = hashlib.sha256()
+    with urllib.request.urlopen(url, timeout=90) as response, partial.open("wb") as output:
+        while block := response.read(1024 * 1024):
+            digest.update(block)
+            output.write(block)
+    if digest.hexdigest() != expected or partial.stat().st_size != package["size"]:
+        partial.unlink(missing_ok=True)
+        raise RuntimeError(f"archive checksum or size mismatch: {url}")
+    partial.replace(archive)
+    return archive
+
+
+def payload_path(name: str, output: Path, license_dir: Path) -> Path | None:
+    path = PurePosixPath(name)
+    if path.is_absolute() or ".." in path.parts:
+        raise RuntimeError(f"unsafe archive path: {name}")
+    if len(path.parts) == 2 and path.parts[0] == "lib" and ".so" in path.name:
+        return output / name
+    if len(path.parts) >= 3 and path.parts[:2] in (("share", "gdal"), ("share", "proj")):
+        return output / name
+    if len(path.parts) >= 3 and path.parts[:2] == ("info", "licenses"):
+        return license_dir.joinpath(*path.parts[2:])
+    return None
+
+
+def extract_component(archive: zipfile.ZipFile, component: str, output: Path,
+                      license_dir: Path) -> list[str]:
+    member_name = next((name for name in archive.namelist()
+                        if name.startswith(component + "-") and name.endswith(".tar.zst")), None)
+    if member_name is None:
+        raise RuntimeError(f"missing {component} component in {archive.filename}")
+    licenses = []
+    with archive.open(member_name) as compressed:
+        with zstandard.ZstdDecompressor().stream_reader(compressed) as stream:
+            with tarfile.open(fileobj=stream, mode="r|") as files:
+                for member in files:
+                    target = payload_path(member.name, output, license_dir)
+                    if target is None or member.isdir():
+                        continue
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    if member.issym():
+                        destination = (target.parent / member.linkname).resolve()
+                        if not destination.is_relative_to(output.resolve()):
+                            raise RuntimeError(f"unsafe library symlink: {member.name}")
+                        if target.is_symlink():
+                            if os.readlink(target) != member.linkname:
+                                raise RuntimeError(f"conflicting library symlink: {target}")
+                        elif target.exists():
+                            raise RuntimeError(f"library symlink conflicts with file: {target}")
+                        else:
+                            target.symlink_to(member.linkname)
+                    elif member.isfile():
+                        source = files.extractfile(member)
+                        if source is None:
+                            raise RuntimeError(f"missing archive payload: {member.name}")
+                        with source, target.open("wb") as destination:
+                            shutil.copyfileobj(source, destination)
+                        target.chmod(member.mode & 0o777)
+                    else:
+                        raise RuntimeError(f"unsupported archive member: {member.name}")
+                    if target.is_relative_to(license_dir):
+                        licenses.append(str(target.relative_to(license_dir)))
+    return licenses
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--cache", required=True, type=Path)
+    args = parser.parse_args()
+    arch = platform.machine().lower()
+    packages = json.loads(LOCK.read_text()).get(arch)
+    if packages is None:
+        raise RuntimeError(f"unsupported Linux architecture: {arch}")
+    output, cache = args.output.resolve(), args.cache.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    cache.mkdir(parents=True, exist_ok=True)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        archives = list(pool.map(lambda package: download(package, cache), packages))
+    inventory = []
+    for package, archive_path in zip(packages, archives):
+        license_dir = output / "licenses/conda" / f'{package["name"]}-{package["version"]}'
+        with zipfile.ZipFile(archive_path) as archive:
+            licenses = extract_component(archive, "info", output, license_dir)
+            extract_component(archive, "pkg", output, license_dir)
+        inventory.append({"name": package["name"], "version": package["version"],
+                          "license": package["license"], "sha256": package["sha256"],
+                          "url": f'{CHANNEL}/{package["subdir"]}/{package["filename"]}',
+                          "license_files": sorted(licenses)})
+    (output / "licenses/conda").mkdir(parents=True, exist_ok=True)
+    (output / "licenses/conda/packages.json").write_text(json.dumps(inventory, indent=2) + "\n")
+    for required in (output / "lib/libgdal.so", output / "share/gdal",
+                     output / "share/proj/proj.db"):
+        if not required.exists():
+            raise RuntimeError(f"native GDAL bundle is incomplete: {required}")
+
+
+if __name__ == "__main__":
+    main()

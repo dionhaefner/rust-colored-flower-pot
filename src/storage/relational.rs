@@ -1,7 +1,7 @@
 //! Real MySQL/PostgreSQL connections. SQL owns collation, matching and ordering.
 use super::provider::{Provider, SqlPath, timeout};
 use super::{Dataset, KeyDefinition, Metadata};
-use crate::{REFERENCE_VERSION, Result};
+use crate::{Result, TERRACOTTA_COMPATIBILITY_VERSION};
 use mysql::prelude::Queryable;
 use postgres::types::{ToSql, Type};
 use rusqlite::types::Value as V;
@@ -31,8 +31,8 @@ impl Connection {
                     "SET NAMES utf8mb4",
                     "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED",
                 ]);
-            // Frozen MySQLMetaStore appends a second '?' before charset, which
-            // makes user-supplied query options invalid (RW-030).
+            // Terracotta 0.10.1 MySQLMetaStore appends a second '?' before charset, which
+            // makes user-supplied query options invalid.
             if !path.query.is_empty() {
                 return Err("unsupported MySQL connection query (legacy charset suffix)".into());
             }
@@ -269,7 +269,7 @@ impl RelationalStore {
         if super::major_minor(&version) != super::major_minor(&crate::settings::protocol_version())
         {
             return Err(format!(
-                "Version conflict: database was created in v{version}, but this is compatible with v{REFERENCE_VERSION}"
+                "Version conflict: database was created in v{version}, but this is compatible with v{TERRACOTTA_COMPATIBILITY_VERSION}"
             ));
         }
         let keys = connection
@@ -397,7 +397,7 @@ impl RelationalStore {
             }
             c.execute(
                 "INSERT INTO terracotta (version) VALUES (?)",
-                &[V::Text(REFERENCE_VERSION.into())],
+                &[V::Text(TERRACOTTA_COMPATIBILITY_VERSION.into())],
             )
         })();
         if result.is_err() {

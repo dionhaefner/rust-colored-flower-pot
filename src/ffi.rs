@@ -1,4 +1,4 @@
-//! Small C ABI used by the P03 CPython extension.
+//! C ABI used by the CPython extension.
 
 use crate::http::Application;
 use std::ffi::{CStr, CString, c_char};
@@ -33,7 +33,7 @@ pub unsafe extern "C" fn tc_http_request(
     unsafe { tc_http_request_full(database, method, url, c"{}".as_ptr(), ptr::null(), 0) }
 }
 
-/// Request with headers and a binary body, shared by WSGI and validation.
+/// Request with headers and a binary body, shared by WSGI and direct clients.
 ///
 /// # Safety
 /// Strings must be live NUL-terminated strings. `body` must point to `body_len`
@@ -127,33 +127,6 @@ pub unsafe extern "C" fn tc_response_free(response: *mut TcResponse) {
         // SAFETY: ownership and exact length came from a boxed slice above.
         let slice = std::ptr::slice_from_raw_parts_mut(response.body, response.body_len);
         drop(unsafe { Box::from_raw(slice) });
-    }
-}
-
-/// Copy one dataset into a newly created legacy-compatible database.
-///
-/// # Safety
-///
-/// All three arguments must be live NUL-terminated C strings for the duration
-/// of the call. A non-null returned string must be released exactly once with
-/// [`tc_string_free`].
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn tc_copy_dataset(
-    source: *const c_char,
-    destination: *const c_char,
-    keys_json: *const c_char,
-) -> *mut c_char {
-    let result = (|| {
-        let source = c_string(source, "source database")?;
-        let destination = c_string(destination, "destination database")?;
-        let keys_json = c_string(keys_json, "keys")?;
-        let keys: Vec<String> = serde_json::from_str(&keys_json)
-            .map_err(|error| format!("keys must be a JSON string array: {error}"))?;
-        crate::storage::copy_dataset(source, destination, &keys)
-    })();
-    match result {
-        Ok(()) => ptr::null_mut(),
-        Err(error) => owned_c_string(&error),
     }
 }
 

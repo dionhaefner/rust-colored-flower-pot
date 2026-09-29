@@ -1,4 +1,4 @@
-// Frozen browser assets; generated list, no frontend changes.
+// Bundled browser assets and MIME types.
 pub fn asset(path: &str) -> Option<(&'static [u8], &'static str)> {
     match path {
         "/static/react/asset-manifest.json" => Some((

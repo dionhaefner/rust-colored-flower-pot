@@ -1,4 +1,4 @@
-//! Serve the unchanged legacy browser client and verify its backend protocol.
+//! Serve the bundled browser client and verify its backend protocol.
 use crate::Result;
 use std::time::Duration;
 use tiny_http::{Header, Response, Server, StatusCode};
@@ -55,11 +55,11 @@ pub fn command(args: &[String]) -> Result<()> {
     if version
         .split('.')
         .take(2)
-        .ne(crate::REFERENCE_VERSION.split('.').take(2))
+        .ne(crate::TERRACOTTA_COMPATIBILITY_VERSION.split('.').take(2))
     {
         return Err(format!(
             "Incompatible version: The server running at {host} is using Terracotta v{version}, but this is v{}",
-            crate::REFERENCE_VERSION
+            crate::TERRACOTTA_COMPATIBILITY_VERSION
         ));
     }
     let ports: Vec<_> = port
@@ -69,7 +69,7 @@ pub fn command(args: &[String]) -> Result<()> {
         .iter()
         .find_map(|p| Server::http(("127.0.0.1", *p)).ok().map(|s| (s, *p)))
         .ok_or_else(|| format!("Could not find open port to bind to (ports tried: {ports:?})"))?;
-    eprintln!("Terracotta browser listening on http://127.0.0.1:{port}/");
+    eprintln!("RCFP browser listening on http://127.0.0.1:{port}/");
     if browser {
         let url = format!("http://127.0.0.1:{port}/");
         #[cfg(target_os = "linux")]

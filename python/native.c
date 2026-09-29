@@ -17,7 +17,6 @@ typedef struct {
 extern TcResponse *tc_http_request(const char *, const char *, const char *);
 extern TcResponse *tc_http_request_full(const char *, const char *, const char *, const char *, const unsigned char *, size_t);
 extern void tc_response_free(TcResponse *);
-extern char *tc_copy_dataset(const char *, const char *, const char *);
 extern void tc_string_free(char *);
 extern char *tc_data_operation(const char *);
 
@@ -44,56 +43,37 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
         tc_response_free(response);
         return NULL;
     }
-    PyObject *result = PyTuple_New(full ? 5 : 4);
     PyObject *status = PyLong_FromLong(response->status);
     PyObject *content_type = PyUnicode_FromString(response->content_type);
     PyObject *body = PyBytes_FromStringAndSize(
         (const char *)response->body, (Py_ssize_t)response->body_len
     );
     PyObject *cache = PyBool_FromLong(response->cache);
-    if (result == NULL || status == NULL || content_type == NULL || body == NULL || cache == NULL) {
-        Py_XDECREF(result);
+    PyObject *response_headers = full ? PyUnicode_FromString(response->headers_json) : NULL;
+    if (status == NULL || content_type == NULL || body == NULL || cache == NULL ||
+        (full && response_headers == NULL)) {
         Py_XDECREF(status);
         Py_XDECREF(content_type);
         Py_XDECREF(body);
         Py_XDECREF(cache);
+        Py_XDECREF(response_headers);
         tc_response_free(response);
         return NULL;
     }
-    PyTuple_SET_ITEM(result, 0, status);
-    PyTuple_SET_ITEM(result, 1, content_type);
-    PyTuple_SET_ITEM(result, 2, body);
-    PyTuple_SET_ITEM(result, 3, cache);
-    if (full) {
-        PyObject *headers = PyUnicode_FromString(response->headers_json);
-        if (headers == NULL) {Py_DECREF(result); tc_response_free(response); return NULL;}
-        PyTuple_SET_ITEM(result, 4, headers);
-    }
+    PyObject *result = full
+        ? PyTuple_Pack(5, status, content_type, body, cache, response_headers)
+        : PyTuple_Pack(4, status, content_type, body, cache);
+    Py_DECREF(status);
+    Py_DECREF(content_type);
+    Py_DECREF(body);
+    Py_DECREF(cache);
+    Py_XDECREF(response_headers);
     tc_response_free(response);
     return result;
 }
 
 static PyObject *native_request(PyObject *self, PyObject *args) { return request_common(self, args, 0); }
 static PyObject *native_request_full(PyObject *self, PyObject *args) { return request_common(self, args, 1); }
-
-static PyObject *native_copy_dataset(PyObject *self, PyObject *args) {
-    (void)self;
-    const char *source;
-    const char *destination;
-    const char *keys_json;
-    if (!PyArg_ParseTuple(
-            args, "sss:copy_dataset", &source, &destination, &keys_json
-        )) {
-        return NULL;
-    }
-    char *error = tc_copy_dataset(source, destination, keys_json);
-    if (error != NULL) {
-        PyErr_SetString(PyExc_RuntimeError, error);
-        tc_string_free(error);
-        return NULL;
-    }
-    Py_RETURN_NONE;
-}
 
 static PyObject *native_data_operation(PyObject *self, PyObject *args) {
     (void)self;
@@ -158,14 +138,13 @@ static PyMethodDef methods[] = {
     {"data_operation", native_data_operation, METH_VARARGS, "Execute native data preparation."},
     {"request_full", native_request_full, METH_VARARGS, "Execute a request with headers and body."},
     {"request", native_request, METH_VARARGS, "Execute one native request."},
-    {"copy_dataset", native_copy_dataset, METH_VARARGS, "Copy one legacy dataset."},
     {NULL, NULL, 0, NULL},
 };
 
 static struct PyModuleDef module = {
     PyModuleDef_HEAD_INIT,
     "_native",
-    "Terracotta P03 native adapter.",
+    "RCFP native adapter.",
     -1,
     methods,
 };

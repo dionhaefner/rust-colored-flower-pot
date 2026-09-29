@@ -196,7 +196,7 @@ pub fn ingest(
         Err(open_error) => Store::create(&path, provider.as_deref(), &definitions)
             .map_err(|create_error| format!("{open_error}; {create_error}"))?,
     };
-    // The reference emits the mismatch but keeps inserting positionally (RW-021).
+    // Terracotta 0.10.1 emits the mismatch but keeps inserting positionally.
     if store.key_names()
         != definitions
             .iter()

@@ -1,4 +1,4 @@
-"""Check a complete, already tested CPython 3.12 release artifact set."""
+"""Validate a complete CPython 3.12 release artifact set."""
 
 from __future__ import annotations
 
@@ -28,9 +28,13 @@ def main() -> None:
     with tarfile.open(sdists[0]) as archive:
         names = set(archive.getnames())
         prefix = f"rcfp-{version}/"
-        required = {"Cargo.toml", "Cargo.lock", "pyproject.toml", "setup.py",
-                    "packaging/python-setup.py", "packaging/stage-gdal-runtime.py",
-                    "src/lib.rs", "python/rcfp/__init__.py"}
+        required = {"Cargo.toml", "Cargo.lock", "pyproject.toml", "packaging/hatch_build.py", "packaging/bootstrap-gdal.py",
+                    "packaging/gdal-packages.lock.json", "packaging/stage-gdal-runtime.py",
+                    "packaging/verify-runtime-without-rasterio.py",
+                    "packaging/licenses/CLIENT-LICENSE.txt", "packaging/cargo.sh",
+                    "tests/storage_sql.rs", "src/lib.rs", "python/rcfp/__init__.py"}
+        if prefix + "setup.py" in names:
+            raise ValueError("source distribution unexpectedly contains setup.py")
         missing = {name for name in required if prefix + name not in names}
         if missing:
             raise ValueError(f"source distribution is incomplete: {sorted(missing)}")
@@ -45,11 +49,21 @@ def main() -> None:
         if not all(tag.startswith("cp312-cp312-") for tag in tags):
             raise ValueError(f"unexpected Python ABI: {wheel.name}: {tags}")
         name = wheel.name
-        if "manylinux" in name:
-            platform = "linux-aarch64" if "aarch64" in name else "linux-x86_64"
-        elif "macosx" in name:
-            platform = "macos-arm64" if "arm64" in name else "macos-x86_64"
-        elif name.endswith("win_amd64.whl"):
+        parts = wheel.stem.split("-", 4)
+        if len(parts) != 5 or parts[:4] != ["rcfp", version, "cp312", "cp312"]:
+            raise ValueError(f"unexpected wheel filename: {name}")
+        filename_platforms = parts[4].split(".")
+        if set(tags) != {f"cp312-cp312-{item}" for item in filename_platforms}:
+            raise ValueError(f"wheel filename/WHEEL tag mismatch: {name}: {tags}")
+        if all(re.fullmatch(r"manylinux_[0-9]+_[0-9]+_x86_64", item) for item in filename_platforms):
+            platform = "linux-x86_64"
+        elif all(re.fullmatch(r"manylinux_[0-9]+_[0-9]+_aarch64", item) for item in filename_platforms):
+            platform = "linux-aarch64"
+        elif all(re.fullmatch(r"macosx_[0-9]+_[0-9]+_x86_64", item) for item in filename_platforms):
+            platform = "macos-x86_64"
+        elif all(re.fullmatch(r"macosx_[0-9]+_[0-9]+_arm64", item) for item in filename_platforms):
+            platform = "macos-arm64"
+        elif filename_platforms == ["win_amd64"]:
             platform = "windows-amd64"
         else:
             raise ValueError(f"unexpected wheel platform: {name}")

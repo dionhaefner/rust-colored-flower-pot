@@ -7,7 +7,7 @@ import sys
 
 root=Path(__file__).resolve().parents[1]
 output=Path(sys.argv[1])
-metadata=json.loads(subprocess.check_output([str(root/'validation/tools/cargo.sh'),'metadata','--locked','--offline','--format-version','1'],cwd=root))
+metadata=json.loads(subprocess.check_output([str(root/'packaging/cargo.sh'),'metadata','--locked','--offline','--format-version','1'],cwd=root))
 manifest=[]
 for package in metadata['packages']:
     if package['name']=='rcfp':continue

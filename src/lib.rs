@@ -1,9 +1,5 @@
-//! Shared application core for the Terracotta rewrite.
-//!
-//! P05 provides rendering and HTTP contracts over legacy SQLite and bounded
-//! local/remote GDAL execution. HTTP, Lambda and Python/WSGI share this core.
-//! Native ingestion, metadata, SQLite writes and optimization share this core.
-//! Complete legacy Python APIs and further deployment qualification remain later phases.
+//! Shared application core for the RCFP service, CLI, Lambda, and Python APIs.
+//! Rendering, storage, metadata, and raster operations use the same native core.
 
 pub mod execution;
 pub mod ffi;
@@ -14,13 +10,12 @@ pub mod raster;
 mod statistics;
 pub mod storage;
 
-/// Rewrite release identity; independent of Python protocol/database versions.
+/// RCFP release version, independent of protocol and database versions.
 pub const IMPLEMENTATION_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Legacy protocol/database compatibility identity.
-pub const REFERENCE_VERSION: &str = "0.10.1";
-/// Legacy major/minor database format accepted and emitted by this slice.
+pub const TERRACOTTA_COMPATIBILITY_VERSION: &str = "0.10.1";
+/// Database format accepted and emitted by RCFP.
 pub const DATABASE_COMPATIBILITY: &str = "0.10";
-pub const REFERENCE_COMMIT: &str = "6db38d5873cde5ebabe47338a1f61ddc788eada6";
 
 pub type Result<T> = std::result::Result<T, String>;
 pub mod color;

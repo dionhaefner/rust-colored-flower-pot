@@ -137,7 +137,7 @@ fn encode_png(
     configured_compression(output)
 }
 
-// Exact 255-entry Terracotta viridis palette captured from the frozen source.
+// Exact 255-entry Terracotta viridis palette for compatible rendering.
 const VIRIDIS: &[u8] = &[
     68, 1, 84, 255, 68, 2, 85, 255, 68, 3, 87, 255, 69, 5, 88, 255, 69, 6, 90, 255, 69, 8, 91, 255,
     70, 9, 92, 255, 70, 11, 94, 255, 70, 12, 95, 255, 70, 14, 97, 255, 71, 15, 98, 255, 71, 17, 99,

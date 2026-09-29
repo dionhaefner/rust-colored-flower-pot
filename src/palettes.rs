@@ -1,4 +1,4 @@
-//! Frozen palettes and strictly validated custom NumPy uint8 palette files.
+//! Built-in palettes and validated custom NumPy uint8 palette files.
 use crate::{Result, image::Rgba};
 use std::borrow::Cow;
 use std::collections::BTreeMap;

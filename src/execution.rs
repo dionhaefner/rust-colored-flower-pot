@@ -724,7 +724,7 @@ mod tests {
 
     #[test]
     fn cache_identity_covers_rendering_inputs_and_file_generation() {
-        let path = Path::new("validation/reference/capture/images/rgb.png");
+        let path = Path::new("tests/fixtures/lagoon-red-preview.png");
         let request = ReadRequest::default();
         let base = cache_key(path, request, false);
         let changed_size = cache_key(

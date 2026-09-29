@@ -1,0 +1,878 @@
+{
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "passed": true,
+  "results": [
+    {
+      "name": "N51_00_E179_00-full",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_E179_00.tif",
+      "sha256": "540df34e31529bc3652302233596604d4a225be6570e0bcc4e32ff9bc56eb06d",
+      "dtype": "float32",
+      "options": {},
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 7.62939453125e-06,
+          "bound": {
+            "atol": 3.0517578125e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 3.0517578125e-05,
+          "bound": {
+            "atol": 6.103515625e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N51_00_E179_00-sample",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_E179_00.tif",
+      "sha256": "540df34e31529bc3652302233596604d4a225be6570e0bcc4e32ff9bc56eb06d",
+      "dtype": "float32",
+      "options": {
+        "max_shape": [
+          173,
+          291
+        ]
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 7.62939453125e-06,
+          "bound": {
+            "atol": 3.0517578125e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 6.103515625e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N51_00_E179_00-chunk",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_E179_00.tif",
+      "sha256": "540df34e31529bc3652302233596604d4a225be6570e0bcc4e32ff9bc56eb06d",
+      "dtype": "float32",
+      "options": {
+        "use_chunks": true
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N51_00_W180_00-full",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_W180_00.tif",
+      "sha256": "345b570a4391c2c230efbae94efea3ab13722905c36ce86892ad9ff1fb4ecd2c",
+      "dtype": "float32",
+      "options": {},
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 9.5367431640625e-07,
+          "bound": {
+            "atol": 3.814697265625e-06,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 1.52587890625e-05,
+          "bound": {
+            "atol": 1.52587890625e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N51_00_W180_00-sample",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_W180_00.tif",
+      "sha256": "345b570a4391c2c230efbae94efea3ab13722905c36ce86892ad9ff1fb4ecd2c",
+      "dtype": "float32",
+      "options": {
+        "max_shape": [
+          173,
+          291
+        ]
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 9.5367431640625e-07,
+          "bound": {
+            "atol": 3.814697265625e-06,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1.52587890625e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N51_00_W180_00-chunk",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N51_00_W180_00.tif",
+      "sha256": "345b570a4391c2c230efbae94efea3ab13722905c36ce86892ad9ff1fb4ecd2c",
+      "dtype": "float32",
+      "options": {
+        "use_chunks": true
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N78_00_E015_00-full",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N78_00_E015_00.tif",
+      "sha256": "360b1d361821ceb569790e01c65c576d1da9c7103825ddbdcbf8a95f1ebc5c6c",
+      "dtype": "float32",
+      "options": {},
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 6.103515625e-05,
+          "bound": {
+            "atol": 0.0001220703125,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 3.0517578125e-05,
+          "bound": {
+            "atol": 0.0001220703125,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N78_00_E015_00-sample",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N78_00_E015_00.tif",
+      "sha256": "360b1d361821ceb569790e01c65c576d1da9c7103825ddbdcbf8a95f1ebc5c6c",
+      "dtype": "float32",
+      "options": {
+        "max_shape": [
+          173,
+          291
+        ]
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 3.0517578125e-05,
+          "bound": {
+            "atol": 0.0001220703125,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 3.0517578125e-05,
+          "bound": {
+            "atol": 0.0001220703125,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "N78_00_E015_00-chunk",
+      "path": "rewrite/validation/artifacts/p08-geography-final/N78_00_E015_00.tif",
+      "sha256": "360b1d361821ceb569790e01c65c576d1da9c7103825ddbdcbf8a95f1ebc5c6c",
+      "dtype": "float32",
+      "options": {
+        "use_chunks": true
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "dateline-mosaic-full",
+      "path": "rewrite/validation/artifacts/p08-geography-final/dateline-mosaic.tif",
+      "sha256": "56a51ff42617762e50ac17302708659acc389e6bb91b24cb2988fa233758b91f",
+      "dtype": "float32",
+      "options": {},
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 4.76837158203125e-06,
+          "bound": {
+            "atol": 5e-06,
+            "rtol": 0,
+            "requires": "exact NumPy f32 oracle and rounded NumPy f64 native moments",
+            "discovery": "RW-042"
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.00020599365234375,
+          "bound": {
+            "atol": 0.00021,
+            "rtol": 0,
+            "requires": "exact NumPy f32 oracle and rounded NumPy f64 native moments",
+            "discovery": "RW-042"
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "dateline-mosaic-sample",
+      "path": "rewrite/validation/artifacts/p08-geography-final/dateline-mosaic.tif",
+      "sha256": "56a51ff42617762e50ac17302708659acc389e6bb91b24cb2988fa233758b91f",
+      "dtype": "float32",
+      "options": {
+        "max_shape": [
+          173,
+          291
+        ]
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 4.76837158203125e-07,
+          "bound": {
+            "atol": 1.9073486328125e-06,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1.52587890625e-05,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "dateline-mosaic-chunk",
+      "path": "rewrite/validation/artifacts/p08-geography-final/dateline-mosaic.tif",
+      "sha256": "56a51ff42617762e50ac17302708659acc389e6bb91b24cb2988fa233758b91f",
+      "dtype": "float32",
+      "options": {
+        "use_chunks": true
+      },
+      "checks": [
+        {
+          "field": "bounds",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "range",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "valid_percentage",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-12,
+            "rtol": 0
+          }
+        },
+        {
+          "field": "mean",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "stdev",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": {
+            "atol": 1e-10,
+            "rtol": 2e-12
+          }
+        },
+        {
+          "field": "percentiles",
+          "passed": true,
+          "max_difference": 0.0,
+          "bound": "exact database float32"
+        },
+        {
+          "field": "convex_hull",
+          "passed": true,
+          "relative_area_difference": 0.0,
+          "bound": 1e-10
+        },
+        {
+          "field": "metadata",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

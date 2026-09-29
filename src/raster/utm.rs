@@ -109,7 +109,7 @@ impl Gdal {
             let requested_x_res = (bounds[2] - bounds[0]) / request.size[0] as f64;
             let requested_y_res = (bounds[3] - bounds[1]) / request.size[1] as f64;
             // Leave magnification and overview selection to the general GDAL path.
-            // This four-sample kernel is qualified only near native resolution.
+            // Use this four-sample kernel only near native resolution.
             if requested_x_res < geometry.transform[1].abs()
                 || requested_y_res < geometry.transform[5].abs()
                 || requested_x_res > 1.5 * geometry.transform[1].abs()

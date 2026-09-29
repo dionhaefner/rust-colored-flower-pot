@@ -196,11 +196,11 @@ fn writable_parent(path: &str) -> bool {
 }
 
 /// The Python adapter verifies against its public protocol identity, as the
-/// original module does. This is not an environment/CLI version override.
+/// Terracotta 0.10.1 module does. This is not an environment/CLI version override.
 pub(crate) fn protocol_version() -> String {
     snapshot()
         .get("PYTHON_PROTOCOL_VERSION")
         .and_then(Value::as_str)
-        .unwrap_or(crate::REFERENCE_VERSION)
+        .unwrap_or(crate::TERRACOTTA_COMPATIBILITY_VERSION)
         .to_string()
 }

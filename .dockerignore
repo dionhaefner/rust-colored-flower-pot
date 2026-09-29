@@ -1,7 +1,7 @@
 .git
 .cache
-.venv-reference
+.venv*
 target
-validation/artifacts
+process
 __pycache__
 **/__pycache__

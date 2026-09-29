@@ -1,4 +1,4 @@
-//! Narrow affine Web Mercator experiment for fully valid uint16 interiors.
+//! Optional affine Web Mercator path for fully valid uint16 interiors.
 
 use super::*;
 use std::collections::{HashMap, HashSet, VecDeque};

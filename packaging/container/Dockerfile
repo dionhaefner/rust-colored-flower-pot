@@ -7,9 +7,9 @@ RUN apt-get update \
 COPY bundle /opt/rcfp
 COPY fixture /data
 
-ENV TC_DRIVER_PATH=/data/terracotta.sqlite
+ENV TC_DRIVER_PATH=/data/catalog.sqlite
 ENV TC_SERVER_PORT=5000
 EXPOSE 5000
 
 ENTRYPOINT ["/opt/rcfp/bin/rcfp"]
-CMD ["serve", "-d", "/data/terracotta.sqlite", "--bind", "0.0.0.0:5000"]
+CMD ["serve", "-d", "/data/catalog.sqlite", "--bind", "0.0.0.0:5000"]

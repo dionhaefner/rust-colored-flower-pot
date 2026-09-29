@@ -1,4 +1,4 @@
-//! P05 CLI adapters; core operations are independently callable.
+//! CLI adapters for native raster and catalog operations.
 use crate::{
     Result, ingest,
     raster::{Gdal, MetadataOptions, OptimizeOptions},
@@ -20,7 +20,7 @@ pub fn ingest_command(args: &[String]) -> Result<()> {
             "-q" | "--quiet" => quiet = true,
             "--help" | "-h" => {
                 println!(
-                    "Usage: terracotta ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [--rgb-key KEY] [-q]"
+                    "Usage: rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [--rgb-key KEY] [-q]"
                 );
                 return Ok(());
             }
@@ -68,7 +68,7 @@ pub fn optimize_command(args: &[String]) -> Result<()> {
             "--nproc" => nproc = next(args, &mut i)?.parse().map_err(|_| "invalid nproc")?,
             "--help" | "-h" => {
                 println!(
-                    "Usage: terracotta optimize-rasters FILES... -o FOLDER [--overwrite|--skip-existing] [--reproject] [--resampling-method average|nearest|bilinear|cubic] [--in-memory|--no-in-memory] [--compression auto|zstd|deflate|lzw|none] [--nproc N] [-q]"
+                    "Usage: rcfp optimize-rasters FILES... -o FOLDER [--overwrite|--skip-existing] [--reproject] [--resampling-method average|nearest|bilinear|cubic] [--in-memory|--no-in-memory] [--compression auto|zstd|deflate|lzw|none] [--nproc N] [-q]"
                 );
                 return Ok(());
             }

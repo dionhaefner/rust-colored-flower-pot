@@ -1,0 +1,9 @@
+{
+  "wheel": "rcfp-0.1.0-cp312-cp312-manylinux_2_39_x86_64.whl",
+  "version": "0.1.0",
+  "tags": [
+    "cp312-cp312-manylinux_2_39_x86_64"
+  ],
+  "bytes": 61528750,
+  "sha256": "48088564048bdd156b14aeb7f66ab607080833578ade6d2ce0ca553108277475"
+}

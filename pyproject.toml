@@ -1,3 +1,46 @@
 [build-system]
-requires = ["setuptools>=80,<81", "wheel>=0.45,<1", "rasterio==1.4.4"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.27,<2", "hatch-vcs>=0.4,<1", "rustup==1.29.0.1", "zstandard==0.25.0; sys_platform == 'linux'", "setuptools>=80,<81; sys_platform == 'win32'"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rcfp"
+dynamic = ["version"]
+description = "RCFP raster tile server with a shared Rust core"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = {file = "LICENSE"}
+
+[project.scripts]
+rcfp = "rcfp.cli:main"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = '^v(?P<version>\d+\.\d+\.\d+)$'
+fallback-version = "0.1.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "python/rcfp/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/rcfp"]
+
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "packaging/hatch_build.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+  "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "LICENSE",
+  "THIRD_PARTY_NOTICES.md", "README.md", "pyproject.toml",
+  "packaging", "python/native.c", "python/rcfp", "src", "tests",
+]
+exclude = ["**/__pycache__", "**/*.pyc", "**/*.egg-info", "packaging/*.md"]
+
+
+[tool.hatch.build.targets.sdist.force-include]
+"python/rcfp/_version.py" = "python/rcfp/_version.py"
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

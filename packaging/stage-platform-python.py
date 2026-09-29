@@ -1,9 +1,9 @@
 """Stage a macOS/Windows wheel with GDAL and PROJ in its private runtime.
 
 The resulting wheel still needs delocate/delvewheel repair before distribution.
-Linux standalone wheels use build-wheel.sh and the portable bundle.
+Linux standalone wheels use the portable bundle.
 """
-import argparse, os, shutil, subprocess, sys
+import argparse, os, shutil, subprocess, sys, sysconfig
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +13,7 @@ p.add_argument('--output', type=Path, required=True)
 a = p.parse_args()
 target, output = a.target.resolve(), a.output.resolve()
 output.mkdir(parents=True, exist_ok=False)
+shutil.copy2(ROOT/'README.md', output/'README.md')
 for name in ('rcfp',):
     shutil.copytree(ROOT/'python'/name, output/name, ignore=shutil.ignore_patterns('__pycache__'))
 lib = output/'rcfp/runtime/lib'
@@ -42,13 +43,30 @@ license_dir = output/'rcfp/runtime/licenses'
 license_dir.mkdir()
 for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
     shutil.copy2(ROOT/name, license_dir/name)
-# Compile with the interpreter's own setuptools platform compiler (MSVC on Windows).
-build = output/'build-extension.py'
-build.write_text('from setuptools import setup, Extension\nsetup(name="native-stage", ext_modules=[Extension("rcfp._native", '
-                 + repr([str(ROOT/'python/native.c')]) + ', extra_objects='+repr([str(link)] if link else [])
-                 + ', libraries='+repr([] if link else ['rcfp_core'])
-                 + ', library_dirs='+repr([str(lib)])
-                 + ', extra_link_args='+repr(args)+')])\n')
-subprocess.run([sys.executable, str(build), 'build_ext', '--inplace'], cwd=output, check=True)
-build.unlink()
-shutil.copy2(ROOT/'packaging/python-setup.py', output/'setup.py')
+# Compile against the active CPython and the staged Rust import library.
+include = sysconfig.get_paths()["include"]
+suffix = ".abi3.pyd" if sys.platform == "win32" else ".abi3.so"
+extension = output / "rcfp" / ("_native" + suffix)
+source = str(ROOT / "python/native.c")
+if sys.platform == "win32":
+    # setuptools supplies MSVC environment discovery.
+    from setuptools._distutils.ccompiler import new_compiler
+    from setuptools._distutils.sysconfig import customize_compiler
+
+    compiler = new_compiler()
+    customize_compiler(compiler)
+    objects = compiler.compile([source], output_dir=str(output), include_dirs=[include],
+                               macros=[("Py_LIMITED_API", "0x030C0000")])
+    compiler.link_shared_object(
+        objects, str(extension), extra_objects=[str(link)],
+        library_dirs=[str(Path(sys.base_prefix) / "libs")],
+        libraries=["python3"],
+    )
+else:
+    command = ["cc", "-bundle", "-fPIC", "-DPy_LIMITED_API=0x030C0000",
+               f"-I{include}", source,
+               "-L" + str(lib), "-lrcfp_core",
+               "-Wl,-rpath,@loader_path/runtime/lib", "-undefined", "dynamic_lookup",
+               "-o", str(extension)]
+if sys.platform != "win32":
+    subprocess.run(command, cwd=output, check=True)

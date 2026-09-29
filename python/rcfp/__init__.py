@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Sequence
 from urllib.parse import quote, urlencode
 
-__version__ = "0.1.0"
+from ._version import __version__
+
 __protocol_version__ = "0.10.1"
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -75,21 +76,6 @@ def render_preview(
     return body
 
 
-def copy_dataset(
-    source: os.PathLike[str] | str,
-    destination: os.PathLike[str] | str,
-    keys: Sequence[str],
-) -> None:
-    """Copy one record using the legacy 0.10 SQLite encoding.
-
-    This narrow P03 format proof is not the complete write API.
-    """
-
-    _native.copy_dataset(
-        os.fspath(source), os.fspath(destination), json.dumps(list(keys))
-    )
-
-
 def identity(database: os.PathLike[str] | str) -> dict[str, str]:
     status, _content_type, body, _cacheable = request(
         database, "GET", "/__terracotta/identity"
@@ -103,7 +89,6 @@ __all__ = [
     "RcfpError",
     "__version__",
     "__protocol_version__",
-    "copy_dataset",
     "identity",
     "render_preview",
     "request",
@@ -137,7 +122,7 @@ def compute_metadata(path, *, extra_metadata=None, use_chunks=None, max_shape=No
 
 
 class DataStore:
-    """Shared preparation/store surface; full legacy driver integration belongs to P07."""
+    """Create, query, and update a raster catalog."""
     def __init__(self, path, *, provider=None):
         self.path = os.fspath(path)
         self.provider = provider

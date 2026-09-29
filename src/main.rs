@@ -20,7 +20,7 @@ fn reexec_with_gdal_dependencies() {
     if std::env::var_os("TERRACOTTA_GDAL_REEXEC").is_some() {
         return;
     }
-    let Some(directory) = bundled_lib_dir().or_else(local_rasterio_libs) else {
+    let Some(directory) = bundled_lib_dir() else {
         return;
     };
     let mut library_path = directory.into_os_string();
@@ -38,17 +38,6 @@ fn reexec_with_gdal_dependencies() {
 
 #[cfg(not(unix))]
 fn reexec_with_gdal_dependencies() {}
-
-fn local_rasterio_libs() -> Option<PathBuf> {
-    let root = Path::new(".venv-reference/lib");
-    for python_dir in std::fs::read_dir(root).ok()?.flatten() {
-        let directory = python_dir.path().join("site-packages/rasterio.libs");
-        if directory.is_dir() {
-            return Some(directory);
-        }
-    }
-    None
-}
 
 fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     let mut config = serde_json::Map::new();
@@ -81,9 +70,9 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
     match args {
         [flag] if flag == "--version" => {
             println!(
-                "rcfp {} (P07; protocol {}; database {})",
+                "rcfp {} (protocol {}; database {})",
                 rcfp_core::IMPLEMENTATION_VERSION,
-                rcfp_core::REFERENCE_VERSION,
+                rcfp_core::TERRACOTTA_COMPATIBILITY_VERSION,
                 rcfp_core::DATABASE_COMPATIBILITY
             );
             Ok(())
@@ -93,10 +82,8 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
                 "{}",
                 serde_json::json!({
                     "implementation": rcfp_core::IMPLEMENTATION_VERSION,
-                    "protocol_compatibility": rcfp_core::REFERENCE_VERSION,
-                    "database_compatibility": rcfp_core::DATABASE_COMPATIBILITY,
-                    "reference_commit": rcfp_core::REFERENCE_COMMIT,
-                    "phase": "P07"
+                    "protocol_compatibility": rcfp_core::TERRACOTTA_COMPATIBILITY_VERSION,
+                    "database_compatibility": rcfp_core::DATABASE_COMPATIBILITY
                 })
             );
             Ok(())
@@ -122,7 +109,6 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
         }
         [command, rest @ ..] if command == "lambda-event" => lambda_event(rest),
         [command] if command == "lambda-runtime" => lambda_runtime(),
-        [command, rest @ ..] if command == "compat-copy" => compat_copy(rest),
         [] => {
             print_help();
             Ok(())
@@ -170,33 +156,6 @@ fn lambda_runtime() -> rcfp_core::Result<()> {
     let runtime_api = std::env::var("AWS_LAMBDA_RUNTIME_API")
         .map_err(|_| "lambda-runtime requires AWS_LAMBDA_RUNTIME_API".to_string())?;
     rcfp_core::lambda::run_runtime(&database, &runtime_api)
-}
-
-fn compat_copy(args: &[String]) -> rcfp_core::Result<()> {
-    let mut source = None;
-    let mut output = None;
-    let mut keys = Vec::new();
-    let mut index = 0;
-    while index < args.len() {
-        match args[index].as_str() {
-            "--source" if index + 1 < args.len() => {
-                source = Some(PathBuf::from(&args[index + 1]));
-                index += 2;
-            }
-            "--output" if index + 1 < args.len() => {
-                output = Some(PathBuf::from(&args[index + 1]));
-                index += 2;
-            }
-            "--key" if index + 1 < args.len() => {
-                keys.push(args[index + 1].clone());
-                index += 2;
-            }
-            option => return Err(format!("unsupported compat-copy option: {option}")),
-        }
-    }
-    let source = source.ok_or_else(|| "compat-copy requires --source".to_string())?;
-    let output = output.ok_or_else(|| "compat-copy requires --output".to_string())?;
-    rcfp_core::storage::copy_dataset(source, output, &keys)
 }
 
 fn serve(args: &[String]) -> rcfp_core::Result<()> {
@@ -299,7 +258,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
 
 fn print_help() {
     println!(
-        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nP07 adds MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
+        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
     );
 }
 
@@ -312,27 +271,6 @@ fn configure_gdal_runtime() {
         set_default_env_os("GDAL_DATA", root.join("share/gdal").as_os_str());
         set_default_env_os("PROJ_DATA", root.join("share/proj").as_os_str());
         set_default_env_os("TERRACOTTA_RUNTIME_ROOT", root.as_os_str());
-        return;
-    }
-    let root = Path::new(".venv-reference/lib");
-    let Ok(python_dirs) = std::fs::read_dir(root) else {
-        return;
-    };
-    for python_dir in python_dirs.flatten() {
-        let rasterio = python_dir.path().join("site-packages/rasterio");
-        let gdal_data = rasterio.join("gdal_data");
-        let proj_data = rasterio.join("proj_data");
-        if gdal_data.is_dir() && std::env::var_os("GDAL_DATA").is_none() {
-            // SAFETY: startup-only, before threads or native-library initialization.
-            unsafe { std::env::set_var("GDAL_DATA", &gdal_data) };
-        }
-        if proj_data.is_dir()
-            && std::env::var_os("PROJ_DATA").is_none()
-            && std::env::var_os("PROJ_LIB").is_none()
-        {
-            // SAFETY: startup-only, before threads or native-library initialization.
-            unsafe { std::env::set_var("PROJ_DATA", &proj_data) };
-        }
     }
 }
 

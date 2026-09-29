@@ -25,14 +25,7 @@ def main() -> int:
     if args == ["--version"]:
         print(f"rcfp {__version__}")
         return 0
-    if args == ["--help"] or args == ["-h"]:
-        result = subprocess.run([str(executable), *args], capture_output=True, text=True, env=env)
-        sys.stdout.write(result.stdout.replace("terracotta ", "rcfp "))
-        sys.stderr.write(result.stderr.replace("terracotta ", "rcfp "))
-        return result.returncode
     if os.name == "nt":
-        env = os.environ.copy()
-        env["PATH"] = str(executable.parent.parent / "lib") + os.pathsep + env.get("PATH", "")
         return subprocess.call([str(executable), *args], env=env)
     os.execve(str(executable), [str(executable), *args], env)
     return 0

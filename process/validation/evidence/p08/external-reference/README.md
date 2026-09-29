@@ -1,0 +1,15 @@
+# External frozen Terracotta reference
+
+Scope: local Python 3.12/Linux source and bootstrap check, 2026-09-28. No publication or external service test was performed.
+
+The original tracked `python/terracotta` directory was removed at the user's request. RCFP's Rust and Python build inputs have no dependency on that directory. The pinned Terracotta 0.10.1 PyPI source archive has SHA-256 `e5d2ac9b78a36d0f28414b1a4890c961dede50d1f9ce33b8d23eee643f5e2348`; PyPI's publication attestation names source commit `6db38d5873cde5ebabe47338a1f61ddc788eada6`.
+
+`process/validation/tools/fetch-reference.py --output /tmp/rcfp-reference-from-pypi` downloaded, checked and extracted the release. The `--archive` path also succeeded with a previously downloaded copy. Against the existing frozen `.cache/reference` snapshot, 309 application files (excluding release generated `_version.py`) and 35 test files matched byte for byte. The release `_version.py` reports 0.10.1 and includes commit marker `g6db38d587`. All 16 files under RCFP's `src/assets/client` match corresponding assets in the release. The fetched package imported from the temporary directory in the pinned validation environment, and its Flask `/keys` route returned HTTP 200 with ordered `scene` and `band` keys when pointed at the real catalog.
+
+The new bootstrap retains the existing pinned dependency lock, extracts the archive to ignored `.cache/reference`, and refuses to replace an existing snapshot or environment. `process/validation/tools/environment.py` reads the new `source.tar.gz` provenance while preserving the earlier recorded hash if an old cached `source.tar` is no longer present. The downloaded source also ran its `tests/test_expressions.py` suite directly via `PYTHONPATH` in the pinned reference environment: 53 tests passed. Full creation of a new reference dependency environment was not repeated; the fetcher, source fidelity and installed reference runtime were checked independently.
+
+After removal, `TERRACOTTA_CARGO_OFFLINE=1 packaging/cargo.sh check --locked --offline` passed. `pip wheel --no-deps .` built `rcfp-0.1.0-cp312-cp312-linux_x86_64.whl` (SHA-256 `fd4873f2ed0ed146c91143de0ef8a7de06b7cf96394939a86715a5b561e088f0`). The wheel contains `rcfp/runtime/bin/rcfp` and the `rcfp = rcfp.cli:main` console entry point; it has no `terracotta` package. `setup.py sdist` built an archive with 302 members, including RCFP Python and browser assets, with no `python/terracotta` files. A one-byte-corrupted Terracotta archive was rejected before extraction by the SHA-256 check. `git diff --check`, shell syntax, Python compilation and contract JSON parsing passed.
+
+The frozen 386-row contract inventory now retains upstream source paths without pointing to the deleted implementation copy. Every source path resolves under `.cache/reference`; `p08_reconcile.py` checks that downloaded oracle layout.
+
+`packaging/verify-wheel.py` rejected this local development wheel because its `linux_x86_64` tag is unrepaired. It is a build smoke result, not a portable release-wheel qualification; the CI repair stage remains the route for publishable Linux tags.

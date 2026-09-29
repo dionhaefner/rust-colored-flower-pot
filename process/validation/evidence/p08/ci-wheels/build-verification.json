@@ -1,0 +1,17 @@
+{
+  "sdist": {
+    "name": "rcfp-0.1.0.tar.gz",
+    "sha256": "3b8c48130164e84b69e221be50d019cee85dd879bfedc1da0d2735a1559bfacf",
+    "members": 302,
+    "reference_source_included": false,
+    "validation_evidence_included": false
+  },
+  "wheel": {
+    "name": "rcfp-0.1.0-cp312-cp312-manylinux_2_39_x86_64.whl",
+    "sha256": "48088564048bdd156b14aeb7f66ab607080833578ade6d2ce0ca553108277475"
+  },
+  "isolated_sdist_wheel_build": "passed",
+  "twine_check_strict": "passed",
+  "clean_repaired_wheel_smoke": "passed",
+  "runtime_without_rasterio": "passed"
+}

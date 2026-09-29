@@ -1,0 +1,33 @@
+{
+  "source": {
+    "provider": "Copernicus Sentinel-2 / Element 84",
+    "item": "S2A_32TQR_20210629_0_L2A",
+    "asset": "red",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B04.tif",
+    "bytes": 93791539,
+    "sha256": "816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c",
+    "terms": "https://registry.opendata.aws/sentinel-2-l2a-cogs/",
+    "attribution": "Contains modified Copernicus Sentinel data 2021"
+  },
+  "window": [
+    5500,
+    5250,
+    2048,
+    2048
+  ],
+  "subset": {
+    "crs": "EPSG:32632",
+    "transform": [
+      10.0,
+      0.0,
+      754960.0,
+      0.0,
+      -10.0,
+      5047500.0
+    ],
+    "width": 2048,
+    "height": 2048,
+    "pixel_sha256": "486704bbae2beab33f255ef3f31afa8dad3993ece659b5a46cdb19afe7eb387d"
+  },
+  "preview_png_sha256": "fc52f0848cecb21db4b1aff833d47f18839b80620caf13b3b8d249b4bd4006c5"
+}

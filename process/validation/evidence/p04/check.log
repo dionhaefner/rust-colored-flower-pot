@@ -1,0 +1,59 @@
+Expected transfer: 0 bytes; cache: /home/dion/codes/rust-colored-flower-pot/.cache/corpus
+Verified s2-red: 816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c
+Verified s2-green: f4966fd5f16270cf0192e9a2e06e90679806993e3886bdc0f5652debbf8af893
+Verified s2-blue: adf88aa4000396e43bc780524e16c27c19e84d1122aabc7c7523521bb5c86f54
+Verified s2-nir: cffb6749394dcd7de713d7f0ca5de8b5b84d524d9a3cbba940126ccf6c38fe60
+Verified dem: 46b61212f5850f75b5878ea1e14daaa53d3f734820adcb73f2f4f345c1130f33
+Verified worldcover: 80f665ce258f470e3d18facf5842f3451c5d66e7010d130bc2d3b1e387f8b7b4
+lagoon-red 5071590 [98.0, 14568.0] 538040
+lagoon-green 5141788 [142.0, 8864.0] 538040
+lagoon-blue 5068518 [4.0, 7848.0] 538040
+lagoon-nir 4990136 [1.0, 7780.0] 538040
+dolomites 3664486 [548.8402709960938, 3136.123291015625] 0
+landcover 197054 [10.0, 90.0] 0
+lagoon-mask 5099363 [98.0, 14568.0] 538040
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0
+benchmark: 5.3.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /home/dion/codes/rust-colored-flower-pot
+plugins: benchmark-5.3.0, cov-7.1.0
+collected 19 items
+
+process/validation/tools/test_compare.py ...................                     [100%]
+
+============================== 19 passed in 2.05s ==============================
+   Compiling terracotta v0.1.0 (/home/dion/codes/rust-colored-flower-pot)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.63s
+     Running unittests src/lib.rs (target/debug/deps/terracotta_core-6abcab0e415686f8)
+
+running 15 tests
+test execution::tests::cache_identity_covers_rendering_inputs_and_file_generation ... ok
+test execution::tests::recognizes_supported_remote_paths ... ok
+test http::tests::decodes_query_values ... ok
+test http::tests::preserves_palette_order ... ok
+test image::tests::reserves_zero_for_transparency_and_uses_even_rounding ... ok
+test lambda::tests::base64_matches_rfc_examples ... ok
+test image::tests::writes_valid_non_square_png ... ok
+test image::tests::writes_legacy_rgb_transparency ... ok
+test lambda::tests::builds_stable_v1_queries ... ok
+test raster::tests::matches_known_venice_tile ... ok
+test raster::tests::web_mercator_world_is_symmetric ... ok
+test storage::tests::checks_major_minor_versions ... ok
+test storage::tests::reads_python_created_database_and_legacy_encodings ... ok
+test expressions::tests::frozen_expression_vectors ... ok
+test storage::tests::rust_compatibility_write_round_trips ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/main.rs (target/debug/deps/terracotta-6c3995b12b24436f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests terracotta_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

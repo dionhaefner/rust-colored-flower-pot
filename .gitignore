@@ -1,7 +1,7 @@
 /.cache/
-/.venv-reference/
+/.venv*/
 /target/
-/validation/artifacts/
+/process/validation/artifacts/
 __pycache__/
 .pytest_cache/
 *.pyc
@@ -9,4 +9,4 @@ __pycache__/
 /dist/
 /*.egg-info/
 /python/*.egg-info/
-/.venv/
+TODO.md

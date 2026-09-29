@@ -811,11 +811,7 @@ fn find_gdal_library() -> Result<PathBuf> {
             path.display()
         ));
     }
-    let roots = [
-        PathBuf::from(".venv-reference/lib"),
-        PathBuf::from("/usr/lib"),
-        PathBuf::from("/usr/local/lib"),
-    ];
+    let roots = [PathBuf::from("/usr/lib"), PathBuf::from("/usr/local/lib")];
     for root in roots {
         if let Some(found) = find_named_library(&root, 5) {
             return Ok(found);

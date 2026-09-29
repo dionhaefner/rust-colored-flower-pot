@@ -15,7 +15,7 @@ use serde_json::{Map, Value};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use crate::{REFERENCE_VERSION, Result};
+use crate::{Result, TERRACOTTA_COMPATIBILITY_VERSION};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct KeyDefinition {
@@ -103,7 +103,7 @@ impl SqliteStore {
             .map_err(|error| format!("not a Terracotta database: {error}"))?;
         if major_minor(&version) != major_minor(&crate::settings::protocol_version()) {
             return Err(format!(
-                "Version conflict: database was created in v{version}, but this is compatible with v{REFERENCE_VERSION}"
+                "Version conflict: database was created in v{version}, but this is compatible with v{TERRACOTTA_COMPATIBILITY_VERSION}"
             ));
         }
 
@@ -173,7 +173,7 @@ impl SqliteStore {
         connection
             .execute(
                 "INSERT INTO terracotta (version) VALUES (?)",
-                [REFERENCE_VERSION],
+                [TERRACOTTA_COMPATIBILITY_VERSION],
             )
             .map_err(write_error)?;
         for (index, definition) in definitions.iter().enumerate() {
@@ -558,42 +558,6 @@ fn db_error(error: rusqlite::Error) -> String {
     format!("could not retrieve data: {error}")
 }
 
-/// Write one already-computed dataset using the frozen 0.10 SQLite encoding.
-///
-/// This deliberately small P03 operation proves cross-language format
-/// compatibility. Transactional create/insert/delete/overwrite APIs remain P05.
-pub fn write_compat_database(
-    path: impl AsRef<Path>,
-    definitions: &[KeyDefinition],
-    dataset: &Dataset,
-    metadata: &Metadata,
-) -> Result<()> {
-    let path = path.as_ref();
-    if path.exists() {
-        return Err(format!("refusing to replace database: {}", path.display()));
-    }
-    if definitions.is_empty() || definitions.len() != dataset.keys.len() {
-        return Err("key definitions and dataset values must have equal non-zero length".into());
-    }
-    let store = SqliteStore::create(path, definitions)?;
-    store.insert(dataset, Some(metadata))
-}
-
-pub fn copy_dataset(
-    source: impl AsRef<Path>,
-    destination: impl AsRef<Path>,
-    keys: &[String],
-) -> Result<()> {
-    let store = SqliteStore::open(source)?;
-    let dataset = store
-        .dataset(keys)?
-        .ok_or_else(|| "No dataset found".to_string())?;
-    let metadata = store
-        .metadata(keys)?
-        .ok_or_else(|| "No dataset metadata found".to_string())?;
-    write_compat_database(destination, store.keys(), &dataset, &metadata)
-}
-
 fn quote_identifier(identifier: &str) -> String {
     format!("\"{}\"", identifier.replace('"', "\"\""))
 }
@@ -613,48 +577,51 @@ mod tests {
     }
 
     #[test]
-    fn reads_python_created_database_and_legacy_encodings() {
-        let path = Path::new("validation/artifacts/capture-reproduction/reference.sqlite");
-        if !path.exists() {
-            return;
-        }
-        let store = SqliteStore::open(path).unwrap();
-        assert_eq!(store.key_names(), vec!["scene", "band"]);
-        assert_eq!(store.datasets().unwrap().len(), 7);
-        let metadata = store
-            .metadata(&["lagoon".into(), "red".into()])
-            .unwrap()
-            .unwrap();
-        assert_eq!(metadata.bounds[0], 12.254818102684911);
-        assert_eq!(metadata.bounds[1], 45.34255438818542);
-        assert_eq!(metadata.percentiles.len(), 99);
-        assert_eq!(metadata.percentiles[0], 160.0);
-        assert_eq!(metadata.percentiles[98], 2614.0);
-    }
-
-    #[test]
-    fn rust_compatibility_write_round_trips() {
-        let source = Path::new("validation/artifacts/capture-reproduction/reference.sqlite");
-        if !source.exists() {
-            return;
-        }
-        let output = std::env::temp_dir().join(format!(
-            "terracotta-p03-{}-{}.sqlite",
-            std::process::id(),
-            std::thread::current().name().unwrap_or("test")
-        ));
-        if output.exists() {
-            std::fs::remove_file(&output).unwrap();
-        }
+    fn metadata_round_trip() {
+        let source =
+            std::env::temp_dir().join(format!("rcfp-storage-{}-source.sqlite", std::process::id()));
+        let _ = std::fs::remove_file(&source);
         let keys = vec!["lagoon".into(), "red".into()];
-        copy_dataset(source, &output, &keys).unwrap();
-        let copied = SqliteStore::open(&output).unwrap();
-        assert_eq!(copied.datasets().unwrap().len(), 1);
-        assert_eq!(
-            copied.metadata(&keys).unwrap().unwrap().percentiles.len(),
-            99
-        );
-        std::fs::remove_file(output).unwrap();
+        let dataset = Dataset {
+            keys: keys.clone(),
+            path: "red.tif".into(),
+        };
+        let metadata = Metadata {
+            keys: BTreeMap::new(),
+            bounds: [12.25, 45.34, 12.50, 45.60],
+            convex_hull: serde_json::json!({"type": "Polygon", "coordinates": []}),
+            valid_percentage: 0.75,
+            range: [160.0, 2614.0],
+            mean: 1000.0,
+            stdev: 250.0,
+            percentiles: (1..=99).map(f64::from).collect(),
+            metadata: serde_json::json!({"source": "test"}),
+        };
+        let store = SqliteStore::create(
+            &source,
+            &[
+                KeyDefinition {
+                    key: "scene".into(),
+                    description: String::new(),
+                },
+                KeyDefinition {
+                    key: "band".into(),
+                    description: String::new(),
+                },
+            ],
+        )
+        .unwrap();
+        store.insert(&dataset, Some(&metadata)).unwrap();
+        drop(store);
+        let reopened = SqliteStore::open(&source).unwrap();
+        assert_eq!(reopened.key_names(), vec!["scene", "band"]);
+        assert_eq!(reopened.datasets().unwrap(), vec![dataset.clone()]);
+        let observed = reopened.metadata(&keys).unwrap().unwrap();
+        assert_eq!(observed.bounds, metadata.bounds);
+        assert_eq!(observed.percentiles, metadata.percentiles);
+        assert_eq!(observed.metadata, metadata.metadata);
+        drop(reopened);
+        std::fs::remove_file(source).unwrap();
     }
 }
 
@@ -663,10 +630,8 @@ mod write_tests {
     use super::*;
     #[test]
     fn nested_write_failure_and_unwind_restore_the_original_dataset() {
-        let path = std::env::temp_dir().join(format!(
-            "terracotta-p05-{}-transaction.sqlite",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("rcfp-transaction-{}.sqlite", std::process::id()));
         let _ = std::fs::remove_file(&path);
         let store = SqliteStore::create(
             &path,

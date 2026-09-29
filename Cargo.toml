@@ -41,9 +41,9 @@ path = "src/main.rs"
 storage-integration = []
 
 [[test]]
-name = "p06_remote"
+name = "storage_remote"
 required-features = ["storage-integration"]
 
 [[test]]
-name = "p06_sql"
+name = "storage_sql"
 required-features = ["storage-integration"]

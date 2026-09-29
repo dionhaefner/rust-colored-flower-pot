@@ -1,9 +1,9 @@
-//! Frozen 0.7 -> 0.10 upgrades. No production mutation is performed by tests.
+//! Supported 0.7 through 0.10 database upgrades.
 use super::{
     provider::{Provider, SqlPath, local_path},
     relational::Connection,
 };
-use crate::{REFERENCE_VERSION, Result};
+use crate::{Result, TERRACOTTA_COMPATIBILITY_VERSION};
 use std::io::{BufRead, Write};
 
 type Version = (u32, u32);
@@ -22,10 +22,10 @@ fn version(text: &str) -> Result<Version> {
 pub fn chain(from: &str, to: &str) -> Result<Vec<String>> {
     let from = version(from)?;
     let to = version(to)?;
-    if to > version(REFERENCE_VERSION)? {
+    if to > version(TERRACOTTA_COMPATIBILITY_VERSION)? {
         return Err(format!(
-            "Unknown target version v{}.{} (this is {}). Try upgrading terracotta.",
-            to.0, to.1, REFERENCE_VERSION
+            "Unknown target version v{}.{} (this is {}). Choose a supported target version.",
+            to.0, to.1, TERRACOTTA_COMPATIBILITY_VERSION
         ));
     }
     if from == to {
@@ -118,8 +118,12 @@ impl MigrationConnection {
     }
 }
 pub fn command(args: &[String]) -> Result<()> {
-    let (mut database, mut from, mut to, mut provider) =
-        (None, None, REFERENCE_VERSION.to_owned(), None);
+    let (mut database, mut from, mut to, mut provider) = (
+        None,
+        None,
+        TERRACOTTA_COMPATIBILITY_VERSION.to_owned(),
+        None,
+    );
     let mut yes = false;
     let mut i = 0;
     while i < args.len() {
@@ -136,9 +140,7 @@ pub fn command(args: &[String]) -> Result<()> {
                 }
             }
             "--help" | "-h" => {
-                println!(
-                    "Usage: terracotta migrate DATABASE [--from VERSION] [--to VERSION] [-y|--yes]"
-                );
+                println!("Usage: rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y|--yes]");
                 return Ok(());
             }
             s if !s.starts_with('-') && database.is_none() => database = Some(s.to_owned()),
@@ -146,10 +148,10 @@ pub fn command(args: &[String]) -> Result<()> {
         }
         i += 1;
     }
-    // Validate target before accessing the database, matching the legacy CLI.
-    if version(&to)? > version(REFERENCE_VERSION)? {
+    // Validate the target before accessing the database.
+    if version(&to)? > version(TERRACOTTA_COMPATIBILITY_VERSION)? {
         return Err(format!(
-            "Unknown target version {to}. Try upgrading terracotta."
+            "Unknown target version {to}. Choose a supported target version."
         ));
     }
     let path = database.ok_or("migrate requires DATABASE")?;

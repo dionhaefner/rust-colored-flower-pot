@@ -2,8 +2,8 @@
 set -euo pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-bundle=${1:-"$root/validation/artifacts/p03-bundle"}
-output=${2:-"$root/validation/artifacts/p03-lambda"}
+bundle=${1:-"$root/dist/bundle"}
+output=${2:-"$root/dist/lambda"}
 bundle=$(realpath "$bundle")
 output=$(realpath -m "$output")
 
@@ -13,8 +13,8 @@ if [[ -e "$output" ]]; then
 fi
 mkdir -p "$output/package"
 cp -a "$bundle" "$output/package/runtime"
-if [[ -n "${TERRACOTTA_LAMBDA_TARGET:-}" ]]; then
-    lambda_target=$(realpath "$TERRACOTTA_LAMBDA_TARGET")
+if [[ -n "${RCFP_LAMBDA_TARGET:-}" ]]; then
+    lambda_target=$(realpath "$RCFP_LAMBDA_TARGET")
     cp "$lambda_target/release/rcfp" "$output/package/runtime/bin/rcfp"
     cp "$lambda_target/release/librcfp_core.so" "$output/package/runtime/lib/librcfp_core.so"
     cp -a "$lambda_target/runtime-libs/." "$output/package/runtime/lib/"

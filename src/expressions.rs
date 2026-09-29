@@ -530,15 +530,12 @@ fn cast(value: f64, kind: Kind) -> f64 {
 mod tests {
     use super::*;
     #[test]
-    fn frozen_expression_vectors() {
+    fn expression_contract_vectors() {
         let fixture: serde_json::Value =
-            serde_json::from_str(include_str!("../validation/reference/p04-expressions.json"))
-                .unwrap();
+            serde_json::from_str(include_str!("../tests/fixtures/expressions.json")).unwrap();
         check_fixture(&fixture);
-        let suites: Vec<serde_json::Value> = serde_json::from_str(include_str!(
-            "../validation/reference/p04-expression-types.json"
-        ))
-        .unwrap();
+        let suites: Vec<serde_json::Value> =
+            serde_json::from_str(include_str!("../tests/fixtures/expression-types.json")).unwrap();
         for fixture in suites {
             check_fixture(&fixture);
         }

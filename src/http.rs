@@ -222,7 +222,7 @@ impl Application {
                 .map_err(|error| format!("could not start HTTP worker: {error}"))?;
         }
         eprintln!(
-            "Terracotta P07 listening on http://{address} (HTTP workers {}, raster workers {}, queue {})",
+            "RCFP listening on http://{address} (HTTP workers {}, raster workers {}, queue {})",
             http_workers,
             application.executor.metrics().workers,
             http_queue_capacity
@@ -352,8 +352,8 @@ impl Application {
             "/metadata" => self.batch_metadata(&parameters, body, content_type),
             "/colormap" => self.colormap(&parameters),
             "/swagger.json" => {
-                let mut spec: Value =
-                    serde_json::from_str(include_str!("assets/swagger.json")).expect("frozen spec");
+                let mut spec: Value = serde_json::from_str(include_str!("assets/swagger.json"))
+                    .expect("embedded spec");
                 update_palette_enums(&mut spec, &self.palettes);
                 json_response(200, &spec)
             }
@@ -523,10 +523,8 @@ impl Application {
             200,
             &json!({
                 "implementation": crate::IMPLEMENTATION_VERSION,
-                "protocol_compatibility": crate::REFERENCE_VERSION,
-                "database_compatibility": crate::DATABASE_COMPATIBILITY,
-                "reference_commit": crate::REFERENCE_COMMIT,
-                "phase": "P05"
+                "protocol_compatibility": crate::TERRACOTTA_COMPATIBILITY_VERSION,
+                "database_compatibility": crate::DATABASE_COMPATIBILITY
             }),
         )
     }
@@ -674,7 +672,7 @@ impl Application {
             if components[key_count] != "preview.png" {
                 return Err("invalid singleband preview route".into());
             }
-            // The reference frames previews from the raster's transformed
+            // Terracotta 0.10.1 frames previews from the raster's transformed
             // source bounds, not by projecting the metadata bounding box.
             None
         } else {

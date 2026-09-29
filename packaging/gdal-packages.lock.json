@@ -1,0 +1,1050 @@
+{
+  "x86_64": [
+    {
+      "name": "_openmp_mutex",
+      "version": "4.5",
+      "filename": "_openmp_mutex-4.5-20_gnu.conda",
+      "sha256": "1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9",
+      "size": 28948,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "blosc",
+      "version": "1.21.6",
+      "filename": "blosc-1.21.6-he440d0b_1.conda",
+      "sha256": "e7af5d1183b06a206192ff440e08db1c4e8b2ca1f8376ee45fb2f3a85d4ee45d",
+      "size": 48427,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "bzip2",
+      "version": "1.0.8",
+      "filename": "bzip2-1.0.8-hda65f42_10.conda",
+      "sha256": "1a0d382c515ebf55f8ee1f38c8b81bc95af5c2acc42ad53b66bc5df932032f96",
+      "size": 257808,
+      "license": "bzip2-1.0.6",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "c-ares",
+      "version": "1.34.8",
+      "filename": "c-ares-1.34.8-hebe6cf0_2.conda",
+      "sha256": "9c37cc233238adf366ea75b0e845662a5be07ceadf62e458183516369340274b",
+      "size": 228700,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "ca-certificates",
+      "version": "2026.7.22",
+      "filename": "ca-certificates-2026.7.22-hbd8a1cb_0.conda",
+      "sha256": "0a0544cf95f64394fe4959286f5c71f5444ad58feb0602e53becb27448d24da6",
+      "size": 131780,
+      "license": "ISC",
+      "subdir": "noarch"
+    },
+    {
+      "name": "freexl",
+      "version": "2.0.0",
+      "filename": "freexl-2.0.0-h1f12c17_3.conda",
+      "sha256": "2be93e21acabadd6f32a830f328d23e4c6369898df0f69396c2c37be6ef0d15e",
+      "size": 61572,
+      "license": "MPL-1.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "geos",
+      "version": "3.14.1",
+      "filename": "geos-3.14.1-h55b0958_0.conda",
+      "sha256": "dc9f03bef913c8b3c94e93a61318b7437bd5e4f7136ef841e68df8de082405d5",
+      "size": 2002850,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "geotiff",
+      "version": "1.7.4",
+      "filename": "geotiff-1.7.4-h1000f5c_4.conda",
+      "sha256": "d17e2f34fe5c61eb620e8679368d8ee90be36379cd6023f8690bdcba1c60761c",
+      "size": 144495,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "giflib",
+      "version": "5.2.2",
+      "filename": "giflib-5.2.2-ha257d8a_1.conda",
+      "sha256": "3611c5d605cd56017704e6c01c7bd849e74a656a546d4c49d655fde49ddfeecc",
+      "size": 77403,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "icu",
+      "version": "78.3",
+      "filename": "icu-78.3-py310h44b86e0_2.conda",
+      "sha256": "9f07834f0c546ab14d885ce0366285f61f44e326c0edd1fc63b8294e113ae432",
+      "size": 14459115,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "json-c",
+      "version": "0.18",
+      "filename": "json-c-0.18-hebe6cf0_2.conda",
+      "sha256": "78ec5a672acc8a6bf9c74268b88a72230809517aebe75a11acf959d3f9a63fe0",
+      "size": 90204,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "keyutils",
+      "version": "1.6.3",
+      "filename": "keyutils-1.6.3-h7cc23a3_1.conda",
+      "sha256": "dd053c96dcb0dcfd59422aefea9d2fe937a190167f34fba7893ec1e10a7e8963",
+      "size": 135295,
+      "license": "LGPL-2.1-or-later",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "krb5",
+      "version": "1.22.2",
+      "filename": "krb5-1.22.2-hbc21106_2.conda",
+      "sha256": "2a5c38c85e63df84c4e69ee71439841ce570d259ae3060627bb9a49a938d66f4",
+      "size": 1394333,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "lerc",
+      "version": "4.2.0",
+      "filename": "lerc-4.2.0-hdb68285_0.conda",
+      "sha256": "bf9fdebf55d8bc99d83531cdffda00703f4dc5f93a1a956768c147362c72feda",
+      "size": 271158,
+      "license": "Apache-2.0",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libarchive",
+      "version": "3.8.9",
+      "filename": "libarchive-3.8.9-gpl_h3152399_101.conda",
+      "sha256": "bfae027a67d02325cd6b75edd60beb67cf24483af9df0ae9ef74d4438e41c806",
+      "size": 875346,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libcurl",
+      "version": "8.22.0",
+      "filename": "libcurl-8.22.0-ha042cf0_0.conda",
+      "sha256": "483b7eb97f56fbb3a9cb7190d33012dfa0a5aaed99ede61465563cd97dd82504",
+      "size": 499651,
+      "license": "curl",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libdeflate",
+      "version": "1.25",
+      "filename": "libdeflate-1.25-hd45a770_1.conda",
+      "sha256": "82e134c8a08b1eed9a2ed8ab578b89aa1730dcde3dea8dd87645ed0637878e54",
+      "size": 73710,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libedit",
+      "version": "3.1.20250104",
+      "filename": "libedit-3.1.20250104-pl5321h373387f_1.conda",
+      "sha256": "6473eb8caf2aae830f37caa93db9b26dddf7ac84b63229e8bf7fc0e5c3ab95b0",
+      "size": 135098,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libev",
+      "version": "4.33",
+      "filename": "libev-4.33-h280c20c_3.conda",
+      "sha256": "e4418f68d01a6307c4431b585c71b584f40189877364e542ee87deb777f5e85b",
+      "size": 43220,
+      "license": "BSD-2-Clause OR GPL-2.0-or-later",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libexpat",
+      "version": "2.8.5",
+      "filename": "libexpat-2.8.5-hd2095e1_0.conda",
+      "sha256": "6de73033a7c5f712c9c5a54124e4581e025691029835e5bceaf10a333a7e7bc0",
+      "size": 77893,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libgcc",
+      "version": "16.2.0",
+      "filename": "libgcc-16.2.0-ha9f2e26_7.conda",
+      "sha256": "e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea",
+      "size": 1058444,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libgcc-ng",
+      "version": "16.2.0",
+      "filename": "libgcc-ng-16.2.0-h69a702a_7.conda",
+      "sha256": "03b54d7008de080a17cc2174b0e4acd6d06e1c981b2eb19846f46d8f59966034",
+      "size": 28616,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libgdal-core",
+      "version": "3.10.3",
+      "filename": "libgdal-core-3.10.3-h1f481a6_27.conda",
+      "sha256": "ec121a0e7b0577d278c94781cc763f3fece3eba9db86ef5a9fa5b31511157671",
+      "size": 10979930,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libgomp",
+      "version": "16.2.0",
+      "filename": "libgomp-16.2.0-he0feb66_7.conda",
+      "sha256": "92a0bb350c7be6a4eedcb4e111c60aefd176018e6b1c009a6e025dbe9bbcd758",
+      "size": 640566,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libiconv",
+      "version": "1.18",
+      "filename": "libiconv-1.18-h0cb94f2_3.conda",
+      "sha256": "f943117edb9cd4d9c61cc972eee5a34291dc55ea7a6e9e38da104995841cbcb6",
+      "size": 789471,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "version": "3.2.0",
+      "filename": "libjpeg-turbo-3.2.0-hb03c661_1.conda",
+      "sha256": "bba8538e6538ed58a8479b332337b96986561f975d06cfa2039a016c2d246ee4",
+      "size": 650434,
+      "license": "IJG AND BSD-3-Clause AND Zlib",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libkml",
+      "version": "1.3.0",
+      "filename": "libkml-1.3.0-haa4a5bd_1023.conda",
+      "sha256": "f6348ac9cebbc03f765ea6d2da88d57d19531585c8f3a963b98635b208e8bef1",
+      "size": 412514,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "liblzma",
+      "version": "5.8.3",
+      "filename": "liblzma-5.8.3-hb03c661_1.conda",
+      "sha256": "9787df8c22a59c9a70d3e5a10db9ad663485e75e9ccc3f09bd092cb7b95e0dab",
+      "size": 112995,
+      "license": "0BSD",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libnghttp2",
+      "version": "1.68.1",
+      "filename": "libnghttp2-1.68.1-h74cf4be_1.conda",
+      "sha256": "11a2f54a6f391e25738bce0023e6ef499600147bbcf21c1fa69d2e251b03cc6a",
+      "size": 649974,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libnsl",
+      "version": "2.0.1",
+      "filename": "libnsl-2.0.1-hb9d3cd8_1.conda",
+      "sha256": "927fe72b054277cde6cb82597d0fcf6baf127dcbce2e0a9d8925a68f1265eef5",
+      "size": 33731,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.58",
+      "filename": "libpng-1.6.58-h922cc85_1.conda",
+      "sha256": "c19eefb87d70d9b4b0629fa48414a155a47a1be4f04583ae71ed8c5a9a32fdcb",
+      "size": 316643,
+      "license": "zlib-acknowledgement",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libpsl",
+      "version": "0.23.1",
+      "filename": "libpsl-0.23.1-hd9e3e90_1.conda",
+      "sha256": "09e8effdc89bc5d021349318d32b85594f5b8d8e3ab8f90a85b81f8fe695a566",
+      "size": 72519,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "librttopo",
+      "version": "1.1.0",
+      "filename": "librttopo-1.1.0-h55b0958_21.conda",
+      "sha256": "1a3c7f637bfac44e7afee097f08b5ae0c367194f9608daea314ab616dc7757e0",
+      "size": 234367,
+      "license": "GPL-2.0-or-later",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libspatialite",
+      "version": "5.1.0",
+      "filename": "libspatialite-5.1.0-gpl_h2abfd87_119.conda",
+      "sha256": "403c1ad74ee70caaac02216a233ef9ec4531497ee14e7fea93a254a005ece88d",
+      "size": 4097449,
+      "license": "MPL-1.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libsqlite",
+      "version": "3.53.4",
+      "filename": "libsqlite-3.53.4-h13e7031_1.conda",
+      "sha256": "f20d70da54e5b31dd4a51fb1efeaafafd5ab6dd8d7ac9d1438eaa2526ac4ed3d",
+      "size": 974348,
+      "license": "blessing",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libssh2",
+      "version": "1.11.1",
+      "filename": "libssh2-1.11.1-h6154650_1.conda",
+      "sha256": "7e463000fa1cba3f3a6597b776f6ab301d425a96e3bc20d0d9d76a3b9f237aa3",
+      "size": 306045,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libstdcxx",
+      "version": "16.2.0",
+      "filename": "libstdcxx-16.2.0-h934c35e_7.conda",
+      "sha256": "fa7018298629fc429971fffd6ecba3d27a7b02e4e890d6a93ea01ffebe8cb745",
+      "size": 6615436,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libstdcxx-ng",
+      "version": "16.2.0",
+      "filename": "libstdcxx-ng-16.2.0-hdf11a46_7.conda",
+      "sha256": "337f481db36cc357884f05f404ccd1b3a7e0fc1ee48ec5c884e4281d213bc863",
+      "size": 28665,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libtiff",
+      "version": "4.7.2",
+      "filename": "libtiff-4.7.2-hcc2c06a_1.conda",
+      "sha256": "10e125da82ca93e09191e66e5a94d566b2cf8d4024e2a0db3a9114297447e0d9",
+      "size": 459753,
+      "license": "HPND",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libwebp-base",
+      "version": "1.6.0",
+      "filename": "libwebp-base-1.6.0-hd42ef1d_1.conda",
+      "sha256": "8415001414f488c85b72b9d8cc2071dfb3981a47bc3c8eb56ef91a57d12eae7f",
+      "size": 428430,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libxml2",
+      "version": "2.15.4",
+      "filename": "libxml2-2.15.4-h7df9aa5_0.conda",
+      "sha256": "053d85821ce5e36b7ce03faea5930382f6af695df9e2cd68e5d8d273072d1551",
+      "size": 47077,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libxml2-16",
+      "version": "2.15.4",
+      "filename": "libxml2-16-2.15.4-hf3af7cc_0.conda",
+      "sha256": "9a1685c8d8b8488cd7882a9cd6e673e687211ca763ebbcd1e91b6f594eeadc45",
+      "size": 569196,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libxml2-devel",
+      "version": "2.15.4",
+      "filename": "libxml2-devel-2.15.4-h7df9aa5_0.conda",
+      "sha256": "17cf9286fd38ced7b101f2f778b8288612432d451c8bd26fb9aa0a6088dfee5d",
+      "size": 80619,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "libzlib",
+      "version": "1.3.2",
+      "filename": "libzlib-1.3.2-h25fd6f3_3.conda",
+      "sha256": "eb8a0db0aa570124f7d2a93d7c7f596e3390df5e047818d873baad32985fc736",
+      "size": 63713,
+      "license": "Zlib",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "lz4-c",
+      "version": "1.10.0",
+      "filename": "lz4-c-1.10.0-hee9eb32_2.conda",
+      "sha256": "b8c0e930183e6b7f83cd35ace102f2b8c2f0faae41dc05255dc72f247dfc556a",
+      "size": 181812,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "lzo",
+      "version": "2.10",
+      "filename": "lzo-2.10-hebe6cf0_1003.conda",
+      "sha256": "a0a1400198e5302d8367f2ed53437ee3cc41dbc463cb481921ce765578780b7a",
+      "size": 191573,
+      "license": "GPL-2.0-or-later",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "minizip",
+      "version": "4.2.2",
+      "filename": "minizip-4.2.2-haac24f3_1.conda",
+      "sha256": "75384c7e6ea3cd72969c0163ec52ddaed08590bb292e959d1afd2a6ffcc237a6",
+      "size": 566663,
+      "license": "Zlib",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "ncurses",
+      "version": "6.6",
+      "filename": "ncurses-6.6-hdb14827_1.conda",
+      "sha256": "5d46557214ed184381dafe835b7c94a474a1c3b307a08a250b1ea4779b44ffb3",
+      "size": 911196,
+      "license": "X11 AND BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "openssl",
+      "version": "3.6.4",
+      "filename": "openssl-3.6.4-h781a0a9_0.conda",
+      "sha256": "4747b2d6a8336f52343bceb8a1ebf41a9e6e665b9d2e3f989972de53a310599e",
+      "size": 3202955,
+      "license": "Apache-2.0",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "pcre2",
+      "version": "10.47",
+      "filename": "pcre2-10.47-h8b3dc9c_1.conda",
+      "sha256": "9ebb10a4eb3be51ae67d85c679f5a7a50cb040ed25c783e6331a225ea09991d4",
+      "size": 1218833,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "proj",
+      "version": "9.7.1",
+      "filename": "proj-9.7.1-he0df7b0_3.conda",
+      "sha256": "c94d3d8ef40d1ea018860d66c416003bc03adede7d212efc9218bb64041fe2f7",
+      "size": 3593669,
+      "license": "MIT",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "readline",
+      "version": "8.3",
+      "filename": "readline-8.3-hd6e31c0_1.conda",
+      "sha256": "01b3fe073a66e321970d09e04b388708f8cbdca5cdfbfcb7c9eeb470ad10383d",
+      "size": 348899,
+      "license": "GPL-3.0-only",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "snappy",
+      "version": "1.2.2",
+      "filename": "snappy-1.2.2-h34e00bb_2.conda",
+      "sha256": "8635d10c7f127808b09c0c8e77b21a255829e0934e49326548c949f7e0551f09",
+      "size": 45695,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "sqlite",
+      "version": "3.53.4",
+      "filename": "sqlite-3.53.4-h9ffa6c4_1.conda",
+      "sha256": "b01812eff4e950a73933cb3dc14647a97ee377c7fab4858495b80a749ebfbf8b",
+      "size": 205686,
+      "license": "blessing",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "uriparser",
+      "version": "0.9.8",
+      "filename": "uriparser-0.9.8-hac33072_0.conda",
+      "sha256": "2aad2aeff7c69a2d7eecd7b662eef756b27d6a6b96f3e2c2a7071340ce14543e",
+      "size": 48270,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "xerces-c",
+      "version": "3.3.0",
+      "filename": "xerces-c-3.3.0-h78fed68_2.conda",
+      "sha256": "1acbd62b33b6efc985f70e0b9f0013ca18fcef2df5a18edb1c81a6b63ad20dc0",
+      "size": 1675829,
+      "license": "Apache-2.0",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.2",
+      "filename": "zlib-1.3.2-h25fd6f3_3.conda",
+      "sha256": "16080a1c7724f7d25727cdc23c7658e0cec2db52448c1dc0c33467ee2c6e1c62",
+      "size": 96132,
+      "license": "Zlib",
+      "subdir": "linux-64"
+    },
+    {
+      "name": "zstd",
+      "version": "1.5.7",
+      "filename": "zstd-1.5.7-hb78ec9c_7.conda",
+      "sha256": "47d682b9f6d6ec9eb1a6e6c3e75ea6273e899e78fb7fc59f81d39745009fbc60",
+      "size": 601301,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-64"
+    }
+  ],
+  "aarch64": [
+    {
+      "name": "_openmp_mutex",
+      "version": "4.5",
+      "filename": "_openmp_mutex-4.5-20_gnu.conda",
+      "sha256": "a2527b1d81792a0ccd2c05850960df119c2b6d8f5fdec97f2db7d25dc23b1068",
+      "size": 28926,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "blosc",
+      "version": "1.21.6",
+      "filename": "blosc-1.21.6-hb4dfabd_1.conda",
+      "sha256": "f1e408fc32e1fda8dee9c3fceee5650fd622526e4dc6fa1f1926f497b5508d13",
+      "size": 36414,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "bzip2",
+      "version": "1.0.8",
+      "filename": "bzip2-1.0.8-h4777abc_10.conda",
+      "sha256": "24eacc8a20fd7c4616566178562bef7f9344eb4a8700cfc3180fa75a6ff9d39f",
+      "size": 194694,
+      "license": "bzip2-1.0.6",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "c-ares",
+      "version": "1.34.8",
+      "filename": "c-ares-1.34.8-h29ee22c_2.conda",
+      "sha256": "3838d10a78c206a1a4ec7ff041880b4f9b8ecde3520c911daae9e06baeb8858e",
+      "size": 241210,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "ca-certificates",
+      "version": "2026.7.22",
+      "filename": "ca-certificates-2026.7.22-hbd8a1cb_0.conda",
+      "sha256": "0a0544cf95f64394fe4959286f5c71f5444ad58feb0602e53becb27448d24da6",
+      "size": 131780,
+      "license": "ISC",
+      "subdir": "noarch"
+    },
+    {
+      "name": "freexl",
+      "version": "2.0.0",
+      "filename": "freexl-2.0.0-hb8db170_3.conda",
+      "sha256": "6abccced2944ecc9097e27508cd848acfec3b67a83fd06ca23fc92086e54d7a1",
+      "size": 64030,
+      "license": "MPL-1.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "geos",
+      "version": "3.14.1",
+      "filename": "geos-3.14.1-h0baed54_0.conda",
+      "sha256": "d36a932ce5daf43d83cd005ff9614bbc8fd97882e4d1b285d1c2905c71d5dfc8",
+      "size": 1962101,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "geotiff",
+      "version": "1.7.4",
+      "filename": "geotiff-1.7.4-h3659d56_4.conda",
+      "sha256": "3285f0f54174090e33f08f68c591a71b37bbce2c5f64400c10c561ad1cba04df",
+      "size": 154520,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "giflib",
+      "version": "5.2.2",
+      "filename": "giflib-5.2.2-h5dd31e5_1.conda",
+      "sha256": "bcba20fab38b359fe982bd004e0b28e5ecfa07e43ca03733db2f6f26fad68f8f",
+      "size": 83028,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "icu",
+      "version": "78.3",
+      "filename": "icu-78.3-py311h3512406_2.conda",
+      "sha256": "54d921defd947adb58a90e10203d3bfe6c1f209f5f1a1ad2c6a9f7617f2fb59e",
+      "size": 14688525,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "json-c",
+      "version": "0.18",
+      "filename": "json-c-0.18-h29ee22c_2.conda",
+      "sha256": "b26d0c7ec2bd6c7e6d7cc8ae6fa1e8c60f1fbda07327a56225f8f487c37e71e5",
+      "size": 97284,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "keyutils",
+      "version": "1.6.3",
+      "filename": "keyutils-1.6.3-h5bc82ec_1.conda",
+      "sha256": "3999b1472f1e549a0b766428e2823abf20626aac5314b474c9b76bf6eb679def",
+      "size": 129546,
+      "license": "LGPL-2.1-or-later",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "krb5",
+      "version": "1.22.2",
+      "filename": "krb5-1.22.2-h095d8e5_2.conda",
+      "sha256": "601d79af94d9562ba70e2d4947034ba159aae293a3c860855335a7c76c14400e",
+      "size": 1538590,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "lerc",
+      "version": "4.2.0",
+      "filename": "lerc-4.2.0-h52b7260_0.conda",
+      "sha256": "0176a71d64fcb5aec43c9e8ab4ae72faa6c6b0b1cda8f40b65e19429ce13c84d",
+      "size": 244850,
+      "license": "Apache-2.0",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libarchive",
+      "version": "3.8.9",
+      "filename": "libarchive-3.8.9-gpl_h1204ebd_101.conda",
+      "sha256": "5f6a00f0fdefd023b45d9688d3b74e73f9e996a2ae73d976bf8215194d8c183f",
+      "size": 1006265,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libcurl",
+      "version": "8.22.0",
+      "filename": "libcurl-8.22.0-h86273da_0.conda",
+      "sha256": "8634a43ca7161d49b94098d8d27f32040ccf19b5227b37d05826ec8b5729b3c4",
+      "size": 524318,
+      "license": "curl",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libdeflate",
+      "version": "1.25",
+      "filename": "libdeflate-1.25-hfa851ae_1.conda",
+      "sha256": "4cb3da1d4ce7540604219d2a016253777da66c1a710c41557bc708aae7f54a75",
+      "size": 71628,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libedit",
+      "version": "3.1.20250104",
+      "filename": "libedit-3.1.20250104-pl5321hc48eb74_1.conda",
+      "sha256": "2d7218da06f1121619335bff25a2669df810dee90d2eb65b17f8b2e6b1c0d372",
+      "size": 149007,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libev",
+      "version": "4.33",
+      "filename": "libev-4.33-h80f16a2_3.conda",
+      "sha256": "4475f79a020e9ff2a5a0308c48cb2970a25d55c3dd724a97ab28bfac3be6cd49",
+      "size": 45746,
+      "license": "BSD-2-Clause OR GPL-2.0-or-later",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libexpat",
+      "version": "2.8.5",
+      "filename": "libexpat-2.8.5-h4154aff_0.conda",
+      "sha256": "d155b9ee74abac0865095a66ebb008be967937a6deea6e7666ba01ead4a155fc",
+      "size": 79463,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libgcc",
+      "version": "16.2.0",
+      "filename": "libgcc-16.2.0-h205dda4_7.conda",
+      "sha256": "eae7a3449d5a3b5351c5427137c076cc3fc826645c7bfc42dc10772b783826f1",
+      "size": 627793,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libgcc-ng",
+      "version": "16.2.0",
+      "filename": "libgcc-ng-16.2.0-he9431aa_7.conda",
+      "sha256": "d7502682cfce6f51aabd40bba63cd6b46db3d3e4b67abdb00f54ae72332523db",
+      "size": 28711,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libgdal-core",
+      "version": "3.10.3",
+      "filename": "libgdal-core-3.10.3-h2d6ad6d_27.conda",
+      "sha256": "6c093f5aef70519ecd30d7db5210ee2c448c12883eb2c659161d3292a9eb08ac",
+      "size": 10834505,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libgomp",
+      "version": "16.2.0",
+      "filename": "libgomp-16.2.0-h8acb6b2_7.conda",
+      "sha256": "4406fd67c5beeb99b9372f9bf07aa3e40ca141e337eceebac3ff64aa72799494",
+      "size": 617342,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libiconv",
+      "version": "1.18",
+      "filename": "libiconv-1.18-h1ea5142_3.conda",
+      "sha256": "d22c666eb887afd2119aac2110e23a0e817e9391bda99293421f7c46dab1564c",
+      "size": 785924,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "version": "3.2.0",
+      "filename": "libjpeg-turbo-3.2.0-he30d5cf_1.conda",
+      "sha256": "c5626ea672be2e59784f9be20dc8ceb7961b8ab0053651ded2dffec64e4b8245",
+      "size": 716519,
+      "license": "IJG AND BSD-3-Clause AND Zlib",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libkml",
+      "version": "1.3.0",
+      "filename": "libkml-1.3.0-h39bb75a_1023.conda",
+      "sha256": "7744cd3f8c925209355d68bc04c904e6b2e1528ad996ae4f0d4718912e5be712",
+      "size": 378783,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "liblzma",
+      "version": "5.8.3",
+      "filename": "liblzma-5.8.3-he30d5cf_1.conda",
+      "sha256": "f760669fd1cea27f689f411c0d5488e26ce50e382c9b63e4ad348f959850124a",
+      "size": 125578,
+      "license": "0BSD",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libnghttp2",
+      "version": "1.68.1",
+      "filename": "libnghttp2-1.68.1-ha4b982d_1.conda",
+      "sha256": "0c28d734512fa2c66a232b2f3968eae7124dbd6ad42c594c752f1d08dfb86195",
+      "size": 734829,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libnsl",
+      "version": "2.0.1",
+      "filename": "libnsl-2.0.1-h86ecc28_1.conda",
+      "sha256": "c0dc4d84198e3eef1f37321299e48e2754ca83fd12e6284754e3cb231357c3a5",
+      "size": 34831,
+      "license": "LGPL-2.1-only",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.58",
+      "filename": "libpng-1.6.58-hf9b7768_1.conda",
+      "sha256": "bd6e423b08342969689d8893c965aad78244b29724da2168aef3634fa0e1ebd7",
+      "size": 333238,
+      "license": "zlib-acknowledgement",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libpsl",
+      "version": "0.23.1",
+      "filename": "libpsl-0.23.1-hb8431ed_1.conda",
+      "sha256": "757f79c182ac3080cf416acd91c7643b8074b8b2e5c1eba0ffc5a16897feb84b",
+      "size": 73118,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "librttopo",
+      "version": "1.1.0",
+      "filename": "librttopo-1.1.0-h0baed54_21.conda",
+      "sha256": "e1db06c7e31563859c92f20222a848b2108c06b87afe44547c52900f6b706602",
+      "size": 261543,
+      "license": "GPL-2.0-or-later",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libspatialite",
+      "version": "5.1.0",
+      "filename": "libspatialite-5.1.0-gpl_h71351b9_119.conda",
+      "sha256": "ca66f67df8926cb1321ed3b5d9fc7280bb452cdeed4d5891b6c9b339638cf4d1",
+      "size": 3131728,
+      "license": "MPL-1.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libsqlite",
+      "version": "3.53.4",
+      "filename": "libsqlite-3.53.4-h399dd60_1.conda",
+      "sha256": "fae75e68e9dbc3c90dcf93d4bae6315f1330c95aaf1404a721e8468266c23475",
+      "size": 972932,
+      "license": "blessing",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libssh2",
+      "version": "1.11.1",
+      "filename": "libssh2-1.11.1-h7572e3e_1.conda",
+      "sha256": "f6fef76c1c8899d7976030871b8cd8016b0a306d2b8519834cd6491d6a42fb82",
+      "size": 315682,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libstdcxx",
+      "version": "16.2.0",
+      "filename": "libstdcxx-16.2.0-hef695bb_7.conda",
+      "sha256": "b241a3acfa9cdb1359112864a1241225533c92642de3000d52ae65ef5d3a9786",
+      "size": 6236630,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libstdcxx-ng",
+      "version": "16.2.0",
+      "filename": "libstdcxx-ng-16.2.0-hdbbeba8_7.conda",
+      "sha256": "cfe644e4cf78302e605f7dc1cfa23ee4edabf5b72f84c92436f5f51c3003542c",
+      "size": 28760,
+      "license": "GPL-3.0-only WITH GCC-exception-3.1",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libtiff",
+      "version": "4.7.2",
+      "filename": "libtiff-4.7.2-h45f9f85_1.conda",
+      "sha256": "fa6daf2301dee912def3e74344fae792a8fc2bbbf7880dedee0e93ee8fb98fc5",
+      "size": 529726,
+      "license": "HPND",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libwebp-base",
+      "version": "1.6.0",
+      "filename": "libwebp-base-1.6.0-ha2e29f5_1.conda",
+      "sha256": "4c64e6843d64876d054a28ecbab70abdf145da3c2cbdaa4a43db26cdf0fd760b",
+      "size": 357551,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libxml2",
+      "version": "2.15.4",
+      "filename": "libxml2-2.15.4-h92b9305_0.conda",
+      "sha256": "3345c88fa9ebb373bcf4069ede898950005fa2d1707e56a13a1ac6339919492f",
+      "size": 48693,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libxml2-16",
+      "version": "2.15.4",
+      "filename": "libxml2-16-2.15.4-h2e5089f_0.conda",
+      "sha256": "58bf7fcf64bae7f624a5e2aed860ddea614a8ec13c8c43fe150420a275b8bdb5",
+      "size": 631072,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libxml2-devel",
+      "version": "2.15.4",
+      "filename": "libxml2-devel-2.15.4-h92b9305_0.conda",
+      "sha256": "bb6296ede37ade636450eb062ed9fee10dc2a708d8387fcec5523c7b807e863d",
+      "size": 80292,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "libzlib",
+      "version": "1.3.2",
+      "filename": "libzlib-1.3.2-hdc9db2a_3.conda",
+      "sha256": "76efa6cc9d7e6f5ee3bbca0939f64054af2bdfb3c3632531f8e633cf6c2ea41e",
+      "size": 70108,
+      "license": "Zlib",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "lz4-c",
+      "version": "1.10.0",
+      "filename": "lz4-c-1.10.0-hfb11796_2.conda",
+      "sha256": "e8392843a18954fef038f2721fde65c4dbe7693fcd07677e5e74fca85b1a690c",
+      "size": 218765,
+      "license": "BSD-2-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "lzo",
+      "version": "2.10",
+      "filename": "lzo-2.10-h29ee22c_1003.conda",
+      "sha256": "37ef465819e0a28d96a527a536106d21624ada3b15a798a98efd741be25ff4aa",
+      "size": 212884,
+      "license": "GPL-2.0-or-later",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "minizip",
+      "version": "4.2.2",
+      "filename": "minizip-4.2.2-h8279b29_1.conda",
+      "sha256": "71ea70aca52256ca084cc082d558cd27a6326b987d0a778d19bdfd011dd5a561",
+      "size": 560924,
+      "license": "Zlib",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "ncurses",
+      "version": "6.6",
+      "filename": "ncurses-6.6-h2b6f883_1.conda",
+      "sha256": "d69a04914139627f0a6bfd19412d6c7f1e37edc896af84a6011e07e8bc1e69fa",
+      "size": 955422,
+      "license": "X11 AND BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "openssl",
+      "version": "3.6.4",
+      "filename": "openssl-3.6.4-he6ad1d5_0.conda",
+      "sha256": "a70c05a9baba9b1ce17c7e8b9479029372069b3bf402dbf200bc03696c531bed",
+      "size": 3712923,
+      "license": "Apache-2.0",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "pcre2",
+      "version": "10.47",
+      "filename": "pcre2-10.47-he574923_1.conda",
+      "sha256": "16e5bee11686028d60a495004f99a10c613ada44cc27e330bee18a1b67fb184c",
+      "size": 1199286,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "proj",
+      "version": "9.7.1",
+      "filename": "proj-9.7.1-hd211770_3.conda",
+      "sha256": "15431a9cf7b36f7fb9f1beb8c7259a4435a338ea615009e54325c2fedeb6775d",
+      "size": 3509940,
+      "license": "MIT",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "readline",
+      "version": "8.3",
+      "filename": "readline-8.3-ha7194a6_1.conda",
+      "sha256": "80167dcf73a96b6d0c1bb2298d7b8b9bc21b27cc5bf56979f9c548b49a4d1722",
+      "size": 364344,
+      "license": "GPL-3.0-only",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "snappy",
+      "version": "1.2.2",
+      "filename": "snappy-1.2.2-h7d29b6f_2.conda",
+      "sha256": "195f2b5df5607b117aab69817cc1610ac61be09b73f33af05bd44dc7711dbd53",
+      "size": 49317,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "sqlite",
+      "version": "3.53.4",
+      "filename": "sqlite-3.53.4-h6ce2f9a_1.conda",
+      "sha256": "551c79a5cf720c1302bc201f8633c27954a5daeb67be3719023a24ac8fd9f818",
+      "size": 212107,
+      "license": "blessing",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "uriparser",
+      "version": "0.9.8",
+      "filename": "uriparser-0.9.8-h0a1ffab_0.conda",
+      "sha256": "e77ca5aea9a200f751bbc29ec926315d6d04240e7f4f8895ac13c438aafde422",
+      "size": 48473,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "xerces-c",
+      "version": "3.3.0",
+      "filename": "xerces-c-3.3.0-h43c5883_2.conda",
+      "sha256": "b324e7df78a03b519e64e83e6b462f2c4a517d9cca660d95fc5e4dd248506b21",
+      "size": 1686465,
+      "license": "Apache-2.0",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.2",
+      "filename": "zlib-1.3.2-hdc9db2a_3.conda",
+      "sha256": "3f3c296477cf26474660942f4d8ec104a8eee2cb1abc7c5bfec9ac1102c66451",
+      "size": 100332,
+      "license": "Zlib",
+      "subdir": "linux-aarch64"
+    },
+    {
+      "name": "zstd",
+      "version": "1.5.7",
+      "filename": "zstd-1.5.7-h9d15635_7.conda",
+      "sha256": "427fd14bcb3b8659796fecc682716617409350fb5a98e5b7b47558a10d1a2fc7",
+      "size": 615477,
+      "license": "BSD-3-Clause",
+      "subdir": "linux-aarch64"
+    }
+  ]
+}

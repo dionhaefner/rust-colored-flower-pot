@@ -5,7 +5,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths: ['src/**', 'python/**', 'packaging/**', 'Cargo.*', 'validation/tools/p07_platform_smoke.py', '.github/workflows/platforms.yml']
 permissions:
   contents: read
 jobs:
@@ -39,13 +38,13 @@ jobs:
           cargo clippy --locked --all-targets -- -D warnings
           cargo build --locked --release
       - name: Real-raster native smoke
-        run: python validation/tools/p07_platform_smoke.py --native-only --binary target/release/rcfp --out validation/artifacts/ci-smoke
+        run: python tests/platform_smoke.py --native-only --binary target/release/rcfp --out build/ci/ci-smoke
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: native-${{ matrix.os }}
           path: |
-            validation/artifacts/ci-smoke/
+            build/ci/ci-smoke/
           retention-days: 14
   lambda:
     strategy:
@@ -64,24 +63,22 @@ jobs:
         run: |
           docker build -f packaging/lambda/Dockerfile.ci -t rcfp-lambda-build .
           id=$(docker create rcfp-lambda-build)
-          mkdir -p validation/artifacts
-          docker cp "$id:/bundle" validation/artifacts/ci-lambda-bundle
+          mkdir -p build/ci
+          docker cp "$id:/bundle" build/ci/ci-lambda-bundle
           docker rm "$id"
       - name: Real-raster native smoke and zip
         run: |
-          python validation/tools/p07_platform_smoke.py --native-only --binary validation/artifacts/ci-lambda-bundle/bin/rcfp --out validation/artifacts/ci-native-smoke
-          mkdir -p validation/artifacts/capture-reproduction
-          cp validation/artifacts/ci-native-smoke/platform.sqlite validation/artifacts/capture-reproduction/reference.sqlite
-          packaging/build-lambda.sh validation/artifacts/ci-lambda-bundle validation/artifacts/ci-lambda
+          python tests/platform_smoke.py --native-only --binary build/ci/ci-lambda-bundle/bin/rcfp --out build/ci/ci-native-smoke
+          packaging/build-lambda.sh build/ci/ci-lambda-bundle build/ci/ci-lambda
       - name: Official runtime image smoke (no AWS deployment)
         run: |
-          python validation/tools/p03_lambda_runtime.py --bundle validation/artifacts/ci-lambda-bundle --lambda-zip validation/artifacts/ci-lambda/rcfp-lambda.zip --image public.ecr.aws/lambda/provided:al2023 --out validation/artifacts/ci-lambda-smoke
+          python tests/lambda_runtime_smoke.py --database build/ci/ci-native-smoke/platform.sqlite --bundle build/ci/ci-lambda-bundle --lambda-zip build/ci/ci-lambda/rcfp-lambda.zip --image public.ecr.aws/lambda/provided:al2023 --out build/ci/ci-lambda-smoke
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lambda-${{ matrix.os }}
           path: |
-            validation/artifacts/ci-lambda/*.zip
-            validation/artifacts/ci-lambda-smoke/
-            validation/artifacts/ci-native-smoke/report.json
+            build/ci/ci-lambda/*.zip
+            build/ci/ci-lambda-smoke/
+            build/ci/ci-native-smoke/report.json
           retention-days: 14

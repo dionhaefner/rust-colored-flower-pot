@@ -1,0 +1,3515 @@
+{
+  "phase": "P08",
+  "reference_commit": "6db38d5873cde5ebabe47338a1f61ddc788eada6",
+  "platform": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
+  "reference_lock": {
+    "path": "rewrite/validation/reference/requirements.lock",
+    "bytes": 1313,
+    "sha256": "cc319042b90ef36edba398baf2f8ebdec7fbc7163dd5f7f0ec3f8503d919ec24"
+  },
+  "source": [
+    {
+      "path": "src/assets/COLOR_OPERATIONS_LICENSE.txt",
+      "bytes": 1102,
+      "sha256": "38f419de0921f1f83b645c9f04ffd59dc9a55bdba95c6e36ef138f5585e4286d"
+    },
+    {
+      "path": "src/assets/CRICK_LICENSE.txt",
+      "bytes": 1522,
+      "sha256": "98f67fb95b3353e3cf474afd92ccc3925fcab9710238bf496ef424245731d66a"
+    },
+    {
+      "path": "src/assets/TDIGEST_LICENSE.txt",
+      "bytes": 10346,
+      "sha256": "5b68d54af66af0adc2a4a4cef9b3514979d3e354bfc075e7a616f951fc6bddc6"
+    },
+    {
+      "path": "src/assets/apidoc.html",
+      "bytes": 560,
+      "sha256": "d1acab68c3274c94116928c3a7409e9c5ab1cb1f70a08c0197f888b02c6d1161"
+    },
+    {
+      "path": "src/assets/cmaps/accent_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6421b6bb044562bdebe7eac80638a657c3158e5d50375a12c95e155923d4fad3"
+    },
+    {
+      "path": "src/assets/cmaps/accent_rgba.npy",
+      "bytes": 1148,
+      "sha256": "06914f6a4e2ddee499afca5faf3e5ae473b1c22da8c277bf8d0e6a848da672a9"
+    },
+    {
+      "path": "src/assets/cmaps/afmhot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8e7263b479bdad4c16bc443562726aead55335c858d19a844e8ab397271757cf"
+    },
+    {
+      "path": "src/assets/cmaps/afmhot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d26f687dc5e9a549556a79cfdb424646a2ef1753fb75c40e30be5c8a8d23ed9d"
+    },
+    {
+      "path": "src/assets/cmaps/autumn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c2d361d7363be3caeba44984c3152929d212a7d13dae6d5581fd15c598a6ea3"
+    },
+    {
+      "path": "src/assets/cmaps/autumn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5f272f2a77e80696cd6dd9862ce98d0d9711069efbff48e73ef7dee20fb15dfc"
+    },
+    {
+      "path": "src/assets/cmaps/binary_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "src/assets/cmaps/binary_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "src/assets/cmaps/blues_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "73f4179cf12ce76aa35933ee57043bceede22cfae8d11d6ee6ff1b7a6374a5b5"
+    },
+    {
+      "path": "src/assets/cmaps/blues_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a9cfb48857700b8f43702eb84cc0476fd86cfe5e089cb876ba35d7efc7458550"
+    },
+    {
+      "path": "src/assets/cmaps/bone_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2ed9d4c4af1bbafe7406689bf229bcee2cf1e3601e72a2c5e62ac3218f17f840"
+    },
+    {
+      "path": "src/assets/cmaps/bone_rgba.npy",
+      "bytes": 1148,
+      "sha256": "20d6621703ff2902db0239e781cf44f551dc34528b24c5691f145165acc93cbd"
+    },
+    {
+      "path": "src/assets/cmaps/brbg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c6fc1dc61ad88c8cfd8dbb5d6fb5053da20fd5fca904280b0936bf6cb677dea2"
+    },
+    {
+      "path": "src/assets/cmaps/brbg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2a15f6cdbbf9de0217cfce7ed192be6056cd76f9da285139f4bcbc5a8934eabf"
+    },
+    {
+      "path": "src/assets/cmaps/brg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e977d1a0426dc77b72937855475d84b0e11a8144a680dd3473f53c70246e7b38"
+    },
+    {
+      "path": "src/assets/cmaps/brg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "90a6496f4ed5c13f5773ea78689cd0762c2b99c9a085a759636f7eac45469541"
+    },
+    {
+      "path": "src/assets/cmaps/bugn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fba24d4aa11608d60aeddf42ec6ec9356e178fe40314ae97b3d6a8b269fc25b4"
+    },
+    {
+      "path": "src/assets/cmaps/bugn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "de4f476a910c44b4584b0ab93ab4487b5526d95745863fa743bf5fb96e756d69"
+    },
+    {
+      "path": "src/assets/cmaps/bupu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f791c7cc516dc996955c863b11eead4fd0a9f93b3db11ccb06e83931e8c4f70d"
+    },
+    {
+      "path": "src/assets/cmaps/bupu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "07a2917dc9f4d73f50790777d71437c879ea6d1ec35f261307f7e17bfbe92d4a"
+    },
+    {
+      "path": "src/assets/cmaps/bwr_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f456f8d416496bda15bbbc839b93139fa90840819de1ad156ebc693ecc9559f7"
+    },
+    {
+      "path": "src/assets/cmaps/bwr_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c82e71994ef53e40d75c539a2c4c4820a9c3cbc8899aaed52d01a8fc82ee6a3"
+    },
+    {
+      "path": "src/assets/cmaps/cividis_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5fb83e2fa0561bfcd87edda1347203bb8b0fad76cb517ee55a0b0c69f27cf241"
+    },
+    {
+      "path": "src/assets/cmaps/cividis_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ed835f7b091a02bf2d80167a3c97119392727a1a0b02e1ab3e58acebcad67c4d"
+    },
+    {
+      "path": "src/assets/cmaps/cloud_rgba.npy",
+      "bytes": 1148,
+      "sha256": "04c219e814d1667f865c80fd69e537146e707af0ab8934f0cc3d399669bcfbe0"
+    },
+    {
+      "path": "src/assets/cmaps/cmrmap_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a4e57acd5eebc660396045f4e8e751326e31634a495415e88800c62514f8f1b5"
+    },
+    {
+      "path": "src/assets/cmaps/cmrmap_rgba.npy",
+      "bytes": 1148,
+      "sha256": "02c5862c7bd74bea7fbf4dec015657aae76779e0fdcb074488bf99dd2f143b4a"
+    },
+    {
+      "path": "src/assets/cmaps/cool_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5c610b62f38125f531deff49621db08e1275352c22904a7c5326dd38334b4333"
+    },
+    {
+      "path": "src/assets/cmaps/cool_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1ab9523aeedcbfc380b20a4712a5bfe33e9a34f91f85170c9accc563739c64c6"
+    },
+    {
+      "path": "src/assets/cmaps/coolwarm_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1778ec96a2b191621048b7e2f434cec59c789c29650badf7ea7e682785454e9e"
+    },
+    {
+      "path": "src/assets/cmaps/coolwarm_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ff758756259b0f11a320990e1c24c3b967569c19297356d8eadb4d7d73d34e6b"
+    },
+    {
+      "path": "src/assets/cmaps/copper_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5b6cec25df7549e20a6a1c7513ead75538d4acf93aefced9b70b799f5ffef5fb"
+    },
+    {
+      "path": "src/assets/cmaps/copper_rgba.npy",
+      "bytes": 1148,
+      "sha256": "53f0f88596a8859bf2034574c989305b3cec040e6fab5d1217b4471993fa7be7"
+    },
+    {
+      "path": "src/assets/cmaps/cubehelix_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef0c2ab586409f48da1bb80511f09efb6a68fe75ecf4b07b74584ba2de7452fe"
+    },
+    {
+      "path": "src/assets/cmaps/cubehelix_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ced4de28f83c9925c7b43d2e2b613b0999d55b801b3891a2cf641506d91b5da7"
+    },
+    {
+      "path": "src/assets/cmaps/dark2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d17fcd6d7453352130c08e13eb80a667693f278c3beddf22606a980d1eaa5dd2"
+    },
+    {
+      "path": "src/assets/cmaps/dark2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "58402874fac7936c3a924cdb825951d481c906758cd819b4970bba20a61673ee"
+    },
+    {
+      "path": "src/assets/cmaps/flag_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "50c5641cb65eeb0d87479e6df16f4d49b7e5982313aa4a625548a6320dca4a6f"
+    },
+    {
+      "path": "src/assets/cmaps/flag_rgba.npy",
+      "bytes": 1148,
+      "sha256": "596625894a0a1477cbf1f26b1f54685c7376857214116a3504d970931fd6f9ad"
+    },
+    {
+      "path": "src/assets/cmaps/gist_earth_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d8f735bc29721957d51c9513559049693a02048c663b9c626d77630fa6e563a9"
+    },
+    {
+      "path": "src/assets/cmaps/gist_earth_rgba.npy",
+      "bytes": 1148,
+      "sha256": "01e29af5967be39a17bd30839d331ab28de045d0c53a46bc78dbb14443091e67"
+    },
+    {
+      "path": "src/assets/cmaps/gist_gray_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "src/assets/cmaps/gist_gray_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "src/assets/cmaps/gist_grey_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "src/assets/cmaps/gist_heat_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "91f1dc7e32389f063b5261820573ce472d02be62ec35362df40ac9405c570d0d"
+    },
+    {
+      "path": "src/assets/cmaps/gist_heat_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c502f77137fe0ce48759873b52709755265dfe88210102ba5d0447046842df71"
+    },
+    {
+      "path": "src/assets/cmaps/gist_ncar_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "418b9c9395026c5af71bd1a5eef1a1788e0273ab2f2a335d9c9812e3956e0932"
+    },
+    {
+      "path": "src/assets/cmaps/gist_ncar_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d08ee9042d571e0e94fcf00631706bae12425c9540502a2d9362090a183dd52c"
+    },
+    {
+      "path": "src/assets/cmaps/gist_rainbow_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1b722f8474a9310f4d32f5d39d13ea0c361bdc400599e47133cec7d6b6737070"
+    },
+    {
+      "path": "src/assets/cmaps/gist_rainbow_rgba.npy",
+      "bytes": 1148,
+      "sha256": "01c02a661c0a7bc957b23e0c6cf91a81fa5b61a13373826cc8a2cc8047bc975a"
+    },
+    {
+      "path": "src/assets/cmaps/gist_stern_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "60793f1724630ea458a53385b86e18a73e4991fe733b833fa49cccda19f477af"
+    },
+    {
+      "path": "src/assets/cmaps/gist_stern_rgba.npy",
+      "bytes": 1148,
+      "sha256": "60a67d812d9890f065987d74cb4298f5af55757657cf028040608147eff2a62d"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yarg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "17402a8e9d3f273b66c2535a7fc7191a541dc271166317dfd369ffb179804356"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yarg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "src/assets/cmaps/gist_yerg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "src/assets/cmaps/gnbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "39c7618bf0ad7b6f20301ea4563092b95f1da6ecaafef65f53f61d78d7e45ef0"
+    },
+    {
+      "path": "src/assets/cmaps/gnbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "385b7dbff81d155d1ba2bce81aa8bb3d34b9543aebb38cf5538a0eb308a96ecd"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c038bd62d83bd6001e183c44f49746e9dbffc79eaaa6e3758319941a0d50cdf9"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "77fd0eb22c523d65ac65f22e773ee484505621599e21a37da8984d8e05d1d7e1"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e4c16d41862eaf793cba32a050bf0cc7c2716614447feed0e3430f1e4519ff2b"
+    },
+    {
+      "path": "src/assets/cmaps/gnuplot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "477267f48117dcc262a670aa6151dbe3b078d379910bf917b37cd17ca6343c0f"
+    },
+    {
+      "path": "src/assets/cmaps/gray_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "src/assets/cmaps/gray_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "src/assets/cmaps/grays_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3"
+    },
+    {
+      "path": "src/assets/cmaps/greens_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "64327b7aec16421e1da625d36a2e720cac3049a24e45545e57d1a4246572e672"
+    },
+    {
+      "path": "src/assets/cmaps/greens_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1036174a58c0a980c3c768da645c90c147af95555f8c24e9e59479c07ecd0416"
+    },
+    {
+      "path": "src/assets/cmaps/grey_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "src/assets/cmaps/greys_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "08115c8cef78b465d8a4b4a2ffd1968fe8f9f31101e57a1bba3484893a322f24"
+    },
+    {
+      "path": "src/assets/cmaps/greys_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3"
+    },
+    {
+      "path": "src/assets/cmaps/hot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "614e8edaa921b59ab0491120ee735f7c212d79d863874af2e130f455d8e4c101"
+    },
+    {
+      "path": "src/assets/cmaps/hot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6a1558784880da3b040a7e2fb1b5bbb365e04cf488117c65d148ebdc0eaf687b"
+    },
+    {
+      "path": "src/assets/cmaps/hsv_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5d86faafefdf8de908cc72406f5f1e4f60df2e410531a96dc0b00f943f4da91d"
+    },
+    {
+      "path": "src/assets/cmaps/hsv_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6884024eb60888acffd2ce6207c53514b9bf1f67603e926b253116bd2b4cf512"
+    },
+    {
+      "path": "src/assets/cmaps/inferno_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "03fe5cf762e06ffc90776641d60f5e71beffcf1bc60f826f8ce07d97eb980e19"
+    },
+    {
+      "path": "src/assets/cmaps/inferno_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f7361c117574bb0bfebf4c504f30eb669099d1bb5a32149111f612abfea4aa76"
+    },
+    {
+      "path": "src/assets/cmaps/jet_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c89d4594682a976c04ef16a9e645024e77c1e52b03f60bb51b98b39f985a026"
+    },
+    {
+      "path": "src/assets/cmaps/jet_rgba.npy",
+      "bytes": 1148,
+      "sha256": "549b348beb0517d3a11c82ab52da1de39302a8347587123e009d06c665abd772"
+    },
+    {
+      "path": "src/assets/cmaps/magma_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "075734fb1319aaf7a1adea42d793be392c66533aa808b4fb7240951c4db1b115"
+    },
+    {
+      "path": "src/assets/cmaps/magma_rgba.npy",
+      "bytes": 1148,
+      "sha256": "392eca8523d8a327bbb1c21536c56a9bc3548cc4af0d71e6b5ed1415b1f1c7b3"
+    },
+    {
+      "path": "src/assets/cmaps/nipy_spectral_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8b056b4ea142504b82043dba8b2da41a3cfbb3516a87ff218bc96c2df15a1f54"
+    },
+    {
+      "path": "src/assets/cmaps/nipy_spectral_rgba.npy",
+      "bytes": 1148,
+      "sha256": "dd13eecd10f05fcbd72d9f5d92022878d214ae146c1ecf641890a7ffb5acabf7"
+    },
+    {
+      "path": "src/assets/cmaps/ocean_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fc576840f79611b77d4e2283979b63d4a26072be3f2a9cb14fd0f9b01ca4ec52"
+    },
+    {
+      "path": "src/assets/cmaps/ocean_rgba.npy",
+      "bytes": 1148,
+      "sha256": "366e7500f35b8c6fc940813b9465beb6b529d9e304f3fd27759ea3f1c0e63234"
+    },
+    {
+      "path": "src/assets/cmaps/oranges_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cbcfdebb191b0344a55d6b3464a4061ef7ba04d3e9b23bc343300c49cd66b32f"
+    },
+    {
+      "path": "src/assets/cmaps/oranges_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7749aab6717e693d853016f8f691ce843e1c7aaf42d594eb329c90c9410e125a"
+    },
+    {
+      "path": "src/assets/cmaps/orrd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "685d7e5313e24bcd08ca214dee66f0e909476ae5424135339c9cbfdf4bc168d0"
+    },
+    {
+      "path": "src/assets/cmaps/orrd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6748672dd9cd58f65d4f0ce3c3a6dcade59f3067dece50d703ef12e8d6f859b0"
+    },
+    {
+      "path": "src/assets/cmaps/paired_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "671deab05f35442037fc68a993489a40f41066e0ab88908786cafc188205a53b"
+    },
+    {
+      "path": "src/assets/cmaps/paired_rgba.npy",
+      "bytes": 1148,
+      "sha256": "149d59a60b2b5685bdc2dd023668e4ec095c965de7406f90aa09003caf2b1798"
+    },
+    {
+      "path": "src/assets/cmaps/pastel1_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c2fa953842922c0155d72d444fb84ccdbcd0c16e38e2e2f4da02a71516f61e12"
+    },
+    {
+      "path": "src/assets/cmaps/pastel1_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b5c41d8f59c617c0b52f6756e7c1ff81edeca1124240295ea7e94cdcfdfe6732"
+    },
+    {
+      "path": "src/assets/cmaps/pastel2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d2b5de93a8f9c70c308db3ddeb89870525feed2ee353d1ea51eef17b20388808"
+    },
+    {
+      "path": "src/assets/cmaps/pastel2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8f6d99c2803aacc6bf1b273b965320f1358ebe7ed99d5cadf9eb773fb584dde3"
+    },
+    {
+      "path": "src/assets/cmaps/pink_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a730d4ad098e99c0826a3e1aee1dbd128148d23e402538d908df703e6f6e3c92"
+    },
+    {
+      "path": "src/assets/cmaps/pink_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0d4e261c97b5e8cf390744f656e7871f4de34a78c142136f6abfa9789aba19d2"
+    },
+    {
+      "path": "src/assets/cmaps/piyg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d78edad614d57de476199836da46c95d8064c23c8d664af241f4772573483b79"
+    },
+    {
+      "path": "src/assets/cmaps/piyg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0f7c777d62df8196b3f6b6d442150cb1e9add2516d1aab88d6f63bd00fc0b630"
+    },
+    {
+      "path": "src/assets/cmaps/plasma_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e46e0ddf097623620256c343d736eff9d921558ca19ac0af9c2e47b2ceba3358"
+    },
+    {
+      "path": "src/assets/cmaps/plasma_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d7aa8efe6ad43d7edbf59e2a05278602edeae4f08e4a2ed855bd81f652737329"
+    },
+    {
+      "path": "src/assets/cmaps/prgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "33585ae18408f28ad5d71f92d10c7ba96d1ab2202679f9ee679d24b8c3472eda"
+    },
+    {
+      "path": "src/assets/cmaps/prgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f5ed0d2a1a8c7306f00a4ebf7ee16dc8a8fba8985f528fbe06176453b3d42fac"
+    },
+    {
+      "path": "src/assets/cmaps/prism_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "898303d215a8394b2975a0df92d8bfbd8b27cef0fc2a8a51a5a14898e0fd614a"
+    },
+    {
+      "path": "src/assets/cmaps/prism_rgba.npy",
+      "bytes": 1148,
+      "sha256": "15b2d118f76f746d612331d0c91c393cf96600ce70479bfc26f00d76869b52ab"
+    },
+    {
+      "path": "src/assets/cmaps/pubu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8b3acc96747b2acf25fc233cd850600c11c0e8c6dd9f2d6bf6fff6b6ad8f134f"
+    },
+    {
+      "path": "src/assets/cmaps/pubu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8da88cc38d9d97c9e88fcdda1fca5d61ee58f4ae1fc46762f848445137cc0f7e"
+    },
+    {
+      "path": "src/assets/cmaps/pubugn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4a1fa4616eeb8e547bccfba6d7d1392e493eba72ec812c6c24d0ba49b400eaf5"
+    },
+    {
+      "path": "src/assets/cmaps/pubugn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "389f59fce4bcf786de005825ea6e2ff2962bc53565547fbb9fdde44cab5989f6"
+    },
+    {
+      "path": "src/assets/cmaps/puor_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5b2ef06208bbf67adc75dab8e0c87c9351178a90566efae7fb95d71be3cf3de3"
+    },
+    {
+      "path": "src/assets/cmaps/puor_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ff9bad044c1ac67498da5f8dbff6cece129ae04e4401d02eabf35638318f9db0"
+    },
+    {
+      "path": "src/assets/cmaps/purd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "05f1d75f381b2d7bb50d9520356e9f11a0f72f2462052dc3784b3da56d9d0fc5"
+    },
+    {
+      "path": "src/assets/cmaps/purd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "511ee3d88e58cb0512527f0c0703c1cdaed2c8851d87994498e8f2567f6bf5f8"
+    },
+    {
+      "path": "src/assets/cmaps/purples_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a8c0d7526f09a521d446c8c7a51ca29a53cea8487a598d6652f701a6697b783f"
+    },
+    {
+      "path": "src/assets/cmaps/purples_rgba.npy",
+      "bytes": 1148,
+      "sha256": "69364060a4edc11f9a50a15bf668b2bf21fdaee2c4571c03b1eaa386d944d000"
+    },
+    {
+      "path": "src/assets/cmaps/rainbow_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ec2803589e874a85c558a649b1bf0ff2e0d61c74331d0f68d77a7e70dffd01da"
+    },
+    {
+      "path": "src/assets/cmaps/rainbow_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1a943e8981495ede6c60f9cbd4e0c562f1edb274912a2bd2477cfd4f97ad5293"
+    },
+    {
+      "path": "src/assets/cmaps/rdbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b99a4644291b5039cfee052108a1f61810ddaaff52fb84a66e2df3e32dce0b42"
+    },
+    {
+      "path": "src/assets/cmaps/rdbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8349ddbf2cf27a3228603f068065c5752f039d809f4d224fb07e435c54540a2e"
+    },
+    {
+      "path": "src/assets/cmaps/rdgy_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cbd9b6603e40740b293eaecf9f9b6c0ca347494acf43b00e3137a87113f585a2"
+    },
+    {
+      "path": "src/assets/cmaps/rdgy_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cab22275abc151379a41b51a2a35cd6d05ccfe4f5615c942b685762a57eb41d6"
+    },
+    {
+      "path": "src/assets/cmaps/rdpu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef29db47a2686d398e3ad9535494ae40b3985380af1d2de2d8ee8faabfdc35c9"
+    },
+    {
+      "path": "src/assets/cmaps/rdpu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "960339dbbf92e126ebda2712dcdfb84beaf937ba19104d61fc83c840dc2bbc11"
+    },
+    {
+      "path": "src/assets/cmaps/rdylbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "071c0c8d52f586a0d0e516c419b9ef31af0032bf7f8f875fc374b568cab5e733"
+    },
+    {
+      "path": "src/assets/cmaps/rdylbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d6fbf6b62d8aa266a12c7d9891b23ab0d7271cc42e842df24a769518a6fd89d9"
+    },
+    {
+      "path": "src/assets/cmaps/rdylgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "22e2900c498971f1a7be82b2e97b60dff448061d65f98e630b895aa481d7615c"
+    },
+    {
+      "path": "src/assets/cmaps/rdylgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d952e4fc7026f46f0c1a254fbc487e2c1d1e4d92990ae1999fa63d143d6473f5"
+    },
+    {
+      "path": "src/assets/cmaps/reds_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "beb8791be8c2542eba59eb7ed23daf7634c8333eeec9440967602012e31c4338"
+    },
+    {
+      "path": "src/assets/cmaps/reds_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d20baab32d1b50fc6ec38c5c7b6127e874190c1c1eb5d17b92a944942441b9ff"
+    },
+    {
+      "path": "src/assets/cmaps/seismic_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3cd566b3cf785ebbd9abbbb60bd842fe4bc571a58a0a7c67bc0564df6ec03fda"
+    },
+    {
+      "path": "src/assets/cmaps/seismic_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a5dbd275203f9cc9d2374270bebc9acee07ec81d6921331558898a6a9cb04b79"
+    },
+    {
+      "path": "src/assets/cmaps/set1_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3b95643ba8fd9e72f7489efc74792eb8901ea3d8cd9b90af7c3a4cbe92e35479"
+    },
+    {
+      "path": "src/assets/cmaps/set1_rgba.npy",
+      "bytes": 1148,
+      "sha256": "103011fc5bea7d2b213a7129e22cc5587045ee77f186ed8fc6d7571cb883e684"
+    },
+    {
+      "path": "src/assets/cmaps/set2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b29b94ddd8c93f3fd816cd151ce6e3417c3c57a5b4c8909963ea943ee202fe93"
+    },
+    {
+      "path": "src/assets/cmaps/set2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c5c2a43e801a61f893a7ced02a89ec87ee28b0b262bd99e5a6c63ce2adcbaeb6"
+    },
+    {
+      "path": "src/assets/cmaps/set3_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3249c7b5be1f020eb1b4e794f70ac689463c5c53ffad0026e2b11805fc8a3944"
+    },
+    {
+      "path": "src/assets/cmaps/set3_rgba.npy",
+      "bytes": 1148,
+      "sha256": "de73a9bddfc8beeaa495849f22788e8a09594db852520ca9590df4b8c371ed4d"
+    },
+    {
+      "path": "src/assets/cmaps/spectral_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "96b7d8e6455b147560574822691657c7f44774937ee36c66cfcfeaed2bf42406"
+    },
+    {
+      "path": "src/assets/cmaps/spectral_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7e093c36e90bae695d7f757470f7f5027b7a2da773b0bbff5ba50424dc660364"
+    },
+    {
+      "path": "src/assets/cmaps/spring_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef24a7d7f98311d9fdfb2ae8988f400bca80b663eb0ff100709337a49cd95cb0"
+    },
+    {
+      "path": "src/assets/cmaps/spring_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6f993f49b91c78b0a9e7e889c274728ae9022b8a32ce2c73d7a76a4ac764811c"
+    },
+    {
+      "path": "src/assets/cmaps/summer_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "015cc45bc3447b077b009ae22058428c640a745a1fe7b709d42b64ad2a5967e1"
+    },
+    {
+      "path": "src/assets/cmaps/summer_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3fadd52bec0c831ec765178b3a7566ba1b5ce5e3df845aa1632cba65d2893a1c"
+    },
+    {
+      "path": "src/assets/cmaps/tab10_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6e35fb6e562a363edd2be34f1d1948d35704fc357afefdba961dadbe91f1a5dc"
+    },
+    {
+      "path": "src/assets/cmaps/tab10_rgba.npy",
+      "bytes": 1148,
+      "sha256": "be4cf1f9bb5bca92ee704dcc90f248290225d91727e3969b52aa434839e7ec7c"
+    },
+    {
+      "path": "src/assets/cmaps/tab20_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7830584d3f779ee105c3180a0df391643a10069d0807da72b9124eff9ca75e99"
+    },
+    {
+      "path": "src/assets/cmaps/tab20_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a95eead4a6674941d46dd22e111006e9858fc573c1264c196b5a45ec6910a877"
+    },
+    {
+      "path": "src/assets/cmaps/tab20b_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fa700c70c99ecff68c74497000ea15956e3f1be6569e2576997711cb2e58a51e"
+    },
+    {
+      "path": "src/assets/cmaps/tab20b_rgba.npy",
+      "bytes": 1148,
+      "sha256": "65ffdb238dbf988b530639943818a9d10734b072a49ff59cd8fa3d4daef498e4"
+    },
+    {
+      "path": "src/assets/cmaps/tab20c_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c35f669fcd705952057fe9e49c2cf045c51037e17e19dab9edbe28aa53acb83d"
+    },
+    {
+      "path": "src/assets/cmaps/tab20c_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ed6dc089babb51a625980f5f20732a99af8779c4cf7b4ced3e7c1601a04d820c"
+    },
+    {
+      "path": "src/assets/cmaps/terrain_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fd488dae084cca24eb28abfbd5d9da2eeb7c788d2a1373710ddcf98ce42c283f"
+    },
+    {
+      "path": "src/assets/cmaps/terrain_rgba.npy",
+      "bytes": 1148,
+      "sha256": "dab9f4ae0b2032839bdb2eaa6d1cc0f1a29abe96b7c29839e7fba42c9fbd1a74"
+    },
+    {
+      "path": "src/assets/cmaps/turbo_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e3a29229db7491f7a1b39de1903443a87dc4c64a9563a6c07a6af54fe3a97522"
+    },
+    {
+      "path": "src/assets/cmaps/turbo_rgba.npy",
+      "bytes": 1148,
+      "sha256": "10ca669b1b6d01a03c662282e66711cb9bff39d73241ab4bc03f06d507ac6c7b"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f4be99d0c2267d4eef887de8d89bf847de6821b2207ba67910cff0cf21a1028f"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_rgba.npy",
+      "bytes": 1148,
+      "sha256": "66ba6321acca30591f38add794892d310647bfb459b7fe1d9e51146325ea4fe3"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_shifted_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c272fc410ffba9e677bffe4824cea5c6d04c6348cba486066eaaa7f3924e2051"
+    },
+    {
+      "path": "src/assets/cmaps/twilight_shifted_rgba.npy",
+      "bytes": 1148,
+      "sha256": "14b3c2fe879ec003abca2db579811196ff05a28a252d6d0622a42c25c63c8cf6"
+    },
+    {
+      "path": "src/assets/cmaps/viridis_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "9a8c172d30533a18bdaf29f8075e7146880620137c7f235c3eaca34d488e771f"
+    },
+    {
+      "path": "src/assets/cmaps/viridis_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a0a6f2a4af4ab3d8cd428f33613f16ba9f22e3e85dd9dcdbd984d9dccbe8e22f"
+    },
+    {
+      "path": "src/assets/cmaps/winter_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f950654c439dd5ad74fce197c31e4360d9a579c95e19d1051377a0bd455235a7"
+    },
+    {
+      "path": "src/assets/cmaps/winter_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d377b163cdb428ca5702ac485c26fc431f754f87c8d828df89088c913a0f6bd3"
+    },
+    {
+      "path": "src/assets/cmaps/wistia_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "265f505b373299b05ad0c401729ab473c26084973d952b1d17b19e2cb2d7bf1c"
+    },
+    {
+      "path": "src/assets/cmaps/wistia_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4f3cedcde4e9fce337f3a5510655c11ff76deb36839a64bcc051ab7d50371fe5"
+    },
+    {
+      "path": "src/assets/cmaps/ylgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d8838d6a0c910a67153e426d64fa23b8d32085b5423ff0be1b494505a1b6c2bd"
+    },
+    {
+      "path": "src/assets/cmaps/ylgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fb4811c882691da17bb61720036244bfd34492f272a5856d1104e6194b6f56c2"
+    },
+    {
+      "path": "src/assets/cmaps/ylgnbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3f455a1c6d1e3a41ce4f5840005aa94490cd9cdb2a4b2f27424589deeb02b630"
+    },
+    {
+      "path": "src/assets/cmaps/ylgnbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ee32d84adc9899514ed1722be71ea37dccfd3f9572a0cf23639d5df263b78b1b"
+    },
+    {
+      "path": "src/assets/cmaps/ylorbr_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2c2547d4b63e147965c1f372d51ced581d1d03b2189967fefbc5ae6237bc5aa7"
+    },
+    {
+      "path": "src/assets/cmaps/ylorbr_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e77e21363def49cdb85d27ac57ff87d7992a11b7df021457902c457b3d3064ff"
+    },
+    {
+      "path": "src/assets/cmaps/ylorrd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "db94e01678ddaa09e01ca718ec4bd886c1c44412cc52810dd029068c3ffcb9d9"
+    },
+    {
+      "path": "src/assets/cmaps/ylorrd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "38e696e9300af5aa6495fa992a2e0c6578c0eada683556c4ea44d9b147294cbd"
+    },
+    {
+      "path": "src/assets/settings.json",
+      "bytes": 957,
+      "sha256": "ed0f09d1fc4157336fccd14ca1f0abe30591b1fb2d160519674d94efb8864284"
+    },
+    {
+      "path": "src/assets/static/favicon.ico",
+      "bytes": 5430,
+      "sha256": "48367d4b9476a355027b9706d77e6d489a118b78a0c057f0f4e0aae03228d3f6"
+    },
+    {
+      "path": "src/assets/static/redoc.standalone.js",
+      "bytes": 1042135,
+      "sha256": "e1bc95ea886b6aa8c28d5a6c3e82bac11b9992ceb3194ab8723f3ed17f3d00fb"
+    },
+    {
+      "path": "src/assets/static/redoc.standalone.js.LICENSE.txt",
+      "bytes": 2641,
+      "sha256": "e95b12784bb4b5b349f39825e1ba8e3c0c661efafa7917818688605e6ede7709"
+    },
+    {
+      "path": "src/assets/swagger.json",
+      "bytes": 28610,
+      "sha256": "5d09aca58cf87aaa1e5e5d4af9e846a04495ce7adf1e1aedc445f93463e8c099"
+    },
+    {
+      "path": "src/cli.rs",
+      "bytes": 12881,
+      "sha256": "beb0ab907d560f416edf8681b6737c8917a8143dc051c72defb4b186f723a74d"
+    },
+    {
+      "path": "src/client.rs",
+      "bytes": 4382,
+      "sha256": "c76e3c29b7bedd5ced163b10de8c9484f2f96eb5d5dbf642a4b81990acd1b022"
+    },
+    {
+      "path": "src/client_assets.rs",
+      "bytes": 2732,
+      "sha256": "6b1a80d0e41047d01cb87b7290c9f499210f78b807a62442267c82e88bcda84f"
+    },
+    {
+      "path": "src/color.rs",
+      "bytes": 6310,
+      "sha256": "45e25f0e539c334b47830813c16e12c4323e76a353f6b9fcc01a43cd07a831b1"
+    },
+    {
+      "path": "src/execution.rs",
+      "bytes": 18829,
+      "sha256": "7f2e2eb38e645d7d5135c9858695157b4857b63d5adf1afa6d1eb13a154e50e4"
+    },
+    {
+      "path": "src/expressions.rs",
+      "bytes": 22627,
+      "sha256": "cacf2a84563b09b251a87a9f1b4ae96f218f31c9d464661f39614797baa95ec2"
+    },
+    {
+      "path": "src/ffi.rs",
+      "bytes": 9557,
+      "sha256": "6fe337bb5628777abb3593d5571fcfd2845681072240d74dc8e39cb3af514bc7"
+    },
+    {
+      "path": "src/http.rs",
+      "bytes": 58451,
+      "sha256": "7f440a8de9be5b4f13be670c00379d6d6c219db55b506106e44a95c1cd6c6eb0"
+    },
+    {
+      "path": "src/image.rs",
+      "bytes": 12608,
+      "sha256": "ced07c8a44f86504c2cc8e4aa6da88ed6b9b332e7039d7e2af8ce51267d36e1e"
+    },
+    {
+      "path": "src/ingest.rs",
+      "bytes": 10520,
+      "sha256": "f989346585039ccf0b42f1ae69c652720237f4c7257817f04539748170590236"
+    },
+    {
+      "path": "src/lambda.rs",
+      "bytes": 9628,
+      "sha256": "b7073061caa56505dfbcc21a348735097b453fa4d4b2a19bb6c166afaa995a22"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 1168,
+      "sha256": "a02da9db134497bd133e9f4b4e8d28c6ac6d45c114582802ed780b595f61cfa7"
+    },
+    {
+      "path": "src/main.rs",
+      "bytes": 14867,
+      "sha256": "41aa0cc434c4a6c4c464e1022438d8211c745fc55320f8bed34f8041d1c1bafb"
+    },
+    {
+      "path": "src/palettes.rs",
+      "bytes": 25799,
+      "sha256": "1f6cb951a90155e610bd1ca37ef5b3b9eb1c328b4b7b17a77f0ca5259c65885b"
+    },
+    {
+      "path": "src/python.rs",
+      "bytes": 4210,
+      "sha256": "dba9b873e26ffecafb806911182631e0a67be9a805131c9628f1959522df9518"
+    },
+    {
+      "path": "src/raster/metadata.rs",
+      "bytes": 20557,
+      "sha256": "f972ac9d4d4ae7bbeb05840599fb029f645b3deb5d049f1ca688df9ab26dfb17"
+    },
+    {
+      "path": "src/raster/optimize.rs",
+      "bytes": 22283,
+      "sha256": "d65e5418a2011e20b0f3af46b5372c1982a9eb555e66353767f86b68beae590d"
+    },
+    {
+      "path": "src/raster.rs",
+      "bytes": 31127,
+      "sha256": "28f5d9b165b425753233cb0a2a9e039fa0e9514c5d0c937076c4a5286eb69646"
+    },
+    {
+      "path": "src/settings.rs",
+      "bytes": 7510,
+      "sha256": "6c8937931ece514ebbb244d9437fc367a7cbb4202fd777b362a339f761f01ec7"
+    },
+    {
+      "path": "src/statistics.rs",
+      "bytes": 3553,
+      "sha256": "5c1a44cda694e002ba722fef6463c7ebc54315a5e9134f6ba326ad17e98c2627"
+    },
+    {
+      "path": "src/storage/migrations.rs",
+      "bytes": 7584,
+      "sha256": "257e2b1d773713a6af0345a3c1e9a2d3a2fa80439a414568c9be1d588ab2fa73"
+    },
+    {
+      "path": "src/storage/provider.rs",
+      "bytes": 5896,
+      "sha256": "deb13b4c9af3236fe6cfa93bdce2b0096298a68e27b90ed4b7384776eab18352"
+    },
+    {
+      "path": "src/storage/relational.rs",
+      "bytes": 28379,
+      "sha256": "6332381365be5747c964f5d20cf162e9e1811cf1507b6f727ce7ff66747fc1f1"
+    },
+    {
+      "path": "src/storage/remote.rs",
+      "bytes": 6507,
+      "sha256": "e68e20c5587dfaf4dc78eafd108c0bba6892fb903be2c5347bc7248ea31f6d27"
+    },
+    {
+      "path": "src/storage/store.rs",
+      "bytes": 7813,
+      "sha256": "42f414bdd2cc999886403b396f33532bac69e3df3f752893f866b73f7b2f7655"
+    },
+    {
+      "path": "src/storage.rs",
+      "bytes": 26750,
+      "sha256": "d6c5f5ffd0f6520907cfe63d774b9f04decd7ec2bc255bdff6bb8aabd92c5a4b"
+    },
+    {
+      "path": "src/tracing.rs",
+      "bytes": 2308,
+      "sha256": "6239fda7b8aa5534b84cc2be35867070bb89c0b1eabfe4825170e1c295115990"
+    },
+    {
+      "path": "python/native.c",
+      "bytes": 6355,
+      "sha256": "6d893b4ee3c81c0eaa1d981973198caadd98b631a85fc888465e3f11630a713c"
+    },
+    {
+      "path": "python/terracotta/__init__.py",
+      "bytes": 1959,
+      "sha256": "5ae131c3fc46e4962fb1fc5063d2995d52749c15d431449d37d4fbda2e7e19a3"
+    },
+    {
+      "path": "python/terracotta/_bridge.py",
+      "bytes": 2413,
+      "sha256": "95eea4a201de332661b88135f6d37f97a31c4070b273c0619cfec5718ac69f50"
+    },
+    {
+      "path": "python/terracotta/_version.py",
+      "bytes": 52,
+      "sha256": "879d0d8118eeca27e354b214ac2650ff143664e0e96110de002962eadeacf210"
+    },
+    {
+      "path": "python/terracotta/cache.py",
+      "bytes": 1876,
+      "sha256": "543542f341c4bdc4e1aa75cd4ee1adc0c95e5e0c51020e57e1e7aba2f98ba541"
+    },
+    {
+      "path": "python/terracotta/client/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "python/terracotta/client/client_app.py",
+      "bytes": 161,
+      "sha256": "fed8d8fcce5ac046df92a389df002494ce1fd1a2c0af4d24f77571f1c202598a"
+    },
+    {
+      "path": "python/terracotta/client/flask_api.py",
+      "bytes": 529,
+      "sha256": "c4d44134a73c357bb2db2b330a3963f035af35b10e4470a40dda293f2db2b3d2"
+    },
+    {
+      "path": "python/terracotta/client/static/react/asset-manifest.json",
+      "bytes": 1132,
+      "sha256": "c67e238d7723fe93df8c0bda91e27e287ec0a02ca42613cb9b962083234abfa1"
+    },
+    {
+      "path": "python/terracotta/client/static/react/favicon.ico",
+      "bytes": 5430,
+      "sha256": "48367d4b9476a355027b9706d77e6d489a118b78a0c057f0f4e0aae03228d3f6"
+    },
+    {
+      "path": "python/terracotta/client/static/react/logo192.png",
+      "bytes": 5347,
+      "sha256": "c386396ec70db3608075b5fbfaac4ab1ccaa86ba05a68ab393ec551eb66c3e00"
+    },
+    {
+      "path": "python/terracotta/client/static/react/logo512.png",
+      "bytes": 9664,
+      "sha256": "9ea4f4da7050c0cc408926f6a39c253624e9babb1d43c7977cd821445a60b461"
+    },
+    {
+      "path": "python/terracotta/client/static/react/manifest.json",
+      "bytes": 492,
+      "sha256": "50b3d8c3903af3f78d871b94557ab14f4e39ca192eaca3d2cfa863c867279a14"
+    },
+    {
+      "path": "python/terracotta/client/static/react/robots.txt",
+      "bytes": 67,
+      "sha256": "90d24bc3bf698ac1e173739502298ccca72adf1f564fab05f484b8c48d1cadd2"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/css/2.19072978.chunk.css",
+      "bytes": 34361,
+      "sha256": "b2cb4aeb7c4bed58a2e4969ebd5ab301c0723a4e7253ac02c07d807832adc52d"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/js/2.83c1f4db.chunk.js",
+      "bytes": 1341924,
+      "sha256": "05e6d0da1cf58ece62e67356740e2a8d000d87da7554ea8205a20fa55ad6846f"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/js/2.83c1f4db.chunk.js.LICENSE.txt",
+      "bytes": 4735,
+      "sha256": "ff6aa1b9538c4a9499816295ab93f1bcd04c369fee9521b9f6b464e95f396b75"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/js/main.9ed63b1f.chunk.js",
+      "bytes": 45744,
+      "sha256": "5fe0f07a95c03a4db9b3be862abc4e6bd5ed46b9905d7d9b625a7da0a4685bc9"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/js/runtime-main.b2f07bb0.js",
+      "bytes": 1560,
+      "sha256": "964acede6f04919532ab3d7a2fd08ffe08714be39b77f37b64700e46a50c4cf0"
+    },
+    {
+      "path": "python/terracotta/client/static/react/static/media/header.87193822.svg",
+      "bytes": 41931,
+      "sha256": "a6af3d82e86a20b45bb7f6c026594c3e56bb71fb65d021a6dc7ddd54dc9e1dc9"
+    },
+    {
+      "path": "python/terracotta/client/templates/index.html",
+      "bytes": 2558,
+      "sha256": "181795c6a9c0315dc81e614f0efea4b2b1883d6f8100bb78b57609ac77ed8bc6"
+    },
+    {
+      "path": "python/terracotta/cmaps/__init__.py",
+      "bytes": 138,
+      "sha256": "9d95ffd7c2bb127964fbd32df17fef1f42c5f3788face2c408172c056b1a5ea4"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/accent_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6421b6bb044562bdebe7eac80638a657c3158e5d50375a12c95e155923d4fad3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/accent_rgba.npy",
+      "bytes": 1148,
+      "sha256": "06914f6a4e2ddee499afca5faf3e5ae473b1c22da8c277bf8d0e6a848da672a9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/afmhot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8e7263b479bdad4c16bc443562726aead55335c858d19a844e8ab397271757cf"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/afmhot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d26f687dc5e9a549556a79cfdb424646a2ef1753fb75c40e30be5c8a8d23ed9d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/autumn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c2d361d7363be3caeba44984c3152929d212a7d13dae6d5581fd15c598a6ea3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/autumn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5f272f2a77e80696cd6dd9862ce98d0d9711069efbff48e73ef7dee20fb15dfc"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/binary_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/binary_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/blues_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "73f4179cf12ce76aa35933ee57043bceede22cfae8d11d6ee6ff1b7a6374a5b5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/blues_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a9cfb48857700b8f43702eb84cc0476fd86cfe5e089cb876ba35d7efc7458550"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bone_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2ed9d4c4af1bbafe7406689bf229bcee2cf1e3601e72a2c5e62ac3218f17f840"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bone_rgba.npy",
+      "bytes": 1148,
+      "sha256": "20d6621703ff2902db0239e781cf44f551dc34528b24c5691f145165acc93cbd"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/brbg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c6fc1dc61ad88c8cfd8dbb5d6fb5053da20fd5fca904280b0936bf6cb677dea2"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/brbg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2a15f6cdbbf9de0217cfce7ed192be6056cd76f9da285139f4bcbc5a8934eabf"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/brg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e977d1a0426dc77b72937855475d84b0e11a8144a680dd3473f53c70246e7b38"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/brg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "90a6496f4ed5c13f5773ea78689cd0762c2b99c9a085a759636f7eac45469541"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bugn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fba24d4aa11608d60aeddf42ec6ec9356e178fe40314ae97b3d6a8b269fc25b4"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bugn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "de4f476a910c44b4584b0ab93ab4487b5526d95745863fa743bf5fb96e756d69"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bupu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f791c7cc516dc996955c863b11eead4fd0a9f93b3db11ccb06e83931e8c4f70d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bupu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "07a2917dc9f4d73f50790777d71437c879ea6d1ec35f261307f7e17bfbe92d4a"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bwr_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f456f8d416496bda15bbbc839b93139fa90840819de1ad156ebc693ecc9559f7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/bwr_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c82e71994ef53e40d75c539a2c4c4820a9c3cbc8899aaed52d01a8fc82ee6a3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cividis_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5fb83e2fa0561bfcd87edda1347203bb8b0fad76cb517ee55a0b0c69f27cf241"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cividis_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ed835f7b091a02bf2d80167a3c97119392727a1a0b02e1ab3e58acebcad67c4d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cloud_rgba.npy",
+      "bytes": 1148,
+      "sha256": "04c219e814d1667f865c80fd69e537146e707af0ab8934f0cc3d399669bcfbe0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cmrmap_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a4e57acd5eebc660396045f4e8e751326e31634a495415e88800c62514f8f1b5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cmrmap_rgba.npy",
+      "bytes": 1148,
+      "sha256": "02c5862c7bd74bea7fbf4dec015657aae76779e0fdcb074488bf99dd2f143b4a"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cool_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5c610b62f38125f531deff49621db08e1275352c22904a7c5326dd38334b4333"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cool_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1ab9523aeedcbfc380b20a4712a5bfe33e9a34f91f85170c9accc563739c64c6"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/coolwarm_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1778ec96a2b191621048b7e2f434cec59c789c29650badf7ea7e682785454e9e"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/coolwarm_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ff758756259b0f11a320990e1c24c3b967569c19297356d8eadb4d7d73d34e6b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/copper_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5b6cec25df7549e20a6a1c7513ead75538d4acf93aefced9b70b799f5ffef5fb"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/copper_rgba.npy",
+      "bytes": 1148,
+      "sha256": "53f0f88596a8859bf2034574c989305b3cec040e6fab5d1217b4471993fa7be7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cubehelix_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef0c2ab586409f48da1bb80511f09efb6a68fe75ecf4b07b74584ba2de7452fe"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/cubehelix_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ced4de28f83c9925c7b43d2e2b613b0999d55b801b3891a2cf641506d91b5da7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/dark2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d17fcd6d7453352130c08e13eb80a667693f278c3beddf22606a980d1eaa5dd2"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/dark2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "58402874fac7936c3a924cdb825951d481c906758cd819b4970bba20a61673ee"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/flag_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "50c5641cb65eeb0d87479e6df16f4d49b7e5982313aa4a625548a6320dca4a6f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/flag_rgba.npy",
+      "bytes": 1148,
+      "sha256": "596625894a0a1477cbf1f26b1f54685c7376857214116a3504d970931fd6f9ad"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_earth_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d8f735bc29721957d51c9513559049693a02048c663b9c626d77630fa6e563a9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_earth_rgba.npy",
+      "bytes": 1148,
+      "sha256": "01e29af5967be39a17bd30839d331ab28de045d0c53a46bc78dbb14443091e67"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_gray_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_gray_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_grey_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_heat_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "91f1dc7e32389f063b5261820573ce472d02be62ec35362df40ac9405c570d0d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_heat_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c502f77137fe0ce48759873b52709755265dfe88210102ba5d0447046842df71"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_ncar_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "418b9c9395026c5af71bd1a5eef1a1788e0273ab2f2a335d9c9812e3956e0932"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_ncar_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d08ee9042d571e0e94fcf00631706bae12425c9540502a2d9362090a183dd52c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_rainbow_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1b722f8474a9310f4d32f5d39d13ea0c361bdc400599e47133cec7d6b6737070"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_rainbow_rgba.npy",
+      "bytes": 1148,
+      "sha256": "01c02a661c0a7bc957b23e0c6cf91a81fa5b61a13373826cc8a2cc8047bc975a"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_stern_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "60793f1724630ea458a53385b86e18a73e4991fe733b833fa49cccda19f477af"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_stern_rgba.npy",
+      "bytes": 1148,
+      "sha256": "60a67d812d9890f065987d74cb4298f5af55757657cf028040608147eff2a62d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_yarg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "17402a8e9d3f273b66c2535a7fc7191a541dc271166317dfd369ffb179804356"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_yarg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gist_yerg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "39c7618bf0ad7b6f20301ea4563092b95f1da6ecaafef65f53f61d78d7e45ef0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "385b7dbff81d155d1ba2bce81aa8bb3d34b9543aebb38cf5538a0eb308a96ecd"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnuplot2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c038bd62d83bd6001e183c44f49746e9dbffc79eaaa6e3758319941a0d50cdf9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnuplot2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "77fd0eb22c523d65ac65f22e773ee484505621599e21a37da8984d8e05d1d7e1"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnuplot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e4c16d41862eaf793cba32a050bf0cc7c2716614447feed0e3430f1e4519ff2b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gnuplot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "477267f48117dcc262a670aa6151dbe3b078d379910bf917b37cd17ca6343c0f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gray_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "31598593f63375f5a4a4ed900a554b8cddf44a39e3b78e03b5f920836e387831"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/gray_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/grays_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/greens_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "64327b7aec16421e1da625d36a2e720cac3049a24e45545e57d1a4246572e672"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/greens_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1036174a58c0a980c3c768da645c90c147af95555f8c24e9e59479c07ecd0416"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/grey_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4516949b0b239fa7194f60521f5e4c6d86f46c14aa9b29a4ccf0df7878c0b75c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/greys_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "08115c8cef78b465d8a4b4a2ffd1968fe8f9f31101e57a1bba3484893a322f24"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/greys_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a77c74650e7c58aa7465d1e2acf6115ef908bffef29540d534351be521e26fe3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/hot_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "614e8edaa921b59ab0491120ee735f7c212d79d863874af2e130f455d8e4c101"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/hot_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6a1558784880da3b040a7e2fb1b5bbb365e04cf488117c65d148ebdc0eaf687b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/hsv_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5d86faafefdf8de908cc72406f5f1e4f60df2e410531a96dc0b00f943f4da91d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/hsv_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6884024eb60888acffd2ce6207c53514b9bf1f67603e926b253116bd2b4cf512"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/inferno_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "03fe5cf762e06ffc90776641d60f5e71beffcf1bc60f826f8ce07d97eb980e19"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/inferno_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f7361c117574bb0bfebf4c504f30eb669099d1bb5a32149111f612abfea4aa76"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/jet_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0c89d4594682a976c04ef16a9e645024e77c1e52b03f60bb51b98b39f985a026"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/jet_rgba.npy",
+      "bytes": 1148,
+      "sha256": "549b348beb0517d3a11c82ab52da1de39302a8347587123e009d06c665abd772"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/magma_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "075734fb1319aaf7a1adea42d793be392c66533aa808b4fb7240951c4db1b115"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/magma_rgba.npy",
+      "bytes": 1148,
+      "sha256": "392eca8523d8a327bbb1c21536c56a9bc3548cc4af0d71e6b5ed1415b1f1c7b3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/nipy_spectral_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8b056b4ea142504b82043dba8b2da41a3cfbb3516a87ff218bc96c2df15a1f54"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/nipy_spectral_rgba.npy",
+      "bytes": 1148,
+      "sha256": "dd13eecd10f05fcbd72d9f5d92022878d214ae146c1ecf641890a7ffb5acabf7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ocean_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fc576840f79611b77d4e2283979b63d4a26072be3f2a9cb14fd0f9b01ca4ec52"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ocean_rgba.npy",
+      "bytes": 1148,
+      "sha256": "366e7500f35b8c6fc940813b9465beb6b529d9e304f3fd27759ea3f1c0e63234"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/oranges_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cbcfdebb191b0344a55d6b3464a4061ef7ba04d3e9b23bc343300c49cd66b32f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/oranges_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7749aab6717e693d853016f8f691ce843e1c7aaf42d594eb329c90c9410e125a"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/orrd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "685d7e5313e24bcd08ca214dee66f0e909476ae5424135339c9cbfdf4bc168d0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/orrd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6748672dd9cd58f65d4f0ce3c3a6dcade59f3067dece50d703ef12e8d6f859b0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/paired_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "671deab05f35442037fc68a993489a40f41066e0ab88908786cafc188205a53b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/paired_rgba.npy",
+      "bytes": 1148,
+      "sha256": "149d59a60b2b5685bdc2dd023668e4ec095c965de7406f90aa09003caf2b1798"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pastel1_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c2fa953842922c0155d72d444fb84ccdbcd0c16e38e2e2f4da02a71516f61e12"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pastel1_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b5c41d8f59c617c0b52f6756e7c1ff81edeca1124240295ea7e94cdcfdfe6732"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pastel2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d2b5de93a8f9c70c308db3ddeb89870525feed2ee353d1ea51eef17b20388808"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pastel2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8f6d99c2803aacc6bf1b273b965320f1358ebe7ed99d5cadf9eb773fb584dde3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pink_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a730d4ad098e99c0826a3e1aee1dbd128148d23e402538d908df703e6f6e3c92"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pink_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0d4e261c97b5e8cf390744f656e7871f4de34a78c142136f6abfa9789aba19d2"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/piyg_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d78edad614d57de476199836da46c95d8064c23c8d664af241f4772573483b79"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/piyg_rgba.npy",
+      "bytes": 1148,
+      "sha256": "0f7c777d62df8196b3f6b6d442150cb1e9add2516d1aab88d6f63bd00fc0b630"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/plasma_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e46e0ddf097623620256c343d736eff9d921558ca19ac0af9c2e47b2ceba3358"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/plasma_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d7aa8efe6ad43d7edbf59e2a05278602edeae4f08e4a2ed855bd81f652737329"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/prgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "33585ae18408f28ad5d71f92d10c7ba96d1ab2202679f9ee679d24b8c3472eda"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/prgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f5ed0d2a1a8c7306f00a4ebf7ee16dc8a8fba8985f528fbe06176453b3d42fac"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/prism_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "898303d215a8394b2975a0df92d8bfbd8b27cef0fc2a8a51a5a14898e0fd614a"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/prism_rgba.npy",
+      "bytes": 1148,
+      "sha256": "15b2d118f76f746d612331d0c91c393cf96600ce70479bfc26f00d76869b52ab"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pubu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8b3acc96747b2acf25fc233cd850600c11c0e8c6dd9f2d6bf6fff6b6ad8f134f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pubu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8da88cc38d9d97c9e88fcdda1fca5d61ee58f4ae1fc46762f848445137cc0f7e"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pubugn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4a1fa4616eeb8e547bccfba6d7d1392e493eba72ec812c6c24d0ba49b400eaf5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/pubugn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "389f59fce4bcf786de005825ea6e2ff2962bc53565547fbb9fdde44cab5989f6"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/puor_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "5b2ef06208bbf67adc75dab8e0c87c9351178a90566efae7fb95d71be3cf3de3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/puor_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ff9bad044c1ac67498da5f8dbff6cece129ae04e4401d02eabf35638318f9db0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/purd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "05f1d75f381b2d7bb50d9520356e9f11a0f72f2462052dc3784b3da56d9d0fc5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/purd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "511ee3d88e58cb0512527f0c0703c1cdaed2c8851d87994498e8f2567f6bf5f8"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/purples_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a8c0d7526f09a521d446c8c7a51ca29a53cea8487a598d6652f701a6697b783f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/purples_rgba.npy",
+      "bytes": 1148,
+      "sha256": "69364060a4edc11f9a50a15bf668b2bf21fdaee2c4571c03b1eaa386d944d000"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rainbow_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ec2803589e874a85c558a649b1bf0ff2e0d61c74331d0f68d77a7e70dffd01da"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rainbow_rgba.npy",
+      "bytes": 1148,
+      "sha256": "1a943e8981495ede6c60f9cbd4e0c562f1edb274912a2bd2477cfd4f97ad5293"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b99a4644291b5039cfee052108a1f61810ddaaff52fb84a66e2df3e32dce0b42"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "8349ddbf2cf27a3228603f068065c5752f039d809f4d224fb07e435c54540a2e"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdgy_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cbd9b6603e40740b293eaecf9f9b6c0ca347494acf43b00e3137a87113f585a2"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdgy_rgba.npy",
+      "bytes": 1148,
+      "sha256": "cab22275abc151379a41b51a2a35cd6d05ccfe4f5615c942b685762a57eb41d6"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdpu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef29db47a2686d398e3ad9535494ae40b3985380af1d2de2d8ee8faabfdc35c9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdpu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "960339dbbf92e126ebda2712dcdfb84beaf937ba19104d61fc83c840dc2bbc11"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdylbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "071c0c8d52f586a0d0e516c419b9ef31af0032bf7f8f875fc374b568cab5e733"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdylbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d6fbf6b62d8aa266a12c7d9891b23ab0d7271cc42e842df24a769518a6fd89d9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdylgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "22e2900c498971f1a7be82b2e97b60dff448061d65f98e630b895aa481d7615c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/rdylgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d952e4fc7026f46f0c1a254fbc487e2c1d1e4d92990ae1999fa63d143d6473f5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/reds_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "beb8791be8c2542eba59eb7ed23daf7634c8333eeec9440967602012e31c4338"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/reds_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d20baab32d1b50fc6ec38c5c7b6127e874190c1c1eb5d17b92a944942441b9ff"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/seismic_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3cd566b3cf785ebbd9abbbb60bd842fe4bc571a58a0a7c67bc0564df6ec03fda"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/seismic_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a5dbd275203f9cc9d2374270bebc9acee07ec81d6921331558898a6a9cb04b79"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set1_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3b95643ba8fd9e72f7489efc74792eb8901ea3d8cd9b90af7c3a4cbe92e35479"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set1_rgba.npy",
+      "bytes": 1148,
+      "sha256": "103011fc5bea7d2b213a7129e22cc5587045ee77f186ed8fc6d7571cb883e684"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set2_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "b29b94ddd8c93f3fd816cd151ce6e3417c3c57a5b4c8909963ea943ee202fe93"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set2_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c5c2a43e801a61f893a7ced02a89ec87ee28b0b262bd99e5a6c63ce2adcbaeb6"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set3_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3249c7b5be1f020eb1b4e794f70ac689463c5c53ffad0026e2b11805fc8a3944"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/set3_rgba.npy",
+      "bytes": 1148,
+      "sha256": "de73a9bddfc8beeaa495849f22788e8a09594db852520ca9590df4b8c371ed4d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/spectral_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "96b7d8e6455b147560574822691657c7f44774937ee36c66cfcfeaed2bf42406"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/spectral_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7e093c36e90bae695d7f757470f7f5027b7a2da773b0bbff5ba50424dc660364"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/spring_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ef24a7d7f98311d9fdfb2ae8988f400bca80b663eb0ff100709337a49cd95cb0"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/spring_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6f993f49b91c78b0a9e7e889c274728ae9022b8a32ce2c73d7a76a4ac764811c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/summer_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "015cc45bc3447b077b009ae22058428c640a745a1fe7b709d42b64ad2a5967e1"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/summer_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3fadd52bec0c831ec765178b3a7566ba1b5ce5e3df845aa1632cba65d2893a1c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab10_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "6e35fb6e562a363edd2be34f1d1948d35704fc357afefdba961dadbe91f1a5dc"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab10_rgba.npy",
+      "bytes": 1148,
+      "sha256": "be4cf1f9bb5bca92ee704dcc90f248290225d91727e3969b52aa434839e7ec7c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "7830584d3f779ee105c3180a0df391643a10069d0807da72b9124eff9ca75e99"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a95eead4a6674941d46dd22e111006e9858fc573c1264c196b5a45ec6910a877"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20b_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fa700c70c99ecff68c74497000ea15956e3f1be6569e2576997711cb2e58a51e"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20b_rgba.npy",
+      "bytes": 1148,
+      "sha256": "65ffdb238dbf988b530639943818a9d10734b072a49ff59cd8fa3d4daef498e4"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20c_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c35f669fcd705952057fe9e49c2cf045c51037e17e19dab9edbe28aa53acb83d"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/tab20c_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ed6dc089babb51a625980f5f20732a99af8779c4cf7b4ced3e7c1601a04d820c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/terrain_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fd488dae084cca24eb28abfbd5d9da2eeb7c788d2a1373710ddcf98ce42c283f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/terrain_rgba.npy",
+      "bytes": 1148,
+      "sha256": "dab9f4ae0b2032839bdb2eaa6d1cc0f1a29abe96b7c29839e7fba42c9fbd1a74"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/turbo_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e3a29229db7491f7a1b39de1903443a87dc4c64a9563a6c07a6af54fe3a97522"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/turbo_rgba.npy",
+      "bytes": 1148,
+      "sha256": "10ca669b1b6d01a03c662282e66711cb9bff39d73241ab4bc03f06d507ac6c7b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/twilight_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f4be99d0c2267d4eef887de8d89bf847de6821b2207ba67910cff0cf21a1028f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/twilight_rgba.npy",
+      "bytes": 1148,
+      "sha256": "66ba6321acca30591f38add794892d310647bfb459b7fe1d9e51146325ea4fe3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/twilight_shifted_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "c272fc410ffba9e677bffe4824cea5c6d04c6348cba486066eaaa7f3924e2051"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/twilight_shifted_rgba.npy",
+      "bytes": 1148,
+      "sha256": "14b3c2fe879ec003abca2db579811196ff05a28a252d6d0622a42c25c63c8cf6"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/viridis_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "9a8c172d30533a18bdaf29f8075e7146880620137c7f235c3eaca34d488e771f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/viridis_rgba.npy",
+      "bytes": 1148,
+      "sha256": "a0a6f2a4af4ab3d8cd428f33613f16ba9f22e3e85dd9dcdbd984d9dccbe8e22f"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/winter_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "f950654c439dd5ad74fce197c31e4360d9a579c95e19d1051377a0bd455235a7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/winter_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d377b163cdb428ca5702ac485c26fc431f754f87c8d828df89088c913a0f6bd3"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/wistia_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "265f505b373299b05ad0c401729ab473c26084973d952b1d17b19e2cb2d7bf1c"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/wistia_rgba.npy",
+      "bytes": 1148,
+      "sha256": "4f3cedcde4e9fce337f3a5510655c11ff76deb36839a64bcc051ab7d50371fe5"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylgn_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "d8838d6a0c910a67153e426d64fa23b8d32085b5423ff0be1b494505a1b6c2bd"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylgn_rgba.npy",
+      "bytes": 1148,
+      "sha256": "fb4811c882691da17bb61720036244bfd34492f272a5856d1104e6194b6f56c2"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylgnbu_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "3f455a1c6d1e3a41ce4f5840005aa94490cd9cdb2a4b2f27424589deeb02b630"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylgnbu_rgba.npy",
+      "bytes": 1148,
+      "sha256": "ee32d84adc9899514ed1722be71ea37dccfd3f9572a0cf23639d5df263b78b1b"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylorbr_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "2c2547d4b63e147965c1f372d51ced581d1d03b2189967fefbc5ae6237bc5aa7"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylorbr_rgba.npy",
+      "bytes": 1148,
+      "sha256": "e77e21363def49cdb85d27ac57ff87d7992a11b7df021457902c457b3d3064ff"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylorrd_r_rgba.npy",
+      "bytes": 1148,
+      "sha256": "db94e01678ddaa09e01ca718ec4bd886c1c44412cc52810dd029068c3ffcb9d9"
+    },
+    {
+      "path": "python/terracotta/cmaps/data/ylorrd_rgba.npy",
+      "bytes": 1148,
+      "sha256": "38e696e9300af5aa6495fa992a2e0c6578c0eada683556c4ea44d9b147294cbd"
+    },
+    {
+      "path": "python/terracotta/cmaps/generate_cmaps.py",
+      "bytes": 733,
+      "sha256": "fdabb94b408af6973496d1e1a974beca422ca3b5c869e91e79137b69a565be84"
+    },
+    {
+      "path": "python/terracotta/cmaps/get_cmaps.py",
+      "bytes": 2125,
+      "sha256": "a23983929be194ccb3871f694b8bbcbfb067098d00768ef8bdcd5fed8a232901"
+    },
+    {
+      "path": "python/terracotta/cog.py",
+      "bytes": 7613,
+      "sha256": "94e192a8f3ca28e2b6a395f0ff138c64b754281bb43ff879d7656e6443e66593"
+    },
+    {
+      "path": "python/terracotta/config.py",
+      "bytes": 8532,
+      "sha256": "2e2388934c207cd9d661487e5bdeb3bc26828add3956d92b6b0630781ff5c515"
+    },
+    {
+      "path": "python/terracotta/drivers/__init__.py",
+      "bytes": 3565,
+      "sha256": "1f30962b11edb7911a48901e0712a050e85177dc648d172cee9fb46ce7a9c63c"
+    },
+    {
+      "path": "python/terracotta/drivers/base_classes.py",
+      "bytes": 4502,
+      "sha256": "21a87fe1f48eb99a3bfe2d5c8ac326d640b91ce5685c9691163f908368ce4fa8"
+    },
+    {
+      "path": "python/terracotta/drivers/geotiff_raster_store.py",
+      "bytes": 6056,
+      "sha256": "c9c77d6762b7db91a0270daf1a1610d71e601970b760993c338ecb3f9dcd3c69"
+    },
+    {
+      "path": "python/terracotta/drivers/mysql_meta_store.py",
+      "bytes": 175,
+      "sha256": "0dd05344cdb19761ae898f51c26abe9f1d1b0794f2d3cd2a8765c8422dc7b154"
+    },
+    {
+      "path": "python/terracotta/drivers/postgresql_meta_store.py",
+      "bytes": 186,
+      "sha256": "ab7bec0078fa76a405abbd168a8acaac30e120cda97c5f0ebbc0bfb1805d4560"
+    },
+    {
+      "path": "python/terracotta/drivers/relational_meta_store.py",
+      "bytes": 8801,
+      "sha256": "bed74b169866ee8a47d12507049732a28ae5ceee8abfa6ea635451c0a91a2eeb"
+    },
+    {
+      "path": "python/terracotta/drivers/sqlite_meta_store.py",
+      "bytes": 154,
+      "sha256": "417c6ace6ccedc4358eb88fb70145a96e02249fa441175fd9db4546b5b5d071f"
+    },
+    {
+      "path": "python/terracotta/drivers/sqlite_remote_meta_store.py",
+      "bytes": 1760,
+      "sha256": "78c2aeaf2c0ce2caaaa369dcd2295f1b826dfffe74fb4c0cf3c053cf93e9fc8f"
+    },
+    {
+      "path": "python/terracotta/drivers/terracotta_driver.py",
+      "bytes": 13527,
+      "sha256": "c8960d2c36771c45f1c4f7cee858d9dac2c31ccb3e6862b7fe5398dcf7007b7e"
+    },
+    {
+      "path": "python/terracotta/exceptions.py",
+      "bytes": 472,
+      "sha256": "024d82d2bbec649feed64328681089cefdc4be64b62aa13e0089199ff64b9214"
+    },
+    {
+      "path": "python/terracotta/expressions.py",
+      "bytes": 6444,
+      "sha256": "d9e08ed3d2cb16b3587e6f4325cdeebe2de50a139ed3789bf4e8e08800a65056"
+    },
+    {
+      "path": "python/terracotta/handlers/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "python/terracotta/handlers/colormap.py",
+      "bytes": 1140,
+      "sha256": "f5be20657bbfc0e28d0f903a0b21b5dfb6f736494d0c526580b5b60f66bb999e"
+    },
+    {
+      "path": "python/terracotta/handlers/compute.py",
+      "bytes": 2922,
+      "sha256": "ab2a48b1900203699047afeb3e67c9d3ae7b8ddfb4bd9d594758fc26d1615c1f"
+    },
+    {
+      "path": "python/terracotta/handlers/datasets.py",
+      "bytes": 1009,
+      "sha256": "ba408428f97638185a8de6bf87ccdeaadd16c0a5a06aa36e330222a352e8caa5"
+    },
+    {
+      "path": "python/terracotta/handlers/keys.py",
+      "bytes": 629,
+      "sha256": "9858eaa58be4ea05157b00d3192213634ce0e61532f0d62d3889428abe9475f4"
+    },
+    {
+      "path": "python/terracotta/handlers/metadata.py",
+      "bytes": 1994,
+      "sha256": "603f44fe30b92a35fa062c10c338e7ca8f9847a3049c2f1e47841e60769bb777"
+    },
+    {
+      "path": "python/terracotta/handlers/rgb.py",
+      "bytes": 3841,
+      "sha256": "a1f7c28bf64ba16482d6cbbf87dae739ae1e8cbf6d55f10b6c4e51da26089ac4"
+    },
+    {
+      "path": "python/terracotta/handlers/singleband.py",
+      "bytes": 2793,
+      "sha256": "763df8a96d1cd575aa54d802285cbac938f573f581e2baadab6a8ffab1b1e7ea"
+    },
+    {
+      "path": "python/terracotta/image.py",
+      "bytes": 7004,
+      "sha256": "a757d72b758c856071f17d91107d20fdbec1805135f83d762459064a0634d81b"
+    },
+    {
+      "path": "python/terracotta/logs.py",
+      "bytes": 1839,
+      "sha256": "aa42de845928506b858d4e690f1e286672b29c764d1d431f0bc343f503a789f3"
+    },
+    {
+      "path": "python/terracotta/migrations/__init__.py",
+      "bytes": 532,
+      "sha256": "46b9ee08daf121a2a148d22de6fe34bceafd0c0b0405bb71ad4f122539d13bb3"
+    },
+    {
+      "path": "python/terracotta/migrations/v0_10.py",
+      "bytes": 108,
+      "sha256": "3752bd105bc8df4ce063e30b2bd7d0a186611a56315b8e01726938bf0f6328af"
+    },
+    {
+      "path": "python/terracotta/migrations/v0_11.py",
+      "bytes": 109,
+      "sha256": "79d1ea63447f947d154781c5deb1fb99d61df8b5b76868cd99400eefb0cd08af"
+    },
+    {
+      "path": "python/terracotta/migrations/v0_8.py",
+      "bytes": 397,
+      "sha256": "7c759c603645475ea705564e4d5f7c84fb591db62aeb4ed0b70d377da9480948"
+    },
+    {
+      "path": "python/terracotta/migrations/v0_9.py",
+      "bytes": 1995,
+      "sha256": "d32473a21b1387456b03c7fea18319dc0b41145fec8b6e3ca9aed8379a2ccc80"
+    },
+    {
+      "path": "python/terracotta/profile.py",
+      "bytes": 681,
+      "sha256": "8caf20447d1c8b5b13382aae697410a0f065744160b565a22d52c470986c13c0"
+    },
+    {
+      "path": "python/terracotta/raster.py",
+      "bytes": 6251,
+      "sha256": "8d3345f9dfbbc5bd3bad182e85bfafd09ce43db61021413a261e1a03d71a3cc7"
+    },
+    {
+      "path": "python/terracotta/scripts/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "python/terracotta/scripts/cli.py",
+      "bytes": 2007,
+      "sha256": "d60e38e47afa2105112513f073d57029a3d6fb62c3505617973db340c587904d"
+    },
+    {
+      "path": "python/terracotta/scripts/click_types.py",
+      "bytes": 4476,
+      "sha256": "8f0796f03a89e99fe22d49f5085e25c10696642782b5b02ff88058ad63728857"
+    },
+    {
+      "path": "python/terracotta/scripts/connect.py",
+      "bytes": 3470,
+      "sha256": "dd35a772bec272a64f0ed7dcaef1fdafd270c54f1f322affab4f20d4976aaf01"
+    },
+    {
+      "path": "python/terracotta/scripts/http_utils.py",
+      "bytes": 818,
+      "sha256": "f786be3d48b648d960464434525c876feb19cfdc43530bef38913c4a482a35e8"
+    },
+    {
+      "path": "python/terracotta/scripts/ingest.py",
+      "bytes": 3404,
+      "sha256": "343e1b234ccd0889dbd6e3edbad550576f82e701ae00847e7654c45253ba710a"
+    },
+    {
+      "path": "python/terracotta/scripts/migrate.py",
+      "bytes": 3200,
+      "sha256": "52a83788741d0b009882a929cdc4c4f599fba58ce342a4a7a17a14eef5c3d687"
+    },
+    {
+      "path": "python/terracotta/scripts/optimize_rasters.py",
+      "bytes": 9911,
+      "sha256": "ae039afb90528cfb4db1536a53bf63a0f940a5b3ca923291514f894283fefee8"
+    },
+    {
+      "path": "python/terracotta/scripts/serve.py",
+      "bytes": 4611,
+      "sha256": "bb6eeced9353ab372353f9e6e4f48f1bd4ddcfb79ba26169e81cd7d5a00540a7"
+    },
+    {
+      "path": "python/terracotta/server/__init__.py",
+      "bytes": 125,
+      "sha256": "2e5342c475ac1f63f7b3bd5e84918bddcadcd7a3adfc741d4a3323d243dfb921"
+    },
+    {
+      "path": "python/terracotta/server/app.py",
+      "bytes": 301,
+      "sha256": "dceb146e40e1c197951ea9abba3f6334e02d787251f07575f1c5be5b0a3e2f36"
+    },
+    {
+      "path": "python/terracotta/server/colormap.py",
+      "bytes": 2871,
+      "sha256": "12f9cbfb2e383f35fc90665cc2eb1a65449c2fce5c44743462d4118f04224c1d"
+    },
+    {
+      "path": "python/terracotta/server/compute.py",
+      "bytes": 5507,
+      "sha256": "1bef00056ec26bca9391a6b80cfea9ab536804f4483e761f3883ca8e8012425b"
+    },
+    {
+      "path": "python/terracotta/server/datasets.py",
+      "bytes": 3673,
+      "sha256": "7f3059f99886b904856302e7ee166ec2fc01c9a0aff2f1bfdf312b14991c7f74"
+    },
+    {
+      "path": "python/terracotta/server/fields.py",
+      "bytes": 2343,
+      "sha256": "b83bc27d9daa41dbd0e2fcd9666182346e35ac4acacefbdec9b75d0cf98a54e8"
+    },
+    {
+      "path": "python/terracotta/server/flask_api.py",
+      "bytes": 6743,
+      "sha256": "84114c439c22264d288e166fcfd3f1cf2507db5060da62f821b6f4aad6365ff3"
+    },
+    {
+      "path": "python/terracotta/server/keys.py",
+      "bytes": 967,
+      "sha256": "6a7cc3f71e19e6f57ec237c73217250e9a76186a12557b7659b6ccef0ccfc0d3"
+    },
+    {
+      "path": "python/terracotta/server/metadata.py",
+      "bytes": 5369,
+      "sha256": "1847e140acf16ce131828a52665d48df5ac9e3f60dc4f1ac9f0fad27ad2e5286"
+    },
+    {
+      "path": "python/terracotta/server/rgb.py",
+      "bytes": 6907,
+      "sha256": "419a6a92d9ca9a256687c98c8558e680488a29225cd80e83685aba94fb0ed28b"
+    },
+    {
+      "path": "python/terracotta/server/singleband.py",
+      "bytes": 7642,
+      "sha256": "d66d9b9935b72dd623f8b6dd7151f0a8cfbcf6b7fab536d48d32788a2b946c49"
+    },
+    {
+      "path": "python/terracotta/server/spec.py",
+      "bytes": 389,
+      "sha256": "6938655eb7b861d8f3d3584dd600f9b7961a8d579a3b5f89c97f8cfc5f5c2c7a"
+    },
+    {
+      "path": "python/terracotta/server/static/favicon.ico",
+      "bytes": 5430,
+      "sha256": "48367d4b9476a355027b9706d77e6d489a118b78a0c057f0f4e0aae03228d3f6"
+    },
+    {
+      "path": "python/terracotta/server/static/redoc.standalone.js",
+      "bytes": 1042135,
+      "sha256": "e1bc95ea886b6aa8c28d5a6c3e82bac11b9992ceb3194ab8723f3ed17f3d00fb"
+    },
+    {
+      "path": "python/terracotta/server/static/redoc.standalone.js.LICENSE.txt",
+      "bytes": 2641,
+      "sha256": "e95b12784bb4b5b349f39825e1ba8e3c0c661efafa7917818688605e6ede7709"
+    },
+    {
+      "path": "python/terracotta/server/templates/apidoc.html",
+      "bytes": 635,
+      "sha256": "21bc1cea3ae059ae8ce31af1b2399946f73a3fbaaf8c3758d62a1c10ab0afd51"
+    },
+    {
+      "path": "python/terracotta/xyz.py",
+      "bytes": 2118,
+      "sha256": "b5f0f6927d5b75f2100e225eb501c44d234f83e205004044b34fc27f3da6f484"
+    },
+    {
+      "path": "python/terracotta_rust/__init__.py",
+      "bytes": 7048,
+      "sha256": "765e5f8ef9bcdf7eba2eba71ede2a91db9d9b758ac20e2c643075d749c055fd3"
+    },
+    {
+      "path": "python/terracotta_rust/wsgi.py",
+      "bytes": 2007,
+      "sha256": "d8038d0b7b481bdb8361f9b76d7db4ece1f4a825bc429e223a2610f2a7313a9d"
+    },
+    {
+      "path": "packaging/OPERATIONS.md",
+      "bytes": 10015,
+      "sha256": "6cf675664826414aa534f1ffb85919d83dca5f27955eba89665e521d2973ee93"
+    },
+    {
+      "path": "packaging/RELEASE_NOTES.md",
+      "bytes": 6527,
+      "sha256": "11262eee3de152162e7079fb21a1e933ab184cc347402fb8fab24204d8e03a3b"
+    },
+    {
+      "path": "packaging/ROLLBACK.md",
+      "bytes": 3488,
+      "sha256": "c691e542bbad1fbc646fc756c71ca82263b6e00930045856295d24d3bfc57db5"
+    },
+    {
+      "path": "packaging/build-bundle.sh",
+      "bytes": 2223,
+      "sha256": "d018b20985d5e3517475eb96f67eaf37bc8ace5cce51466ef15afcd9eae93b1a"
+    },
+    {
+      "path": "packaging/build-lambda-target.sh",
+      "bytes": 807,
+      "sha256": "4498a2aca60a25912fc301428c492cc4d7971650234b239d85c5374b21da7812"
+    },
+    {
+      "path": "packaging/build-lambda.sh",
+      "bytes": 1218,
+      "sha256": "403ea346e2bf2647bbd3f95648fa0745748238fb13f66a91d6dc4ae6a1e6ee7e"
+    },
+    {
+      "path": "packaging/build-python.sh",
+      "bytes": 1307,
+      "sha256": "fb9455ca88b958f5be5dbf50b0532b0fa130328d9c67105af0a5e2aa9bfd3195"
+    },
+    {
+      "path": "packaging/build-wheel.sh",
+      "bytes": 588,
+      "sha256": "042939add0df71d2ff2d2bde16ebe1cad3aee843f38c905d186cb251b66206e8"
+    },
+    {
+      "path": "packaging/ci-gdal-env.py",
+      "bytes": 793,
+      "sha256": "7450893696d958d91183eff9b52243f39a8ce9c533cab91d8e9d980d4256add6"
+    },
+    {
+      "path": "packaging/collect-licenses.py",
+      "bytes": 1267,
+      "sha256": "8097fbd3048aaf4f6eb226038e474d3bcf9ffe08e99c69df481bce1469a3fcd1"
+    },
+    {
+      "path": "packaging/container/Dockerfile",
+      "bytes": 427,
+      "sha256": "0c3bd7c5b708e7618a94a421f3e4297cb69f9f2810a63b9ccf94ba929d10f001"
+    },
+    {
+      "path": "packaging/lambda/Dockerfile.ci",
+      "bytes": 1051,
+      "sha256": "a5f16961f7f66465947ac4a2c1fa7450f8bcad5c87b23901d9786515ae1c4a3e"
+    },
+    {
+      "path": "packaging/lambda/bootstrap",
+      "bytes": 352,
+      "sha256": "3037b88a1be5bd9badfcf3f22bca66aa24c00555e823fe61b83612c7682c5a0b"
+    },
+    {
+      "path": "packaging/lambda/build-in-al2023.sh",
+      "bytes": 1111,
+      "sha256": "b0bf50b01fb0ba5924fd6a0e035b3f4f0228bee43c6de4d294e1e1b1216db4ca"
+    },
+    {
+      "path": "packaging/prepare-candidate.py",
+      "bytes": 4069,
+      "sha256": "8795d9b00fcece32d30211116dfcf3288b7d5403c741514bf500c980d0c19a28"
+    },
+    {
+      "path": "packaging/python-dependencies-linux-cp312.lock",
+      "bytes": 549,
+      "sha256": "2e5f8c1552891900e4a5d861ed8089e5d922bbbb78d1944ffef64cd567cf2ba0"
+    },
+    {
+      "path": "packaging/python-setup.py",
+      "bytes": 1278,
+      "sha256": "e5967a27c3575b8e83df60914f1689c11e6f2b697dfd56cfee6a95b90269b485"
+    },
+    {
+      "path": "packaging/stage-platform-python.py",
+      "bytes": 2270,
+      "sha256": "fed390aa911348152afe7aaea9c289febbed5dea14685f815c46cbf585528a26"
+    },
+    {
+      "path": "tests/p06_remote.rs",
+      "bytes": 5970,
+      "sha256": "726780228fd004751f488c73ae09e2525a067cf9ba6bf1e501c1eee6ca513681"
+    },
+    {
+      "path": "tests/p06_sql.rs",
+      "bytes": 2121,
+      "sha256": "16c52c3cae9a5a8e1be313fc7720819850c84c82290346ea3f1636fa018261b7"
+    },
+    {
+      "path": ".github/workflows/platforms.yml",
+      "bytes": 3865,
+      "sha256": "353b2d2954229fb3d8401f4ef0880c8b17bce82baed913a7f23b96b02d744ec4"
+    },
+    {
+      "path": "rewrite/validation/tools/acquire.py",
+      "bytes": 3159,
+      "sha256": "dcce1fcec9503bfc1e67e0fd62230b9c416d368a662e91125e73771d6b878a68"
+    },
+    {
+      "path": "rewrite/validation/tools/bootstrap-reference.sh",
+      "bytes": 1232,
+      "sha256": "7232756897900caf810e80d16b61374ce6e6787612149dee91bf989b3294ef36"
+    },
+    {
+      "path": "rewrite/validation/tools/capture.py",
+      "bytes": 9929,
+      "sha256": "d1cdafef17a880f02f2314008f6c600d48e713e64bd263de8924088d556b7c3d"
+    },
+    {
+      "path": "packaging/cargo.sh",
+      "bytes": 251,
+      "sha256": "7699153431791e4a33ec6a41fb051e20b38ce2c086d1651928e001dd59a9ebd1"
+    },
+    {
+      "path": "rewrite/validation/tools/check.sh",
+      "bytes": 385,
+      "sha256": "45594dfdd84dca047e3b70633ab798faccd085a374e7ec2ef47bb82199543e22"
+    },
+    {
+      "path": "rewrite/validation/tools/common.py",
+      "bytes": 679,
+      "sha256": "5f674292d669dd2285f066a481eeb3e35f505ac3ab9b8dfc4157a70a29ab8886"
+    },
+    {
+      "path": "rewrite/validation/tools/compare.py",
+      "bytes": 3240,
+      "sha256": "36876e1e27ac9de87063a63b3ae01c9c69c6d05b47a2c0f6c23dfb52e835a97d"
+    },
+    {
+      "path": "rewrite/validation/tools/environment.py",
+      "bytes": 1974,
+      "sha256": "77ce6952e9f9333fb743a37fe6f87f4107fff32935b0eac9f30f4507b02ba6f5"
+    },
+    {
+      "path": "rewrite/validation/tools/inventory.py",
+      "bytes": 4405,
+      "sha256": "2263c2e0762dc6b7a1812c12b67133dcea7caaf80336bcd65ab2d268f258679f"
+    },
+    {
+      "path": "rewrite/validation/tools/p01_stress.py",
+      "bytes": 6869,
+      "sha256": "9c5ba0fec40c0a83d26a632664b5b3218a83fffe6355b054d80b6dc8e2172d72"
+    },
+    {
+      "path": "rewrite/validation/tools/p01_validate.py",
+      "bytes": 7087,
+      "sha256": "23d337cfd0688e28c800ee2d90409615a56dc4d2db0c318ca4989a4ad978ed97"
+    },
+    {
+      "path": "rewrite/validation/tools/p02_failure.py",
+      "bytes": 7768,
+      "sha256": "6ab422159de42d6d459cf16500dfce76ff5fc7f5694c0a84dc1bf993e146e6f1"
+    },
+    {
+      "path": "rewrite/validation/tools/p02_stress.py",
+      "bytes": 10048,
+      "sha256": "34d5e09d6019c6a54bcc94348c297e26d3d8acba24ecee17b52bc1f9f8f684e5"
+    },
+    {
+      "path": "rewrite/validation/tools/p02_validate.py",
+      "bytes": 14386,
+      "sha256": "42bca5d48ef169f5854982d534c175ce0374bc1d1a15a3733af82dee6684d64b"
+    },
+    {
+      "path": "rewrite/validation/tools/p03_container.py",
+      "bytes": 4201,
+      "sha256": "bd0cbcab21e7bae3172d014a860871c461c2c0527df82d43cbf62ec0d940321c"
+    },
+    {
+      "path": "rewrite/validation/tools/p03_lambda_runtime.py",
+      "bytes": 4660,
+      "sha256": "fd6abbc1a9f5f993a6bb11f231945ec490ce3da1e00be915c7139e211d9d7f34"
+    },
+    {
+      "path": "rewrite/validation/tools/p03_validate.py",
+      "bytes": 13154,
+      "sha256": "1533fdf3c92eef86df81cc061d453b29d8004886adcd5539cf1d1ad0c2d71aee"
+    },
+    {
+      "path": "rewrite/validation/tools/p04_adapters.py",
+      "bytes": 6232,
+      "sha256": "ed969df6aa17d1028a268dcbb63572b084cba72047ec0c47f6cbd0e29ec5ef7b"
+    },
+    {
+      "path": "rewrite/validation/tools/p04_assets.py",
+      "bytes": 1423,
+      "sha256": "969c69259c50f207115265a6a9f2389f4bb4d58d09bc151b3f9449bcab097b02"
+    },
+    {
+      "path": "rewrite/validation/tools/p04_edges.py",
+      "bytes": 7471,
+      "sha256": "4d760a0458a3b3a4366baa101261954685f785b871c4acdc602208ccbaf84ebe"
+    },
+    {
+      "path": "rewrite/validation/tools/p04_expressions.py",
+      "bytes": 2196,
+      "sha256": "ba923082676b7d1a66f3f2949c806538c6b256458898d61f8fcda5aae930a136"
+    },
+    {
+      "path": "rewrite/validation/tools/p04_validate.py",
+      "bytes": 16721,
+      "sha256": "36428f782f18e06d71c15e9ca57fb85f819fcc8b6eabafd76f41105283fd16b0"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_edges.py",
+      "bytes": 4338,
+      "sha256": "3af916b6e1d0d606d323eef186303baa18f824658af86cc3861e29f283e4f1bd"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_metadata_images.py",
+      "bytes": 2330,
+      "sha256": "2d69a26e92adaf299a1adf41062b8f18ae147945e07824210dfa79764ad136b4"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_quirks.py",
+      "bytes": 1492,
+      "sha256": "6869a5471043b643295926596ad70d1b03e897c5192803a21f4f781e6191cf5f"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_stress.py",
+      "bytes": 4650,
+      "sha256": "8e57eb044223aa4deddac13ebf282f1b4911c718494e4e39fc16bc6e372acc0f"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_validate.py",
+      "bytes": 13248,
+      "sha256": "3ff1d70f5cade3facb00166cf6203756e7d7bb0b2517de3c69e86ee52fa55078"
+    },
+    {
+      "path": "rewrite/validation/tools/p05_workflows.py",
+      "bytes": 5257,
+      "sha256": "43067dda7a208539047d6fffc6f174a29a1fc988a89d6bfd7e7c0571ba80c2a7"
+    },
+    {
+      "path": "rewrite/validation/tools/p06-services.sh",
+      "bytes": 1675,
+      "sha256": "41056f627c4223c4fad3992b29cf69c11d5025eb72f83f7c50f77961fe219dd2"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_migrations.py",
+      "bytes": 5052,
+      "sha256": "f2d18e443a48242f5476b034aa86c5d44cc3eaaa7b56c52e40da50abce0bd0d7"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_package.py",
+      "bytes": 1815,
+      "sha256": "c2179626ded048f9f5a0848e7d00a68cfc115ec4e39357e8492dceeefb5ea84a"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_paths.py",
+      "bytes": 6228,
+      "sha256": "12e14633e5109c553fa6613ae18ff3a8211ecfce43798b7b99219798113f88ed"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_remote.py",
+      "bytes": 5364,
+      "sha256": "ef82340e780e4fd8656ae0169ca5142c4cf5beb9cd2841e0452de8041b77bb68"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_surfaces.py",
+      "bytes": 2536,
+      "sha256": "315cb5999a090aa21041da6d317e35f0dc453f03a5e38bf0ae951780dac77a20"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_tls.py",
+      "bytes": 1688,
+      "sha256": "daa4f2a65764571f8dccfc2a87975020ce494014e32fdc6b42adf144dc3f5aab"
+    },
+    {
+      "path": "rewrite/validation/tools/p06_validate.py",
+      "bytes": 14197,
+      "sha256": "cf7fb9328d41bc5a795983e47b602cc8c3cb25b2bb44eaf13b4acf0de2a7d4cb"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_browser.py",
+      "bytes": 5333,
+      "sha256": "e68689734d694af9dcc412fb71afab721d04f4ec896d7d3cb821672f1ab4de9a"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_platform_smoke.py",
+      "bytes": 4597,
+      "sha256": "b107249d7f6b56aa493b1c783dc9843386141cf4bc42d2a668841216abd679c3"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_remote.py",
+      "bytes": 3042,
+      "sha256": "a86b804dfc3c155165b31cbc6ab6fc938844edd4a25b046b8052274994b2f590"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_resources.py",
+      "bytes": 3302,
+      "sha256": "ed5e1fbe377b70924480f552c569830ee187f71d9da69eb86f8a2135db219b09"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_settings.py",
+      "bytes": 3482,
+      "sha256": "72a7547979b9e27b06534c661747bc2e091f24c07a819a84fd177408e28a18b6"
+    },
+    {
+      "path": "rewrite/validation/tools/p07_validate.py",
+      "bytes": 7670,
+      "sha256": "9e53b64ab3025bceed535f29ebd837216846f78f9ae67eec32f0d1bd33b24c6c"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_acquire.py",
+      "bytes": 1322,
+      "sha256": "07669154f97b1e63130fa25f2c91bfe742830100846c482400c75ab433f4af90"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_archive_smoke.py",
+      "bytes": 2661,
+      "sha256": "7f528e8e057b660b0e30d27b4d60f4c8ca2eb3eb901c87503cc8eeaedbb636c6"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_benchmark.py",
+      "bytes": 6514,
+      "sha256": "86d4177fa4005b02b8d5db559db80a9cf6f82343872351a658d608c7848c1132"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_bigtiff.py",
+      "bytes": 7394,
+      "sha256": "f558725e936ad2599322c1908f3cd92a30774b67066af7827463f9d2bdf51d08"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_collect.py",
+      "bytes": 3541,
+      "sha256": "7cef1e5aa9c286410a3f519bd40d31db8fcc963f1c4dad8b1709e3e9f24bec51"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_geographic_metadata.py",
+      "bytes": 4285,
+      "sha256": "c6d8a0602c9e6c8b1d21e264b526ea0aee7c38f12ee5d1790ca17b4e5ffe2d06"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_geography.py",
+      "bytes": 6371,
+      "sha256": "18c2548de41043d60724aef5ca4a3c5836d7aabee49eaccb05b369e8b1eaedb4"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_performance_report.py",
+      "bytes": 6002,
+      "sha256": "eed93b396f92168f84cd8cf7e0dc3d0b8f38089dc8c456984b642cf45e0aa9d0"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_qualify.py",
+      "bytes": 5616,
+      "sha256": "2b5d3adf1eb6100c2fd5c55909a2c6176f8fe5c46a65ad563762cc6a2ead6c9b"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_reconcile.py",
+      "bytes": 6629,
+      "sha256": "e1ee2a08a822d8ebbf0028643f110178fa24607891426f03f22396e88750ba3d"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_rollback.py",
+      "bytes": 5549,
+      "sha256": "07e9ebfa0014791814fdc848474636602fe7094879ccc80e0af4c9e4089832a0"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_runtime.py",
+      "bytes": 5460,
+      "sha256": "bcc784a9fdc63c58f1f18d684425832ebc0b6a83be5b19e1ca9e2bd9e13f2b17"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_shutdown.py",
+      "bytes": 3584,
+      "sha256": "7bc225c46d1ba8717f151acf8cc9973c69a467c327adb5c63ea50d5b8164cf24"
+    },
+    {
+      "path": "rewrite/validation/tools/p08_soak.py",
+      "bytes": 4338,
+      "sha256": "9d4bdff60a4086dfc5c2302996febb8662ab2eff799d33e5abfe6a5fe7620deb"
+    },
+    {
+      "path": "rewrite/validation/tools/range_server.py",
+      "bytes": 4073,
+      "sha256": "68c58303272019891518bb07f4fe194482c10345556ea9c911363c831b9b25a0"
+    },
+    {
+      "path": "rewrite/validation/tools/stress.py",
+      "bytes": 4137,
+      "sha256": "b110b2459a041e22dd9d020cb2d14588f53e0f0e1d86dab609af95288e85d725"
+    },
+    {
+      "path": "rewrite/validation/tools/subset.py",
+      "bytes": 4161,
+      "sha256": "fd2cebca0f3f96b67e17cb4f128b9dcf27d35bdb0ef4400cb4c3131a902f707f"
+    },
+    {
+      "path": "rewrite/validation/tools/test_compare.py",
+      "bytes": 3042,
+      "sha256": "21edf7efd22dc090d83fbb0b8574f4e0aaba09706eefa0ef9dfdf6e9385b2d01"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 1413,
+      "sha256": "4c6d50204efc35f67ea7fd94db728ba17517bed447ed97d3a880ee19ad1c95b5"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 80637,
+      "sha256": "df499c3f6bfa6be457be22c34ee72e57c4f2875dae9259086060a6e15651115e"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "bytes": 51,
+      "sha256": "4ae7dd89b38747ef65001accc5ec7886c041151b697277baff1fa49a041050d7"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "rewrite/validation/artifacts/p08-final/bin/terracotta",
+      "bytes": 30253480,
+      "sha256": "7b5578bf306a67926f9e8b2a022e57db95127c54ca621d39d02e3bc2409150d1"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libterracotta_core.so",
+      "bytes": 25980840,
+      "sha256": "f54e3c3c4fdd3b9c2b1bd6a379d8a0314d07a799de18d42abbb62ebfda0db440"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final-lambda/terracotta-lambda.zip",
+      "bytes": 45077479,
+      "sha256": "6373cb747700653620537c161693819542a7a3c393511dd560ecd9e675505097"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final-wheels/terracotta_rust-0.1.0-cp312-cp312-linux_x86_64.whl",
+      "bytes": 45960732,
+      "sha256": "a708c7f775a792fc20e8f3cb5d4705cbaddd2fe1b15cffcb1fc330b2c258808d"
+    }
+  ],
+  "runtime": [
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libLerc-rasterio-47e5a5fc.so.4",
+      "bytes": 821033,
+      "sha256": "fbbc33904848fce2812bf21cc08680d7f27d8ab8363deb4f9fa1f34770e2fbd7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libaec-rasterio-7506c78d.so.0.0.10",
+      "bytes": 33593,
+      "sha256": "4700898306c3391cb6779207051e061867786ed4f136b173c472ce0f8ce0e48a"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libblosc-rasterio-23b0ca4e.so.1.10.2",
+      "bytes": 171169,
+      "sha256": "a5fd2dd66a8933c8d5e4f12d25901016fa40adc53d4fd5f063b7ed6ddc704d3a"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libcrypto-rasterio-d0bf641a.so.1.1",
+      "bytes": 3477177,
+      "sha256": "a30fcc2bc394a6a04e6c9ac428e8979634cd09dc4b5cf94803d305ff0df9c67e"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libcurl-rasterio-1d984654.so.4.8.0",
+      "bytes": 745585,
+      "sha256": "900deb3e0c4ae28d18a99e9bc8c934937c30b73cc7ac015f6ff8934529f60f59"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libexpat.so.1",
+      "bytes": 203032,
+      "sha256": "d4a03e6629feeb642b6a7cf96bd5a7b0b320d9a430ff5cb9d8351e46c8454daa"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libexpat.so.1.12.3",
+      "bytes": 203032,
+      "sha256": "d4a03e6629feeb642b6a7cf96bd5a7b0b320d9a430ff5cb9d8351e46c8454daa"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libgcc_s.so.1",
+      "bytes": 190608,
+      "sha256": "9460b5f230d3f66554ec259e8e0890b0946dfde7cc83f95d1ac8d4dca3d3f9bb"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libgdal-rasterio-40212d0b.so.35.3.9.3",
+      "bytes": 22737537,
+      "sha256": "f58902dc64033e9ea05fcbaa31023c9e837bcb2a36678f7662691eed2a576422"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libgeos-rasterio-8da2fcfa.so.3.11.1",
+      "bytes": 3245465,
+      "sha256": "4d947129762c9e116eb3c0903b610a9880805ec3cd65190651e01c9c0e4a8d19"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libgeos_c-rasterio-167ab3e5.so.1.17.1",
+      "bytes": 365505,
+      "sha256": "2b1080b9765151c010ed7d52e01bf21764eb879473174c65f3beb1a327b54af2"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libgif-rasterio-0706e08a.so.7.0.0",
+      "bytes": 50945,
+      "sha256": "50cb05d849d2fdc7a9083c20dcfa883da8321a41000573e40f1ec00b433cf6ca"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libhdf5-rasterio-eff4d41c.so.200.1.0",
+      "bytes": 4262697,
+      "sha256": "68df2bb218c6702e3af38c877d0baf0255a2f473465df4b30f6b400707490d8f"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libhdf5_hl-rasterio-cfd10301.so.200.0.1",
+      "bytes": 144977,
+      "sha256": "4cfad9a0067a3cce6e1a9c65752b581fc427e6b25297a2586a04d8e2c044ed82"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libjpeg-rasterio-320f4797.so.9.6.0",
+      "bytes": 344713,
+      "sha256": "dfcde4cbea8a600e9b5892cedfb08c06edb3fcbce43af29ec854fe823dec0a20"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libjson-c-rasterio-94fd386a.so.5.1.0",
+      "bytes": 78545,
+      "sha256": "e1e5201ceccf251b02d62d9b2b9e3b1db7fe715ea85ee9420fd92bb0c6c09da8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/liblzma-rasterio-c949e524.so.5.2.2",
+      "bytes": 220761,
+      "sha256": "5701de9653ff9a041d8e7d2afe5ebcf976a7a0309a26c205a8b304950b051dbc"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libnetcdf-rasterio-e6abeaba.so.13.1.1",
+      "bytes": 1347401,
+      "sha256": "425b9e3a0daf76c6f07cf2b74830192bd56b0a9076a3b89b8bfcf00bdb7092f2"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libnghttp2-rasterio-e183d352.so.14.21.1",
+      "bytes": 215929,
+      "sha256": "4aa0296536695a4bca93a2fb5e2a49a7c8475062518414807964b2853a8f1d41"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libopenjp2-rasterio-a166e295.so.2.4.0",
+      "bytes": 405577,
+      "sha256": "c8a51f32a9ec514be516feb7a8ce4c982e931e79e6e3fcbf7e99da6f404b66ad"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libpcre-rasterio-9513aab5.so.1.2.0",
+      "bytes": 406825,
+      "sha256": "9c8c4fed7f210353be2d40737eb057b7bdb8f4c04c8374d1df866fe24a30b181"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libpng16-rasterio-8ebcc106.so.16.35.0",
+      "bytes": 277825,
+      "sha256": "6c67d4b7c80ab899171b38898cc0c31463dd38d8b3beff11fb2a82df18ba7095"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libproj-rasterio-3ec30893.so.25.9.4.1",
+      "bytes": 4555097,
+      "sha256": "71dc9257b7fcc003436b6d1c98658b08a08301c4b2f29154907111c2635b5cda"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libsharpyuv-rasterio-fa10b7fb.so.0.0.1",
+      "bytes": 33721,
+      "sha256": "cb86c6cf8b1aaa3f42d7df53ed661a86df7f60dc638546980de93d59a6e3378a"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libsqlite3-rasterio-b9d397b9.so.0.8.6",
+      "bytes": 1253577,
+      "sha256": "202e33e874861d66fff097e6e89e57eb29a37eb37e0c4d16f88c3787dc7a914b"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libssl-rasterio-6c758070.so.1.1",
+      "bytes": 764849,
+      "sha256": "a5240dad41ab01937390172ce776f1b397af42078b518a555e26104d9543cad7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libstdc++.so.6",
+      "bytes": 2556576,
+      "sha256": "846b43f9f1429cc67ae7ffd24f4ccdd7a17d652765aaf3e6f9d2ca54178b369d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libstdc++.so.6.0.33",
+      "bytes": 2556576,
+      "sha256": "846b43f9f1429cc67ae7ffd24f4ccdd7a17d652765aaf3e6f9d2ca54178b369d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libsz-rasterio-cbeefad7.so.2.0.1",
+      "bytes": 20849,
+      "sha256": "d10ae48a77fd4b75b456ce0e0a0542a4d7b6b0258e68cb36df552180035c56f7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libterracotta_core.so",
+      "bytes": 25980840,
+      "sha256": "f54e3c3c4fdd3b9c2b1bd6a379d8a0314d07a799de18d42abbb62ebfda0db440"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libtiff-rasterio-31a01dbb.so.5.7.0",
+      "bytes": 567793,
+      "sha256": "155cda35434687dd5b003edb7dfaeb34fa5bd522cb32196fe771d6473867f139"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libwebp-rasterio-b5775511.so.7.1.8",
+      "bytes": 780369,
+      "sha256": "2ced61450718c5517ec338f1589f14d7d97b908a72f14c21ef3e5ab62952d7ee"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libz.so.1",
+      "bytes": 106888,
+      "sha256": "0d7c85ed0701ddb5e1b7cbcc3fec43f7be295f47f477cc052148db220c61e833"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libz.so.1.2.11",
+      "bytes": 106888,
+      "sha256": "0d7c85ed0701ddb5e1b7cbcc3fec43f7be295f47f477cc052148db220c61e833"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/lib/libzstd-rasterio-8255c9c1.so.1.5.0",
+      "bytes": 956433,
+      "sha256": "4a9977b181886ec361781a447b0a6b5ea17b9af77767913126833b6aaaf8f968"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/GDALLogoBW.svg",
+      "bytes": 13022,
+      "sha256": "aac9dab33d479e0b832b8bd7c9e5510dcbef34a7c6cc9aea96bbe2aab5161c53"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/GDALLogoColor.svg",
+      "bytes": 12305,
+      "sha256": "2c102a31c6e9116aa9b98787d8bf5cf648dbcc2b930aee653cd35df65ed118d0"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/GDALLogoGS.svg",
+      "bytes": 12305,
+      "sha256": "1ae6e2d92e6b0439f3baee0cb55dad8b97abfb4fcc58c9189b23b63c818aeeca"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/LICENSE.TXT",
+      "bytes": 21841,
+      "sha256": "1dae3468e81d00da56e2936f74d33b8b3ad09d726437f19ce209a5dabea41f77"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/bag_template.xml",
+      "bytes": 9020,
+      "sha256": "daf7816f686c35b51ec66c90fc6aedbf12dbef97f28f9fae9731392f92afb733"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/cubewerx_extra.wkt",
+      "bytes": 11977,
+      "sha256": "1cca3fa3e249f4cc7d1bf0ffb0a71a1a2afadd10afdf7ed0aa292dbc5e4f0768"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/ecw_cs.wkt",
+      "bytes": 364032,
+      "sha256": "d431893eb446b265d206eea8863dcdcce3b65c7c2a707daab58e89e583af033e"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/eedaconf.json",
+      "bytes": 411,
+      "sha256": "03116848a7bacad105289c56f5d13fb59be264f1e3d3809e82745f4163fe1285"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/epsg.wkt",
+      "bytes": 27,
+      "sha256": "e50895e9061aba6dd1588f06a088872aa562a8d98716588bc1a420189dcb254c"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/esri_StatePlane_extra.wkt",
+      "bytes": 332546,
+      "sha256": "682df1b231cb6f1287685d4c64bf1b2611c0af43c30483473bbb366ce1bd8d33"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gdalicon.png",
+      "bytes": 2021,
+      "sha256": "d90f50a8f74c325086c867bf006a92266c259a270d9166b2f41f586b67755729"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gdalinfo_output.schema.json",
+      "bytes": 8241,
+      "sha256": "4c3046ea7417a14973b19d14d086362a08f74aa1824ae790c305d05f1adf2733"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gdalmdiminfo_output.schema.json",
+      "bytes": 6543,
+      "sha256": "b98a8990bbaeaad080ea3c1d9cd19e35117b5de788e9fcb663ec9bcd97fb55a4"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gdaltileindex.xsd",
+      "bytes": 11827,
+      "sha256": "f5da1b6943885f140325b13a21917b896929f5366a79217917234d4a56aedf98"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gdalvrt.xsd",
+      "bytes": 38694,
+      "sha256": "9ece07ae4a6752161d9a7e5be82f3d8dd697ccad25183848b168792b5a25aa65"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_center.csv",
+      "bytes": 4171,
+      "sha256": "f6ac1b6785bc9bcfba7591ba2c5b2471adeb0a0978d9b30b7f3834c9023f4233"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_process.csv",
+      "bytes": 4926,
+      "sha256": "e6deb8aaa12ecf8df9fd541f2a3ea366b3e98bd19424f2fe5d2df657d5440a0f"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_subcenter.csv",
+      "bytes": 2328,
+      "sha256": "1f53670bb3eeb074d46d2ddc1537e7c05c87b24aaf76024d029775143502945b"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_0.csv",
+      "bytes": 10363,
+      "sha256": "ee5717898647055bf24ed26eccdeff37b6dc093693f7cb7da46675a8200294fb"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_1.csv",
+      "bytes": 16505,
+      "sha256": "22c971d6ec0eaed16152065cab4bab84ef5e1b56c50d68c589eba315d409ab73"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_13.csv",
+      "bytes": 9596,
+      "sha256": "1620165db8897a6f5e3dbaed5cbbbb721066d87f8f859dfd0cd23f73b0971372"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_14.csv",
+      "bytes": 9551,
+      "sha256": "157ec8e6256ac2aee26484ce1ed23be17fa27c95ae043be9bf6a96d7c8e46769"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_15.csv",
+      "bytes": 9846,
+      "sha256": "ede054e568a034c992c110fb48a982329333beaa0124981c26f4f9e4b228c212"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_16.csv",
+      "bytes": 9671,
+      "sha256": "9aeb7b3dc42c5f464fc4c8d4fe81dfb934c6c0f5006f1909cb6629fb26cb57ed"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_17.csv",
+      "bytes": 923,
+      "sha256": "0382396c7e77ec6611f939d17dbdb6c167f333b9cba78381717484c6facbbf5f"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_18.csv",
+      "bytes": 10224,
+      "sha256": "5069e80a8d98899423f70249138a1a8d27a0c2fee333179bbd653af7e4de55f6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_19.csv",
+      "bytes": 11874,
+      "sha256": "1b319419b6e62cb9b5cb4a8c6918b418e55e8a767f5b45e4389fc4525c92f6ad"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_190.csv",
+      "bytes": 9507,
+      "sha256": "c45fcf63624089dc944f315149a90e5774884c3e4e0f62e017ed964ffbc6d1b7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_191.csv",
+      "bytes": 9620,
+      "sha256": "9dbe9b98c03dd027086d199d593c02fc159c128e0ce3a8682521d09f3b041c30"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_2.csv",
+      "bytes": 10892,
+      "sha256": "1dcaffb4de45475ed15e394158787537e7c74bba29cd4c5385aa67b6d7bb05de"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_20.csv",
+      "bytes": 12291,
+      "sha256": "214ae21e249f6a3fe3ce06934ff95654266df94a3f2924e29db6980ec40af1e6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_21.csv",
+      "bytes": 10262,
+      "sha256": "df493ba725fe75113629d673678944e2d3658a29ae4736097afa97a1153d52f3"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_3.csv",
+      "bytes": 10558,
+      "sha256": "57264df00039cffcb2a7a6c42e028e79cb794596565f6ecd5808dde66b09f462"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_4.csv",
+      "bytes": 10311,
+      "sha256": "2959471ce1b6f947584969361777b47f502d1264091afba1cbe6cd866c08b6f4"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_5.csv",
+      "bytes": 9826,
+      "sha256": "01cc71f5c2d7ef6f6882058d56c99f3dcf4baaad67353596be09ed6bae967da1"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_6.csv",
+      "bytes": 11642,
+      "sha256": "0e576deead136e72243dd2fa7aa8628a2254f630739885c218d3ac2ef1579768"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_0_7.csv",
+      "bytes": 10492,
+      "sha256": "f0e03096d2542558ca596d74382fa31a89673a7ea2fbeaf54e8b76af07d717b0"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_0.csv",
+      "bytes": 11822,
+      "sha256": "f4fffb5423b9e5974bf80723e65c18e840a7aeecdc80c01bedb99e418206efe7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_1.csv",
+      "bytes": 9625,
+      "sha256": "9564fe5592cf28d76a5a6144e1305156772c52ca919310b3708224ed336e3869"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_191.csv",
+      "bytes": 9634,
+      "sha256": "0f511533d132ce5d524c519d4b0cbe3a3933c9536a50973826f4e842021cb1c8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_2.csv",
+      "bytes": 10112,
+      "sha256": "3a2b5d5116c173009a384331cc0cb492e8171518989f64dd07da0122f4a64eae"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_3.csv",
+      "bytes": 9989,
+      "sha256": "2f1af055efa98104eea834931926aba9f0da4ea0440fe2fdba88551324de2886"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_10_4.csv",
+      "bytes": 10816,
+      "sha256": "bf5d539ba0105fb63dacb858ef38d078247a8da3bd95c4dbea657f4a45750269"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_1_0.csv",
+      "bytes": 10142,
+      "sha256": "c24d6c04cab5aae85bde8e913ad4f5a6dab19c75766b44c9620b2952a804453c"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_1_1.csv",
+      "bytes": 9655,
+      "sha256": "dc5c886d9038dc354349446d7d3c8a99bab0d9b0b2bc1f4ae4e6ee103d5f2225"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_1_2.csv",
+      "bytes": 9798,
+      "sha256": "6ff477c634e0c9ec8978acffe919bf4e7a8e1adb2f1d404c3e8f2f244659b983"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_20_0.csv",
+      "bytes": 9643,
+      "sha256": "a78a0827d7053803696d099b68e766d4e26da8e72076db76c3420ef6836f0867"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_20_1.csv",
+      "bytes": 9851,
+      "sha256": "3ecb105976fbb25284f4b8f78fafbb6f3693fcc6da358bd6d587bdb2fb5d1d14"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_20_2.csv",
+      "bytes": 9506,
+      "sha256": "66e7558b90cf6858f740c94cc3a6b48e44a705b3f37e4af178e1fa706a8382bb"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_2_0.csv",
+      "bytes": 12666,
+      "sha256": "56630fbc545c1227d18bcc3a79783d6778bf25cc619ea01c771338ca6595d44d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_2_3.csv",
+      "bytes": 10634,
+      "sha256": "3610c174502e70e9f40814f837cb71c2ea6fe7c8f09e9098e8286784636391fa"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_2_4.csv",
+      "bytes": 11228,
+      "sha256": "15b98c5276656cc596f85c9ae11b067b9f2b3e37809f4d9016044b94bb9018f3"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_2_5.csv",
+      "bytes": 9513,
+      "sha256": "0cc9bb54335970b00a5f0140e122207c4c416f577c88614d30aa4ea189b06395"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_2_6.csv",
+      "bytes": 9599,
+      "sha256": "6d42348007c6efbd06151bc647074b78c439123456868ca65f022051e454f8bf"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_0.csv",
+      "bytes": 10951,
+      "sha256": "957bab5150b07ca086a3c5d251dc061b46166a106777f2d253e2c2c0650b2151"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_1.csv",
+      "bytes": 10663,
+      "sha256": "fd48eab182eb326014851d61da2273a9925e4ef845b8d7e706b7a5160b9e0797"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_2.csv",
+      "bytes": 3833,
+      "sha256": "15652ade15f6e38fa404c268afff7cbd163bba321a7ff645e92ccb1cebf95fc3"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_3.csv",
+      "bytes": 784,
+      "sha256": "238713f80775f6ca2ec74c880bc710c3e50f0c703cb25c0bca7a84b4e6fefcf4"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_4.csv",
+      "bytes": 1051,
+      "sha256": "1eee2dd8946a4707e668cdc0aa016151729f85bf3acb70387b8a8e63154cad0c"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_5.csv",
+      "bytes": 920,
+      "sha256": "04faff57fb685bead6da00703ab0fdd74c9a69df99e96f7b2c0dbd1372048cec"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_3_6.csv",
+      "bytes": 819,
+      "sha256": "1a4940f9efbc888f465f14feac043f7f3100f61e2cd776ca7d5b94bcb8f6bfd8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_0.csv",
+      "bytes": 9553,
+      "sha256": "f64258f26ddcb146226f3d38d7f5a1ab5880fba45da9883577381aadc3e4bbf9"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_1.csv",
+      "bytes": 9686,
+      "sha256": "f591e9d93324f33dd0654a38fc6f034bee0c7600870343199c53feaf36911573"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_10.csv",
+      "bytes": 9701,
+      "sha256": "2cefa89c467addbb027bf42e0dbec746619fe1070253f4eb125a6e2910938cb8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_2.csv",
+      "bytes": 9660,
+      "sha256": "991224a8943a0a16f26afbad71a72ddfc49cbea6a5e6f2b5efb0d3f0c928e9a8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_3.csv",
+      "bytes": 9722,
+      "sha256": "1fa6a237440d2d599891a96533bc956c2891de0eb1d9318d55ac479ce36a6b82"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_4.csv",
+      "bytes": 9690,
+      "sha256": "ed93a9a147445012adcdcb5a80c18b4445ba18c6a7ebf5840856f2c2f1629921"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_5.csv",
+      "bytes": 9495,
+      "sha256": "507d51dde247650f577a37eb82bf649be928dbcb2ab8492211db5d7ea37d6e81"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_6.csv",
+      "bytes": 9633,
+      "sha256": "7e7d1f6009b78c366c19e5f013c3429c4028f592781e889c9c2115c1e9ddb34b"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_7.csv",
+      "bytes": 9556,
+      "sha256": "4fa86a3c41f570846a6d6b8650faecdde88a1675321caf9e692af2726ed5e322"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_8.csv",
+      "bytes": 9686,
+      "sha256": "4c0c2e5c6eca19a023b3ac861414faca0edd9d2cdf71f54711d1e16eb9c3e7d8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_4_9.csv",
+      "bytes": 9536,
+      "sha256": "ce4e421e6f8c80cbac91a06a7e529e9a8518eda512bcad6d513b9b2a2169a719"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_Canada.csv",
+      "bytes": 333,
+      "sha256": "9bc191c5bca974f42fbdd488037f074ee1cabba80efe2da50b8fd254c0dcbff5"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_HPC.csv",
+      "bytes": 87,
+      "sha256": "b89d17cbfcb8e9bf2ea92d17d8fd555293233db57ce6a87e3977bf487779a3fe"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_MRMS.csv",
+      "bytes": 15587,
+      "sha256": "1ffbbd585d7424d50b66bae0edf1380f4abeb451b4053dbc67cc37ba6a550e53"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_NCEP.csv",
+      "bytes": 27977,
+      "sha256": "deee78ecb6f0625ab5cc2e3c38520eaa9219987b686df914b5981df8ce93447b"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_NDFD.csv",
+      "bytes": 2659,
+      "sha256": "f9ac7d3c6bcbdb448a9c1b66ff2794897895fcde82471d4f4ffd42fe228386c6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_2_local_index.csv",
+      "bytes": 251,
+      "sha256": "88bed40dbb0d0df72b432792ba3214bfddcba29013b19a5dfcff677811a337b7"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_4_5.csv",
+      "bytes": 10013,
+      "sha256": "26d3053dc9cf1f2cc0c0278c65cf5953c1a2d85985a87492896addc7c02eb4d0"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/grib2_table_versions.csv",
+      "bytes": 38,
+      "sha256": "926953cd2bc6106d2184f2704fdb1ef0b548573eb5a2e7c56c7fbdd0d84587f5"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gt_datum.csv",
+      "bytes": 15804,
+      "sha256": "dd0722e59b04d5da58409bceaec4436ec726306446bd6477ecbaa819c58f056d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/gt_ellips.csv",
+      "bytes": 1719,
+      "sha256": "c10676c298140d70248045e0c22d73e34c5cf85db359167374367d493ffa7cf4"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/netcdf_config.xsd",
+      "bytes": 7491,
+      "sha256": "3b5788126952c77cbb37584832d7dbe46cc3fc5ee1ba741d94a235a57a62defe"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/nitf_spec.xml",
+      "bytes": 187445,
+      "sha256": "28515b8e4ccc67fabc41b2b85661d0a5b159aabc8eac00ed07afc875766c62ad"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/nitf_spec.xsd",
+      "bytes": 8508,
+      "sha256": "eb471cb1be9812ea0992b19c07143169f5c0193486e6fa86773300013689d9c1"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/ogrinfo_output.schema.json",
+      "bytes": 11667,
+      "sha256": "2808347ab4b5ef9646b1a1ed87c64e81afcf233adae3059b8c70b780ad6a13ab"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/ogrvrt.xsd",
+      "bytes": 26204,
+      "sha256": "8265ce91c2e410101be2b5cdcb9c0cc57cf4107b119d83eaedbc52cc0d8937e4"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/osmconf.ini",
+      "bytes": 5400,
+      "sha256": "dbffe8f6d1a49843106bc5971a794e3e6250b5e7cac5e3e3e47772a6e0cb38cf"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/ozi_datum.csv",
+      "bytes": 8482,
+      "sha256": "e3678e3f144084aeb3488c2e1ae2247f07a841f501a89e7225ae9dd9bfb19868"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/ozi_ellips.csv",
+      "bytes": 1349,
+      "sha256": "0c8363bfdedc1787d53463d705e2e1ce8fbdfcd49d1e3c778f5d4282980d75c6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/pci_datum.txt",
+      "bytes": 45587,
+      "sha256": "02f76b0a5451e06801ba4c4de661ac5c760065a65f42d06c9d359c3490ff9c81"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/pci_ellips.txt",
+      "bytes": 6351,
+      "sha256": "5cf37efdea6a85406b544e6fd6286b8db5f23fa4cda38c6a1d5fbcb50432d7b6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/pdfcomposition.xsd",
+      "bytes": 34334,
+      "sha256": "7f9c7498108ae31142a0ce224ff50230ce344f2a66e10cb83478c24942fe160e"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/pds4_template.xml",
+      "bytes": 3433,
+      "sha256": "aeaa4dd84b1771e19015f48c7963280ffd8fad4f3c8b34e2636ef9894e56f662"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/stateplane.csv",
+      "bytes": 10360,
+      "sha256": "30c6210872b0a4c10d40739a8cb6beda630a7ef3eb4cb07a7128e26e8e83cbe3"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/tms_LINZAntarticaMapTileGrid.json",
+      "bytes": 4115,
+      "sha256": "42327ca8964f95ce7e01f34fbc32780250a4a9524e4b2d7883b4f7eec512e5a0"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/tms_MapML_APSTILE.json",
+      "bytes": 6273,
+      "sha256": "0a8d75f5f4689775e5be9e93bfc3b27ce3ebf282f277e84240e5ef2bb297e4a3"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/tms_MapML_CBMTILE.json",
+      "bytes": 7792,
+      "sha256": "b5969c71b757b5c89a88ec8e9044968424f5946b625ed4f07d2be098dc26d780"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/tms_NZTM2000.json",
+      "bytes": 5265,
+      "sha256": "8ab3317be77f1fdcf36a0af7152e1bb0965271f7be5cbbc43267716a725839ea"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/gdal/vicar.json",
+      "bytes": 3610,
+      "sha256": "7924ad101da757cf41091ad4a9e734dde1d23543753f72c2eede11c9cd7d02c8"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/CH",
+      "bytes": 1097,
+      "sha256": "6c53ea40a2c60325ba6c6b9a2b9c143bd165671c38820ecd8f23caab4a264ab5"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/GL27",
+      "bytes": 728,
+      "sha256": "85375e6315d6f644e4577dadf3c5f157528ad15b715c99b287bddab23d44193d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/ITRF2000",
+      "bytes": 2099,
+      "sha256": "5225c3b3367a37021e639cfd5bd1521d2bd5d00cbc474cd6b3b3827615a4fe72"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/ITRF2008",
+      "bytes": 5682,
+      "sha256": "dc6985d5721e2e1d18fac996dee5dec90244ef3e20c38f72205e32d8842af2e2"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/ITRF2014",
+      "bytes": 3489,
+      "sha256": "2985304e37e57c362a61397b63267da6c60c3761d3e463a11f4c6bd013c2d7d5"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/deformation_model.schema.json",
+      "bytes": 17671,
+      "sha256": "ba0c5911117207a936fc738c1e31da001b45b51193773ce0c6742143f372b99d"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/nad.lst",
+      "bytes": 6385,
+      "sha256": "1a28ed872fd1550f5bf7b5a5e5bfc5e7500b5f94c9745b84a1d156b32039928c"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/nad27",
+      "bytes": 19535,
+      "sha256": "0bc231922461ac758922c6a7251e96d7e53e656608b1b4f06b7848fa8fc25520"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/nad83",
+      "bytes": 16593,
+      "sha256": "9a6260c8680abe5216ca8fe985998fababc121b0032879a821d75cae3411dc96"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/other.extra",
+      "bytes": 3915,
+      "sha256": "c1ef74c0a9b3e1f42a576c15bc43666c135b7e9361db5727a353204da279ccbb"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/proj.db",
+      "bytes": 9154560,
+      "sha256": "a5963c36a76db3e10689ccffadfd554feb115c798fe6350c56c5d789072fea06"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/proj.ini",
+      "bytes": 2107,
+      "sha256": "4af3be139976ecd3a5cc56563ca321bb5012163c0b89df0807bef78a7dd2b41e"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/projjson.schema.json",
+      "bytes": 38418,
+      "sha256": "67f090556bae996522edad482597c0f9e1b919ca4c9288ac9f8f7cd4180f49b6"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/triangulation.schema.json",
+      "bytes": 8403,
+      "sha256": "b1528266667d4f3e87072c74e370b27135101515a9012a25287fcf312cea179a"
+    },
+    {
+      "path": "rewrite/validation/artifacts/p08-final/share/proj/world",
+      "bytes": 7079,
+      "sha256": "f271cd3e56c7759d2fcfbbbd39870264eb81064155713c04fc92eadd30adeb48"
+    }
+  ],
+  "commands": "rewrite/validation/evidence/p08/qualification.json",
+  "git_head": "812db1aadcbca93d77101aa6507b47c92f683ef1",
+  "git_state": "Initially wholly untracked. An initial commit appeared during qualification; it was not created by this agent. Final qualification updates remain in the working tree. No agent commit, push, publishing or deployment performed.",
+  "release_state": "Local work qualified; full release blocked on actual AWS, deferred platforms and external basemap workflow."
+}

@@ -1,0 +1,89 @@
+# Compatibility coverage inventory
+
+This inventory links RCFP to frozen-source contracts and actual validation.
+The reference source is fetched from the SHA-256-pinned Terracotta 0.10.1 PyPI
+release into ignored `.cache/reference`; no Terracotta Python source is tracked
+in this repository. P08 reconciles all 386 detailed records; source inspection and
+related test pointers are distinguished from independently executed behaviors.
+
+Implementation states: `not-started`, `partial`, `implemented`.
+Verification states: `not-run`, `partial`, `verified`, `accepted-deviation`.
+A family becomes verified only when all its required cases are covered. Link
+evidence and RW IDs for accepted differences; missing features cannot be waived
+as numerical deviations. Pending environments/checks stay in the final column.
+
+The P00 source audit expanded these families into 386 callable, schema, setting,
+constant, route, and CLI records in
+[`process/validation/reference/contracts.md`](../validation/reference/contracts.md), with
+machine-readable state in `contracts.json`. Each record points to frozen source
+and related tests; a test pointer does not imply full behavioral coverage. Phase
+assignments below identify expected implementation completion. P00 capture cases
+are oracle evidence and do not mark Rust features implemented.
+
+| ID | Contract family | Phase | Implementation | Verification / evidence | Pending checks |
+| --- | --- | --- | --- | --- | --- |
+| C01 | `/keys`, ordered names and descriptions | P04 | implemented | verified: ordered names/descriptions, HTTP `route--keys`, P01 `keys`; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C02 | `/datasets`, filters, multi-values, ordering, paging | P04 | implemented | verified: filters/lists, sorting including paths, paging, bool/error and repeated-query cases; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C03 | GET/POST metadata, column selection and limits | P04 | implemented | verified: GET/POST batch, selected columns, duplicates/limits/missing/invalid metadata; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C04 | Colormap discovery and response options | P04 | implemented | verified: all 171 named legends, default and custom palettes, ranges/counts/errors; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C05 | Singleband tiles/previews and all options | P04 | implemented | verified: tiles/previews, all 171 palettes, categories, transforms, ranges, sizes and validation; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C06 | RGB tiles/previews, channels and partial masks | P04 | implemented | verified: P02 tile/preview/channel regressions plus all transforms and hidden partial-mask chains; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C07 | Compute tiles/previews, parser and every supported operation | P04 | implemented | accepted-deviation RW-019: 361 array/mask vectors, all callable/operator names; real unsigned NDVI, five inputs, DEM and tile/preview images exact; [P04 matrix/evidence](../validation/evidence/p04/README.md) | Public Python callable exports verified in P07; see C27 |
+| C08 | Stretch, percentile and color-transform languages | P04 | implemented | verified: numeric/default/legacy-percentile stretching, gamma/sigmoid/saturation, channel/order/partial-mask chains; [P04 matrix/evidence](../validation/evidence/p04/README.md) | None for P04 |
+| C09 | Explicit categories and built-in/custom `.npy` palettes | P04 | implemented | verified: 171 built-ins and legends, categories, custom NPY layout/override/live replacement/invalid files; frozen generation assets reused verbatim; [P04 matrix/evidence](../validation/evidence/p04/README.md) | Legacy Python palette exports/generation tests pass in P07; no new native generation CLI claimed |
+| C10 | Reprojection/resampling, masks, empty tiles, seams and dimensions | P04 | implemented | verified: 16 read/warp method pairs, nodata/internal/derived-alpha/valid-zero, sparse/empty, nonsquare, P01 seams and high-zoom bounds; [P04 matrix/evidence](../validation/evidence/p04/README.md) | P08 adds 30 exact polar/dateline/mosaic images (RW-041). Opt-in UTM interior sampling has accepted visual differences RW-046 with exact alpha; source edges, nodata and overview-scale reads retain exact GDAL fallback. Publisher-native alpha is optional corpus depth, with real-pixel alpha derivatives already covered |
+| C11 | HTTP process/validation/errors, CORS, docs/spec and client version checks | P04 | implemented | verified: route/method/query/body/error/CORS/docs/spec/URL matrix, unchanged old-client handshake and exact native rendering; [P04 matrix/evidence](../validation/evidence/p04/README.md) | P07 browser exploration verified; see C33 |
+| C12 | Local and remote raster paths, credentials and custom endpoints | P02 | implemented | P02 exact local/HTTP-range fast and full-parent equivalence; `/vsicurl/`/`/vsis3/` translation and startup credential/endpoint mapping; exact traffic retained | Real S3 credentials/custom endpoint unavailable and not cleared by local range service |
+| C13 | Metadata full/sampled/chunked stats, hulls and invalid data | P05 | implemented | accepted-deviation RW-024/RW-025/RW-042: full/sample/chunk real-raster statistics, threshold/extra/invalid/constant cases, robust hulls and exact displayed stretches; [P05 evidence](../validation/evidence/p05/README.md) | P08 geographic full/sample/chunk metadata adds the pinned polar/dateline derivatives; [evidence](../validation/evidence/p08/geographic-metadata.json) |
+| C14 | Lazy metadata writes, concurrency and read-only failures | P06 | implemented | verified locally: SQLite P05; MySQL/PostgreSQL row locks, six-process single publication, retry/rollback, SELECT-only failure; remote read-only rejection; [P06](../validation/evidence/p06/README.md) | Real S3 service check remains C16 |
+| C15 | SQLite schema, read/write/delete/overwrite and ordering | P05 | implemented | verified: transactional two-table writes/deletes, descriptions, skip-metadata overwrite quirk, failed-write/batch/unwind rollback and Python↔Rust interoperability; [P05 evidence](../validation/evidence/p05/README.md), RW-001/RW-006/RW-021 | P07 context adapter verified; see C27/RW-033 |
+| C16 | S3 SQLite read-only snapshot, TTL, refresh and failures | P06 | implemented | partial: local S3 protocol/signing, TTL, concurrent/failed refresh, integrity validation, generation leases/retirement and credential rotation pass; [P06](../validation/evidence/p06/README.md), RW-007 | Real S3 and role/SSO service credentials unavailable; emulator is not cloud qualification |
+| C17 | MySQL storage, transactions, collation and credentials | P06 | implemented | verified: real MySQL 8.4.11 cross-language reads/writes, atomic failures/savepoints, collation/paging, lazy concurrency, reconnect, credentials and packaged HTTP; [P06](../validation/evidence/p06/README.md), RW-026–030 | P07 contexts/Decimal types verified; see C27 |
+| C18 | PostgreSQL storage, transactions, collation and credentials | P06 | implemented | verified: real PostgreSQL 16.10 cross-language reads/writes, rollback/savepoints, paging, lazy concurrency, reconnect and TLS modes; [P06](../validation/evidence/p06/README.md) | P07 contexts verified; see C27 |
+| C19 | Provider/path detection and connection configuration | P06 | implemented | verified locally: explicit/automatic provider, URI normalization, case/IPv6, credential fallback/redaction and PostgreSQL TLS; [P06 paths](../validation/evidence/p06/paths.json), [TLS](../validation/evidence/p06/tls.json), RW-030 | Real AWS credential services remain C16; settings precedence verified in C26 |
+| C20 | Legacy migrations and cross-language data round trips | P06 | implemented | verified: original historical SQLite fixture and disposable SQL copies, supported 0.7–0.10 chains, marker/failure safety and both write directions; [P06](../validation/evidence/p06/README.md), RW-027 | MySQL legacy 0.7 SQL fails upstream and remains explicitly unsupported |
+| C21 | `serve -d/-r`, raster pattern/RGB keys and lazy load | P07 | implemented | verified locally: native serve options plus unchanged Python serve/Flask workflows, settings and profiler; [P07](../validation/evidence/p07/README.md) | Native debug/profile alternatives documented in D-009/RW-032 |
+| C22 | `ingest`, skip/overwrite, patterns and extra Python metadata | P05 | implemented | verified: real CLI patterns, repeated/escaped/Unicode keys, RGB ordering, skip/overwrite/quiet/error behavior, packaged native Python preparation and extra metadata; [P05 evidence](../validation/evidence/p05/README.md) | Full legacy Python import/context/type surface tracked separately by C27/P07 |
+| C23 | `optimize-rasters`, masks, overviews, codecs and flags | P05 | implemented | verified: full real WorldCover disk run; memory/disk/reproject, four resamplers, five compression choices, nproc, first-band/alpha/nodata/masks, overwrite/skip/quiet, frozen COG validation and exact base/overview/render comparisons; [P05 evidence](../validation/evidence/p05/README.md) | None for P05; additional platforms remain C32 |
+| C24 | `connect`, browser assets, hostname and port behavior | P07 | implemented | verified: retained client glue/CLI tests, native handshake and actual Chromium singleband/RGB/metadata exploration; [P07 browser](../validation/evidence/p07/browser/report.json) | External Mapbox basemap/token workflow not exercised |
+| C25 | `migrate`, versions, confirmation/yes and failure behavior | P06 | implemented | verified: default/explicit versions, prompt/decline/yes/no-op, invalid/future/downgrade and partial-DDL failures; [P06](../validation/evidence/p06/README.md), RW-027 | No production migration performed |
+| C26 | Every setting, default, precedence and deprecated alias | P07 | implemented | verified locally: 46 native/oracle defaults, environment/config/CLI precedence, aliases and validation comparisons; unchanged Python settings suite; [P07 settings](../validation/evidence/p07/settings.json) | Nonlocal writable-path semantics await C32 CI |
+| C27 | Python driver/settings APIs, types, exceptions, contexts/futures | P07 | partial | verified locally: complete applicable upstream suite, 121 engine/context/migration checks, 27 real-corpus integration checks; exact arrays/types/masks and futures; [P07](../validation/evidence/p07/README.md), [RCFP package identity](../validation/evidence/p08/rcfp-identity/README.md) | User-directed `import rcfp` replaces `import terracotta` (RW-052/D-016); full legacy suite was run before this namespace change. Private boto-mock/cache-field tests replaced by 13 socket-emulator assertions (RW-037); actual S3 remains C16 |
+| C28 | Flask/WSGI app integration and existing ingestion scripts | P07 | partial | verified locally: unchanged ingestion/Flask tests, final wheel and WSGI integrations, 46 final adapter comparisons; [P07](../validation/evidence/p07/README.md), [current RCFP wheel smoke](../validation/evidence/p08/rcfp-identity/README.md) | Current RCFP WSGI/real-raster smoke passes; the original Flask interface is not included in the RCFP wheel. Other platforms remain C32 |
+| C29 | Caches, resource bounds, cancellation and failure recovery | P07 | implemented | verified locally: P02 bounds plus final-package overload/timeout/recovery, 20 application lifetimes, persistent cache/settings isolation and real TCP disconnect/drain; [P07 resources](../validation/evidence/p07/resources.json), [failure](../validation/evidence/p07/failure.json) | P08 180-second soak, bounded cache/RSS/FD recovery and 200 official-runtime cold exits pass; [soak](../validation/evidence/p08/soak.json), [shutdown](../validation/evidence/p08/shutdown.json); RW-039/D-011 |
+| C30 | Logging, profiling and tracing behavior | P07 | implemented | partial: native timing/profile records and local X-Ray UDP; retained Python tracing/log tests and maintained profiler pass; two frozen-oracle ANSI capture failures classified RW-036; [P07](../validation/evidence/p07/README.md) | AWS trace ingestion unverified; native profile/debug alternatives D-009/RW-032 |
+| C31 | Container, native artifact and Lambda installation/runtime | P07 | implemented | verified locally: final portable bundle/wheel, clean install, Debian and official AL2023 exact raster render; final CI Docker build also checked locally; [P07](../validation/evidence/p07/README.md), [operations](../../packaging/OPERATIONS.md), [RCFP identity](../validation/evidence/p08/rcfp-identity/README.md) | Actual AWS invocation not authorized/performed; arm64 remains C32 |
+| C32 | Linux/macOS/Windows and declared architecture support | P07 | partial | partial: final Linux x86_64 standalone/wheel and AL2023 qualified; [CI workflow](../../.github/workflows/platforms.yml) linted and Linux staging/build paths tested locally; D-010 | User deferred CI execution: Linux/Lambda arm64, macOS Intel/arm64, Windows x86_64 remain unverified |
+| C33 | Browser end-to-end exploration and realistic visual comparisons | P08 | implemented | verified locally: final native backend, unchanged Chromium client, singleband/RGB/metadata exploration and inspected screenshots; configured queue 64; [browser evidence](../validation/evidence/p08/browser-qualified/report.json) | B08-BASEMAP: external Mapbox/token integration remains unqualified |
+| C34 | Complete workflow rollback and fair performance qualification | P08 | implemented | partial: five preparation/write/migration/restore workflows, Python read-back and exact images pass; 24 original performance runs, three trials, cache off/on, local/range and clients 1/3; [rollback](../validation/evidence/p08/rollback.json), [performance](../validation/evidence/p08/PERFORMANCE.md) | Corrected original-COG navigation matrix passes at matched budgets; [baseline viewport results](../validation/evidence/p08/navigation/README.md). The opt-in equal-input Web Mercator fast path passes three 1/4/8-user trials, 4,992 requests and exact decoded images for 412 URLs, with median paired pan gains above 10× in each singleband/RGB workload; [scoped 10× evidence](../validation/evidence/p08/map10/README.md), RW-045/D-012. One Web Mercator trial cell is 9.62×. Original UTM COG zoom-13 near-native interior pans now pass all 18 paired trial cells above 10× with the opt-in Rust UTM path: 412 exact alpha masks and accepted small RGB sampling differences (RW-046/D-013); [UTM evidence](../validation/evidence/p08/map10-utm/README.md). Reusing cached GDAL suggested geometry adds an exact-image 1.52× eight-user RGB Rust A/B gain and raises the paired Python pan median to 23.09×; [follow-up evidence](../validation/evidence/p08/map10-utm-geometry/README.md), RW-047/D-014. First views and general rasters remain below or unqualified for 10×; [first-view diagnosis](../validation/evidence/p08/map10-utm-first-view/README.md) records cold projection/block costs and a rejected no-prefetch trial (RW-048); [follow-up A/B](../validation/evidence/p08/map10-utm-first-view-followup/README.md) rejects block singleflight and transformer reuse for first-view speed (RW-049). Loaded UTM RGB p95 median is 9.68×. Older repeated-request matrix retains RW-043 caveat; no universal speedup claim |
+| C35 | Pinned real raster corpus, downloads, subset recipes and visual index | P00 | implemented | verified: P00 acquisition/subset/capture/comparator evidence and visual index | None for P00; later phases reuse captures |
+| C36 | Large raster/large-file cases, local and range I/O, memory limits | P08 | implemented | verified locally: P02/P05 full WorldCover reads, stats and optimization; P08 physical 7,109,429,559-byte BigTIFF, 5,041 base blocks/masks exact, native/oracle images and actual range offsets beyond 4 GiB; [BigTIFF](../validation/evidence/p08/bigtiff.json) | Documented uint8-to-uint32 encoding derivative of real WorldCover, not publisher-native BigTIFF |
+
+## P08 final reconciliation
+
+[All 386 records](../validation/evidence/p08/coverage-reconciliation.json) link
+implementation source, inherited phase evidence, related unchanged upstream test
+outcomes and explicit blockers. [Final combined qualification](../validation/evidence/p08/qualification.json)
+reruns the HTTP, adapter, Python, preparation, engine, migration and resource
+surfaces above against the final candidate. The two RW-036 oracle ANSI failures
+and six RW-037 boto-mock exclusions remain separate from passes.
+
+P08 repairs native shutdown (RW-039/D-011) and all three HTTP dateline preview
+paths (RW-041). [Final local installation and runtime evidence](../validation/evidence/p08/README.md)
+supersedes the P07 artifacts. C32 and actual AWS claims in C12/C16/C19/C30/C31
+remain partial; C24/C33 qualify the offline browser only. These are release
+blockers, not accepted rounding differences. No full-parity claim is made.
+
+## CI wheel qualification addendum (2026-09-28)
+
+[The new platform and release workflows](../CI.md) build and install
+CPython 3.12 wheels on the five intended OS/architecture cells and retain
+per-cell reports. Local Linux x86_64 installed-wheel smoke covers C01/C02/C03,
+C05/C06/C07/C11/C15/C28/C31 with one pinned real raster; the C05 golden is
+compared as decoded RGBA exactly. The current Linux wheel also renders after
+Rasterio, NumPy and Pillow are removed from a clean venv (RW-056). This is a
+compact packaging gate, not a
+rerun of the complete legacy matrix. C27 remains partial under the RCFP
+namespace; C28 lacks legacy Flask in the current wheel. C32 remains partial
+until hosted Linux arm64, macOS and Windows results exist.
+[Local wheel evidence](../validation/evidence/p08/ci-wheels/README.md).
