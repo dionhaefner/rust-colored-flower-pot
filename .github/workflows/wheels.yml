@@ -78,7 +78,11 @@ jobs:
           cargo build --locked --release
       - name: Build and repair wheel
         run: |
-          RCFP_NATIVE_TARGET="$PWD/target" python -m build --wheel --no-isolation --outdir build/ci/ci-wheels-raw
+          native_target="$PWD/target"
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            native_target=$(cygpath -w "$native_target")
+          fi
+          RCFP_NATIVE_TARGET="$native_target" python -m build --wheel --no-isolation --outdir build/ci/ci-wheels-raw
           mkdir -p build/ci/ci-wheels
           if [[ "$RUNNER_OS" == macOS ]]; then
             delocate-wheel --require-archs "$(uname -m)" -w build/ci/ci-wheels build/ci/ci-wheels-raw/*.whl
@@ -159,6 +163,7 @@ jobs:
           PYCODE
           "$wheel_python" -m pip install "numpy>=2.2,<3" "Pillow>=11.3,<13"
           "$wheel_python" tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+          "$wheel_python" tests/remote_contracts.py --out build/ci/ci-remote
           if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
             "$wheel_python" -m pip install rasterio==1.4.4
             "$wheel_python" tests/platform_smoke.py --out build/ci/ci-wheel-smoke
@@ -172,4 +177,5 @@ jobs:
           path: |
             build/ci/ci-wheel-smoke/
             build/ci/ci-contracts/
+            build/ci/ci-remote/
           retention-days: 14

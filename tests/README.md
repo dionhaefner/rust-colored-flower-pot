@@ -45,3 +45,14 @@ and live HTTP on disposable SQLite, MySQL, and PostgreSQL databases. It checks
 transaction rollback and compares decoded images across backends. Set
 `RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` for the SQL run; use
 `--sqlite-only` for local feedback without server containers.
+
+`remote_contracts.py` compares local TIFF metadata and image pixels with the
+same fixture served by a loopback HTTP server that records byte-range requests.
+It runs against each installed platform wheel and fails when GDAL silently
+reads the whole object instead of requesting ranges.
+
+`browser_contracts.py` launches the bundled browser client and a native HTTP
+backend, then uses Chromium to select a dataset, render singleband and RGB
+layers, and open the metadata view. It records response statuses, page errors,
+metadata, and screenshots. The test serves an offline map style so it does not
+require a Mapbox token.

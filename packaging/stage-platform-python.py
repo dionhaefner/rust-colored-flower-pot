@@ -73,6 +73,10 @@ else:
         )
 if sys.platform == "darwin":
     subprocess.run(
+        [sys.executable, str(ROOT / "packaging/prune-runtime-libs.py"), str(runtime)],
+        check=True,
+    )
+    subprocess.run(
         ["install_name_tool", "-id", "@rpath/" + core, str(lib / core)], check=True
     )
 license_dir = output / "rcfp/runtime/licenses"

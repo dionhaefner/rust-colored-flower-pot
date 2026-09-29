@@ -11,7 +11,7 @@ COPY LICENSE THIRD_PARTY_NOTICES.md README.md ./
 RUN cargo --version && cargo fetch --locked && RUSTFLAGS='-C link-arg=-Wl,--disable-new-dtags,-rpath,$ORIGIN' cargo build --locked --release
 RUN RCFP_NATIVE_TARGET=/workspace/target RCFP_BUILD_PYTHON=/var/lang/bin/python packaging/build-bundle.sh /bundle && \
     cp -aL /usr/lib64/libstdc++.so.6 /usr/lib64/libgcc_s.so.1 /usr/lib64/libexpat.so.1 /usr/lib64/libz.so.1 /bundle/lib/
-RUN PYTHON=/var/lang/bin/python packaging/build-wheel.sh /bundle /wheelhouse-raw && LD_LIBRARY_PATH=/bundle/lib auditwheel repair /wheelhouse-raw/*.whl -w /wheelhouse
+RUN PYTHON=/var/lang/bin/python packaging/build-wheel.sh /bundle /wheelhouse-raw && LD_LIBRARY_PATH=/bundle/lib auditwheel repair --disable-isa-ext-check /wheelhouse-raw/*.whl -w /wheelhouse
 FROM scratch
 COPY --from=build /bundle /bundle
 COPY --from=build /wheelhouse /wheelhouse

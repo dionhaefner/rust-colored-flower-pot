@@ -365,6 +365,69 @@
         "C27",
         "C31"
       ]
+    },
+    {
+      "id": "remote.local-range-decoded",
+      "families": [
+        "C12",
+        "C29"
+      ]
+    },
+    {
+      "id": "native.sql-mysql-catalog-http",
+      "families": [
+        "C14",
+        "C17",
+        "C19"
+      ]
+    },
+    {
+      "id": "native.sql-postgresql-catalog-http",
+      "families": [
+        "C14",
+        "C18",
+        "C19"
+      ]
+    },
+    {
+      "id": "native.storage-s3-leases",
+      "families": [
+        "C16",
+        "C29"
+      ]
+    },
+    {
+      "id": "native.storage-sql-savepoints",
+      "families": [
+        "C14",
+        "C17",
+        "C18"
+      ]
+    },
+    {
+      "id": "native.storage-provider-url",
+      "families": [
+        "C19"
+      ]
+    },
+    {
+      "id": "native.storage-migration-chain",
+      "families": [
+        "C20"
+      ]
+    },
+    {
+      "id": "native.cache-and-drain",
+      "families": [
+        "C29"
+      ]
+    },
+    {
+      "id": "wheel.matrix-installed-contracts",
+      "families": [
+        "C31",
+        "C32"
+      ]
     }
   ]
 }
