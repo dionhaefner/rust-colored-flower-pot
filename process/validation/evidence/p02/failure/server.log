@@ -1,3 +1,0 @@
-GDAL 3.9.3
-Terracotta P02 listening on http://127.0.0.1:5095 (HTTP workers 3, raster workers 1, queue 1)
-ERROR 4: /home/dion/codes/rust-colored-flower-pot/validation/evidence/p02/failure/missing-raster.tif: No such file or directory

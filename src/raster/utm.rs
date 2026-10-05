@@ -195,7 +195,7 @@ impl Gdal {
                     z.as_mut_ptr(),
                     success.as_mut_ptr(),
                 ) == 0
-                    || success.iter().any(|&valid| valid == 0)
+                    || success.contains(&0)
                 {
                     return Ok(None);
                 }

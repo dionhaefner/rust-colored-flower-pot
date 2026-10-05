@@ -13,8 +13,10 @@ fn transaction_unwind_and_savepoint_recovery() {
                 .unwrap()
                 .as_nanos()
         );
+        let mut database_url = url::Url::parse(&base).unwrap();
+        database_url.set_path(&format!("/{name}"));
         let store = Store::create(
-            &format!("{base}/{name}"),
+            database_url.as_str(),
             None,
             &[KeyDefinition {
                 key: "key1".into(),

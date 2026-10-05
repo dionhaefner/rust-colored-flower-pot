@@ -1,6 +1,0 @@
-# Source pip and `rcfp` handoff
-
-- **Scope:** User-requested single-command local source install and wheel build with `rcfp` console entry. Linux x86_64 / CPython 3.12 local qualification only.
-- **Implementation:** Root `pyproject.toml`, `setup.py`, and `MANIFEST.in` expose a PEP 517 source build. `packaging/python-setup.py` reuses the existing Linux bundle/C extension stage during setuptools `build_py`, marks the wheel platform-specific, and registers only `rcfp`. `build-bundle.sh` permits online Cargo resolution by default and an explicit cached offline mode. `build-python.sh` takes the extension suffix and include path from the active Python interpreter. Existing pre-staged build path remains available and now handles relative `PYTHON` paths.
-- **Validation:** [Source pip evidence](../../validation/evidence/p08/source-pip-rcfp/README.md) records wheel contents, direct source installation, fresh-environment CLI, real catalog import/read and HTTP serving, source archive contents, staged-wheel regression, and `git diff --check`.
-- **Limits:** Fresh online build isolation/dependency resolution and macOS/Windows were not exercised here. Previously sealed P08 artifacts still have their earlier CLI entry; rebuild current source to obtain `rcfp`. Publishing remains unperformed.

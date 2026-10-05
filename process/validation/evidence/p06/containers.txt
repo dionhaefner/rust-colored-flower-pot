@@ -1,2 +1,0 @@
-/terracotta-p06-postgres postgres:16.10 running
-/terracotta-p06-mysql mysql:8.4 running

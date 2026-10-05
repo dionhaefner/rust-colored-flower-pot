@@ -1,0 +1,105 @@
+name: Documentation
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and install the documented wheel
+        run: |
+          python -m pip wheel --no-deps . --wheel-dir build/docs-wheels
+          python -m pip install build/docs-wheels/*.whl
+          python -m pip install -r docs/requirements.txt -r docs/requirements-test.txt
+
+      - name: Install the migration comparison environment
+        run: |
+          python -m venv build/docs-terracotta
+          build/docs-terracotta/bin/python -m pip install \
+            terracotta==0.10.1 \
+            rasterio==1.4.4 \
+            gunicorn==23.0.0
+
+      - name: Extract and verify public reference
+        run: |
+          python docs/tools/generate_reference.py
+          python docs/tools/generate_reference.py --check
+
+      - name: Build strict HTML and check local links
+        run: |
+          python -m sphinx -n -W --keep-going -b html docs docs/_build/html
+          python docs/tools/check_links.py docs/_build/html
+
+      - name: Verify examples and catalog migration
+        run: |
+          python docs/tools/verify.py \
+            --html docs/_build/html \
+            --out build/docs-checks \
+            --reference-python build/docs-terracotta/bin/python
+
+      - name: Verify browser navigation and mobile layout
+        run: |
+          python -m playwright install --with-deps chromium
+          python docs/tools/browser_check.py --html docs/_build/html --out build/docs-browser
+          python tests/browser_contracts.py \
+            --binary "$(python -c 'import rcfp; print(rcfp._RUNTIME_ROOT / "bin" / "rcfp")')" \
+            --out build/docs-client
+
+      - name: Create source archive and check documentation contents
+        run: |
+          python -m pip install build==1.3.0
+          python -m build --sdist --outdir build/docs-source
+          python docs/tools/check_archives.py \
+            --sdist build/docs-source/*.tar.gz \
+            --wheel build/docs-wheels/*.whl
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-${{ github.sha }}
+          path: |
+            docs/_build/html
+            build/docs-checks
+            build/docs-browser
+            build/docs-client
+          if-no-files-found: error
+
+  external-links:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: python -m pip install -r docs/requirements.txt
+
+      - run: python -m sphinx -W --keep-going -b linkcheck docs build/docs-links
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-external-links
+          path: build/docs-links

@@ -39,6 +39,9 @@ if [[ -n "${RCFP_GDAL_PREFIX:-}" ]]; then
     cp -a "${libraries[@]}" "$output/lib/"
     cp -a "$gdal_prefix/share/gdal/." "$output/share/gdal/"
     cp -a "$gdal_prefix/share/proj/." "$output/share/proj/"
+    if [[ -f "$gdal_prefix/ssl/cacert.pem" ]]; then
+        cp "$gdal_prefix/ssl/cacert.pem" "$output/share/cacert.pem"
+    fi
     "$build_python" "$root/packaging/stage-conda-licenses.py" "$gdal_prefix" "$output/licenses/conda"
 else
     archive_cache=${RCFP_GDAL_CACHE:-$(mktemp -d)}

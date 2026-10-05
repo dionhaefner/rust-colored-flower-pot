@@ -52,7 +52,7 @@ pub fn handle_event_with_application(application: &Application, event: &Value) -
         body.as_bytes().to_vec()
     };
     let response = application.request_full(method, &url, &incoming_headers, &body);
-    let binary = response.content_type == "image/png";
+    let binary = matches!(response.content_type, "image/png" | "image/webp");
     let body = if binary {
         base64_encode(&response.body)
     } else {

@@ -1,9 +1,0 @@
-# Handoff: tested first-view cache/transform ideas
-
-Date: 2026-09-28. The user asked to try projection setup reuse and concurrent block decode coalescing. Both were implemented as isolated candidates and measured against the qualified original-UTM Rust binary. [Evidence and reproduction context](../../validation/evidence/p08/map10-utm-first-view-followup/README.md), RW-049.
-
-Block singleflight shared one GDAL decode among concurrent requests for the same stamped TIFF block. It matched all 412 images but did not improve eight-user RGB first-view median (679.15→692.18 ms). A diagnostic run saw only one concurrent duplicate wait for one-user RGB and 15 for eight users over the entire navigation sequence. It was removed.
-
-A worker-local GDAL GenImgProj transformer cache updated the destination affine for each tile, with a new approximate wrapper each time. It matched 412 images in the full-matrix direct A/B. A nine-trial RGB A/B found first-view medians slightly worse at both one and eight users; pan medians improved modestly. The cache was removed because the requested first-view benefit was not reliable. A prior candidate passed the full frozen-Python UTM qualifier and six exact fallback cases. Rust tests and strict Clippy passed during the experiments.
-
-The current source and rebuilt release binary match the earlier qualified geometry-cache build exactly (SHA-256 `3fa0b076f977a62a97e6247aa64bb0a64aecbe6356971f26c59a7cc861536ba5`). `process/validation/tools/p08_rust_ab.py` retains workload selectors used for the nine-trial A/B; default behavior is unchanged. No production optimization from this follow-up remains. A new first-view attempt should target unique cold-block decoding or first-time projection initialization, account for service startup if prewarming, and compare full first-viewport completion and pan latency on the same real COG tracks.

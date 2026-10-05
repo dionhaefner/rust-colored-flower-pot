@@ -36,12 +36,20 @@ def main() -> None:
             "packaging/bootstrap-gdal.py",
             "packaging/gdal-packages.lock.json",
             "packaging/stage-gdal-runtime.py",
-            "packaging/verify-runtime-without-rasterio.py",
+            "tests/verify-runtime-without-rasterio.py",
             "packaging/licenses/CLIENT-LICENSE.txt",
             "packaging/cargo.sh",
             "tests/storage_sql.rs",
             "src/lib.rs",
             "python/rcfp/__init__.py",
+            "python/rcfp_cli.py",
+            "python/rcfp/_profile.py",
+            "src/compatibility.rs",
+            "src/python/driver.rs",
+            "python/rcfp/drivers/_store.py",
+            "python/rcfp/server/app.py",
+            "docs/compatibility.md",
+            "docs/native-migration.md",
         }
         if prefix + "setup.py" in names:
             raise ValueError("source distribution unexpectedly contains setup.py")

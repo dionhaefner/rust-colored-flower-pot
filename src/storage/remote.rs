@@ -140,13 +140,14 @@ impl Remote {
         } else {
             region.parse().map_err(|_| "invalid AWS region")?
         };
-        let credentials = s3::creds::Credentials {
-            access_key: Some(aws.access_key_id().into()),
-            secret_key: Some(aws.secret_access_key().into()),
-            session_token: aws.session_token().map(str::to_owned),
-            security_token: None,
-            expiration: None,
-        };
+        let credentials = s3::creds::Credentials::new(
+            Some(aws.access_key_id()),
+            Some(aws.secret_access_key()),
+            None,
+            aws.session_token(),
+            None,
+        )
+        .map_err(|_| "invalid S3 credentials")?;
         let bucket = s3::Bucket::new(url.host_str().unwrap(), region, credentials)
             .map_err(|_| "invalid S3 configuration")?;
         let mut bucket = if endpoint.is_some() {

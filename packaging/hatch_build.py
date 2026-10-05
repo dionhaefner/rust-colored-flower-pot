@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import platform
+import shlex
 import subprocess
 import sys
 import sysconfig
@@ -14,6 +15,28 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 
 class CustomBuildHook(BuildHookInterface):
+    def _run(self, command: list[str], stage: str, hint: str, env: dict) -> None:
+        try:
+            subprocess.run(command, cwd=self.root, env=env, check=True)
+        except (subprocess.CalledProcessError, OSError) as error:
+            failure = (
+                f"exit status {error.returncode}"
+                if isinstance(error, subprocess.CalledProcessError)
+                else str(error)
+            )
+            display_command = (
+                subprocess.list2cmdline(command)
+                if sys.platform == "win32"
+                else shlex.join(command)
+            )
+            self._temporary.cleanup()
+            self.app.abort(
+                f"RCFP {stage} failed ({failure}).\n"
+                f"Command: {display_command}\n"
+                "See the build diagnostics above for the underlying error.\n"
+                f"{hint}"
+            )
+
     def initialize(self, version: str, build_data: dict) -> None:
         root = Path(self.root)
         self._temporary = tempfile.TemporaryDirectory(prefix="rcfp-wheel-")
@@ -29,33 +52,38 @@ class CustomBuildHook(BuildHookInterface):
                 else work / "bundle"
             )
             if not env.get("RCFP_BUNDLE_DIR"):
-                subprocess.run(
+                self._run(
                     [str(root / "packaging/build-bundle.sh"), str(bundle)],
-                    cwd=root,
-                    env=env,
-                    check=True,
+                    "native bundle build (Rust/GDAL)",
+                    "Check the Rust toolchain in rust-toolchain.toml and your C/C++ compiler. "
+                    "Downloads require network access or cached dependencies; if Cargo reports "
+                    "an uncached dependency, unset RCFP_CARGO_OFFLINE and retry.",
+                    env,
                 )
             staged = work / "package"
-            subprocess.run(
+            self._run(
                 [str(root / "packaging/build-python.sh"), str(bundle), str(staged)],
-                cwd=root,
-                env=env,
-                check=True,
+                "Python native adapter build",
+                "Check your C compiler, Python development headers, and the native bundle. "
+                "If RCFP_BUNDLE_DIR is set, ensure it contains a complete bundle.",
+                env,
             )
         else:
             if not env.get("RCFP_NATIVE_TARGET"):
-                subprocess.run(
+                self._run(
                     ["cargo", "build", "--locked", "--release"],
-                    cwd=root,
-                    env=env,
-                    check=True,
+                    "Rust build",
+                    "Check that Cargo and the Rust toolchain in rust-toolchain.toml are "
+                    "installed, and that your C/C++ compiler is available. "
+                    "Cargo downloads require network access or cached dependencies.",
+                    env,
                 )
             target = (
                 Path(env.get("RCFP_NATIVE_TARGET", str(root / "target"))).resolve()
                 / "release"
             )
             staged = work / "package"
-            subprocess.run(
+            self._run(
                 [
                     sys.executable,
                     str(root / "packaging/stage-platform-python.py"),
@@ -64,9 +92,10 @@ class CustomBuildHook(BuildHookInterface):
                     "--output",
                     str(staged),
                 ],
-                cwd=root,
-                env=env,
-                check=True,
+                "native runtime staging",
+                "Check the native build artifacts and GDAL/PROJ runtime. "
+                "If RCFP_NATIVE_TARGET or RCFP_GDAL_PREFIX is set, ensure it is complete.",
+                env,
             )
 
         runtime = staged / "rcfp" / "runtime"

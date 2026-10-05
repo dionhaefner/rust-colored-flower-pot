@@ -1,0 +1,19 @@
+{
+  "required": [
+    "profile.public-imports",
+    "profile.invalid-values",
+    "profile.cli-precedence",
+    "profile.immutable-app-driver",
+    "python.sql-driver-cache-configuration",
+    "python.driver-array-future-types",
+    "python.lazy-metadata-connection-context",
+    "python.exception-types",
+    "python.wsgi-entrypoint",
+    "storage.unchanged-format-and-rasters",
+    "storage.unsupported-format-write-fence",
+    "storage.remote-catalog-readonly",
+    "profile.native-api-and-cli",
+    "cli.all-workflows-and-migration-dry-run"
+  ],
+  "reference": ["reference.python-cli-http-storage-roundtrip"]
+}

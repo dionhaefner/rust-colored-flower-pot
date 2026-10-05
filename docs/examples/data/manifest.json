@@ -1,0 +1,118 @@
+{
+  "recipe": "Native 512x512 band-1 pixel window; GTiff DEFLATE, no reprojection/resampling/stretch/mask modification",
+  "fixtures": [
+    {
+      "id": "red",
+      "file": "red.tif",
+      "sha256": "3e268183775bbcdc013eb142e8776b6c9eda17099bed33f8db368049eed07be7",
+      "pixel_sha256": "29992a214bc5d09d570ce28ac96b2619d87705e8eae8ce408c2ed9c3069b0005",
+      "mask_sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b",
+      "dtype": "uint16",
+      "crs": "EPSG:32632",
+      "transform": [10.0, 0.0, 759960.0, 0.0, -10.0, 5042500.0],
+      "window": [6000, 5750, 512, 512],
+      "parent": "s2-red",
+      "parent_sha256": "816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c",
+      "source_url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B04.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021",
+      "center_pixel": 321.0,
+      "valid_pixels": 262144,
+      "nodata": 0.0,
+      "geographic_bounds": [
+        12.324001000862383, 45.43963650058731, 12.392115182784645,
+        45.487567574848576
+      ]
+    },
+    {
+      "id": "green",
+      "file": "green.tif",
+      "sha256": "78434670ce4ca4c95bd6bc737853e64b3a8e08261056112beedcc1bbe057555c",
+      "pixel_sha256": "5e913aa63e05fc839e205679a70aac70e7c050898138bf753b0bc57dc3afbb9e",
+      "mask_sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b",
+      "dtype": "uint16",
+      "crs": "EPSG:32632",
+      "transform": [10.0, 0.0, 759960.0, 0.0, -10.0, 5042500.0],
+      "window": [6000, 5750, 512, 512],
+      "parent": "s2-green",
+      "parent_sha256": "f4966fd5f16270cf0192e9a2e06e90679806993e3886bdc0f5652debbf8af893",
+      "source_url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B03.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021",
+      "center_pixel": 523.0,
+      "valid_pixels": 262144,
+      "nodata": 0.0,
+      "geographic_bounds": [
+        12.324001000862383, 45.43963650058731, 12.392115182784645,
+        45.487567574848576
+      ]
+    },
+    {
+      "id": "blue",
+      "file": "blue.tif",
+      "sha256": "1985c889d327c6f0a27f7500fa8e50a78230cb52f64a2a69abe8b5b5562539b5",
+      "pixel_sha256": "31db93ac17574523f2ddd26c2784e75b28758116216cb8f0c6cc797863016726",
+      "mask_sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b",
+      "dtype": "uint16",
+      "crs": "EPSG:32632",
+      "transform": [10.0, 0.0, 759960.0, 0.0, -10.0, 5042500.0],
+      "window": [6000, 5750, 512, 512],
+      "parent": "s2-blue",
+      "parent_sha256": "adf88aa4000396e43bc780524e16c27c19e84d1122aabc7c7523521bb5c86f54",
+      "source_url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B02.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021",
+      "center_pixel": 434.0,
+      "valid_pixels": 262144,
+      "nodata": 0.0,
+      "geographic_bounds": [
+        12.324001000862383, 45.43963650058731, 12.392115182784645,
+        45.487567574848576
+      ]
+    },
+    {
+      "id": "nir",
+      "file": "nir.tif",
+      "sha256": "ced8ceac8f24e55ec60c611143f720442447b593a447b5d3dcada308378c6c9c",
+      "pixel_sha256": "747d032622d2fca1663b46d4896a78eb88eac69841815b832fcce37f62a19f51",
+      "mask_sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b",
+      "dtype": "uint16",
+      "crs": "EPSG:32632",
+      "transform": [10.0, 0.0, 759960.0, 0.0, -10.0, 5042500.0],
+      "window": [6000, 5750, 512, 512],
+      "parent": "s2-nir",
+      "parent_sha256": "cffb6749394dcd7de713d7f0ca5de8b5b84d524d9a3cbba940126ccf6c38fe60",
+      "source_url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B08.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021",
+      "center_pixel": 116.0,
+      "valid_pixels": 262144,
+      "nodata": 0.0,
+      "geographic_bounds": [
+        12.324001000862383, 45.43963650058731, 12.392115182784645,
+        45.487567574848576
+      ]
+    },
+    {
+      "id": "classes",
+      "file": "classes.tif",
+      "sha256": "237ff6cc9e25fa6c77aabac82a89c1f364a4214d2ba278a28055bf803538b381",
+      "pixel_sha256": "3f82167a85e0d98fb2baf07d35d58f265c9996dd3ebfef464273f37b6cce9bdd",
+      "mask_sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b",
+      "dtype": "uint8",
+      "crs": "EPSG:4326",
+      "transform": [
+        8.333333333333333e-5, 0.0, 12.291666666666666, 0.0,
+        -8.333333333333333e-5, 45.483333333333334
+      ],
+      "window": [3500, 30200, 512, 512],
+      "parent": "worldcover",
+      "parent_sha256": "80f665ce258f470e3d18facf5842f3451c5d66e7010d130bc2d3b1e387f8b7b4",
+      "source_url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N45E012_Map.tif",
+      "attribution": "ESA WorldCover 2021 v200 / CC BY 4.0",
+      "center_pixel": 80.0,
+      "valid_pixels": 262144,
+      "nodata": 0.0,
+      "geographic_bounds": [
+        12.291666666666666, 45.440666666666665, 12.334333333333333,
+        45.483333333333334
+      ]
+    }
+  ]
+}

@@ -10,12 +10,13 @@ use serde_json::{Map, Value, json};
 use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::{
-    Arc, Mutex,
+    Mutex,
     atomic::{AtomicUsize, Ordering},
 };
 use std::time::Instant;
 use tiny_http::Method;
 
+mod cache;
 mod transport;
 
 pub struct Application {
@@ -25,9 +26,12 @@ pub struct Application {
     default_size: [usize; 2],
     max_metadata: usize,
     executor: RasterExecutor,
+    render_cache: cache::RenderCache,
     http_workers: usize,
     http_queue_capacity: usize,
+    render_capacity: usize,
     render_in_flight: AtomicUsize,
+    fused_render: bool,
 }
 
 struct RenderPermit<'a>(&'a AtomicUsize);
@@ -47,6 +51,12 @@ pub struct AppResponse {
 
 impl Application {
     pub fn open(database: &Path) -> Result<Self> {
+        let mut settings = crate::settings::snapshot();
+        crate::compatibility::CompatibilityProfile::resolve(&mut settings)?;
+        crate::settings::scope(settings, || Self::open_scoped(database))
+    }
+
+    fn open_scoped(database: &Path) -> Result<Self> {
         let config = ExecutionConfig::from_env()?;
         // Enough bounded HTTP workers must be able to reach raster admission
         // concurrently for a full raster queue to produce an immediate 503.
@@ -55,7 +65,28 @@ impl Application {
             .saturating_add(config.queue_capacity)
             .saturating_add(1);
         let http_queue_capacity = config.queue_capacity;
+        let render_capacity = config.workers.saturating_add(config.queue_capacity);
+        let render_bytes = crate::settings::var("TC_RENDER_CACHE_BYTES")
+            .unwrap_or_else(|_| "0".into())
+            .parse::<usize>()
+            .map_err(|_| "invalid render cache size")?;
+        if render_bytes > 512 * 1024 * 1024 {
+            return Err("render cache exceeds 512 MiB".into());
+        }
+        let render_ttl = crate::settings::var("TC_REMOTE_RENDER_CACHE_TTL_SECONDS")
+            .unwrap_or_else(|_| "0".into())
+            .parse::<u64>()
+            .map_err(|_| "invalid remote render cache TTL")?;
+        if render_ttl > 86400 {
+            return Err("remote render cache TTL exceeds 86400 seconds".into());
+        }
+        let render_cache = cache::RenderCache::new(
+            render_bytes,
+            std::time::Duration::from_secs(render_ttl),
+            config.wait_timeout,
+        );
         Ok(Self {
+            fused_render: crate::settings::flag("TC_FUSED_RENDER", true)?,
             settings: crate::settings::snapshot(),
             store: Mutex::new(Store::open(database)?),
             palettes: Palettes::load()?,
@@ -73,8 +104,10 @@ impl Application {
                 .transpose()?
                 .unwrap_or(100),
             executor: RasterExecutor::start(config)?,
+            render_cache,
             http_workers,
             http_queue_capacity,
+            render_capacity,
             render_in_flight: AtomicUsize::new(0),
         })
     }
@@ -87,6 +120,12 @@ impl Application {
     /// this entry point so they cannot drift onto a second rendering path.
     pub fn request(&self, method: &str, url: &str) -> AppResponse {
         self.request_full(method, url, &BTreeMap::new(), &[])
+    }
+
+    pub(crate) fn response_ready(&self, url: &str, status: u16) {
+        if status == 200 && (url.starts_with("/singleband/") || url.starts_with("/rgb/")) {
+            self.executor.wake_prefetch();
+        }
     }
 
     pub fn request_full(
@@ -131,7 +170,7 @@ impl Application {
             if self
                 .render_in_flight
                 .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
-                    (current < 2).then_some(current + 1)
+                    (current < self.render_capacity).then_some(current + 1)
                 })
                 .is_err()
             {
@@ -314,8 +353,7 @@ impl Application {
             "/metadata" => self.batch_metadata(&parameters, body, content_type),
             "/colormap" => self.colormap(&parameters),
             "/swagger.json" => {
-                let mut spec: Value = serde_json::from_str(include_str!("assets/swagger.json"))
-                    .expect("embedded spec");
+                let mut spec = api_spec();
                 update_palette_enums(&mut spec, &self.palettes);
                 json_response(200, &spec)
             }
@@ -346,9 +384,9 @@ impl Application {
         match result {
             Ok(response) => response,
             Err(error) if error == "No dataset found" => json_error(404, &error),
-            Err(error) if error == "tile out of bounds" => {
-                self.empty_tile().unwrap_or_else(|e| json_error(500, &e))
-            }
+            Err(error) if error == "tile out of bounds" => self
+                .empty_tile(&parameters, path.starts_with("/rgb/"))
+                .unwrap_or_else(|e| json_error(400, &e)),
             Err(error) if error == OVERLOADED => json_error(503, &error),
             Err(error) if error == TIMED_OUT => json_error(504, &error),
             Err(error)
@@ -515,6 +553,8 @@ impl Application {
             .map(|value| {
                 if value.starts_with('[') {
                     list_value(value)
+                } else if !crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                    vec![value.clone()]
                 } else {
                     value.chars().map(|c| c.to_string()).collect()
                 }
@@ -595,7 +635,14 @@ impl Application {
                     .iter()
                     .any(|c| !value.as_object().unwrap().contains_key(c) || c == "keys")
             {
-                return Err("legacy internal error".into());
+                return Err(
+                    if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                        "legacy internal error"
+                    } else {
+                        "columns must be a nonempty list of known metadata columns"
+                    }
+                    .into(),
+                );
             }
             let object = value.as_object_mut().expect("metadata object");
             object.retain(|key, _| key == "keys" || columns.contains(key));
@@ -619,11 +666,8 @@ impl Application {
             .iter()
             .map(|item| percent_decode_path(item))
             .collect::<Result<Vec<_>>>()?;
-        let dataset = store
-            .dataset(&keys)?
-            .ok_or_else(|| "No dataset found".to_string())?;
-        let metadata = store
-            .metadata(&keys)?
+        let (dataset, metadata) = store
+            .descriptor(&keys)?
             .ok_or_else(|| "No dataset found".to_string())?;
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
@@ -650,13 +694,7 @@ impl Application {
                 .parse::<f64>()
                 .map_err(|_| "invalid tile y".to_string())?;
             if !raster::tile_exists(metadata.bounds, x, y, z) {
-                return Ok(AppResponse {
-                    status: 200,
-                    content_type: "image/png",
-                    body: image::empty_png(self.default_size[0], self.default_size[1])?,
-                    cache: true,
-                    headers: BTreeMap::new(),
-                });
+                return self.empty_tile(parameters, false);
             }
             Some(raster::mercator_tile_bounds(x, y, z))
         };
@@ -682,51 +720,67 @@ impl Application {
             return Err("explicit_color_map can only be given for colormap=explicit".into());
         }
         let preserve_values = explicit.is_some();
-        let raster = self.executor.read(
-            &dataset.path,
-            ReadRequest {
-                bounds_mercator: bounds,
-                size,
-                preserve_values,
-            },
-        )?;
-        let raster_at = Instant::now();
-        let png = if let Some(palette) = explicit {
-            let pixels = image::label_values(&raster, &palette);
-            let colors = palette.iter().map(|(_, color)| *color).collect::<Vec<_>>();
-            image::palette_png(raster.width, raster.height, &pixels, &colors)?
-        } else {
-            let range = parameters
-                .get("stretch_range")
-                .map(|value| parse_stretch(value, &metadata))
-                .transpose()?
-                .unwrap_or(metadata.range);
-            if legacy_decimal && uses_metadata_range(parameters.get("stretch_range")) {
-                return Err("legacy internal error".into());
-            }
-            let mut channels = vec![color::normalize(&raster, range)];
-            color::apply(&mut channels, &operations);
-            let pixels = image::stretch_to_u8(&channels[0], [0.0, 1.0]);
-            if let Some(name) = colormap {
-                image::palette_png(
-                    raster.width,
-                    raster.height,
-                    &pixels,
-                    &self.palettes.get(name)?,
-                )?
-            } else {
-                image::grayscale_png(raster.width, raster.height, &pixels)?
-            }
-        };
-        if std::env::var_os("TC_PROFILE_HTTP").is_some() {
-            eprintln!(
-                "http_profile mode=singleband metadata_us={} raster_us={} render_us={} path={}",
-                (metadata_at - started).as_micros(),
-                (raster_at - metadata_at).as_micros(),
-                raster_at.elapsed().as_micros(),
-                path,
-            );
+        let band = source_band(parameters, "band", "stretch_range")?;
+        if band != 1 && bounds.is_none() {
+            return Err("source band selectors are supported on tiles".into());
         }
+        let key = self
+            .render_cache
+            .key(path, parameters, [(dataset.path.as_path(), &metadata)]);
+        let remote = crate::execution::is_remote(&dataset.path);
+        let png = self.render_cache.render(key, remote, || {
+            let raster = self.executor.read(
+                &dataset.path,
+                ReadRequest {
+                    band,
+                    bounds_mercator: bounds,
+                    size,
+                    preserve_values,
+                },
+            )?;
+            let raster_at = Instant::now();
+            let png = if let Some(palette) = explicit {
+                let pixels = image::label_values(&raster, &palette);
+                let colors = palette.iter().map(|(_, color)| *color).collect::<Vec<_>>();
+                image::palette_png(raster.width, raster.height, &pixels, &colors)?
+            } else {
+                let range = parameters
+                    .get("stretch_range")
+                    .map(|value| parse_stretch(value, &metadata))
+                    .transpose()?
+                    .unwrap_or(metadata.range);
+                if legacy_decimal && uses_metadata_range(parameters.get("stretch_range")) {
+                    return Err("legacy internal error".into());
+                }
+                let pixels = if operations.is_empty() && self.fused_render {
+                    image::normalized_pixels(&raster, range)
+                } else {
+                    let mut channels = vec![color::normalize(&raster, range)];
+                    color::apply(&mut channels, &operations);
+                    image::stretch_to_u8(&channels[0], [0.0, 1.0])
+                };
+                if let Some(name) = colormap {
+                    image::palette_png(
+                        raster.width,
+                        raster.height,
+                        &pixels,
+                        &self.palettes.get(name)?,
+                    )?
+                } else {
+                    image::grayscale_png(raster.width, raster.height, &pixels)?
+                }
+            };
+            if std::env::var_os("TC_PROFILE_HTTP").is_some() {
+                eprintln!(
+                    "http_profile mode=singleband metadata_us={} raster_us={} render_us={} path={}",
+                    (metadata_at - started).as_micros(),
+                    (raster_at - metadata_at).as_micros(),
+                    raster_at.elapsed().as_micros(),
+                    path,
+                );
+            }
+            Ok(png)
+        })?;
         Ok(AppResponse {
             status: 200,
             content_type: "image/png",
@@ -738,6 +792,26 @@ impl Application {
 
     fn rgb(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
         let started = Instant::now();
+        let format = match parameters
+            .get("format")
+            .map(String::as_str)
+            .unwrap_or("png")
+        {
+            "png" => image::RgbFormat::Png,
+            "webp" if !crate::compatibility::CompatibilityProfile::current().is_terracotta() => {
+                let quality = parameters
+                    .get("quality")
+                    .map(|v| v.parse::<f32>())
+                    .transpose()
+                    .map_err(|_| "WebP quality must be a number from 0 to 100")?
+                    .unwrap_or(85.0);
+                if !quality.is_finite() || !(0.0..=100.0).contains(&quality) {
+                    return Err("WebP quality must be a number from 0 to 100".into());
+                }
+                image::RgbFormat::Webp(quality)
+            }
+            _ => return Err("RGB format must be png, or webp in the native profile".into()),
+        };
         let operations = parameters
             .get("color_transform")
             .map(|v| color::parse(v, 3))
@@ -783,17 +857,11 @@ impl Application {
         for band in &band_values {
             let mut keys = some_keys.clone();
             keys.push(band.clone());
-            paths.push(
-                store
-                    .dataset(&keys)?
-                    .ok_or_else(|| "No dataset found".to_string())?
-                    .path,
-            );
-            metadata.push(
-                store
-                    .metadata(&keys)?
-                    .ok_or_else(|| "No dataset found".to_string())?,
-            );
+            let (dataset, descriptor) = store
+                .descriptor(&keys)?
+                .ok_or_else(|| "No dataset found".to_string())?;
+            paths.push(dataset.path);
+            metadata.push(descriptor);
         }
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
@@ -816,13 +884,7 @@ impl Application {
                 .iter()
                 .any(|item| !raster::tile_exists(item.bounds, x, y, z))
             {
-                return Ok(AppResponse {
-                    status: 200,
-                    content_type: "image/png",
-                    body: image::empty_png(self.default_size[0], self.default_size[1])?,
-                    cache: true,
-                    headers: BTreeMap::new(),
-                });
+                return self.empty_tile(parameters, true);
             }
             Some(raster::mercator_tile_bounds(x, y, z))
         };
@@ -832,6 +894,16 @@ impl Application {
             // including different RGB extents and antimeridian wrapping.
             .map(|_| tile_bounds)
             .collect::<Vec<_>>();
+        let bands = channel_names
+            .iter()
+            .map(|name| {
+                source_band(
+                    parameters,
+                    &format!("{name}_band"),
+                    &format!("{name}_range"),
+                )
+            })
+            .collect::<Result<Vec<_>>>()?;
 
         let mut ranges = Vec::with_capacity(3);
         for (index, channel) in channel_names.iter().enumerate() {
@@ -850,86 +922,101 @@ impl Application {
             ranges.push(range);
         }
 
-        // A repeated band is read once and independently stretched into each
-        // requested output channel.
-        let mut unique_requests = Vec::new();
-        let mut channel_sources = Vec::with_capacity(3);
-        let mut identities = HashMap::new();
-        for (channel, path) in paths.into_iter().enumerate() {
-            let identity = (
-                path.to_string_lossy().into_owned(),
-                channel_bounds[channel].map(|bounds| bounds.map(f64::to_bits)),
-            );
-            let index = if let Some(index) = identities.get(&identity) {
-                *index
-            } else {
-                let index = unique_requests.len();
-                identities.insert(identity, index);
-                unique_requests.push((path, channel_bounds[channel]));
-                index
-            };
-            channel_sources.push(index);
+        if tile_bounds.is_none() && bands.iter().any(|&band| band != 1) {
+            return Err("source band selectors are supported on tiles".into());
         }
-        let results: Vec<Result<Arc<Raster>>> = std::thread::scope(|scope| {
-            let handles = unique_requests
-                .iter()
-                .map(|(path, bounds)| {
-                    scope.spawn(|| {
-                        self.executor.read(
-                            path,
-                            ReadRequest {
-                                bounds_mercator: *bounds,
-                                size,
-                                preserve_values: false,
-                            },
-                        )
-                    })
+        let key = self.render_cache.key(
+            path,
+            parameters,
+            paths.iter().zip(&metadata).map(|(p, m)| (p.as_path(), m)),
+        );
+        let remote = paths.iter().any(|p| crate::execution::is_remote(p));
+        let png = self.render_cache.render(key, remote, || {
+            // A repeated band is read once and independently stretched into each
+            // requested output channel.
+            let mut unique_requests = Vec::new();
+            let mut channel_sources = Vec::with_capacity(3);
+            let mut identities = HashMap::new();
+            for (channel, path) in paths.into_iter().enumerate() {
+                let identity = (
+                    path.to_string_lossy().into_owned(),
+                    channel_bounds[channel].map(|bounds| bounds.map(f64::to_bits)),
+                    bands[channel],
+                );
+                let index = if let Some(index) = identities.get(&identity) {
+                    *index
+                } else {
+                    let index = unique_requests.len();
+                    identities.insert(identity, index);
+                    unique_requests.push((path, channel_bounds[channel], bands[channel]));
+                    index
+                };
+                channel_sources.push(index);
+            }
+            let requests = unique_requests
+                .into_iter()
+                .map(|(path, bounds, band)| {
+                    (
+                        path,
+                        ReadRequest {
+                            band,
+                            bounds_mercator: bounds,
+                            size,
+                            preserve_values: false,
+                        },
+                    )
                 })
                 .collect::<Vec<_>>();
-            handles
-                .into_iter()
-                .map(|handle| {
-                    handle
-                        .join()
-                        .unwrap_or_else(|_| Err("raster worker request panicked".into()))
-                })
-                .collect()
-        });
-        let rasters = results.into_iter().collect::<Result<Vec<_>>>()?;
-        let raster_at = Instant::now();
-        let mut normalized = channel_sources
-            .iter()
-            .enumerate()
-            .map(|(channel, source)| color::normalize(&rasters[*source], ranges[channel]))
-            .collect::<Vec<_>>();
-        color::apply(&mut normalized, &operations);
-        let channels = normalized
-            .iter()
-            .map(|r| image::stretch_to_u8(r, [0.0, 1.0]))
-            .collect::<Vec<_>>();
-        let first = &rasters[channel_sources[0]];
-        if channel_sources.iter().any(|source| {
-            rasters[*source].width != first.width || rasters[*source].height != first.height
-        }) {
-            return Err("RGB bands produced different output dimensions".into());
-        }
-        let png = image::rgb_png(
-            first.width,
-            first.height,
-            [&channels[0], &channels[1], &channels[2]],
-        )?;
-        if std::env::var_os("TC_PROFILE_HTTP").is_some() {
-            eprintln!(
-                "http_profile mode=rgb metadata_us={} raster_us={} render_us={} path={}",
-                (metadata_at - started).as_micros(),
-                (raster_at - metadata_at).as_micros(),
-                raster_at.elapsed().as_micros(),
-                path,
-            );
-        }
+            let rasters = self.executor.read_many(&requests)?;
+            let raster_at = Instant::now();
+            let first = &rasters[channel_sources[0]];
+            if channel_sources.iter().any(|source| {
+                rasters[*source].width != first.width || rasters[*source].height != first.height
+            }) {
+                return Err("RGB bands produced different output dimensions".into());
+            }
+            let png = if operations.is_empty() && self.fused_render {
+                image::stretched_rgb_image(
+                    [
+                        &rasters[channel_sources[0]],
+                        &rasters[channel_sources[1]],
+                        &rasters[channel_sources[2]],
+                    ],
+                    [ranges[0], ranges[1], ranges[2]],
+                    format,
+                )?
+            } else {
+                let mut normalized = channel_sources
+                    .iter()
+                    .enumerate()
+                    .map(|(channel, source)| color::normalize(&rasters[*source], ranges[channel]))
+                    .collect::<Vec<_>>();
+                color::apply(&mut normalized, &operations);
+                let channels = normalized
+                    .iter()
+                    .map(|r| image::stretch_to_u8(r, [0.0, 1.0]))
+                    .collect::<Vec<_>>();
+                image::rgb_image(
+                    first.width,
+                    first.height,
+                    [&channels[0], &channels[1], &channels[2]],
+                    format,
+                )?
+            };
+            if std::env::var_os("TC_PROFILE_HTTP").is_some() {
+                eprintln!(
+                    "http_profile mode=rgb metadata_us={} raster_us={} render_us={} path={}",
+                    (metadata_at - started).as_micros(),
+                    (raster_at - metadata_at).as_micros(),
+                    raster_at.elapsed().as_micros(),
+                    path,
+                );
+            }
+            Ok(png)
+        })?;
         Ok(AppResponse {
             status: 200,
-            content_type: "image/png",
+            content_type: format.content_type(),
             body: png,
             cache: true,
             headers: BTreeMap::new(),
@@ -1044,7 +1131,10 @@ impl Application {
                 .get("stretch_range")
                 .ok_or("{'stretch_range': ['Missing data for required field.']}")?,
         )?;
-        if range[1] <= range[0] {
+        if range[1] < range[0]
+            || (range[1] == range[0]
+                && crate::compatibility::CompatibilityProfile::current().is_terracotta())
+        {
             return Err("Upper stretch bounds must be larger than lower bounds".into());
         }
         let palette = parameters
@@ -1094,7 +1184,7 @@ impl Application {
                 let metadata = store.metadata(&keys)?.ok_or("No dataset found")?;
                 let bounds = if let Some((x, y, z)) = xyz {
                     if !raster::tile_exists(metadata.bounds, x, y, z) {
-                        return self.empty_tile();
+                        return self.empty_tile(parameters, false);
                     }
                     Some(raster::mercator_tile_bounds(x, y, z))
                 } else {
@@ -1111,6 +1201,7 @@ impl Application {
                 self.executor.read(
                     &path,
                     ReadRequest {
+                        band: 1,
                         bounds_mercator: bounds,
                         size,
                         preserve_values: false,
@@ -1134,11 +1225,30 @@ impl Application {
         response.cache = true;
         Ok(response)
     }
-    fn empty_tile(&self) -> Result<AppResponse> {
-        let mut response = bytes_response(
-            "image/png",
-            image::empty_png(self.default_size[0], self.default_size[1])?,
-        );
+    fn empty_tile(&self, parameters: &BTreeMap<String, String>, rgb: bool) -> Result<AppResponse> {
+        let legacy = crate::compatibility::CompatibilityProfile::current().is_terracotta();
+        let size = if legacy {
+            self.default_size
+        } else {
+            parameters
+                .get("tile_size")
+                .map(|v| parse_size(v))
+                .transpose()?
+                .unwrap_or(self.default_size)
+        };
+        let [width, height] = if legacy { size } else { [size[1], size[0]] };
+        let mut response = if rgb
+            && parameters.get("format").is_some_and(|v| v == "webp")
+            && !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+        {
+            let pixels = vec![0; width * height];
+            bytes_response(
+                "image/webp",
+                image::rgb_image(width, height, [&pixels; 3], image::RgbFormat::Webp(85.0))?,
+            )
+        } else {
+            bytes_response("image/png", image::empty_png(width, height)?)
+        };
         response.cache = true;
         Ok(response)
     }
@@ -1147,6 +1257,7 @@ impl Application {
         let mut value = serde_json::to_value(self.executor.metrics())
             .map_err(|error| format!("could not encode metrics: {error}"))?;
         let object = value.as_object_mut().expect("metrics object");
+        object.insert("render_cache".into(), self.render_cache.metrics());
         object.insert("rss_bytes".into(), json!(process_rss_bytes()));
         object.insert(
             "open_file_descriptors".into(),
@@ -1215,6 +1326,59 @@ fn render_route(path: &str) -> bool {
             .iter()
             .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()))
 }
+pub(crate) fn api_spec() -> Value {
+    let mut spec: Value =
+        serde_json::from_str(include_str!("assets/swagger.json")).expect("embedded spec");
+    if !crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+        spec["paths"]["/metadata"] = json!({"post": {
+            "summary": "/metadata (batch)",
+            "description": "Retrieve metadata for a list of dataset key combinations. The configured MAX_POST_METADATA_KEYS limits the batch size.",
+            "parameters": [spec["paths"]["/metadata/{keys}"]["get"]["parameters"][1].clone()],
+            "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                "type": "object", "required": ["keys"], "additionalProperties": false,
+                "properties": {"keys": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}}}
+            }}}},
+            "responses": {
+                "200": {"description": "Metadata in request order", "content": {"application/json": {"schema": {
+                    "type": "array", "items": {"$ref": "#/components/schemas/Metadata"}
+                }}}},
+                "400": {"description": "Invalid body, columns, or batch size"},
+                "404": {"description": "No dataset found for a key combination"},
+                "415": {"description": "JSON content type required"}
+            }
+        }});
+        for (path, entry) in spec["paths"].as_object_mut().expect("paths") {
+            if path.starts_with("/rgb/") || path.starts_with("/singleband/") {
+                let parameters = entry["get"]["parameters"]
+                    .as_array_mut()
+                    .expect("parameters");
+                if !path.ends_with("preview.png") {
+                    for name in if path.starts_with("/rgb/") {
+                        vec!["r_band", "g_band", "b_band"]
+                    } else {
+                        vec!["band"]
+                    } {
+                        parameters.push(json!({"name":name,"in":"query","required":false,
+                            "description":"One-based source TIFF band. Bands other than 1 require an explicit numeric stretch.",
+                            "schema":{"type":"integer","minimum":1,"maximum":65535,"default":1}}));
+                    }
+                }
+                if path.starts_with("/rgb/") {
+                    parameters.push(json!({"name":"format","in":"query","required":false,
+                        "description":"PNG, or lossy WebP for display with the same coverage mask.",
+                        "schema":{"type":"string","enum":["png","webp"],"default":"png"}}));
+                    parameters.push(json!({"name":"quality","in":"query","required":false,
+                        "description":"WebP display quality. Does not change analysis values.",
+                        "schema":{"type":"number","minimum":0,"maximum":100,"default":85}}));
+                    entry["get"]["responses"]["200"]["content"] =
+                        json!({"image/png":{}, "image/webp":{}});
+                }
+            }
+        }
+    }
+    spec
+}
+
 fn update_palette_enums(value: &mut Value, palettes: &Palettes) {
     match value {
         Value::Object(obj) => {
@@ -1326,6 +1490,34 @@ fn percent_decode(value: &str) -> Result<String> {
     String::from_utf8(output).map_err(|_| "URL is not UTF-8".into())
 }
 
+fn source_band(parameters: &BTreeMap<String, String>, name: &str, range: &str) -> Result<usize> {
+    let Some(raw) = parameters.get(name) else {
+        return Ok(1);
+    };
+    if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+        return Err("source band selection requires the native profile".into());
+    }
+    let band = raw
+        .parse::<usize>()
+        .map_err(|_| "source band must be a positive integer")?;
+    if !(1..=65535).contains(&band) {
+        return Err("source band must be between 1 and 65535".into());
+    }
+    if band != 1
+        && !(name == "band"
+            && parameters
+                .get("colormap")
+                .is_some_and(|name| name == "explicit"))
+    {
+        parse_numeric_range(
+            parameters
+                .get(range)
+                .ok_or("selected source bands require explicit numeric stretch ranges")?,
+        )?;
+    }
+    Ok(band)
+}
+
 fn parse_usize(value: Option<&String>, default: usize, name: &str) -> Result<usize> {
     value
         .map(|value| value.parse().map_err(|_| format!("invalid {name}")))
@@ -1378,10 +1570,15 @@ fn parse_stretch(value: &str, metadata: &Metadata) -> Result<[f64; 2]> {
     if items.len() != 2 {
         return Err("stretch_range must contain two values".into());
     }
-    Ok([
+    let range = [
         stretch_value(&items[0], metadata, 0)?,
         stretch_value(&items[1], metadata, 1)?,
-    ])
+    ];
+    if !crate::compatibility::CompatibilityProfile::current().is_terracotta() && range[1] < range[0]
+    {
+        return Err("Upper stretch bound must be higher than lower bound".into());
+    }
+    Ok(range)
 }
 
 fn stretch_value(value: &Value, metadata: &Metadata, endpoint: usize) -> Result<f64> {
@@ -1396,9 +1593,18 @@ fn stretch_value(value: &Value, metadata: &Metadata, endpoint: usize) -> Result<
         .and_then(|value| value.strip_prefix('p'))
         .and_then(|value| value.parse::<usize>().ok())
     {
-        return metadata
-            .percentiles
-            .get(percentile)
+        let index = if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+            Some(percentile)
+        } else {
+            match percentile {
+                0 => return Ok(metadata.range[0]),
+                100 => return Ok(metadata.range[1]),
+                1..=99 => Some(percentile - 1),
+                _ => None,
+            }
+        };
+        return index
+            .and_then(|i| metadata.percentiles.get(i))
             .copied()
             .ok_or_else(|| format!("Invalid percentile, out of range: p{percentile}"));
     }

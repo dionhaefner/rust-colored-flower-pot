@@ -169,6 +169,17 @@ impl Store {
             Self::Relational(s) => s.dataset(keys),
         }
     }
+    pub fn descriptor(&self, keys: &[String]) -> Result<Option<(Dataset, Metadata)>> {
+        match self {
+            Self::Sqlite(s) | Self::Remote { store: s, .. } => s.descriptor(keys),
+            Self::Relational(s) => {
+                let Some(dataset) = s.dataset(keys)? else {
+                    return Ok(None);
+                };
+                Ok(s.metadata(keys)?.map(|metadata| (dataset, metadata)))
+            }
+        }
+    }
     pub fn metadata_stored(&self, keys: &[String]) -> Result<Option<Metadata>> {
         match self {
             Self::Sqlite(s) | Self::Remote { store: s, .. } => s.metadata_stored(keys),

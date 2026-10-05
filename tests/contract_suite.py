@@ -347,10 +347,15 @@ def main():
     run("raster.preview.nonsquare", custom_size)
 
     def outside():
-        image = png(
-            "/singleband/lagoon/red/0/0/0.png?tile_size=%5B64%2C64%5D", (256, 256)
+        expected_size = (
+            (256, 256)
+            if rcfp.compatibility_profile == "terracotta-0.10.1"
+            else (64, 96)
         )
-        check(np.any(image[:, :, 3] == 0), "outside coverage not transparent")
+        image = png(
+            "/singleband/lagoon/red/0/0/0.png?tile_size=%5B96%2C64%5D", expected_size
+        )
+        check(np.all(image[:, :, 3] == 0), "outside coverage not transparent")
 
     run("raster.tile.outside", outside)
 
@@ -360,7 +365,7 @@ def main():
         (
             "metadata.invalid-columns",
             "/metadata/lagoon/red?columns=%5B%22missing%22%5D",
-            500,
+            500 if rcfp.compatibility_profile == "terracotta-0.10.1" else 400,
         ),
         ("singleband.invalid-size", "/singleband/lagoon/red/preview.png?tile_size=bad"),
         (

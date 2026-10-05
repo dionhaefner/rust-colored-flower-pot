@@ -1,87 +1,83 @@
 # Rust-colored flower pot (RCFP)
 
-RCFP is a Rust implementation of the Terracotta API with a native server,
-Python bindings, WSGI support, CLI, and browser client. It reads compatible
-raster catalogs and serves discovery, metadata, and rendered imagery.
+<img src="docs/static/rcfp-logo-256.png" alt="RCFP flower-pot logo" width="128" height="128">
+<img src="docs/static/rcfp-logo-crab-256.png" alt="RCFP crab flower-pot logo" width="128" height="128">
 
-## Development checks
+RCFP serves raster imagery from existing GeoTIFFs and catalogs through a shared
+Rust core. It includes a native server, Python/WSGI interfaces, CLI, and browser
+client. Matching wheels bundle the executable and GDAL/PROJ runtime; no conda
+environment or Rasterio runtime is required.
 
-Install `pre-commit` with `python -m pip install pre-commit`, then run
-`pre-commit install` once in your checkout. The
-hooks format Rust with `cargo fmt`, Python with Ruff, C with clang-format, shell
-scripts with shfmt, and maintained Markdown, YAML, JSON, HTML, CSS, and
-JavaScript with Prettier.
-Ruff, Clippy, and ShellCheck also lint staged source files. The Rust hooks use
-the toolchain in `rust-toolchain.toml`; install its `rustfmt` and `clippy`
-components before committing. Run `pre-commit run --all-files` to check the
-repository on demand. A formatting hook that changes files requires restaging
-those files before committing.
+- [Get started](docs/tutorials/first-map.md): create a map from supplied real imagery.
+- [Upgrade from Terracotta](docs/how-to/upgrade-terracotta.md): keep supported data,
+  translate application entry points, and rehearse rollback.
+- [Why RCFP?](docs/explanation/why-rcfp.md): deployment choices, explicit capacity
+  controls, performance opportunities, and tradeoffs.
+- [Documentation](docs/README.md): Diátaxis tutorials, how-to guides, reference,
+  explanation, and local HTML build instructions.
 
-The installable package is named `rcfp`. Existing Python applications need to
-change their import and command names when switching from Terracotta. For
-installation and configuration, see [operator instructions](packaging/OPERATIONS.md).
+## Performance
 
-## Install from source and try the CLI
+In a four-core Linux navigation benchmark, native RCFP completed first viewports
+**1.5–4.2× faster** and pans **1.9–9.5× faster** than the tested Terracotta and
+TiTiler/rio-tiler configurations. Three rotating-order trials used large real
+Sentinel-2, elevation and land-cover rasters, SQLite, one/three users, equal
+aggregate cache budgets and PNG output. All **45,360 requests succeeded**.
+RGB uses three separate band COGs.
 
-The repository is a Python source package. Use CPython 3.12–3.14,
-a C/C++ compiler, and `pip`. The PyPI `rustup` build dependency fetches the
-pinned Rust 1.85.1 toolchain from `rust-toolchain.toml`; the build downloads
-Python and Cargo dependencies on first use. On Linux, macOS, and Windows,
-the build downloads SHA-256-locked GDAL/PROJ archives directly from
-conda-forge and bundles their native libraries and data.
-No conda executable or environment is needed. The CPython limited-API extension
-produces an `abi3` wheel that runs on Python 3.12–3.14 on the matching platform.
-The Linux release artifact targets glibc 2.34 or newer; a locally built wheel
-inherits the build host's native-library requirements.
+| Storage / layer | First view vs Terracotta | First view vs TiTiler | Pan vs Terracotta | Pan vs TiTiler |
+| --- | ---: | ---: | ---: | ---: |
+| Local / singleband | 4.2× | 3.6× | 9.5× | 8.7× |
+| Local / RGB | 3.6× | 3.9× | 5.8× | 4.6× |
+| Remote ranges / singleband | 2.0× | 1.5× | 2.4× | 1.9× |
+| Remote ranges / RGB | 2.4× | 1.6× | 4.0× | 2.6× |
 
-From this repository's root, in a fresh environment:
+These are medians across the tested raster/concurrency cells for the measured
+development build. Remote ranges use a self-hosted origin with 15 ms source
+latency; browser paint, cold disk and actual S3 are outside this comparison.
+Sampling policies differ and fidelity was checked separately. See the
+[versions, timings, fidelity results and reproduction method](docs/explanation/performance.md#terracotta-and-titiler-navigation-comparison).
+
+## Install and try it
+
+From this checkout, use CPython 3.12–3.14 with a C/C++ compiler and Python headers:
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install .
-rcfp --help
-python -c "import rcfp; print(rcfp.__version__)"
-```
-
-On Windows PowerShell, use the virtual environment executables directly:
-
-```powershell
-py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install .
-.venv\Scripts\rcfp.exe --help
-```
-
-That single `pip install .` builds the Rust executable and shared core, compiles
-the CPython extension, packages the native runtime and browser assets, and
-creates the `rcfp` console command. Rasterio is not a build or runtime
-dependency. The installed distribution and import package are both `rcfp`. The CLI launches the bundled Rust executable; Python
-exposes native request, data-store, and WSGI APIs. RCFP keeps its browser
-assets in `src/assets/client` and its Python adapter in `python/rcfp`.
-
-For a first interactive check against a catalog you already have:
-
-```sh
-rcfp serve -d /absolute/path/catalog.sqlite
-# In another terminal: curl http://127.0.0.1:5000/keys
-```
-
-To build a reusable wheel and install that exact file in another compatible
-CPython 3.12–3.14 environment:
-
-```sh
-python -m pip wheel --no-deps . --wheel-dir dist
-python -m pip install dist/rcfp-*.whl
 rcfp --version
+python docs/examples/create_catalog.py map.sqlite
+rcfp serve -d map.sqlite
 ```
 
-The source build uses the Linux standalone bundle path. Set
-`RCFP_GDAL_CACHE` to reuse verified downloaded native archives, or
-`RCFP_GDAL_PREFIX` to reuse an existing GDAL/PROJ prefix. Set
-`RCFP_CARGO_OFFLINE=1` when the Cargo registry is already cached.
-For an offline local build with Python build requirements already installed, add
-`--no-build-isolation` to `pip wheel` or `pip install`. macOS and Windows release
-wheels use delocate or delvewheel to repair native-library references. A wheel
-is installed with one `pip install` command. See
-[operator instructions](packaging/OPERATIONS.md) for configuration and the
-prebuilt artifact flow.
+Open `http://127.0.0.1:5000/keys` or follow the
+[first-map tutorial](docs/tutorials/first-map.md) to open imagery and the client.
+The source build obtains the pinned Rust toolchain and native archives on first
+use. A matching prebuilt wheel avoids compilation. See [installation](docs/how-to/install.md)
+for wheel/source, PowerShell, offline inputs, and platform requirements.
+
+## Existing Terracotta applications
+
+The `terracotta-0.10.1` profile targets supported public Terracotta 0.10.1 Python,
+WSGI, CLI, and HTTP workflows. Select it before importing RCFP or launching:
+
+```sh
+rcfp --compat-profile terracotta-0.10.1 serve -d /absolute/path/catalog-copy.sqlite
+```
+
+Change `terracotta` import/submodule and command prefixes to `rcfp`. The package
+installs no `terracotta` alias. Supported current catalogs and raster files need
+no conversion; older schema upgrades are explicit. Read the
+[trial guide](docs/compatibility.md), [native-mode differences](docs/native-migration.md),
+and [support matrix](docs/reference/support.md) before switching a deployment.
+Performance claims depend on workload, configuration, and verified artifacts.
+
+## Development
+
+See [maintainer context](design/README.md) for design decisions, compatibility
+constraints, and outstanding qualification. [Contributor instructions](docs/contributing.md) cover formatting, docs builds,
+example verification, CI, and versioned hosting. [Test instructions](tests/README.md)
+cover product suites. Package builds use Hatch VCS versioning; preserve its build
+configuration and generated version file. [How-to guides](docs/how-to/index.md)
+cover installation, configuration, deployment, and recovery tasks.

@@ -6,13 +6,26 @@ import json
 import os
 from collections.abc import Sequence
 from pathlib import Path
+from pkgutil import extend_path
 from urllib.parse import quote, urlencode
 
+from ._profile import PROFILE as compatibility_profile
+from ._profile import settings as _profile_settings
 from ._version import __version__
 
 __protocol_version__ = "0.10.1"
 
+__path__ = extend_path(__path__, __name__)
+
+# Editable wheels load Python code from the checkout and native files from the wheel.
+_NATIVE_SUFFIX = ".abi3.pyd" if os.name == "nt" else ".abi3.so"
 _PACKAGE_ROOT = Path(__file__).resolve().parent
+for _candidate in map(Path, __path__):
+    if (_candidate / ("_native" + _NATIVE_SUFFIX)).is_file() and (
+        _candidate / "runtime"
+    ).is_dir():
+        _PACKAGE_ROOT = _candidate
+        break
 _RUNTIME_ROOT = _PACKAGE_ROOT / "runtime"
 if _RUNTIME_ROOT.is_dir():
     os.environ.setdefault("TERRACOTTA_RUNTIME_ROOT", str(_RUNTIME_ROOT))
@@ -44,7 +57,7 @@ def request(database: os.PathLike[str] | str, method: str, url: str):
     Returns ``(status, content_type, body, cacheable)`` where body is bytes.
     """
 
-    return _native.request(os.fspath(database), method, url)
+    return NativeApplication(database).request(method, url)[:4]
 
 
 def render_preview(
@@ -97,18 +110,12 @@ __all__ = [
 
 def request_full(database, method, url, headers=None, body=b""):
     """Execute the HTTP contract including request/response headers and body."""
-    result = _native.request_full(
-        os.fspath(database),
-        method,
-        url,
-        json.dumps({k.lower(): v for k, v in (headers or {}).items()}),
-        body,
-    )
-    return (*result[:4], json.loads(result[4]))
+    return NativeApplication(database).request(method, url, headers, body)
 
 
 def data_operation(request):
     """Execute a structured native data operation, including atomic batches."""
+    request = dict(request, settings=_profile_settings(request.get("settings")))
     response = json.loads(_native.data_operation(json.dumps(request)))
     if "error" in response:
         raise RcfpError(response["error"])
@@ -222,7 +229,7 @@ class NativeApplication:
                 {
                     "kind": "http",
                     "path": os.fspath(database),
-                    "settings": settings or {},
+                    "settings": _profile_settings(settings),
                 }
             )
         )
@@ -238,3 +245,27 @@ class NativeApplication:
             )
         )
         return status, content_type, data, cache, json.loads(response_headers)
+
+
+__all__ += ["NativeApplication", "compatibility_profile", "request_full"]
+
+if compatibility_profile == "terracotta-0.10.1":
+    from .config import _parse_config
+
+    _settings = _parse_config()
+    _overwritten_settings = set()
+
+    def get_settings():
+        """Return the current Terracotta-compatible settings."""
+        return _settings
+
+    def update_settings(**new_config):
+        """Override public Terracotta settings without changing the profile."""
+        global _settings, _overwritten_settings
+        current = {key: getattr(_settings, key) for key in _overwritten_settings}
+        _settings = _parse_config({**current, **new_config})
+        _overwritten_settings |= new_config.keys()
+
+    from .drivers import get_driver
+
+    __all__ += ["get_driver", "get_settings", "update_settings"]

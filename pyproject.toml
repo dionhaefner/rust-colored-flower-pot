@@ -9,9 +9,12 @@ description = "RCFP raster tile server with a shared Rust core"
 readme = "README.md"
 requires-python = ">=3.12,<3.15"
 license = {file = "LICENSE"}
+dependencies = [
+  "numpy>=2,<3",
+]
 
 [project.scripts]
-rcfp = "rcfp.cli:main"
+rcfp = "rcfp_cli:main"
 
 [tool.hatch.version]
 source = "vcs"
@@ -22,22 +25,29 @@ fallback-version = "0.1.0"
 version-file = "python/rcfp/_version.py"
 
 [tool.hatch.build.targets.wheel]
+core-metadata-version = "2.4"
 packages = ["python/rcfp"]
+dev-mode-dirs = ["python"]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 path = "packaging/hatch_build.py"
 
+[tool.hatch.build.targets.wheel.force-include]
+"python/rcfp_cli.py" = "rcfp_cli.py"
+
 [tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"
 only-include = [
   "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "LICENSE",
   "THIRD_PARTY_NOTICES.md", "README.md", "pyproject.toml",
-  "packaging", "python/native.c", "python/rcfp", "src", "tests",
+  "packaging", "python/native.c", "python/rcfp", "python/rcfp_cli.py", "src", "tests", "docs",
 ]
-exclude = ["**/__pycache__", "**/*.pyc", "**/*.egg-info", "packaging/*.md"]
+exclude = ["**/__pycache__", "**/*.pyc", "**/*.egg-info", "docs/_build/**"]
 
 
 [tool.hatch.build.targets.sdist.force-include]
 "python/rcfp/_version.py" = "python/rcfp/_version.py"
+"docs/_generated" = "docs/_generated"
 
 [tool.ruff]
 target-version = "py312"

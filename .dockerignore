@@ -3,5 +3,8 @@
 .venv*
 target
 process
+design
+AGENTS.md
+TODO.md
 __pycache__
 **/__pycache__

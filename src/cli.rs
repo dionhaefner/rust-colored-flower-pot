@@ -60,6 +60,13 @@ pub fn optimize_command(args: &[String]) -> Result<()> {
             "--compression" => options.compression = next(args, &mut i)?.into(),
             "--resampling-method" => options.resampling_method = next(args, &mut i)?.into(),
             "--reproject" => options.reproject = true,
+            "--web-mercator-grid" => options.web_mercator_grid = true,
+            "--all-bands" => options.all_bands = true,
+            "--block-size" => {
+                options.block_size = next(args, &mut i)?
+                    .parse()
+                    .map_err(|_| "invalid block size")?
+            }
             "--in-memory" => options.in_memory = Some(true),
             "--no-in-memory" => options.in_memory = Some(false),
             "--overwrite" => overwrite = true,
@@ -68,7 +75,7 @@ pub fn optimize_command(args: &[String]) -> Result<()> {
             "--nproc" => nproc = next(args, &mut i)?.parse().map_err(|_| "invalid nproc")?,
             "--help" | "-h" => {
                 println!(
-                    "Usage: rcfp optimize-rasters FILES... -o FOLDER [--overwrite|--skip-existing] [--reproject] [--resampling-method average|nearest|bilinear|cubic] [--in-memory|--no-in-memory] [--compression auto|zstd|deflate|lzw|none] [--nproc N] [-q]"
+                    "Usage: rcfp optimize-rasters FILES... -o FOLDER [--overwrite|--skip-existing] [--reproject|--web-mercator-grid [--all-bands] [--block-size 256|512|1024]] [--resampling-method average|nearest|bilinear|cubic] [--in-memory|--no-in-memory] [--compression auto|zstd|deflate|lzw|none] [--nproc N] [-q]"
                 );
                 return Ok(());
             }
@@ -109,7 +116,7 @@ pub fn optimize_command(args: &[String]) -> Result<()> {
         if !file.is_file() {
             return Err(format!("Input raster {} is not a file", file.display()));
         }
-        if inspector.band_count(&file)? > 1 && !quiet {
+        if inspector.band_count(&file)? > 1 && !quiet && !options.all_bands {
             eprintln!(
                 "Warning: raster file {} has more than one band. Only the first one will be used.",
                 file.display()
@@ -192,6 +199,27 @@ pub fn data_operation(request: &Value) -> Result<Value> {
             .ok_or_else(|| "path required".to_string())
     };
     match op {
+        "raster_pattern" => {
+            let (keys, datasets) = ingest::raster_pattern(path()?, request["rgb_key"].as_str())?;
+            Ok(
+                json!({"keys": keys.iter().map(|key| &key.key).collect::<Vec<_>>(),
+                "datasets": datasets.iter().map(|dataset| json!({"keys": dataset.keys,
+                    "path": dataset.path})).collect::<Vec<_>>()}),
+            )
+        }
+        "spec" => Ok(crate::http::api_spec()),
+        "apidoc" => Ok(json!(include_str!("assets/apidoc.html"))),
+        "parse_settings" => Ok(json!(crate::settings::parse(
+            request["config"].as_object().cloned().unwrap_or_default(),
+        )?)),
+        "default_settings" => Ok(json!(crate::settings::defaults())),
+        "palette" => {
+            let palettes = crate::palettes::Palettes::load()?;
+            match request["name"].as_str() {
+                Some(name) => Ok(json!(palettes.get(name)?.as_ref())),
+                None => Ok(json!(palettes.0.keys().collect::<Vec<_>>())),
+            }
+        }
         "settings" => Ok(json!(crate::settings::snapshot())),
         "provider_info" => {
             use crate::storage::provider::{Provider, SqlPath, local_path};
@@ -235,6 +263,39 @@ pub fn data_operation(request: &Value) -> Result<Value> {
             let keys: Vec<KeyDefinition> =
                 serde_json::from_value(request["keys"].clone()).map_err(|e| e.to_string())?;
             Store::create(path()?, request["provider"].as_str(), &keys)?;
+            Ok(Value::Null)
+        }
+        "driver_create" => {
+            let keys: Vec<String> =
+                serde_json::from_value(request["keys"].clone()).map_err(|e| e.to_string())?;
+            let descriptions = request["key_descriptions"]
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+            if descriptions.keys().any(|key| !keys.contains(key)) {
+                return Err("key description dict contains unknown keys".into());
+            }
+            let definitions = keys
+                .into_iter()
+                .map(|key| KeyDefinition {
+                    description: descriptions
+                        .get(&key)
+                        .and_then(Value::as_str)
+                        .unwrap_or("")
+                        .into(),
+                    key,
+                })
+                .collect::<Vec<_>>();
+            crate::storage::validate_definitions(&definitions).map_err(|_| {
+                if definitions.iter().any(|key| {
+                    ["limit", "page", "order_by", "ascending"].contains(&key.key.as_str())
+                }) {
+                    "key names cannot be one of limit, page, order_by, ascending".to_owned()
+                } else {
+                    "key names must be alphanumeric and unique".to_owned()
+                }
+            })?;
+            Store::create(path()?, request["provider"].as_str(), &definitions)?;
             Ok(Value::Null)
         }
         _ => {

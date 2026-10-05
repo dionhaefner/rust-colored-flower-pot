@@ -130,7 +130,13 @@ def main() -> None:
             page.on(
                 "response",
                 lambda response: (
-                    responses.append({"url": response.url, "status": response.status, "body": response.text() if response.status >= 400 else ""})
+                    responses.append(
+                        {
+                            "url": response.url,
+                            "status": response.status,
+                            "body": response.text() if response.status >= 400 else "",
+                        }
+                    )
                     if f"127.0.0.1:{backend_port}" in response.url
                     else None
                 ),

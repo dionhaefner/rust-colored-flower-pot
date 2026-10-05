@@ -1,7 +1,0 @@
-running build_ext
-building 'terracotta_rust._native' extension
-creating build/temp.linux-x86_64-cpython-312/home/dion/codes/rust-colored-flower-pot/python
-x86_64-linux-gnu-gcc -fno-strict-overflow -Wsign-compare -DNDEBUG -g -O2 -Wall -fPIC -I/home/dion/codes/rust-colored-flower-pot/.venv-reference/include -I/usr/include/python3.12 -c /home/dion/codes/rust-colored-flower-pot/python/native.c -o build/temp.linux-x86_64-cpython-312/home/dion/codes/rust-colored-flower-pot/python/native.o
-creating build/lib.linux-x86_64-cpython-312/terracotta_rust
-x86_64-linux-gnu-gcc -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro -g -fwrapv -O2 build/temp.linux-x86_64-cpython-312/home/dion/codes/rust-colored-flower-pot/python/native.o -L/home/dion/codes/rust-colored-flower-pot/validation/artifacts/p07-ci-stage-final/terracotta_rust/runtime/lib -L/usr/lib/x86_64-linux-gnu -lterracotta_core -o build/lib.linux-x86_64-cpython-312/terracotta_rust/_native.cpython-312-x86_64-linux-gnu.so -Wl,-rpath,$ORIGIN/runtime/lib
-copying build/lib.linux-x86_64-cpython-312/terracotta_rust/_native.cpython-312-x86_64-linux-gnu.so -> terracotta_rust

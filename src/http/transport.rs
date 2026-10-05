@@ -72,10 +72,12 @@ fn handle(mut socket: TcpStream, application: &Application) {
     let _ = socket.set_write_timeout(Some(Duration::from_secs(5)));
     let response = match read_request(&mut socket) {
         Ok(request) => {
-            let tile = request.url.starts_with("/singleband/")
-                || request.url.starts_with("/rgb/");
+            let tile = request.url.starts_with("/singleband/") || request.url.starts_with("/rgb/");
             let response = application.request_full(
-                &request.method, &request.url, &request.headers, &request.body,
+                &request.method,
+                &request.url,
+                &request.headers,
+                &request.body,
             );
             if tile && response.status == 200 {
                 application.executor.wake_prefetch();
@@ -96,9 +98,7 @@ fn handle(mut socket: TcpStream, application: &Application) {
     let _ = write_response(&mut socket, response);
 }
 
-fn read_request(
-    socket: &mut TcpStream,
-) -> std::result::Result<(String, String, BTreeMap<String, String>, Vec<u8>), u16> {
+fn read_request(socket: &mut TcpStream) -> std::result::Result<ParsedRequest, u16> {
     let deadline = Instant::now() + READ_DEADLINE;
     let mut bytes = Vec::with_capacity(1024);
     let end = loop {

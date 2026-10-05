@@ -1,8 +1,0 @@
-WARNING: The directory '/home/dion/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
-Processing ./validation/artifacts/p07-final-wheels/terracotta_rust-0.1.0-cp312-cp312-linux_x86_64.whl
-Installing collected packages: terracotta-rust
-  Attempting uninstall: terracotta-rust
-    Found existing installation: terracotta-rust 0.1.0
-    Uninstalling terracotta-rust-0.1.0:
-      Successfully uninstalled terracotta-rust-0.1.0
-Successfully installed terracotta-rust-0.1.0

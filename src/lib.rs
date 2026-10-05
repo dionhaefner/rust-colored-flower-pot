@@ -30,4 +30,5 @@ pub mod settings;
 
 pub mod client;
 
+pub mod compatibility;
 mod tracing;

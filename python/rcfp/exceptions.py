@@ -1,0 +1,33 @@
+"""Exceptions raised by the Terracotta compatibility API."""
+
+
+class TileOutOfBoundsError(Exception):
+    pass
+
+
+class DatasetNotFoundError(Exception):
+    pass
+
+
+class InvalidKeyError(Exception):
+    pass
+
+
+class InvalidArgumentsError(Exception):
+    pass
+
+
+class InvalidDatabaseError(Exception):
+    pass
+
+
+class DatabaseNotWritableError(Exception):
+    pass
+
+
+class PerformanceWarning(UserWarning):
+    pass
+
+
+class DeprecationWarning(UserWarning):
+    pass

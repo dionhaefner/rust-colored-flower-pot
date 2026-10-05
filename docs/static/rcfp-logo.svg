@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title description">
+  <title id="title">RCFP logo</title>
+  <desc id="description">A rust-red flower pot with a dark rim and three teal square leaves on a charcoal stem.</desc>
+  <g id="mark">
+    <path fill="#263438" d="M248 176h16v56h-16z"/>
+    <path fill="#287F7B" d="M224 96h64v64h-64zM144 152h64v64h-64zM304 152h64v64h-64z"/>
+    <path fill="#943E30" d="M136 248h240v40H136z"/>
+    <path fill="#C2543B" d="M160 304h192l-24 96H184z"/>
+  </g>
+</svg>

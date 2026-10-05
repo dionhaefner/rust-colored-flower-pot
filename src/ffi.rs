@@ -213,10 +213,9 @@ pub unsafe extern "C" fn tc_data_operation(request: *const c_char) -> *mut c_cha
         c_string(request, "request").and_then(|text| {
             let request: serde_json::Value =
                 serde_json::from_str(&text).map_err(|e| e.to_string())?;
-            crate::settings::scope(
-                request["settings"].as_object().cloned().unwrap_or_default(),
-                || crate::cli::data_operation(&request),
-            )
+            let mut settings = request["settings"].as_object().cloned().unwrap_or_default();
+            crate::compatibility::CompatibilityProfile::resolve(&mut settings)?;
+            crate::settings::scope(settings, || crate::cli::data_operation(&request))
         })
     })
     .unwrap_or_else(|_| Err("native data operation panic".into()));
@@ -285,5 +284,74 @@ pub unsafe extern "C" fn tc_session_free(session: *mut crate::python::Session) {
         let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             drop(unsafe { Box::from_raw(session) });
         }));
+    }
+}
+
+#[repr(C)]
+pub struct TcRaster {
+    pub data_type: i32,
+    pub height: usize,
+    pub width: usize,
+    pub values: *const f64,
+    pub mask: *const u8,
+    pub error: *mut c_char,
+    owner: *const crate::raster::Raster,
+}
+
+/// Read through the shared executor without serializing samples as JSON.
+/// # Safety
+/// Session and request remain live during the call. Free the result exactly once.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn tc_session_raster(
+    session: *const crate::python::Session,
+    request: *const c_char,
+) -> *mut TcRaster {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if session.is_null() {
+            return Err("null session".into());
+        }
+        let request =
+            serde_json::from_str(&c_string(request, "request")?).map_err(|e| e.to_string())?;
+        unsafe { &*session }.read_raster(&request)
+    }))
+    .unwrap_or_else(|_| Err("native raster panic".into()));
+    let response = match result {
+        Ok(raster) => TcRaster {
+            data_type: raster.data_type,
+            height: raster.height,
+            width: raster.width,
+            values: raster.values.as_ptr(),
+            mask: raster.mask.as_ptr().cast(),
+            error: ptr::null_mut(),
+            owner: std::sync::Arc::into_raw(raster),
+        },
+        Err(error) => TcRaster {
+            data_type: 0,
+            height: 0,
+            width: 0,
+            values: ptr::null_mut(),
+            mask: ptr::null_mut(),
+            error: owned_c_string(&error),
+            owner: ptr::null(),
+        },
+    };
+    Box::into_raw(Box::new(response))
+}
+
+/// Release a raster returned by tc_session_raster.
+/// # Safety
+/// The pointer must be null or an unfreed result returned by tc_session_raster.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn tc_raster_free(raster: *mut TcRaster) {
+    if raster.is_null() {
+        return;
+    }
+    let raster = unsafe { Box::from_raw(raster) };
+    if !raster.owner.is_null() {
+        // SAFETY: the owned Arc was transferred by tc_session_raster.
+        drop(unsafe { std::sync::Arc::from_raw(raster.owner) });
+    }
+    if !raster.error.is_null() {
+        drop(unsafe { CString::from_raw(raster.error) });
     }
 }

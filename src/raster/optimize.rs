@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 #[serde(default)]
 pub struct OptimizeOptions {
     pub reproject: bool,
+    pub web_mercator_grid: bool,
+    pub all_bands: bool,
+    pub block_size: usize,
     pub resampling_method: String,
     pub in_memory: Option<bool>,
     pub compression: String,
@@ -15,6 +18,9 @@ impl Default for OptimizeOptions {
     fn default() -> Self {
         Self {
             reproject: false,
+            web_mercator_grid: false,
+            all_bands: false,
+            block_size: 256,
             resampling_method: "average".into(),
             in_memory: None,
             compression: "auto".into(),
@@ -34,6 +40,18 @@ impl Drop for TempPath<'_> {
 }
 impl Gdal {
     pub fn optimize(&self, input: &Path, output: &Path, options: &OptimizeOptions) -> Result<()> {
+        if options.all_bands && !options.web_mercator_grid {
+            return Err("all-band preparation requires a Web Mercator grid".into());
+        }
+        if ![256, 512, 1024].contains(&options.block_size) {
+            return Err("block size must be 256, 512 or 1024".into());
+        }
+        if options.block_size != 256 && !options.web_mercator_grid {
+            return Err("custom block size requires a Web Mercator grid".into());
+        }
+        if options.reproject && options.web_mercator_grid {
+            return Err("reproject and Web Mercator grid options are mutually exclusive".into());
+        }
         let method = match options.resampling_method.as_str() {
             "nearest" => 0,
             "bilinear" => 1,
@@ -72,6 +90,67 @@ impl Gdal {
             _ => return Err("invalid compression".into()),
         };
         let src = self.open_dataset(input)?;
+        if options.web_mercator_grid {
+            if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                return Err("map-grid preparation requires the native profile".into());
+            }
+            let path = CString::new(output.to_string_lossy().as_bytes())
+                .map_err(|_| "invalid output path")?;
+            // A nodata-free float source needs an unambiguous invalid padding
+            // value. Keep genuine zero elevations valid when aligning the grid.
+            let virtual_path = TempPath {
+                gdal: self,
+                path: CString::new(format!(
+                    "/vsimem/rcfp-grid-{}.vrt",
+                    VRT_SEQUENCE.fetch_add(1, Ordering::Relaxed)
+                ))
+                .expect("generated path"),
+            };
+            let floating_source = unsafe {
+                let band = (self.raster_band)(src.handle, 1);
+                let mut has_nodata = 0;
+                (self.nodata)(band, &mut has_nodata);
+                let alpha = (1..=(self.raster_count)(src.handle))
+                    .any(|i| (self.color_interpretation)((self.raster_band)(src.handle, i)) == 6);
+                if [6, 7].contains(&(self.band_data_type)(band)) && has_nodata == 0 && !alpha {
+                    Some(self.translate(
+                        src.handle,
+                        &virtual_path.path,
+                        &["-of".into(), "VRT".into(), "-a_nodata".into(), "nan".into()],
+                    )?)
+                } else {
+                    None
+                }
+            };
+            let source = floating_source
+                .as_ref()
+                .map_or(src.handle, |source| source.handle);
+            let mut arguments = vec![
+                "-of".into(),
+                "COG".into(),
+                "-co".into(),
+                "TILING_SCHEME=GoogleMapsCompatible".into(),
+                "-co".into(),
+                format!("BLOCKSIZE={}", options.block_size),
+                "-co".into(),
+                "ALIGNED_LEVELS=4".into(),
+                "-co".into(),
+                format!("COMPRESS={compression}"),
+                "-co".into(),
+                "PREDICTOR=YES".into(),
+                "-co".into(),
+                format!("RESAMPLING={}", options.resampling_method.to_uppercase()),
+                "-co".into(),
+                "NUM_THREADS=1".into(),
+            ];
+            if !options.all_bands {
+                arguments.extend(["-b".into(), "1".into()]);
+            }
+            unsafe {
+                self.translate(source, &path, &arguments)?;
+            }
+            return Ok(());
+        }
         unsafe {
             let config: unsafe extern "C" fn(*const c_char, *const c_char) =
                 self.symbol(b"CPLSetThreadLocalConfigOption\0")?;

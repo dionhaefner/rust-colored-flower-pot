@@ -1,0 +1,152 @@
+{
+  "sources": {
+    "s2-red": {
+      "file": "s2-red.tif",
+      "sha256": "816f959cea7b3a15fe904db1fa28ffcd6615c64939f33d9ac759848d80b4fa0c",
+      "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B04.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021"
+    },
+    "s2-green": {
+      "file": "s2-green.tif",
+      "sha256": "f4966fd5f16270cf0192e9a2e06e90679806993e3886bdc0f5652debbf8af893",
+      "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B03.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021"
+    },
+    "s2-blue": {
+      "file": "s2-blue.tif",
+      "sha256": "adf88aa4000396e43bc780524e16c27c19e84d1122aabc7c7523521bb5c86f54",
+      "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B02.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021"
+    },
+    "s2-nir": {
+      "file": "s2-nir.tif",
+      "sha256": "cffb6749394dcd7de713d7f0ca5de8b5b84d524d9a3cbba940126ccf6c38fe60",
+      "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B08.tif",
+      "attribution": "Contains modified Copernicus Sentinel data 2021"
+    },
+    "dem": {
+      "file": "dem.tif",
+      "sha256": "46b61212f5850f75b5878ea1e14daaa53d3f734820adcb73f2f4f345c1130f33",
+      "url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N46_00_E012_00_DEM/Copernicus_DSM_COG_10_N46_00_E012_00_DEM.tif",
+      "attribution": "Copernicus DEM 2021, European Union / Airbus"
+    },
+    "worldcover": {
+      "file": "worldcover.tif",
+      "sha256": "80f665ce258f470e3d18facf5842f3451c5d66e7010d130bc2d3b1e387f8b7b4",
+      "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N45E012_Map.tif",
+      "attribution": "ESA WorldCover 2021 v200 / CC BY 4.0"
+    },
+    "dem-south": {
+      "file": "dem-south.tif",
+      "sha256": "1a41c3310b250d0e03c590c4f3d431f4c8b7f613dbad00cbe58b9f4588c045aa",
+      "url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_S34_00_E018_00_DEM/Copernicus_DSM_COG_10_S34_00_E018_00_DEM.tif",
+      "attribution": "Copernicus DEM 2021, European Union / Airbus"
+    },
+    "rgb-byte": {
+      "file": "rgb-byte.tif",
+      "sha256": "d7cbe932c7ed74a627706a9e9df99f706df3e5abc7d45a49e9d00677a6b09eb4",
+      "url": "https://raw.githubusercontent.com/rasterio/rasterio/1.4.4/tests/data/RGB.byte.tif",
+      "attribution": "Rasterio test data, Landsat RGB example"
+    }
+  },
+  "scenes": [
+    {
+      "id": "imagery",
+      "bands": {
+        "red": "s2-red",
+        "green": "s2-green",
+        "blue": "s2-blue"
+      },
+      "center": [
+        12.35,
+        45.46
+      ],
+      "zooms": [
+        11,
+        13,
+        14
+      ],
+      "range": [
+        0,
+        3000
+      ]
+    },
+    {
+      "id": "elevation",
+      "bands": {
+        "red": "dem"
+      },
+      "center": [
+        12.5,
+        46.5
+      ],
+      "zooms": [
+        11,
+        12,
+        13
+      ],
+      "range": [
+        0,
+        4000
+      ]
+    },
+    {
+      "id": "classes",
+      "bands": {
+        "red": "worldcover"
+      },
+      "center": [
+        12.35,
+        45.46
+      ],
+      "zooms": [
+        10,
+        12,
+        14
+      ],
+      "categorical": true,
+      "range": [
+        0,
+        100
+      ]
+    },
+    {
+      "id": "south",
+      "bands": {
+        "red": "dem-south"
+      },
+      "center": [
+        18.5,
+        -33.5
+      ],
+      "zooms": [
+        11,
+        12,
+        13
+      ],
+      "range": [
+        0,
+        1500
+      ]
+    },
+    {
+      "id": "landsat",
+      "bands": {
+        "red": "rgb-byte"
+      },
+      "center": [
+        -78.5,
+        24.5
+      ],
+      "zooms": [
+        8,
+        9,
+        10
+      ],
+      "range": [
+        0,
+        255
+      ]
+    }
+  ]
+}

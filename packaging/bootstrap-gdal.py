@@ -77,6 +77,8 @@ def payload_path(
     ):
         return output / "lib" / path.name
     share = ("Library", "share") if target_platform == "win-64" else ("share",)
+    if path.parts in (("ssl", "cacert.pem"), ("Library", "ssl", "cacert.pem")):
+        return output / "share" / "cacert.pem"
     if (
         len(path.parts) >= len(share) + 2
         and path.parts[: len(share)] == share
@@ -189,6 +191,7 @@ def main() -> None:
         output / "lib" / gdal,
         output / "share/gdal",
         output / "share/proj/proj.db",
+        output / "share/cacert.pem",
     ):
         if not required.exists():
             raise RuntimeError(f"native GDAL bundle is incomplete: {required}")

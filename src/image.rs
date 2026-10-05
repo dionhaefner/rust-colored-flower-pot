@@ -3,8 +3,68 @@
 use crate::{Result, raster::Raster};
 use png::{BitDepth, ColorType, Encoder};
 use std::io::Cursor;
+mod webp;
 
 pub type Rgba = [u8; 4];
+
+#[derive(Clone, Copy)]
+pub enum RgbFormat {
+    Png,
+    Webp(f32),
+}
+
+impl RgbFormat {
+    pub fn content_type(self) -> &'static str {
+        match self {
+            Self::Png => "image/png",
+            Self::Webp(_) => "image/webp",
+        }
+    }
+}
+
+fn normalized_byte(value: f64, masked: bool, range: [f64; 2]) -> u8 {
+    if masked {
+        return 0;
+    }
+    let mut normalized = value - range[0];
+    let norm = range[1] - range[0];
+    if norm.abs() > 1e-8 {
+        normalized *= 1.0 / norm;
+    }
+    (1.0 + normalized.clamp(0., 1.) * 254.).round_ties_even() as u8
+}
+
+pub fn normalized_pixels(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
+    raster
+        .values
+        .iter()
+        .zip(&raster.mask)
+        .map(|(&value, &masked)| normalized_byte(value, masked, range))
+        .collect()
+}
+
+pub fn stretched_rgb_png(rasters: [&Raster; 3], ranges: [[f64; 2]; 3]) -> Result<Vec<u8>> {
+    stretched_rgb_image(rasters, ranges, RgbFormat::Png)
+}
+
+pub fn stretched_rgb_image(
+    rasters: [&Raster; 3],
+    ranges: [[f64; 2]; 3],
+    format: RgbFormat,
+) -> Result<Vec<u8>> {
+    let first = rasters[0];
+    let mut pixels = Vec::with_capacity(first.width * first.height * 3);
+    for i in 0..first.values.len() {
+        for channel in 0..3 {
+            pixels.push(normalized_byte(
+                rasters[channel].values[i],
+                rasters[channel].mask[i],
+                ranges[channel],
+            ));
+        }
+    }
+    rgb_pixels_image(first.width, first.height, &pixels, format)
+}
 
 pub fn stretch_to_u8(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
     let normalization = range[1] - range[0];
@@ -76,6 +136,15 @@ pub fn empty_png(width: usize, height: usize) -> Result<Vec<u8>> {
 /// Encode legacy RGB output. A fully black pixel is the transparency key, as
 /// in Pillow's `transparency=(0, 0, 0)` behavior used by the Python service.
 pub fn rgb_png(width: usize, height: usize, channels: [&[u8]; 3]) -> Result<Vec<u8>> {
+    rgb_image(width, height, channels, RgbFormat::Png)
+}
+
+pub fn rgb_image(
+    width: usize,
+    height: usize,
+    channels: [&[u8]; 3],
+    format: RgbFormat,
+) -> Result<Vec<u8>> {
     let pixel_count = width * height;
     if channels.iter().any(|channel| channel.len() != pixel_count) {
         return Err("RGB channel length does not match dimensions".into());
@@ -83,6 +152,22 @@ pub fn rgb_png(width: usize, height: usize, channels: [&[u8]; 3]) -> Result<Vec<
     let mut pixels = Vec::with_capacity(pixel_count * 3);
     for index in 0..pixel_count {
         pixels.extend_from_slice(&[channels[0][index], channels[1][index], channels[2][index]]);
+    }
+    rgb_pixels_image(width, height, &pixels, format)
+}
+
+fn rgb_pixels_image(
+    width: usize,
+    height: usize,
+    pixels: &[u8],
+    format: RgbFormat,
+) -> Result<Vec<u8>> {
+    if let RgbFormat::Webp(quality) = format {
+        return webp::encode(width, height, pixels, quality);
+    }
+    let level = compression_level()?;
+    if level != 1 {
+        return compressed_png(width, height, pixels, 2, None, &[0; 6], level);
     }
     let mut output = Vec::new();
     {
@@ -96,10 +181,10 @@ pub fn rgb_png(width: usize, height: usize, channels: [&[u8]; 3]) -> Result<Vec<
             .write_header()
             .map_err(|error| format!("could not encode RGB PNG: {error}"))?;
         writer
-            .write_image_data(&pixels)
+            .write_image_data(pixels)
             .map_err(|error| format!("could not encode RGB PNG: {error}"))?;
     }
-    configured_compression(output)
+    Ok(output)
 }
 
 fn encode_png(
@@ -110,6 +195,15 @@ fn encode_png(
 ) -> Result<Vec<u8>> {
     if pixels.len() != width * height {
         return Err("PNG pixel length does not match dimensions".into());
+    }
+    let level = compression_level()?;
+    if level != 1 {
+        return match palette {
+            Some((colors, alpha)) => {
+                compressed_png(width, height, pixels, 3, Some(&colors), &alpha, level)
+            }
+            None => compressed_png(width, height, pixels, 0, None, &[0, 0], level),
+        };
     }
     let mut output = Vec::new();
     {
@@ -134,7 +228,7 @@ fn encode_png(
             .write_image_data(pixels)
             .map_err(|error| format!("could not encode PNG: {error}"))?;
     }
-    configured_compression(output)
+    Ok(output)
 }
 
 // Exact 255-entry Terracotta viridis palette for compatible rendering.
@@ -191,9 +285,7 @@ const VIRIDIS: &[u8] = &[
     229, 30, 255, 246, 230, 31, 255, 248, 230, 33, 255, 250, 230, 34, 255, 253, 231, 36, 255,
 ];
 
-/// PNG compression is a transport option; preserve filtered samples and all chunks.
-fn configured_compression(png: Vec<u8>) -> Result<Vec<u8>> {
-    use std::io::{Read, Write};
+fn compression_level() -> Result<u32> {
     let level = crate::settings::var("TC_PNG_COMPRESS_LEVEL")
         .unwrap_or_else(|_| "1".into())
         .parse::<u32>()
@@ -201,50 +293,100 @@ fn configured_compression(png: Vec<u8>) -> Result<Vec<u8>> {
     if level > 9 {
         return Err("invalid PNG compression level".into());
     }
-    if level == 1 {
-        return Ok(png);
+    Ok(level)
+}
+
+fn compressed_png(
+    width: usize,
+    height: usize,
+    pixels: &[u8],
+    color: u8,
+    palette: Option<&[u8]>,
+    transparency: &[u8],
+    level: u32,
+) -> Result<Vec<u8>> {
+    use std::io::Write;
+    let channels = if color == 2 { 3 } else { 1 };
+    if width == 0 || height == 0 {
+        return Err("PNG dimensions must be positive".into());
     }
-    let mut compressed = Vec::new();
-    let mut chunks = Vec::new();
-    let mut offset = 8;
-    while offset < png.len() {
-        let length = u32::from_be_bytes(png[offset..offset + 4].try_into().unwrap()) as usize;
-        let end = offset + 12 + length;
-        let is_data = &png[offset + 4..offset + 8] == b"IDAT";
-        if is_data {
-            compressed.extend_from_slice(&png[offset + 8..end - 4]);
-        }
-        chunks.push((offset, end, is_data));
-        offset = end;
+    let stride = width * channels;
+    if pixels.len() != stride * height {
+        return Err("PNG pixel length does not match dimensions".into());
     }
-    let mut filtered = Vec::new();
-    flate2::read::ZlibDecoder::new(compressed.as_slice())
-        .read_to_end(&mut filtered)
-        .map_err(|e| e.to_string())?;
     let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::new(level));
-    encoder.write_all(&filtered).map_err(|e| e.to_string())?;
-    let data = encoder.finish().map_err(|e| e.to_string())?;
-    let mut out = png[..8].to_vec();
-    let mut written = false;
-    for (start, end, is_data) in chunks {
-        if !is_data {
-            out.extend_from_slice(&png[start..end]);
-        } else if !written {
-            out.extend_from_slice(&(data.len() as u32).to_be_bytes());
-            let crc_start = out.len();
-            out.extend_from_slice(b"IDAT");
-            out.extend_from_slice(&data);
-            let crc = crc32fast::hash(&out[crc_start..]);
-            out.extend_from_slice(&crc.to_be_bytes());
-            written = true;
+    let mut row = vec![0; stride + 1];
+    for source in pixels.chunks_exact(stride) {
+        // The PNG Sub filter costs one pass and needs only one scanline buffer.
+        row[0] = 1;
+        for (i, &value) in source.iter().enumerate() {
+            row[i + 1] = value.wrapping_sub(if i >= channels {
+                source[i - channels]
+            } else {
+                0
+            });
         }
+        encoder.write_all(&row).map_err(|e| e.to_string())?;
     }
+    let data = encoder.finish().map_err(|e| e.to_string())?;
+    let mut out = b"\x89PNG\r\n\x1a\n".to_vec();
+    let mut header = Vec::with_capacity(13);
+    header.extend_from_slice(&(width as u32).to_be_bytes());
+    header.extend_from_slice(&(height as u32).to_be_bytes());
+    header.extend_from_slice(&[8, color, 0, 0, 0]);
+    png_chunk(&mut out, b"IHDR", &header);
+    if let Some(palette) = palette {
+        png_chunk(&mut out, b"PLTE", palette);
+    }
+    png_chunk(&mut out, b"tRNS", transparency);
+    png_chunk(&mut out, b"IDAT", &data);
+    png_chunk(&mut out, b"IEND", &[]);
     Ok(out)
+}
+
+fn png_chunk(output: &mut Vec<u8>, name: &[u8; 4], data: &[u8]) {
+    output.extend_from_slice(&(data.len() as u32).to_be_bytes());
+    let start = output.len();
+    output.extend_from_slice(name);
+    output.extend_from_slice(data);
+    let crc = crc32fast::hash(&output[start..]);
+    output.extend_from_slice(&crc.to_be_bytes());
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fused_normalization_preserves_stretch_rounding_masks_and_precision() {
+        let raster = Raster {
+            data_type: 7,
+            width: 10,
+            height: 1,
+            values: vec![
+                -1e20,
+                0.,
+                0.5,
+                1.,
+                1e20,
+                f64::NAN,
+                f64::INFINITY,
+                -3.,
+                1. / 508.,
+                3. / 508.,
+            ],
+            mask: vec![
+                false, false, false, false, false, false, false, true, false, false,
+            ],
+        };
+        for range in [[0., 1.], [1., 1.], [1., -1.], [-1e30, 1e30], [0., 1e-9]] {
+            let normalized = crate::color::normalize(&raster, range);
+            assert_eq!(
+                normalized_pixels(&raster, range),
+                stretch_to_u8(&normalized, [0., 1.])
+            );
+        }
+    }
 
     #[test]
     fn reserves_zero_for_transparency_and_uses_even_rounding() {
@@ -269,5 +411,41 @@ mod tests {
         let png = rgb_png(2, 1, [&[0, 1], &[0, 2], &[0, 3]]).unwrap();
         assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
         assert!(png.windows(4).any(|chunk| chunk == b"tRNS"));
+    }
+
+    #[test]
+    fn every_compression_level_preserves_rgb_palette_and_grayscale_samples() {
+        for level in 0..=9 {
+            crate::settings::scope(
+                serde_json::json!({"PNG_COMPRESS_LEVEL":level})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+                || {
+                    for png in [
+                        grayscale_png(3, 2, &[0, 1, 255, 12, 123, 200]).unwrap(),
+                        palette_png(3, 2, &[0, 1, 2, 2, 1, 0], &[[1, 2, 3, 128], [4, 5, 6, 255]])
+                            .unwrap(),
+                        rgb_png(3, 2, [&[0, 1, 255, 12, 123, 200]; 3]).unwrap(),
+                    ] {
+                        let decoder = png::Decoder::new(Cursor::new(&png));
+                        let mut reader = decoder.read_info().unwrap();
+                        let mut buffer = vec![0; reader.output_buffer_size()];
+                        let info = reader.next_frame(&mut buffer).unwrap();
+                        assert_eq!((info.width, info.height), (3, 2));
+                        let expected: Vec<_> = match info.color_type {
+                            ColorType::Rgb => [0, 1, 255, 12, 123, 200]
+                                .iter()
+                                .flat_map(|&v| [v; 3])
+                                .collect(),
+                            ColorType::Indexed => vec![0, 1, 2, 2, 1, 0],
+                            _ => vec![0, 1, 255, 12, 123, 200],
+                        };
+                        assert_eq!(&buffer[..info.buffer_size()], &expected);
+                        assert!(reader.info().trns.is_some());
+                    }
+                },
+            );
+        }
     }
 }

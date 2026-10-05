@@ -161,7 +161,49 @@ static PyObject *session_request_full(PyObject *self, PyObject *args) {
     Py_END_ALLOW_THREADS return response_to_python(response, 1);
 }
 
+typedef struct {
+    int32_t data_type;
+    size_t height, width;
+    double *values;
+    unsigned char *mask;
+    char *error;
+} TcRaster;
+extern TcRaster *tc_session_raster(const void *, const char *);
+extern void tc_raster_free(TcRaster *);
+
+static PyObject *session_raster(PyObject *self, PyObject *args) {
+    (void)self;
+    PyObject *capsule;
+    const char *request;
+    if (!PyArg_ParseTuple(args, "Os", &capsule, &request))
+        return NULL;
+    void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
+    if (!session)
+        return NULL;
+    TcRaster *raster;
+    Py_BEGIN_ALLOW_THREADS raster = tc_session_raster(session, request);
+    Py_END_ALLOW_THREADS if (!raster) return PyErr_NoMemory();
+    if (raster->error) {
+        PyErr_SetString(PyExc_RuntimeError, raster->error);
+        tc_raster_free(raster);
+        return NULL;
+    }
+    Py_ssize_t count = (Py_ssize_t)(raster->height * raster->width);
+    PyObject *values =
+        PyBytes_FromStringAndSize((const char *)raster->values, count * sizeof(double));
+    PyObject *mask = PyBytes_FromStringAndSize((const char *)raster->mask, count);
+    PyObject *result = values && mask
+                           ? Py_BuildValue("i(nn)OO", raster->data_type, (Py_ssize_t)raster->height,
+                                           (Py_ssize_t)raster->width, values, mask)
+                           : NULL;
+    Py_XDECREF(values);
+    Py_XDECREF(mask);
+    tc_raster_free(raster);
+    return result;
+}
+
 static PyMethodDef methods[] = {
+    {"session_raster", session_raster, METH_VARARGS, "Read native raster sample and mask buffers."},
     {"session_open", session_open, METH_VARARGS, "Create an owned native session."},
     {"session_operation", session_operation, METH_VARARGS, "Execute on an owned session."},
     {"session_request_full", session_request_full, METH_VARARGS,

@@ -1,6 +1,7 @@
 """Retain Rust dependency notices alongside the native distribution."""
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -8,19 +9,27 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 output = Path(sys.argv[1])
-metadata = json.loads(
-    subprocess.check_output(
-        [
-            str(root / "packaging/cargo.sh"),
-            "metadata",
-            "--locked",
-            "--offline",
-            "--format-version",
-            "1",
-        ],
-        cwd=root,
-    )
+cargo = str(root / "packaging/cargo.sh")
+host = next(
+    line.removeprefix("host: ")
+    for line in subprocess.check_output(
+        [cargo, "--version", "--verbose"], text=True
+    ).splitlines()
+    if line.startswith("host: ")
 )
+# Collect the native build's dependencies without fetching other platforms' crates.
+command = [
+    cargo,
+    "metadata",
+    "--locked",
+    "--filter-platform",
+    host,
+    "--format-version",
+    "1",
+]
+if os.environ.get("RCFP_CARGO_OFFLINE") == "1":
+    command.append("--offline")
+metadata = json.loads(subprocess.check_output(command, cwd=root))
 manifest = []
 for package in metadata["packages"]:
     if package["name"] == "rcfp":

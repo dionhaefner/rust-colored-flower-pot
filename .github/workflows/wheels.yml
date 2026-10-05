@@ -5,7 +5,8 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -20,31 +21,75 @@ jobs:
             id: linux-x86_64
           - os: ubuntu-24.04-arm
             id: linux-aarch64
+
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install wheel build tools
         run: |
-          python -m pip install build==1.3.0 hatchling hatch-vcs zstandard==0.25.0 auditwheel==6.5.0 patchelf==0.17.2.4
-          rustup toolchain install 1.85.1 --profile minimal
+          python -m pip install \
+            build==1.3.0 \
+            hatchling \
+            hatch-vcs \
+            zstandard==0.25.0 \
+            auditwheel==6.5.0 \
+            patchelf==0.17.2.4
+          rustup toolchain install 1.88.0 --profile minimal
+
+      - name: Check build failure diagnostics
+        run: python tests/build_errors.py
+
       - name: Build native bundle and repaired abi3 wheel
         run: |
           RCFP_BUILD_PYTHON=python packaging/build-bundle.sh build/ci/ci-wheel-bundle
           python -m pip install rustup==1.29.0.1
-          PYTHON=python packaging/build-wheel.sh build/ci/ci-wheel-bundle build/ci/ci-wheels-raw
+          RCFP_BUNDLE_DIR="$PWD/build/ci/ci-wheel-bundle" python -m build --wheel --no-isolation --outdir build/ci/ci-wheels-raw
+
           mkdir -p build/ci/ci-wheels
-          LD_LIBRARY_PATH="$PWD/build/ci/ci-wheel-bundle/lib" auditwheel repair build/ci/ci-wheels-raw/*.whl -w build/ci/ci-wheels
+          LD_LIBRARY_PATH="$PWD/build/ci/ci-wheel-bundle/lib" \
+            auditwheel repair \
+            build/ci/ci-wheels-raw/*.whl \
+            -w build/ci/ci-wheels
+
       - name: Check wheel contents and tag
         run: |
           for wheel in build/ci/ci-wheels/*.whl; do
             python3 packaging/verify-wheel.py "$wheel"
           done
+
+      - name: Check editable install
+        run: |
+          RCFP_BUNDLE_DIR="$PWD/build/ci/ci-wheel-bundle" \
+            python -m pip install \
+            --no-build-isolation \
+            --no-deps \
+            -e .
+
+          python - <<'PYCODE'
+          import rcfp
+          assert "/python/rcfp/" in rcfp.__file__
+          assert "site-packages/rcfp/" in rcfp._native.__file__
+          assert rcfp._RUNTIME_ROOT.is_dir()
+          try:
+              rcfp.compute_metadata("rcfp-package-check-missing.tif")
+          except rcfp.RcfpError:
+              pass
+          else:
+              raise AssertionError("missing raster unexpectedly opened")
+          PYCODE
+
+          rcfp --version
+          rcfp --help
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.id }}
@@ -62,18 +107,23 @@ jobs:
             id: macos-arm64
           - os: windows-2022
             id: windows-amd64
+
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
+
     defaults:
       run:
         shell: bash -el {0}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - uses: mamba-org/setup-micromamba@v2
         if: runner.os == 'Windows'
         with:
@@ -82,8 +132,16 @@ jobs:
             python=3.12 pip setuptools wheel gdal=3.10.3
           cache-environment: true
           init-shell: bash
+
       - name: Install source build requirements
-        run: python -m pip install build==1.3.0 hatchling hatch-vcs zstandard==0.25.0 "setuptools>=80,<81"
+        run: |
+          python -m pip install \
+            build==1.3.0 \
+            hatchling \
+            hatch-vcs \
+            zstandard==0.25.0 \
+            "setuptools>=80,<81"
+
       - name: Install wheel repair tool
         run: |
           if [[ "$RUNNER_OS" == macOS ]]; then
@@ -91,32 +149,53 @@ jobs:
           else
             python -m pip install delvewheel==1.13.1
           fi
+
       - name: Install Rust and build the core
         run: |
-          rustup toolchain install 1.85.1 --profile minimal
+          rustup toolchain install 1.88.0 --profile minimal
           cargo build --locked --release
           if [[ "$RUNNER_OS" == Windows ]]; then
             test -f target/release/rcfp.exe
             test -f target/release/rcfp_core.dll
           fi
+
       - name: Install source build helper
         run: python -m pip install rustup==1.29.0.1
+
       - name: Build and repair wheel
         run: |
           native_target="$PWD/target"
           if [[ "$RUNNER_OS" == Windows ]]; then
             native_target=$(cygpath -w "$native_target")
           fi
-          RCFP_NATIVE_TARGET="$native_target" python -m build --wheel --no-isolation --outdir build/ci/ci-wheels-raw
+
+          RCFP_NATIVE_TARGET="$native_target" \
+            python -m build \
+            --wheel \
+            --no-isolation \
+            --outdir build/ci/ci-wheels-raw
+
           mkdir -p build/ci/ci-wheels
           if [[ "$RUNNER_OS" == macOS ]]; then
-            delocate-wheel --require-archs "$(uname -m)" -w build/ci/ci-wheels build/ci/ci-wheels-raw/*.whl
+            delocate-wheel \
+              --require-archs "$(uname -m)" \
+              -w build/ci/ci-wheels \
+              build/ci/ci-wheels-raw/*.whl
           else
-            delvewheel repair --analyze-existing --no-mangle-all -w build/ci/ci-wheels build/ci/ci-wheels-raw/*.whl
+            delvewheel repair \
+              --analyze-existing \
+              --no-mangle-all \
+              -w build/ci/ci-wheels \
+              build/ci/ci-wheels-raw/*.whl
           fi
+
       - name: Check source-built wheel without repair
         run: |
-          python -m pip install --no-deps --target build/ci/ci-raw-install build/ci/ci-wheels-raw/*.whl
+          python -m pip install \
+            --no-deps \
+            --target build/ci/ci-raw-install \
+            build/ci/ci-wheels-raw/*.whl
+
           PYTHONPATH="$PWD/build/ci/ci-raw-install" python - <<'PYCODE'
           import rcfp
           try:
@@ -126,11 +205,13 @@ jobs:
           else:
               raise AssertionError("missing raster unexpectedly opened")
           PYCODE
+
       - name: Check wheel contents and tag
         run: |
           for wheel in build/ci/ci-wheels/*.whl; do
             python packaging/verify-wheel.py "$wheel"
           done
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.id }}
@@ -138,31 +219,48 @@ jobs:
           if-no-files-found: error
 
   installed-wheel:
-    needs: [linux, desktop]
+    needs:
+      - linux
+      - desktop
+
     strategy:
       fail-fast: false
       matrix:
         platform:
-          - {os: ubuntu-24.04, id: linux-x86_64}
-          - {os: ubuntu-24.04-arm, id: linux-aarch64}
-          - {os: macos-15-intel, id: macos-x86_64}
-          - {os: macos-14, id: macos-arm64}
-          - {os: windows-2022, id: windows-amd64}
-        python-version: ["3.12", "3.13", "3.14"]
+          - os: ubuntu-24.04
+            id: linux-x86_64
+          - os: ubuntu-24.04-arm
+            id: linux-aarch64
+          - os: macos-15-intel
+            id: macos-x86_64
+          - os: macos-14
+            id: macos-arm64
+          - os: windows-2022
+            id: windows-amd64
+        python-version:
+          - "3.12"
+          - "3.13"
+          - "3.14"
+
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 45
+
     defaults:
       run:
         shell: bash -el {0}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ matrix.platform.id }}
           path: build/ci/ci-wheels
+
       - name: Install final wheel with pip and verify runtime
         run: |
           python -m venv build/ci/ci-wheel-venv
@@ -171,12 +269,16 @@ jobs:
           else
             wheel_python=build/ci/ci-wheel-venv/bin/python
           fi
+
           "$wheel_python" -m pip install build/ci/ci-wheels/*.whl
           "$wheel_python" -I -c "import rcfp; print(rcfp.__file__)"
+
           for wheel in build/ci/ci-wheels/*.whl; do
             "$wheel_python" packaging/verify-wheel.py "$wheel"
           done
-          "$wheel_python" -I -c "import rcfp; assert rcfp._native.__file__.endswith(('.abi3.so', '.abi3.pyd'))"
+
+          "$wheel_python" -I \
+            -c "import rcfp; assert rcfp._native.__file__.endswith(('.abi3.so', '.abi3.pyd'))"
           "$wheel_python" -I - <<'PYCODE'
           import rcfp
           try:
@@ -186,24 +288,70 @@ jobs:
           else:
               raise AssertionError("missing raster unexpectedly opened")
           PYCODE
+
           "$wheel_python" -m pip install "numpy>=2.2,<3" "Pillow>=11.3,<13"
-          if [[ "${{ matrix.platform.id }}" == linux-x86_64 && "${{ matrix.python-version }}" == 3.12 ]]; then
+
+          if [[ "${{ matrix.platform.id }}" == linux-x86_64 && \
+                "${{ matrix.python-version }}" == 3.12 ]]; then
             "$wheel_python" -m pip install coverage==7.10.7
-            "$wheel_python" -m coverage run --branch --source=rcfp tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+            "$wheel_python" -m coverage run \
+              --branch \
+              --source=rcfp \
+              tests/contract_suite.py \
+              --wheel build/ci/ci-wheels/*.whl \
+              --out build/ci/ci-contracts
             mkdir -p build/ci/coverage
             "$wheel_python" -m coverage json -o build/ci/coverage/python.json
             "$wheel_python" -m coverage xml -o build/ci/coverage/python.xml
-            "$wheel_python" packaging/coverage-summary.py python build/ci/coverage/python.json >> "$GITHUB_STEP_SUMMARY"
+            "$wheel_python" tests/coverage-summary.py \
+              python \
+              build/ci/coverage/python.json \
+              >> "$GITHUB_STEP_SUMMARY"
           else
-            "$wheel_python" tests/contract_suite.py --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-contracts
+            "$wheel_python" tests/contract_suite.py \
+              --wheel build/ci/ci-wheels/*.whl \
+              --out build/ci/ci-contracts
           fi
+
           "$wheel_python" tests/remote_contracts.py --out build/ci/ci-remote
+          "$wheel_python" docs/tools/verify.py --out build/ci/ci-docs-examples
+
+          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+            TC_RUST_MERCATOR_FAST=1 \
+            TC_PREFETCH_TILE_RING=1 \
+            TC_RUST_UTM_FAST=1 \
+            "$wheel_python" tests/compatibility_contracts.py \
+            --wheel build/ci/ci-wheels/*.whl \
+            --out build/ci/ci-compatibility
+          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+            "$wheel_python" tests/remote_contracts.py \
+            --out build/ci/ci-remote-compatibility
+
+          if [[ "${{ matrix.platform.id }}" == linux-x86_64 && \
+                "${{ matrix.python-version }}" == 3.12 ]]; then
+            tests/reference/bootstrap.sh
+            RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+              TC_RUST_MERCATOR_FAST=1 \
+              TC_PREFETCH_TILE_RING=1 \
+              TC_RUST_UTM_FAST=1 \
+              "$wheel_python" tests/compatibility_contracts.py \
+              --wheel build/ci/ci-wheels/*.whl \
+              --reference-python .venv-reference/bin/python \
+              --out build/ci/ci-compatibility-reference
+            python tests/reference/compatibility.py \
+              --candidate-python "$wheel_python" \
+              --reference-python .venv-reference/bin/python \
+              --out build/ci/ci-compatibility-upstream
+          fi
+
           if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
             "$wheel_python" -m pip install rasterio==1.4.4
             "$wheel_python" tests/platform_smoke.py --out build/ci/ci-wheel-smoke
             "$wheel_python" -m pip uninstall -y rasterio numpy Pillow
-            "$wheel_python" packaging/verify-runtime-without-rasterio.py --database build/ci/ci-wheel-smoke/platform.sqlite
+            "$wheel_python" tests/verify-runtime-without-rasterio.py \
+              --database build/ci/ci-wheel-smoke/platform.sqlite
           fi
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -212,5 +360,10 @@ jobs:
             build/ci/ci-wheel-smoke/
             build/ci/ci-contracts/
             build/ci/ci-remote/
+            build/ci/ci-docs-examples/
+            build/ci/ci-remote-compatibility/
+            build/ci/ci-compatibility/
+            build/ci/ci-compatibility-reference/
+            build/ci/ci-compatibility-upstream/
             build/ci/coverage/
           retention-days: 14

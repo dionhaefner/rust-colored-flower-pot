@@ -13,6 +13,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 
 from PIL import Image
@@ -80,11 +81,18 @@ def fetch(binary, database, path):
 
 
 def exercise(binary, folder, base, name):
-    database = (
-        str(folder / "control.sqlite")
-        if name == "sqlite"
-        else base.rstrip("/") + "/rcfp_ci_" + uuid4().hex[:12]
-    )
+    if name != "sqlite":
+        url = urlsplit(base)
+        database_url = urlunsplit(
+            (
+                url.scheme,
+                url.netloc,
+                "/rcfp_ci_" + uuid4().hex[:12],
+                url.query,
+                url.fragment,
+            )
+        )
+    database = str(folder / "control.sqlite") if name == "sqlite" else database_url
     prefix = {"path": database}
     invoke(
         binary,
@@ -136,6 +144,58 @@ def exercise(binary, folder, base, name):
     with Image.open(io.BytesIO(body)) as image:
         pixels = image.convert("RGBA").tobytes()
         require(image.size == (256, 256), "SQL-backed image size wrong")
+    legacy = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "terracotta-0.10.1"
+    default_images = []
+    for route in (
+        "/singleband/lagoon/red/preview.png",
+        "/rgb/lagoon/preview.png?r=red&g=green&b=red",
+        "/singleband/lagoon/red/preview.png?stretch_range=%5Bnull%2C3000%5D",
+        "/rgb/lagoon/preview.png?r=red&g=green&b=red&r_range=%5Bnull%2C3000%5D",
+    ):
+        status, kind, body = fetch(binary, database, route)
+        if legacy and name == "mysql":
+            require(status == 500, "legacy MySQL default stretch behavior changed")
+        else:
+            require(status == 200 and kind == "image/png", "default SQL stretch failed")
+            with Image.open(io.BytesIO(body)) as image:
+                require(image.size == (256, 256), "default SQL image dimensions")
+                default_images.append(
+                    hashlib.sha256(image.convert("RGBA").tobytes()).hexdigest()
+                )
+    before = invoke(
+        binary,
+        folder,
+        {**prefix, "operation": "metadata_stored", "keys": ["lagoon", "red"]},
+    )
+    invoke(
+        binary,
+        folder,
+        {
+            **prefix,
+            "operation": "insert",
+            "keys": ["lagoon", "red"],
+            "raster": str(RASTER),
+            "skip_metadata": True,
+        },
+    )
+    stored = invoke(
+        binary,
+        folder,
+        {**prefix, "operation": "metadata_stored", "keys": ["lagoon", "red"]},
+    )
+    require(
+        stored == before if legacy else stored is None,
+        "replacement metadata invalidation",
+    )
+    require(
+        invoke(
+            binary,
+            folder,
+            {**prefix, "operation": "metadata", "keys": ["lagoon", "red"]},
+        )
+        == before,
+        "replacement lazy metadata changed values",
+    )
     try:
         invoke(
             binary,
@@ -174,7 +234,8 @@ def exercise(binary, folder, base, name):
         "engine": name,
         "database": database,
         "image_sha256": hashlib.sha256(pixels).hexdigest(),
-        "cases": 10,
+        "default_image_sha256": default_images,
+        "cases": 15,
     }
 
 
@@ -207,6 +268,11 @@ def main():
     require(
         len({row["image_sha256"] for row in rows}) == 1, "backend changed decoded image"
     )
+    if os.environ.get("RCFP_COMPAT_PROFILE", "native") == "native":
+        require(
+            len({tuple(row["default_image_sha256"]) for row in rows}) == 1,
+            "backend changed default stretch images",
+        )
     report = {
         "binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
         "results": rows,

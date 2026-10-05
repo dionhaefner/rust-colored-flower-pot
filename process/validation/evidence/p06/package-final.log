@@ -1,3 +1,0 @@
-   Compiling terracotta v0.1.0 (/home/dion/codes/rust-colored-flower-pot)
-    Finished `release` profile [optimized] target(s) in 9.42s
-{"implementation":"0.1.0","protocol_compatibility":"0.10.1","database_compatibility":"0.10","reference_commit":"6db38d5873cde5ebabe47338a1f61ddc788eada6","phase":"P06"}

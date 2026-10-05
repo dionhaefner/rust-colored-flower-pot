@@ -1,5 +1,5 @@
 src/assets/client/
 src/assets/static/
 src/assets/swagger.json
-process/validation/evidence/
-process/validation/reference/
+docs/_generated/
+docs/_build/

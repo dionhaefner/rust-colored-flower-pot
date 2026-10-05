@@ -6,7 +6,7 @@ use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -78,6 +78,7 @@ pub struct ExecutionMetrics {
     pub submitted: u64,
     pub completed: u64,
     pub failed: u64,
+    pub cancelled_queued: u64,
     pub overloaded: u64,
     pub timed_out: u64,
     pub cache_hits: u64,
@@ -91,6 +92,7 @@ struct Counters {
     submitted: AtomicU64,
     completed: AtomicU64,
     failed: AtomicU64,
+    cancelled_queued: AtomicU64,
     overloaded: AtomicU64,
     timed_out: AtomicU64,
     cache_hits: AtomicU64,
@@ -106,6 +108,7 @@ impl Counters {
             submitted: AtomicU64::new(0),
             completed: AtomicU64::new(0),
             failed: AtomicU64::new(0),
+            cancelled_queued: AtomicU64::new(0),
             overloaded: AtomicU64::new(0),
             timed_out: AtomicU64::new(0),
             cache_hits: AtomicU64::new(0),
@@ -130,18 +133,69 @@ struct Job {
     path: PathBuf,
     request: ReadRequest,
     result: SyncSender<Result<Arc<Raster>>>,
+    interested: Arc<AtomicBool>,
+}
+struct BandJob {
+    path: PathBuf,
+    requests: Vec<ReadRequest>,
+    result: SyncSender<Result<Vec<Arc<Raster>>>>,
+    interested: Arc<AtomicBool>,
+}
+struct Interest(Arc<AtomicBool>);
+impl Drop for Interest {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::Release);
+    }
+}
+
+enum PendingRead {
+    Ready(Arc<Raster>),
+    Queued {
+        receiver: Receiver<Result<Arc<Raster>>>,
+        interested: Arc<AtomicBool>,
+    },
+}
+impl Drop for PendingRead {
+    fn drop(&mut self) {
+        if let Self::Queued { interested, .. } = self {
+            interested.store(false, Ordering::Release);
+        }
+    }
+}
+impl PendingRead {
+    fn wait(&self, counters: &Counters, timeout: Duration) -> Result<Arc<Raster>> {
+        let Self::Queued { receiver, .. } = self else {
+            let Self::Ready(raster) = self else {
+                unreachable!()
+            };
+            return Ok(raster.clone());
+        };
+        match receiver.recv_timeout(timeout) {
+            Ok(result) => result,
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                counters.timed_out.fetch_add(1, Ordering::Relaxed);
+                Err(TIMED_OUT.into())
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                Err("raster worker exited without a result".into())
+            }
+        }
+    }
 }
 
 enum Work {
     Read(Job),
+    Bands(BandJob),
     Wake,
 }
 
 #[derive(Clone, Eq)]
 struct CacheKey {
+    band: usize,
     path: String,
     source_size: u64,
     source_modified_ns: u128,
+    generation: Vec<(u64, u128)>,
     bounds: Option<[u64; 4]>,
     size: [usize; 2],
     preserve_values: bool,
@@ -150,8 +204,10 @@ struct CacheKey {
 impl PartialEq for CacheKey {
     fn eq(&self, other: &Self) -> bool {
         self.path == other.path
+            && self.band == other.band
             && self.source_size == other.source_size
             && self.source_modified_ns == other.source_modified_ns
+            && self.generation == other.generation
             && self.bounds == other.bounds
             && self.size == other.size
             && self.preserve_values == other.preserve_values
@@ -161,8 +217,10 @@ impl PartialEq for CacheKey {
 impl Hash for CacheKey {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.path.hash(state);
+        self.band.hash(state);
         self.source_size.hash(state);
         self.source_modified_ns.hash(state);
+        self.generation.hash(state);
         self.bounds.hash(state);
         self.size.hash(state);
         self.preserve_values.hash(state);
@@ -428,6 +486,94 @@ impl RasterExecutor {
     }
 
     pub fn read(&self, path: &Path, request: ReadRequest) -> Result<Arc<Raster>> {
+        self.submit(path, request)?
+            .wait(&self.counters, self.config.wait_timeout)
+    }
+
+    pub fn read_many(&self, requests: &[(PathBuf, ReadRequest)]) -> Result<Vec<Arc<Raster>>> {
+        if requests.len() > 1
+            && requests.iter().all(|(path, request)| {
+                let (first_path, first) = &requests[0];
+                path == first_path
+                    && request.bounds_mercator == first.bounds_mercator
+                    && request.size == first.size
+                    && request.preserve_values == first.preserve_values
+            })
+        {
+            let remote = is_remote(&requests[0].0);
+            let cached = {
+                let mut cache = self.cache.lock().expect("cache lock");
+                requests
+                    .iter()
+                    .map(|(path, request)| cache.get(&cache_key(path, *request, remote)))
+                    .collect::<Option<Vec<_>>>()
+            };
+            if let Some(cached) = cached {
+                self.counters
+                    .cache_hits
+                    .fetch_add(requests.len() as u64, Ordering::Relaxed);
+                return Ok(cached);
+            }
+            self.counters
+                .cache_misses
+                .fetch_add(requests.len() as u64, Ordering::Relaxed);
+            let (result, receiver) = mpsc::sync_channel(1);
+            let interest = Interest(Arc::new(AtomicBool::new(true)));
+            let job = BandJob {
+                path: requests[0].0.clone(),
+                requests: requests.iter().map(|(_, r)| *r).collect(),
+                result,
+                interested: interest.0.clone(),
+            };
+            match self
+                .pool
+                .sender
+                .as_ref()
+                .expect("live executor")
+                .try_send(Work::Bands(job))
+            {
+                Ok(()) => {
+                    self.counters.submitted.fetch_add(1, Ordering::Relaxed);
+                    if remote {
+                        self.counters.remote_jobs.fetch_add(1, Ordering::Relaxed);
+                    }
+                }
+                Err(TrySendError::Full(_)) => {
+                    self.counters.overloaded.fetch_add(1, Ordering::Relaxed);
+                    return Err(OVERLOADED.into());
+                }
+                Err(TrySendError::Disconnected(_)) => {
+                    return Err("raster execution workers are unavailable".into());
+                }
+            }
+            return match receiver.recv_timeout(self.config.wait_timeout) {
+                Ok(result) => result,
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    self.counters.timed_out.fetch_add(1, Ordering::Relaxed);
+                    Err(TIMED_OUT.into())
+                }
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    Err("raster worker exited without a result".into())
+                }
+            };
+        }
+        let started = Instant::now();
+        let pending = requests
+            .iter()
+            .map(|(path, request)| self.submit(path, *request))
+            .collect::<Result<Vec<_>>>()?;
+        pending
+            .iter()
+            .map(|read| {
+                read.wait(
+                    &self.counters,
+                    self.config.wait_timeout.saturating_sub(started.elapsed()),
+                )
+            })
+            .collect()
+    }
+
+    fn submit(&self, path: &Path, request: ReadRequest) -> Result<PendingRead> {
         let remote = is_remote(path);
         let key = cache_key(path, request, remote);
         let cached = self.cache.lock().expect("cache lock").get(&key);
@@ -440,14 +586,16 @@ impl RasterExecutor {
                     .expect("neighbor queue")
                     .schedule(path, request, &cache);
             }
-            return Ok(raster);
+            return Ok(PendingRead::Ready(raster));
         }
         self.counters.cache_misses.fetch_add(1, Ordering::Relaxed);
         let (result_sender, result_receiver) = mpsc::sync_channel(1);
+        let interested = Arc::new(AtomicBool::new(true));
         let job = Job {
             path: path.to_path_buf(),
             request,
             result: result_sender,
+            interested: interested.clone(),
         };
         match self
             .pool
@@ -470,16 +618,10 @@ impl RasterExecutor {
                 return Err("raster execution workers are unavailable".into());
             }
         }
-        match result_receiver.recv_timeout(self.config.wait_timeout) {
-            Ok(result) => result,
-            Err(mpsc::RecvTimeoutError::Timeout) => {
-                self.counters.timed_out.fetch_add(1, Ordering::Relaxed);
-                Err(TIMED_OUT.into())
-            }
-            Err(mpsc::RecvTimeoutError::Disconnected) => {
-                Err("raster worker exited without a result".into())
-            }
-        }
+        Ok(PendingRead::Queued {
+            receiver: result_receiver,
+            interested,
+        })
     }
 
     pub fn metrics(&self) -> ExecutionMetrics {
@@ -494,6 +636,7 @@ impl RasterExecutor {
             submitted: self.counters.submitted.load(Ordering::Relaxed),
             completed: self.counters.completed.load(Ordering::Relaxed),
             failed: self.counters.failed.load(Ordering::Relaxed),
+            cancelled_queued: self.counters.cancelled_queued.load(Ordering::Relaxed),
             overloaded: self.counters.overloaded.load(Ordering::Relaxed),
             timed_out: self.counters.timed_out.load(Ordering::Relaxed),
             cache_hits: self.counters.cache_hits.load(Ordering::Relaxed),
@@ -532,8 +675,37 @@ fn worker_loop(
             let Ok(work) = receiver.recv() else { return };
             work
         };
-        let foreground = matches!(work, Work::Read(_));
-        if let Work::Read(job) = work {
+        let foreground = matches!(work, Work::Read(_) | Work::Bands(_));
+        if let Work::Bands(job) = &work {
+            if !job.interested.load(Ordering::Acquire) {
+                counters.cancelled_queued.fetch_add(1, Ordering::Relaxed);
+                continue;
+            }
+            counters.begin();
+            let remote = is_remote(&job.path);
+            let result = gdal
+                .read_bands(&job.path, &job.requests)
+                .map(|rasters| rasters.into_iter().map(Arc::new).collect::<Vec<_>>());
+            if let Ok(rasters) = &result {
+                let mut cache = cache.lock().expect("cache lock");
+                for (request, raster) in job.requests.iter().zip(rasters) {
+                    cache.insert(
+                        cache_key(&job.path, *request, remote),
+                        raster.clone(),
+                        remote,
+                    );
+                }
+                counters.completed.fetch_add(1, Ordering::Relaxed);
+            } else {
+                counters.failed.fetch_add(1, Ordering::Relaxed);
+            }
+            counters.end();
+            let _ = job.result.send(result);
+        } else if let Work::Read(job) = work {
+            if !job.interested.load(Ordering::Acquire) {
+                counters.cancelled_queued.fetch_add(1, Ordering::Relaxed);
+                continue;
+            }
             counters.begin();
             let remote = is_remote(&job.path);
             let key = cache_key(&job.path, job.request, remote);
@@ -624,15 +796,44 @@ fn cache_key(path: &Path, request: ReadRequest, remote: bool) -> CacheKey {
             .unwrap_or((0, 0))
     };
     CacheKey {
+        band: request.band,
         path: path.to_string_lossy().into_owned(),
         source_size,
         source_modified_ns,
+        generation: source_generation(path),
         bounds: request
             .bounds_mercator
             .map(|bounds| bounds.map(f64::to_bits)),
         size: request.size,
         preserve_values: request.preserve_values,
     }
+}
+
+pub(crate) fn source_generation(path: &Path) -> Vec<(u64, u128)> {
+    if is_remote(path) {
+        return Vec::new();
+    }
+    ["", ".msk", ".ovr", ".aux.xml"]
+        .iter()
+        .map(|suffix| {
+            let mut filename = path.as_os_str().to_owned();
+            filename.push(suffix);
+            std::fs::metadata(Path::new(&filename))
+                .ok()
+                .map(|metadata| {
+                    (
+                        metadata.len(),
+                        metadata
+                            .modified()
+                            .unwrap_or(SystemTime::UNIX_EPOCH)
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_nanos(),
+                    )
+                })
+                .unwrap_or((0, 0))
+        })
+        .collect()
 }
 
 pub fn is_remote(path: &Path) -> bool {
@@ -714,6 +915,7 @@ mod tests {
                     path: PathBuf::new(),
                     request: ReadRequest::default(),
                     result,
+                    interested: Arc::new(AtomicBool::new(true)),
                 }))
                 .unwrap();
         }
@@ -752,5 +954,17 @@ mod tests {
         assert!(is_remote(Path::new("https://example.test/a.tif")));
         assert!(is_remote(Path::new("s3://bucket/a.tif")));
         assert!(!is_remote(Path::new("/tmp/a.tif")));
+    }
+
+    #[test]
+    fn abandoning_a_pending_read_revokes_queued_interest() {
+        let (_sender, receiver) = mpsc::sync_channel(1);
+        let interested = Arc::new(AtomicBool::new(true));
+        let pending = PendingRead::Queued {
+            receiver,
+            interested: interested.clone(),
+        };
+        drop(pending);
+        assert!(!interested.load(Ordering::Acquire));
     }
 }

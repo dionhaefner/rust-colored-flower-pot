@@ -6,6 +6,16 @@ thread_local! { static SETTINGS: RefCell<Map<String, Value>> = RefCell::new(Map:
 pub fn snapshot() -> Map<String, Value> {
     SETTINGS.with(|s| s.borrow().clone())
 }
+pub fn compatibility_profile() -> crate::compatibility::CompatibilityProfile {
+    SETTINGS.with(|settings| {
+        settings
+            .borrow()
+            .get("COMPAT_PROFILE")
+            .and_then(Value::as_str)
+            .and_then(|value| crate::compatibility::CompatibilityProfile::parse(value).ok())
+            .unwrap_or_default()
+    })
+}
 pub fn scope<T>(values: Map<String, Value>, operation: impl FnOnce() -> T) -> T {
     struct Restore(Map<String, Value>);
     impl Drop for Restore {
@@ -19,6 +29,12 @@ pub fn scope<T>(values: Map<String, Value>, operation: impl FnOnce() -> T) -> T 
 }
 pub fn var(name: impl AsRef<OsStr>) -> Result<String, std::env::VarError> {
     let name = name.as_ref();
+    if name == "TC_RUST_UTM_FAST"
+        && crate::compatibility::CompatibilityProfile::current()
+            == crate::compatibility::CompatibilityProfile::Terracotta0101
+    {
+        return Ok("0".into());
+    }
     if let Some(key) = name.to_str().and_then(|s| s.strip_prefix("TC_")) {
         if let Some(value) = SETTINGS.with(|s| s.borrow().get(key).cloned()) {
             return match value {
@@ -34,8 +50,19 @@ pub fn var_os(name: impl AsRef<OsStr>) -> Option<OsString> {
     var(name).ok().map(Into::into)
 }
 
+pub(crate) fn flag(name: &str, default: bool) -> crate::Result<bool> {
+    let Ok(value) = var(name) else {
+        return Ok(default);
+    };
+    match value.to_ascii_lowercase().as_str() {
+        "true" | "1" | "yes" | "on" | "t" | "y" => Ok(true),
+        "false" | "0" | "no" | "off" | "f" | "n" => Ok(false),
+        _ => Err(format!("invalid boolean setting {name}")),
+    }
+}
+
 /// Parse native CLI settings with the same defaults and explicit > environment precedence.
-pub fn parse(mut explicit: Map<String, Value>) -> crate::Result<Map<String, Value>> {
+pub fn defaults() -> Map<String, Value> {
     let mut defaults: Map<String, Value> =
         serde_json::from_str(include_str!("assets/settings.json")).expect("settings defaults");
     defaults.insert(
@@ -47,6 +74,13 @@ pub fn parse(mut explicit: Map<String, Value>) -> crate::Result<Map<String, Valu
                 .into(),
         ),
     );
+    defaults
+}
+
+pub fn parse(mut explicit: Map<String, Value>) -> crate::Result<Map<String, Value>> {
+    let profile = crate::compatibility::CompatibilityProfile::resolve(&mut explicit)?;
+    explicit.remove("COMPAT_PROFILE");
+    let mut defaults = defaults();
     for key in explicit.keys() {
         if !defaults.contains_key(key) {
             return Err(format!(
@@ -160,6 +194,7 @@ pub fn parse(mut explicit: Map<String, Value>) -> crate::Result<Map<String, Valu
         }
         defaults.insert(key, value);
     }
+    defaults.insert("COMPAT_PROFILE".into(), profile.name().into());
     Ok(defaults)
 }
 

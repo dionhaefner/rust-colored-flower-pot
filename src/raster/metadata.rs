@@ -175,8 +175,14 @@ impl Gdal {
             let mut moments = Moments::default();
             let mut digest = Digest::default();
             let mut min = f64::MAX;
+            let legacy = crate::compatibility::CompatibilityProfile::current().is_terracotta();
+            let affine_footprint = !legacy
+                && (transform[2] != 0.
+                    || transform[4] != 0.
+                    || transform[1] < 0.
+                    || transform[5] > 0.);
             // Crick initializes max to -DBL_MIN, observable for all-negative chunks.
-            let mut max = if chunked {
+            let mut max = if chunked && legacy {
                 -f64::MIN_POSITIVE
             } else {
                 -f64::MAX
@@ -249,7 +255,15 @@ impl Gdal {
                                 [(b + 1) as f64, (row + 1) as f64],
                                 [a as f64, (row + 1) as f64],
                             ] {
-                                points.push(if chunked {
+                                points.push(if affine_footprint {
+                                    affine(
+                                        transform,
+                                        [
+                                            x as f64 + p[0] * ww as f64 / ow as f64,
+                                            y as f64 + p[1] * hh as f64 / oh as f64,
+                                        ],
+                                    )
+                                } else if chunked {
                                     let origin = affine(transform, [x as f64, y as f64]);
                                     let mut block_transform = transform;
                                     block_transform[0] = origin[0];
@@ -264,7 +278,10 @@ impl Gdal {
                             }
                         }
                     }
-                    if chunked && moments.count - count_before == (ow * oh) as u64 {
+                    if !affine_footprint
+                        && chunked
+                        && moments.count - count_before == (ow * oh) as u64
+                    {
                         // Rasterio windows.bounds uses these two corners; legacy
                         // all-valid chunks use that rectangle even for rotated grids.
                         let [w, s] = affine(transform, [x as f64, (y + hh) as f64]);
@@ -349,7 +366,7 @@ fn affine(t: [f64; 6], p: [f64; 2]) -> [f64; 2] {
         p[0] * t[4] + p[1] * t[5] + t[3],
     ]
 }
-fn extent(points: &[[f64; 2]]) -> [f64; 4] {
+pub(super) fn extent(points: &[[f64; 2]]) -> [f64; 4] {
     points.iter().fold(
         [
             f64::INFINITY,

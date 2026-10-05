@@ -1,0 +1,23 @@
+[
+  {
+    "id": "polar",
+    "file": "N78_00_E015_00.tif",
+    "url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N78_00_E015_00_DEM/Copernicus_DSM_COG_10_N78_00_E015_00_DEM.tif",
+    "bytes": 10958897,
+    "sha256": "4d211ea7b9d074eda9dd893a430bc9661069ea98ea4735d9d9dbf94c2bd2ef68"
+  },
+  {
+    "id": "dateline-east",
+    "file": "N51_00_E179_00.tif",
+    "url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N51_00_E179_00_DEM/Copernicus_DSM_COG_10_N51_00_E179_00_DEM.tif",
+    "bytes": 1755911,
+    "sha256": "9047d94e6c4efacdc7e63848082ac25e950be2bc04e4aab423c792d690ae09e9"
+  },
+  {
+    "id": "dateline-west",
+    "file": "N51_00_W180_00.tif",
+    "url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N51_00_W180_00_DEM/Copernicus_DSM_COG_10_N51_00_W180_00_DEM.tif",
+    "bytes": 273993,
+    "sha256": "0af995168f5a2d182e30e24db024fb045f88a2dac2780e02c1b9cdc6830aac0a"
+  }
+]

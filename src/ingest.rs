@@ -196,38 +196,48 @@ pub fn ingest(
         Err(open_error) => Store::create(&path, provider.as_deref(), &definitions)
             .map_err(|create_error| format!("{open_error}; {create_error}"))?,
     };
-    // Terracotta 0.10.1 emits the mismatch but keeps inserting positionally.
+    let legacy = crate::compatibility::CompatibilityProfile::current().is_terracotta();
     if store.key_names()
         != definitions
             .iter()
             .map(|d| d.key.as_str())
             .collect::<Vec<_>>()
     {
-        eprintln!(
+        let message = format!(
             "Database file {} has incompatible key names {:?}",
             output.display(),
             store.key_names()
         );
+        if !legacy {
+            return Err(message);
+        }
+        eprintln!("{message}");
     }
     let gdal = if skip_metadata {
         None
     } else {
         Some(Gdal::load()?)
     };
-    let mut count = 0;
-    // Legacy nested connect contexts commit each insert, even inside CLI's outer context.
-    for dataset in datasets {
-        if skip_existing && store.dataset(&dataset.keys)?.is_some() {
-            continue;
+    let insert_all = |store: &Store| {
+        let mut count = 0;
+        for dataset in &datasets {
+            if skip_existing && store.dataset(&dataset.keys)?.is_some() {
+                continue;
+            }
+            let metadata = gdal
+                .as_ref()
+                .map(|g| g.compute_metadata(&dataset.path, &MetadataOptions::default()))
+                .transpose()?;
+            store.insert(dataset, metadata.as_ref())?;
+            count += 1;
         }
-        let metadata = gdal
-            .as_ref()
-            .map(|g| g.compute_metadata(&dataset.path, &MetadataOptions::default()))
-            .transpose()?;
-        store.insert(&dataset, metadata.as_ref())?;
-        count += 1;
+        Ok(count)
+    };
+    if legacy {
+        insert_all(&store)
+    } else {
+        store.transaction(insert_all)
     }
-    Ok(count)
 }
 
 #[derive(Debug)]

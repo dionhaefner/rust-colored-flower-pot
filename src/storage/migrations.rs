@@ -125,10 +125,12 @@ pub fn command(args: &[String]) -> Result<()> {
         None,
     );
     let mut yes = false;
+    let mut dry_run = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "-y" | "--yes" => yes = true,
+            "--dry-run" => dry_run = true,
             "--from" | "--to" | "--provider" => {
                 let key = &args[i];
                 i += 1;
@@ -140,7 +142,9 @@ pub fn command(args: &[String]) -> Result<()> {
                 }
             }
             "--help" | "-h" => {
-                println!("Usage: rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y|--yes]");
+                println!(
+                    "Usage: rcfp migrate DATABASE [--from VERSION] [--to VERSION] [--dry-run] [-y|--yes]"
+                );
                 return Ok(());
             }
             s if !s.starts_with('-') && database.is_none() => database = Some(s.to_owned()),
@@ -174,6 +178,9 @@ pub fn command(args: &[String]) -> Result<()> {
     println!(
         "This will upgrade the database from {from} -> {to} and execute the above SQL commands."
     );
+    if dry_run {
+        return Ok(());
+    }
     if !yes {
         print!("Continue? [y/N]: ");
         std::io::stdout().flush().map_err(|e| e.to_string())?;

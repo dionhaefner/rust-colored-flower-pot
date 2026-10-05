@@ -1,0 +1,18 @@
+article table {
+  display: block;
+  overflow-x: auto;
+}
+article img {
+  max-width: 100%;
+  height: auto;
+}
+article pre {
+  overflow-x: auto;
+}
+.sidebar-version {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  color: var(--color-foreground-secondary);
+}

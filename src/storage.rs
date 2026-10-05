@@ -12,7 +12,9 @@ use rusqlite::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use crate::{Result, TERRACOTTA_COMPATIBILITY_VERSION};
@@ -48,6 +50,23 @@ pub struct SqliteStore {
     path: PathBuf,
     lazy: bool,
     key_definitions: Vec<KeyDefinition>,
+    descriptors: RefCell<DescriptorCache>,
+}
+
+struct DescriptorCache {
+    version: Option<i64>,
+    entries: BTreeMap<Vec<String>, (Dataset, Metadata, usize)>,
+    order: VecDeque<Vec<String>>,
+    bytes: usize,
+    capacity: usize,
+}
+impl DescriptorCache {
+    fn clear(&mut self) {
+        self.entries.clear();
+        self.order.clear();
+        self.bytes = 0;
+        self.version = None;
+    }
 }
 
 impl SqliteStore {
@@ -72,6 +91,13 @@ impl SqliteStore {
     }
 
     fn open_mode(path: &Path, writable: bool, lazy: bool) -> Result<Self> {
+        let capacity = crate::settings::var("TC_CATALOG_CACHE_BYTES")
+            .unwrap_or_else(|_| "0".into())
+            .parse::<usize>()
+            .map_err(|_| "invalid catalog cache size")?;
+        if capacity > 64 * 1024 * 1024 {
+            return Err("catalog cache exceeds 64 MiB".into());
+        }
         if !path.is_file() {
             return Err(format!("database does not exist: {}", path.display()));
         }
@@ -131,6 +157,13 @@ impl SqliteStore {
             lazy,
             connection,
             key_definitions,
+            descriptors: RefCell::new(DescriptorCache {
+                version: None,
+                entries: BTreeMap::new(),
+                order: VecDeque::new(),
+                bytes: 0,
+                capacity,
+            }),
         })
     }
 
@@ -231,6 +264,7 @@ impl SqliteStore {
     }
 
     pub fn insert(&self, dataset: &Dataset, metadata: Option<&Metadata>) -> Result<()> {
+        self.descriptors.borrow_mut().clear();
         self.validate_key_count(&dataset.keys)?;
         self.transaction(|store| store.insert_inner(dataset, metadata))
     }
@@ -254,6 +288,21 @@ impl SqliteStore {
             )
             .map_err(write_error)?;
 
+        if metadata.is_none()
+            && !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+        {
+            let predicate = columns
+                .iter()
+                .map(|k| format!("{k} = ?"))
+                .collect::<Vec<_>>()
+                .join(" AND ");
+            self.connection
+                .execute(
+                    &format!("DELETE FROM metadata WHERE {predicate}"),
+                    rusqlite::params_from_iter(&dataset.keys),
+                )
+                .map_err(write_error)?;
+        }
         if let Some(metadata) = metadata {
             let metadata_columns = [
                 "bounds_north",
@@ -316,6 +365,7 @@ impl SqliteStore {
         Ok(())
     }
     pub fn delete(&self, keys: &[String]) -> Result<()> {
+        self.descriptors.borrow_mut().clear();
         self.validate_key_count(keys)?;
         self.transaction(|store| {
             if store.dataset(keys)?.is_none() {
@@ -370,7 +420,7 @@ impl SqliteStore {
             "SELECT {columns}, path FROM datasets",
             columns = columns.join(", ")
         );
-        let mut statement = self.connection.prepare(&sql).map_err(db_error)?;
+        let mut statement = self.connection.prepare_cached(&sql).map_err(db_error)?;
         let key_count = self.key_definitions.len();
         let rows = statement
             .query_map([], |row| {
@@ -396,7 +446,7 @@ impl SqliteStore {
             .collect::<Vec<_>>()
             .join(" AND ");
         let sql = format!("SELECT path FROM datasets WHERE {predicates} LIMIT 1");
-        let mut statement = self.connection.prepare(&sql).map_err(db_error)?;
+        let mut statement = self.connection.prepare_cached(&sql).map_err(db_error)?;
         statement
             .query_row(rusqlite::params_from_iter(keys.iter()), |row| {
                 Ok(Dataset {
@@ -406,6 +456,97 @@ impl SqliteStore {
             })
             .optional()
             .map_err(db_error)
+    }
+
+    /// Revision-checked point lookups for repeated tile requests. Transactions
+    /// bypass retention so rolled-back data can never survive in the cache.
+    pub fn descriptor(&self, keys: &[String]) -> Result<Option<(Dataset, Metadata)>> {
+        let capacity = self.descriptors.borrow().capacity;
+        if capacity == 0 || !self.connection.is_autocommit() {
+            let Some(dataset) = self.dataset(keys)? else {
+                return Ok(None);
+            };
+            return self
+                .metadata(keys)
+                .map(|metadata| metadata.map(|metadata| (dataset, metadata)));
+        }
+        let version = || {
+            self.connection
+                .prepare_cached("PRAGMA main.data_version")
+                .map_err(db_error)?
+                .query_row([], |row| row.get::<_, i64>(0))
+                .map_err(db_error)
+        };
+        for _ in 0..3 {
+            let before = version()?;
+            {
+                let mut cache = self.descriptors.borrow_mut();
+                if cache.version != Some(before) {
+                    cache.clear();
+                    cache.version = Some(before);
+                }
+                if let Some((dataset, metadata, _)) = cache.entries.get(keys) {
+                    let result = (dataset.clone(), metadata.clone());
+                    cache.order.retain(|key| key != keys);
+                    cache.order.push_back(keys.to_vec());
+                    return Ok(Some(result));
+                }
+            }
+            let Some((dataset, metadata)) = self.descriptor_snapshot(keys)? else {
+                return Ok(None);
+            };
+            if version()? != before {
+                continue;
+            }
+            let weight = serde_json::to_vec(&metadata)
+                .map_err(|e| e.to_string())?
+                .len()
+                + dataset.path.as_os_str().len()
+                + keys.iter().map(|key| key.len() * 3).sum::<usize>()
+                + std::mem::size_of::<Metadata>()
+                + std::mem::size_of::<Dataset>();
+            if weight <= capacity {
+                let mut cache = self.descriptors.borrow_mut();
+                while cache.bytes + weight > capacity || cache.entries.len() >= 256 {
+                    let Some(oldest) = cache.order.pop_front() else {
+                        break;
+                    };
+                    if let Some((_, _, bytes)) = cache.entries.remove(&oldest) {
+                        cache.bytes -= bytes;
+                    }
+                }
+                cache.bytes += weight;
+                cache.order.push_back(keys.to_vec());
+                cache
+                    .entries
+                    .insert(keys.to_vec(), (dataset.clone(), metadata.clone(), weight));
+            }
+            return Ok(Some((dataset, metadata)));
+        }
+        // Busy writers may prevent retention, but readers can still obtain a
+        // coherent descriptor without adding a new failure mode.
+        self.descriptor_snapshot(keys)
+    }
+
+    fn descriptor_snapshot(&self, keys: &[String]) -> Result<Option<(Dataset, Metadata)>> {
+        for attempt in 0..2 {
+            let snapshot = self.connection.unchecked_transaction().map_err(db_error)?;
+            let dataset = self.dataset(keys)?;
+            let metadata = self.metadata_stored(keys)?;
+            snapshot.commit().map_err(db_error)?;
+            let Some(dataset) = dataset else {
+                return Ok(None);
+            };
+            if let Some(metadata) = metadata {
+                return Ok(Some((dataset, metadata)));
+            }
+            if attempt == 0 {
+                // Lazy fill may publish a newer descriptor. Re-read both fields
+                // together rather than pairing new metadata with an old path.
+                self.metadata(keys)?;
+            }
+        }
+        Ok(None)
     }
 
     pub fn metadata(&self, keys: &[String]) -> Result<Option<Metadata>> {
@@ -455,7 +596,7 @@ impl SqliteStore {
         let sql = format!(
             "SELECT bounds_north, bounds_east, bounds_south, bounds_west, convex_hull, valid_percentage, min, max, mean, stdev, percentiles, metadata FROM metadata WHERE {predicates} LIMIT 1"
         );
-        let mut statement = self.connection.prepare(&sql).map_err(db_error)?;
+        let mut statement = self.connection.prepare_cached(&sql).map_err(db_error)?;
         statement
             .query_row(rusqlite::params_from_iter(keys.iter()), |row| {
                 let blob = match row.get_ref(10)? {
@@ -620,6 +761,41 @@ mod tests {
         assert_eq!(observed.bounds, metadata.bounds);
         assert_eq!(observed.percentiles, metadata.percentiles);
         assert_eq!(observed.metadata, metadata.metadata);
+        reopened.descriptors.borrow_mut().capacity = 4096;
+        assert_eq!(
+            reopened.descriptor(&keys).unwrap().unwrap().1.range,
+            metadata.range
+        );
+        assert!(!reopened.descriptors.borrow().entries.is_empty());
+        let writer = SqliteStore::open_writable(&source).unwrap();
+        let revised = Metadata {
+            range: [200., 3000.],
+            ..metadata.clone()
+        };
+        let moved = Dataset {
+            path: "moved.tif".into(),
+            ..dataset.clone()
+        };
+        writer.insert(&moved, Some(&revised)).unwrap();
+        let (loaded, updated) = reopened.descriptor(&keys).unwrap().unwrap();
+        assert_eq!(loaded.path, moved.path);
+        assert_eq!(updated.range, revised.range);
+        // Same-connection writes and rollbacks must not retain transaction data.
+        writer.descriptors.borrow_mut().capacity = 4096;
+        writer.descriptor(&keys).unwrap();
+        let rollback: Result<()> = writer.transaction(|store| {
+            store.insert(&dataset, Some(&metadata))?;
+            assert_eq!(store.descriptor(&keys)?.unwrap().0.path, dataset.path);
+            Err("rollback".into())
+        });
+        assert!(rollback.is_err());
+        assert_eq!(
+            writer.descriptor(&keys).unwrap().unwrap().0.path,
+            moved.path
+        );
+        writer.delete(&keys).unwrap();
+        assert!(reopened.descriptor(&keys).unwrap().is_none());
+        drop(writer);
         drop(reopened);
         std::fs::remove_file(source).unwrap();
     }

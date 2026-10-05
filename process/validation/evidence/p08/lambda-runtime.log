@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p03_lambda_runtime.py", line 119, in <module>
-    run(args.lambda_zip.resolve(), args.bundle.resolve(), args.out.resolve(), args.image)
-  File "/home/dion/codes/rust-colored-flower-pot/validation/tools/p03_lambda_runtime.py", line 61, in run
-    invocation = subprocess.run(
-                 ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['docker', 'run', '--rm', '--network', 'none', '--entrypoint', '/opt/terracotta/bin/terracotta', '-v', '/home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-lambda-runtime/package/runtime:/opt/terracotta:ro', '-v', '/home/dion/codes/rust-colored-flower-pot/validation/artifacts/p08-lambda-runtime/fixture:/data:ro', 'public.ecr.aws/lambda/provided@sha256:6e44223227dfb00686065ab66db7c4ce86f1483a8f69e40bcba5ebdb0f4d5fd7', 'lambda-event', '-d', '/data/terracotta.sqlite', '--event', '/data/event.json']' returned non-zero exit status 139.

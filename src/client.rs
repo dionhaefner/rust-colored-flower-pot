@@ -69,6 +69,9 @@ pub fn command(args: &[String]) -> Result<()> {
         .iter()
         .find_map(|p| Server::http(("127.0.0.1", *p)).ok().map(|s| (s, *p)))
         .ok_or_else(|| format!("Could not find open port to bind to (ports tried: {ports:?})"))?;
+    if std::env::var_os("TC_TESTING").is_some() {
+        return Ok(());
+    }
     eprintln!("RCFP browser listening on http://127.0.0.1:{port}/");
     if browser {
         let url = format!("http://127.0.0.1:{port}/");

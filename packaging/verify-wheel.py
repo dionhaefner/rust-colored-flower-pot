@@ -9,6 +9,7 @@ import email
 import hashlib
 import io
 import json
+import re
 import zipfile
 from pathlib import Path
 
@@ -47,6 +48,7 @@ def verify(path: Path, version: str | None = None) -> dict[str, object]:
         )
         wheel_name = next(name for name in files if name.endswith(".dist-info/WHEEL"))
         metadata = email.message_from_bytes(archive.read(metadata_name))
+        assert metadata["Metadata-Version"] == "2.4", metadata["Metadata-Version"]
         wheel = email.message_from_bytes(archive.read(wheel_name))
         assert metadata["Name"].lower() == "rcfp", metadata["Name"]
         assert set(metadata["Requires-Python"].split(",")) == {">=3.12", "<3.15"}, (
@@ -71,6 +73,48 @@ def verify(path: Path, version: str | None = None) -> dict[str, object]:
         )
         assert any(name.startswith("rcfp/_native") for name in files), (
             "Python extension missing"
+        )
+        assert {
+            "rcfp_cli.py",
+            "rcfp/_profile.py",
+            "rcfp/config.py",
+            "rcfp/drivers/terracotta_driver.py",
+            "rcfp/server/app.py",
+            "rcfp/drivers/_store.py",
+        } <= files, "compatibility facade missing"
+        excluded = {
+            "image.py",
+            "expressions.py",
+            "xyz.py",
+            "raster.py",
+            "logs.py",
+            "profile.py",
+        }
+        assert not any("rcfp/" + name in files for name in excluded), (
+            "internal Python implementation shipped"
+        )
+        assert not any(
+            name.startswith(("rcfp/handlers/", "rcfp/cmaps/", "rcfp/scripts/"))
+            for name in files
+        ), "internal helper facade shipped"
+        assert (
+            not {
+                "rcfp/server/flask_api.py",
+                "rcfp/drivers/relational_meta_store.py",
+                "rcfp/drivers/geotiff_raster_store.py",
+            }
+            & files
+        ), "Python backend implementation shipped"
+        dependencies = {
+            re.match(r"[A-Za-z0-9_.-]+", item)[0].lower()
+            for item in metadata.get_all("Requires-Dist", [])
+        }
+        assert dependencies == {"numpy"}, dependencies
+        entries = next(
+            name for name in files if name.endswith(".dist-info/entry_points.txt")
+        )
+        assert "rcfp_cli:main" in archive.read(entries).decode(), (
+            "CLI bootstrap missing"
         )
         assert runtime + "bin/rcfp" in files or runtime + "bin/rcfp.exe" in files, (
             "RCFP CLI missing"

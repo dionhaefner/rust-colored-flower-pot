@@ -1,9 +1,0 @@
-127.0.0.1 - - [24/Sep/2026 20:49:08] "PUT /p07-tests HTTP/1.1" 200 -
-/usr/lib/python3.12/contextlib.py:81: PerformanceWarning: Raster file /home/dion/codes/rust-colored-flower-pot/.cache/corpus/subsets/lagoon-red.tif is not a valid cloud-optimized GeoTIFF. Consider optimizing it through `terracotta optimize-rasters` before ingestion.
-  return func(*args, **kwds)
-127.0.0.1 - - [24/Sep/2026 20:49:09] "PUT /p07-tests/tc.sqlite HTTP/1.1" 200 -
-127.0.0.1 - - [24/Sep/2026 20:49:09] "GET /p07-tests/tc.sqlite HTTP/1.1" 200 -
-127.0.0.1 - - [24/Sep/2026 20:49:09] "PUT /p07-tests/tc.sqlite HTTP/1.1" 200 -
-127.0.0.1 - - [24/Sep/2026 20:49:10] "GET /p07-tests/tc.sqlite HTTP/1.1" 200 -
-127.0.0.1 - - [24/Sep/2026 20:49:10] "[33mGET /p07-tests/missing.sqlite HTTP/1.1[0m" 404 -
-13 remote adapter checks passed

@@ -9,13 +9,15 @@ use std::path::{Path, PathBuf};
 use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 mod fast;
 pub(crate) use fast::SharedBlocks;
 mod metadata;
+mod native;
 mod optimize;
 mod utm;
+mod warped;
 pub use metadata::MetadataOptions;
 pub use optimize::OptimizeOptions;
 
@@ -48,6 +50,8 @@ pub struct Raster {
 
 #[derive(Clone, Copy, Debug)]
 pub struct ReadRequest {
+    /// One-based source band; catalog metadata remains associated with band one.
+    pub band: usize,
     pub bounds_mercator: Option<[f64; 4]>,
     /// Terracotta's public tuple is `(height, width)`.
     pub size: [usize; 2],
@@ -57,6 +61,7 @@ pub struct ReadRequest {
 impl Default for ReadRequest {
     fn default() -> Self {
         Self {
+            band: 1,
             bounds_mercator: None,
             size: [256, 256],
             preserve_values: false,
@@ -66,7 +71,11 @@ impl Default for ReadRequest {
 
 pub struct Gdal {
     profile_reads: bool,
+    native_direct: bool,
+    native_target: SpatialReference,
     sources: RefCell<VecDeque<SourceEntry>>,
+    remote_sources: RefCell<VecDeque<RemoteSource>>,
+    remote_source_ttl: std::time::Duration,
     source_blocks: Option<Arc<Mutex<fast::SharedBlocks>>>,
     target_crs: String,
     reprojection: (c_int, &'static str),
@@ -232,11 +241,41 @@ impl Gdal {
                 *mut c_int,
             ) -> DatasetHandle = *library.get(b"GDALWarp\0").map_err(symbol_error)?;
             GDAL_REGISTERED.call_once(|| all_register());
+            let new_ref: unsafe extern "C" fn(*const c_char) -> *mut c_void = *library
+                .get(b"OSRNewSpatialReference\0")
+                .map_err(symbol_error)?;
+            let set_ref: unsafe extern "C" fn(*mut c_void, *const c_char) -> c_int = *library
+                .get(b"OSRSetFromUserInput\0")
+                .map_err(symbol_error)?;
+            let native_target = SpatialReference {
+                handle: new_ref(ptr::null()),
+                destroy: *library
+                    .get(b"OSRDestroySpatialReference\0")
+                    .map_err(symbol_error)?,
+            };
+            if native_target.handle.is_null()
+                || set_ref(native_target.handle, c"EPSG:3857".as_ptr()) != 0
+            {
+                return Err("could not initialize rendering CRS".into());
+            }
+            let remote_source_ttl = crate::settings::var("TC_REMOTE_SOURCE_CACHE_TTL_SECONDS")
+                .unwrap_or_else(|_| "0".into())
+                .parse::<u64>()
+                .map_err(|_| "invalid remote source cache TTL")?;
+            if remote_source_ttl > 86400 {
+                return Err("remote source cache TTL exceeds 86400 seconds".into());
+            }
             Ok(Self {
                 profile_reads: std::env::var_os("TC_PROFILE_RASTER").is_some(),
+                native_direct: !crate::compatibility::CompatibilityProfile::current()
+                    .is_terracotta()
+                    && crate::settings::flag("TC_NATIVE_DIRECT_READ", true)?,
+                native_target,
                 sources: RefCell::new(VecDeque::new()),
+                remote_sources: RefCell::new(VecDeque::new()),
+                remote_source_ttl: std::time::Duration::from_secs(remote_source_ttl),
                 source_blocks: None,
-                _thread_config: ThreadConfig::new(library)?,
+                _thread_config: ThreadConfig::new(library, &path)?,
                 target_crs: crate::settings::var("TC_TARGET_CRS")
                     .unwrap_or_else(|_| "EPSG:3857".into()),
                 reprojection,
@@ -313,10 +352,80 @@ impl Gdal {
         algorithm: c_int,
         _path: &Path,
     ) -> Result<SuggestedGeometry> {
+        // calculate_default_transform uses the source bounding rectangle and
+        // dimensions, rather than the source's rotated affine coefficients.
+        let proxy = unsafe {
+            let mut transform = [0.; 6];
+            if (self.geo_transform)(source, transform.as_mut_ptr()) != 0 {
+                return Err("source has no transform".into());
+            }
+            let width = (self.raster_x_size)(source);
+            let height = (self.raster_y_size)(source);
+            let corners = [
+                [0., 0.],
+                [width as f64, 0.],
+                [0., height as f64],
+                [width as f64, height as f64],
+            ]
+            .map(|[x, y]| {
+                [
+                    transform[0] + x * transform[1] + y * transform[2],
+                    transform[3] + x * transform[4] + y * transform[5],
+                ]
+            });
+            let bounds = metadata::extent(&corners);
+            let driver: unsafe extern "C" fn(*const c_char) -> *mut c_void =
+                self.symbol(b"GDALGetDriverByName\0")?;
+            let create: unsafe extern "C" fn(
+                *mut c_void,
+                *const c_char,
+                c_int,
+                c_int,
+                c_int,
+                c_int,
+                *mut *mut c_char,
+            ) -> DatasetHandle = self.symbol(b"GDALCreate\0")?;
+            let set_transform: unsafe extern "C" fn(DatasetHandle, *mut f64) -> c_int =
+                self.symbol(b"GDALSetGeoTransform\0")?;
+            let projection: unsafe extern "C" fn(DatasetHandle) -> *const c_char =
+                self.symbol(b"GDALGetProjectionRef\0")?;
+            let set_projection: unsafe extern "C" fn(DatasetHandle, *const c_char) -> c_int =
+                self.symbol(b"GDALSetProjection\0")?;
+            let handle = create(
+                driver(c"VRT".as_ptr()),
+                c"".as_ptr(),
+                width,
+                height,
+                1,
+                GDT_BYTE,
+                ptr::null_mut(),
+            );
+            if handle.is_null() {
+                return Err("cannot create suggested-grid proxy".into());
+            }
+            let proxy = DatasetGuard {
+                handle,
+                close: self.close,
+            };
+            let mut axis_aligned = [
+                bounds[0],
+                (bounds[2] - bounds[0]) / width as f64,
+                0.,
+                bounds[3],
+                0.,
+                (bounds[1] - bounds[3]) / height as f64,
+            ];
+            if set_transform(handle, axis_aligned.as_mut_ptr()) != 0
+                || set_projection(handle, projection(source)) != 0
+            {
+                return Err("cannot set suggested-grid georeferencing".into());
+            }
+            proxy
+        };
         let target = CString::new(self.target_crs.as_str()).map_err(|_| "invalid target CRS")?;
         let warped = unsafe {
             (self.auto_warp)(
-                source,
+                proxy.handle,
                 ptr::null(),
                 target.as_ptr(),
                 algorithm,
@@ -332,8 +441,6 @@ impl Gdal {
             close: self.close,
         };
         unsafe {
-            let width = (self.raster_x_size)(warped.handle) as usize;
-            let height = (self.raster_y_size)(warped.handle) as usize;
             let mut transform = [0.0; 6];
             if (self.geo_transform)(warped.handle, transform.as_mut_ptr()) != 0 {
                 return Err("GDAL warped dataset has no transform".into());
@@ -343,15 +450,7 @@ impl Gdal {
                     "rotated warped datasets are not supported by this raster slice".into(),
                 );
             }
-            Ok(SuggestedGeometry {
-                transform,
-                bounds: [
-                    transform[0],
-                    transform[3] + transform[5] * height as f64,
-                    transform[0] + transform[1] * width as f64,
-                    transform[3],
-                ],
-            })
+            Ok(SuggestedGeometry { transform })
         }
     }
 
@@ -390,13 +489,41 @@ impl Gdal {
             return Err("tile dimensions must be positive".into());
         }
         let started = Instant::now();
+        let lease = self.source(path)?;
+        let source_handle = lease.handle;
+        let stamp = lease.stamp;
+        let opened = Instant::now();
+        if let Some(raster) = self.read_native(source_handle, request)? {
+            return Ok(raster);
+        }
+        if request.band != 1 {
+            return Err("source band selection requires native direct tile reads".into());
+        }
+        if let Some(raster) = self.read_utm_fast(path, stamp, source_handle, request)? {
+            return Ok(raster);
+        }
+        if let Some(raster) = self.read_mercator_fast(path, stamp, source_handle, request)? {
+            return Ok(raster);
+        }
+        self.read_general(path, request, source_handle, stamp, started, opened)
+    }
+
+    pub fn read_bands(&self, path: &Path, requests: &[ReadRequest]) -> Result<Vec<Raster>> {
+        let lease = self.source(path)?;
+        if let Some(rasters) = self.read_native_bands(lease.handle, requests)? {
+            return Ok(rasters);
+        }
+        requests
+            .iter()
+            .map(|request| self.read(path, *request))
+            .collect()
+    }
+
+    fn source(&self, path: &Path) -> Result<SourceLease> {
         // A GDAL block cache entry belongs to its open dataset. Keep local
         // sources worker-owned so adjacent map tiles can reuse decoded blocks.
         // Remote sources retain their request lifetime for credential refresh.
-        let path_text = path.to_string_lossy();
-        let local = !["http://", "https://", "s3://"]
-            .iter()
-            .any(|prefix| path_text.starts_with(prefix));
+        let local = !crate::execution::is_remote(path);
         let stamp = if local {
             std::fs::metadata(path)
                 .ok()
@@ -404,25 +531,47 @@ impl Gdal {
         } else {
             None
         };
-        let uncached_source = if stamp.is_none() {
+        let cache_remote = !local && !self.remote_source_ttl.is_zero();
+        let uncached_source = if stamp.is_none() && !cache_remote {
             Some(self.open_dataset(path)?)
         } else {
             None
         };
         let source_handle = if let Some(source) = &uncached_source {
             source.handle
+        } else if cache_remote {
+            let mut sources = self.remote_sources.borrow_mut();
+            sources.retain(|entry| entry.opened.elapsed() < self.remote_source_ttl);
+            if let Some(position) = sources.iter().position(|entry| entry.path == path) {
+                let entry = sources.remove(position).expect("existing remote source");
+                sources.push_front(entry);
+            } else {
+                sources.push_front(RemoteSource {
+                    path: path.to_path_buf(),
+                    dataset: self.open_dataset(path)?,
+                    opened: Instant::now(),
+                });
+                sources.truncate(12);
+            }
+            sources
+                .front()
+                .expect("remote source just cached")
+                .dataset
+                .handle
         } else {
             let mut sources = self.sources.borrow_mut();
             let stamp = stamp.expect("cached local file has metadata");
-            let position = sources
-                .iter()
-                .position(|entry| entry.path == path && entry.stamp == stamp);
+            let generation = crate::execution::source_generation(path);
+            let position = sources.iter().position(|entry| {
+                entry.path == path && entry.stamp == stamp && entry.generation == generation
+            });
             if let Some(position) = position {
                 let entry = sources.remove(position).expect("existing source entry");
                 sources.push_front(entry);
             } else {
                 let dataset = self.open_dataset(path)?;
                 sources.push_front(SourceEntry {
+                    generation,
                     path: path.to_path_buf(),
                     stamp,
                     suggested: [None, None],
@@ -432,13 +581,22 @@ impl Gdal {
             }
             sources.front().expect("source just cached").dataset.handle
         };
-        let opened = Instant::now();
-        if let Some(raster) = self.read_utm_fast(path, stamp, source_handle, request)? {
-            return Ok(raster);
-        }
-        if let Some(raster) = self.read_mercator_fast(path, stamp, source_handle, request)? {
-            return Ok(raster);
-        }
+        Ok(SourceLease {
+            _opened: uncached_source,
+            handle: source_handle,
+            stamp,
+        })
+    }
+
+    fn read_general(
+        &self,
+        path: &Path,
+        request: ReadRequest,
+        source_handle: DatasetHandle,
+        stamp: Option<(u64, SystemTime)>,
+        started: Instant,
+        opened: Instant,
+    ) -> Result<Raster> {
         let algorithm = if request.preserve_values {
             GRA_NEAREST
         } else {
@@ -455,7 +613,6 @@ impl Gdal {
 
         unsafe {
             let transform = geometry.transform;
-            let warped_bounds = geometry.bounds;
             let requested = match request.bounds_mercator {
                 Some(bounds) => bounds,
                 None => self.source_mercator_bounds(source_handle)?,
@@ -465,8 +622,9 @@ impl Gdal {
             }
             let width = request.size[1];
             let height = request.size[0];
-            let coverage = ((warped_bounds[2] - warped_bounds[0]) / (requested[2] - requested[0]))
-                * ((warped_bounds[3] - warped_bounds[1]) / (requested[3] - requested[1]));
+            let source_bounds = self.source_mercator_bounds(source_handle)?;
+            let coverage = ((source_bounds[2] - source_bounds[0]) / (requested[2] - requested[0]))
+                * ((source_bounds[3] - source_bounds[1]) / (requested[3] - requested[1]));
             if coverage < 0.01 {
                 return Err("tile out of bounds".into());
             }
@@ -486,40 +644,35 @@ impl Gdal {
                 self.resampling
             };
             let intermediate_width = ((requested[2] - requested[0]) / x_resolution)
-                .round()
+                .round_ties_even()
                 .max(1.0) as usize;
             let intermediate_height = ((requested[3] - requested[1]) / y_resolution)
-                .round()
+                .round_ties_even()
                 .max(1.0) as usize;
             let actual_x_resolution = (requested[2] - requested[0]) / intermediate_width as f64;
             let actual_y_resolution = (requested[3] - requested[1]) / intermediate_height as f64;
             let padding = 2.0;
-            let padded_bounds = [
+            let padded_transform = [
                 requested[0] - padding * actual_x_resolution,
-                requested[1] - padding * actual_y_resolution,
-                requested[2] + padding * actual_x_resolution,
+                actual_x_resolution,
+                0.,
                 requested[3] + padding * actual_y_resolution,
+                0.,
+                -actual_y_resolution,
             ];
-            let custom = self.create_warped_dataset(
+            let custom = self.create_padded_vrt(
                 source_handle,
-                padded_bounds,
+                padded_transform,
                 [intermediate_height + 4, intermediate_width + 4],
-                if request.preserve_values {
-                    "near"
-                } else {
-                    self.reprojection.1
-                },
+                algorithm,
             )?;
             let warped_at = Instant::now();
             let band = (self.raster_band)(custom.handle, 1);
             if band.is_null() {
                 return Err("GDAL warped dataset has no first band".into());
             }
-            let mut values = vec![0.0f64; width * height];
-            read_window(
-                self.raster_io_ex,
+            let values = self.read_typed_window(
                 band,
-                &mut values,
                 ReadSpec {
                     width,
                     height,
@@ -537,12 +690,10 @@ impl Gdal {
 
             let alpha_index = (self.raster_count)(custom.handle);
             let mask_band = (self.raster_band)(custom.handle, alpha_index);
-            let mut validity = vec![255u8; width * height];
+            let mut validity = vec![255.0; width * height];
             if !mask_band.is_null() {
-                read_window(
-                    self.raster_io_ex,
+                validity = self.read_typed_window(
                     mask_band,
-                    &mut validity,
                     ReadSpec {
                         width,
                         height,
@@ -559,12 +710,12 @@ impl Gdal {
             }
             let validity_at = Instant::now();
             let mut has_nodata = 0;
-            let nodata = (self.nodata)(band, &mut has_nodata);
+            let nodata = (self.nodata)((self.raster_band)(source_handle, 1), &mut has_nodata);
             let mask = values
                 .iter()
                 .zip(validity)
                 .map(|(&value, valid)| {
-                    valid == 0 || (has_nodata != 0 && value == nodata) || !value.is_finite()
+                    valid == 0.0 || (has_nodata != 0 && value == nodata) || !value.is_finite()
                 })
                 .collect();
             let raster = Raster {
@@ -586,6 +737,36 @@ impl Gdal {
                 );
             }
             Ok(raster)
+        }
+    }
+
+    unsafe fn read_typed_window(&self, band: BandHandle, mut spec: ReadSpec) -> Result<Vec<f64>> {
+        // GDAL resampling must write the source dtype before widening the
+        // transfer buffer: Float64 output changes integer and Float32 rounding.
+        let dtype = unsafe { (self.band_data_type)(band) };
+        spec.data_type = dtype;
+        macro_rules! read {
+            ($ty:ty) => {{
+                spec.data_type = <$ty as GdalPixel>::DATA_TYPE;
+                let mut values = vec![0 as $ty; spec.width * spec.height];
+                unsafe {
+                    read_window(self.raster_io_ex, band, &mut values, spec)?;
+                }
+                Ok(values.into_iter().map(|v| v as f64).collect())
+            }};
+        }
+        match dtype {
+            1 => read!(u8),
+            2 => read!(u16),
+            3 => read!(i16),
+            4 => read!(u32),
+            5 => read!(i32),
+            6 => read!(f32),
+            7 => read!(f64),
+            12 => read!(u64),
+            13 => read!(i64),
+            14 => read!(i8),
+            _ => read!(f64),
         }
     }
 
@@ -669,6 +850,33 @@ impl Gdal {
     }
 
     fn open_dataset(&self, path: &Path) -> Result<DatasetGuard> {
+        // Local auxiliary files have known names; probe them without listing
+        // directories. Remote COGs keep the no-sibling-probes default.
+        let explicit_directory_policy = crate::settings::var("TC_GDAL_OPTIONS")
+            .ok()
+            .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())
+            .is_some_and(|options| options.get("GDAL_DISABLE_READDIR_ON_OPEN").is_some());
+        let directory = if !crate::execution::is_remote(path)
+            && !explicit_directory_policy
+            && !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+        {
+            unsafe {
+                let get: unsafe extern "C" fn(*const c_char, *const c_char) -> *const c_char =
+                    self.symbol(b"CPLGetThreadLocalConfigOption\0")?;
+                let set: unsafe extern "C" fn(*const c_char, *const c_char) =
+                    self.symbol(b"CPLSetThreadLocalConfigOption\0")?;
+                let previous = get(c"GDAL_DISABLE_READDIR_ON_OPEN".as_ptr(), ptr::null());
+                let previous = if previous.is_null() {
+                    None
+                } else {
+                    Some(std::ffi::CStr::from_ptr(previous).to_owned())
+                };
+                set(c"GDAL_DISABLE_READDIR_ON_OPEN".as_ptr(), c"TRUE".as_ptr());
+                Some(DirectoryPolicy { previous, set })
+            }
+        } else {
+            None
+        };
         let original = path.to_string_lossy();
         let path_string = if original.starts_with("http://") || original.starts_with("https://") {
             format!("/vsicurl/{original}")
@@ -683,10 +891,39 @@ impl Gdal {
         if handle.is_null() {
             return Err("error while reading raster file".into());
         }
-        Ok(DatasetGuard {
+        let dataset = DatasetGuard {
             handle,
             close: self.close,
-        })
+        };
+        if directory.is_some() {
+            unsafe {
+                let mask: unsafe extern "C" fn(BandHandle) -> BandHandle =
+                    self.symbol(b"GDALGetMaskBand\0")?;
+                for index in 1..=(self.raster_count)(handle) {
+                    let band = (self.raster_band)(handle, index);
+                    mask(band);
+                    (self.overview_count)(band);
+                }
+            }
+        }
+        Ok(dataset)
+    }
+}
+
+struct DirectoryPolicy {
+    previous: Option<CString>,
+    set: unsafe extern "C" fn(*const c_char, *const c_char),
+}
+impl Drop for DirectoryPolicy {
+    fn drop(&mut self) {
+        unsafe {
+            (self.set)(
+                c"GDAL_DISABLE_READDIR_ON_OPEN".as_ptr(),
+                self.previous
+                    .as_ref()
+                    .map_or(ptr::null(), |value| value.as_ptr()),
+            );
+        }
     }
 }
 
@@ -694,13 +931,24 @@ struct DatasetGuard {
     handle: DatasetHandle,
     close: unsafe extern "C" fn(DatasetHandle),
 }
+struct SourceLease {
+    _opened: Option<DatasetGuard>,
+    handle: DatasetHandle,
+    stamp: Option<(u64, SystemTime)>,
+}
 #[derive(Clone, Copy)]
 struct SuggestedGeometry {
     transform: [f64; 6],
-    bounds: [f64; 4],
+}
+
+struct RemoteSource {
+    path: PathBuf,
+    dataset: DatasetGuard,
+    opened: Instant,
 }
 
 struct SourceEntry {
+    generation: Vec<(u64, u128)>,
     path: PathBuf,
     stamp: (u64, std::time::SystemTime),
     suggested: [Option<SuggestedGeometry>; 2],
@@ -733,6 +981,20 @@ impl Drop for VsiDatasetGuard {
     }
 }
 
+struct SpatialReference {
+    handle: *mut c_void,
+    destroy: unsafe extern "C" fn(*mut c_void),
+}
+impl Drop for SpatialReference {
+    fn drop(&mut self) {
+        if !self.handle.is_null() {
+            unsafe {
+                (self.destroy)(self.handle);
+            }
+        }
+    }
+}
+
 struct ReadSpec {
     width: usize,
     height: usize,
@@ -752,6 +1014,27 @@ impl GdalPixel for u16 {
 }
 impl GdalPixel for f64 {
     const DATA_TYPE: c_int = GDT_FLOAT64;
+}
+impl GdalPixel for i16 {
+    const DATA_TYPE: c_int = 3;
+}
+impl GdalPixel for u32 {
+    const DATA_TYPE: c_int = 4;
+}
+impl GdalPixel for i32 {
+    const DATA_TYPE: c_int = 5;
+}
+impl GdalPixel for f32 {
+    const DATA_TYPE: c_int = 6;
+}
+impl GdalPixel for u64 {
+    const DATA_TYPE: c_int = 12;
+}
+impl GdalPixel for i64 {
+    const DATA_TYPE: c_int = 13;
+}
+impl GdalPixel for i8 {
+    const DATA_TYPE: c_int = 14;
 }
 
 unsafe fn read_window<T: GdalPixel>(
@@ -930,7 +1213,7 @@ struct ThreadConfig {
     previous: Vec<(CString, Option<CString>)>,
 }
 impl ThreadConfig {
-    unsafe fn new(library: &Library) -> Result<Self> {
+    unsafe fn new(library: &Library, library_path: &Path) -> Result<Self> {
         let set = unsafe {
             *library
                 .get::<unsafe extern "C" fn(*const c_char, *const c_char)>(
@@ -946,6 +1229,22 @@ impl ThreadConfig {
                 .map_err(symbol_error)?
         };
         let mut options = std::collections::BTreeMap::new();
+        if crate::settings::var("CURL_CA_BUNDLE").is_err() {
+            if let Ok(certificates) = crate::settings::var("SSL_CERT_FILE") {
+                options.insert("CURL_CA_BUNDLE".into(), Some(certificates));
+            } else {
+                let certificates = library_path
+                    .parent()
+                    .and_then(Path::parent)
+                    .map(|root| root.join("share/cacert.pem"));
+                if let Some(certificates) = certificates.filter(|path| path.is_file()) {
+                    options.insert(
+                        "CURL_CA_BUNDLE".into(),
+                        Some(certificates.to_string_lossy().into_owned()),
+                    );
+                }
+            }
+        }
         for (source, target) in [
             ("TC_RASTER_AWS_ACCESS_KEY", "AWS_ACCESS_KEY_ID"),
             ("TC_RASTER_AWS_SECRET_KEY", "AWS_SECRET_ACCESS_KEY"),

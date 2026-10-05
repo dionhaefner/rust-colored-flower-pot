@@ -44,6 +44,13 @@ def stage(prefix: Path, runtime: Path) -> dict[str, Path]:
         if not source.is_dir():
             raise FileNotFoundError(f"missing {name} data: {source}")
         shutil.copytree(source, runtime / "share" / name)
+    certificates = (
+        (prefix / "Library" if sys.platform == "win32" else prefix)
+        / "ssl"
+        / "cacert.pem"
+    )
+    if certificates.is_file():
+        shutil.copy2(certificates, runtime / "share" / "cacert.pem")
     return {"gdal": target, "source": selected, "data": runtime / "share"}
 
 

@@ -41,9 +41,18 @@ fn reexec_with_gdal_dependencies() {}
 
 fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     let mut config = serde_json::Map::new();
+    let mut profile = None;
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
+            "--compat-profile" if index + 1 < args.len() => {
+                profile = Some(args[index + 1].clone());
+                index += 2;
+            }
+            option if option.starts_with("--compat-profile=") => {
+                profile = Some(option["--compat-profile=".len()..].to_owned());
+                index += 1;
+            }
             "-c" | "--config" if index + 1 < args.len() => {
                 let text = std::fs::read_to_string(&args[index + 1]).map_err(|e| e.to_string())?;
                 let parsed: toml::Value = toml::from_str(&text)
@@ -61,6 +70,9 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
             }
             _ => break,
         }
+    }
+    if let Some(profile) = profile {
+        config.insert("COMPAT_PROFILE".into(), profile.into());
     }
     let config = rcfp_core::settings::parse(config)?;
     rcfp_core::settings::scope(config, || run(&args[index..]))
@@ -82,6 +94,7 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
                 "{}",
                 serde_json::json!({
                     "implementation": rcfp_core::IMPLEMENTATION_VERSION,
+                    "compatibility_profile": rcfp_core::compatibility::CompatibilityProfile::current().name(),
                     "protocol_compatibility": rcfp_core::TERRACOTTA_COMPATIBILITY_VERSION,
                     "database_compatibility": rcfp_core::DATABASE_COMPATIBILITY
                 })
@@ -224,7 +237,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
     }
     let temporary = pattern.as_ref().map(|_| {
         std::env::temp_dir().join(format!(
-            "terracotta-serve-{}-{}.sqlite",
+            "rcfp-serve-{}-{}.sqlite",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -258,7 +271,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
 
 fn print_help() {
     println!(
-        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
+        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
     );
 }
 

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title description">
+  <title id="title">RCFP crab flower-pot logo</title>
+  <desc id="description">A wide rust-red flower pot with two raised teal pincers, two pairs of angular legs, and a central square-leaf sprout. The pot rim and raster geometry remain recognizable.</desc>
+  <g id="mark">
+    <path fill="#263438" d="M248 176h16v56h-16z"/>
+    <path fill="#287F7B" d="M224 96h64v64h-64z"/>
+    <g id="left-side">
+      <path fill="#C2543B" d="M112 224h24v40l40 40-20 20-44-44zM148 316l-60 16-24 40h28l16-24 48-12zM160 348l-48 24-16 40h28l8-24 36-20z"/>
+      <path fill="#287F7B" d="M72 144h32l12 32h16l12-32h32v88H72z"/>
+    </g>
+    <use xlink:href="#left-side" transform="translate(512 0) scale(-1 1)"/>
+    <path fill="#943E30" d="M136 248h240v40H136z"/>
+    <path fill="#C2543B" d="M144 304h224l-24 80H168z"/>
+  </g>
+</svg>

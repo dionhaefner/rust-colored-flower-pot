@@ -8,17 +8,39 @@ use rusqlite::types::Value as V;
 use std::{
     cell::{Cell, RefCell},
     collections::BTreeMap,
+    net::IpAddr,
     path::PathBuf,
 };
 
+fn loopback_ip(host: &str) -> bool {
+    host.parse::<IpAddr>().is_ok_and(|ip| ip.is_loopback())
+}
+
 pub enum Connection {
     Mysql(mysql::Conn),
-    Postgres(postgres::Client),
+    Postgres(Box<postgres::Client>),
 }
 impl Connection {
     pub fn open(path: &SqlPath, database: Option<&str>) -> Result<Self> {
         let database = database.unwrap_or(&path.database);
         let mut c = if path.provider == Provider::Mysql {
+            let mut ssl_mode = None;
+            let mut root_cert = None;
+            for (key, value) in &path.query {
+                match key.as_str() {
+                    "sslmode" if ssl_mode.replace(value.as_str()).is_none() => {}
+                    "sslrootcert" if root_cert.replace(value.as_str()).is_none() => {}
+                    _ => return Err(format!("unsupported MySQL connection option: {key}")),
+                }
+            }
+            let ssl = match ssl_mode {
+                None | Some("verify-full") => Some(
+                    mysql::SslOpts::default()
+                        .with_root_cert_path(root_cert.map(|path| PathBuf::from(path.to_owned()))),
+                ),
+                Some("disable") if loopback_ip(&path.host) && root_cert.is_none() => None,
+                _ => return Err("MySQL connections require verified TLS or an explicit loopback plaintext connection".into()),
+            };
             let opts = mysql::OptsBuilder::new()
                 .ip_or_hostname(Some(&path.host))
                 .tcp_port(path.port)
@@ -27,16 +49,11 @@ impl Connection {
                 .db_name(Some(database))
                 .prefer_socket(false)
                 .tcp_connect_timeout(Some(timeout()?))
-                .ssl_opts(Some(mysql::SslOpts::default()))
+                .ssl_opts(ssl)
                 .init(vec![
                     "SET NAMES utf8mb4",
                     "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED",
                 ]);
-            // Terracotta 0.10.1 MySQLMetaStore appends a second '?' before charset, which
-            // makes user-supplied query options invalid.
-            if !path.query.is_empty() {
-                return Err("unsupported MySQL connection query (legacy charset suffix)".into());
-            }
             Self::Mysql(
                 mysql::Conn::new(opts)
                     .map_err(|e| format!("Could not connect to database: {e}"))?,
@@ -57,19 +74,16 @@ impl Connection {
                 config.password(p);
             }
             let mut tls = native_tls::TlsConnector::builder();
-            // The server identity must be verified before credentials or queries are sent.
-            config.ssl_mode(postgres::config::SslMode::Require);
-            if path
-                .query
-                .iter()
-                .any(|(key, value)| key == "sslmode" && value != "verify-full")
-            {
-                return Err("PostgreSQL connections require sslmode=verify-full".into());
-            }
+            let mut ssl_mode = None;
+            let mut root_cert = false;
             for (k, v) in &path.query {
                 match k.as_str() {
-                    "sslmode" => {}
+                    "sslmode" if ssl_mode.replace(v.as_str()).is_none() => {}
                     "sslrootcert" => {
+                        if root_cert {
+                            return Err("duplicate PostgreSQL sslrootcert".into());
+                        }
+                        root_cert = true;
                         tls.add_root_certificate(
                             native_tls::Certificate::from_pem(
                                 &std::fs::read(v).map_err(|e| e.to_string())?,
@@ -91,13 +105,22 @@ impl Connection {
                     _ => return Err(format!("unsupported PostgreSQL connection option: {k}")),
                 }
             }
-            let tls =
-                postgres_native_tls::MakeTlsConnector::new(tls.build().map_err(|e| e.to_string())?);
-            Self::Postgres(
-                config
-                    .connect(tls)
-                    .map_err(|e| format!("Could not connect to database: {e}"))?,
-            )
+            let client = match ssl_mode {
+                None | Some("verify-full") => {
+                    config.ssl_mode(postgres::config::SslMode::Require);
+                    let tls = postgres_native_tls::MakeTlsConnector::new(
+                        tls.build().map_err(|e| e.to_string())?,
+                    );
+                    config.connect(tls)
+                }
+                Some("disable") if loopback_ip(&path.host) && !root_cert => {
+                    config.ssl_mode(postgres::config::SslMode::Disable);
+                    config.connect(postgres::NoTls)
+                }
+                _ => return Err("PostgreSQL connections require sslmode=verify-full or an explicit loopback plaintext connection".into()),
+            }
+            .map_err(|e| format!("Could not connect to database: {e}"))?;
+            Self::Postgres(Box::new(client))
         };
         if path.provider == Provider::Postgres {
             c.execute(
@@ -412,6 +435,7 @@ impl RelationalStore {
     }
     pub fn legacy_decimal_stretch(&self) -> bool {
         self.provider == Provider::Mysql
+            && crate::compatibility::CompatibilityProfile::current().is_terracotta()
     }
     pub fn mysql_decimal_json(&self, value: &mut serde_json::Value) {
         if self.provider != Provider::Mysql {
@@ -608,6 +632,11 @@ impl RelationalStore {
                 ),
                 &data,
             )?;
+            if metadata.is_none()
+                && !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+            {
+                c.execute(&format!("DELETE FROM metadata WHERE {p}"), &v)?;
+            }
             if let Some(m) = metadata {
                 let mut data = v.clone();
                 data.extend(m.bounds.map(V::Real));
@@ -749,5 +778,41 @@ fn number(v: &V) -> Result<f64> {
         V::Real(n) => Ok(*n),
         V::Integer(n) => Ok(*n as f64),
         _ => Err("invalid database number".into()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_postgres_connections_without_full_certificate_verification() {
+        for mode in ["disable", "prefer", "require", "verify-ca"] {
+            let path = SqlPath::parse(
+                &format!("postgresql://192.0.2.1/catalog?sslmode={mode}"),
+                Provider::Postgres,
+            )
+            .unwrap();
+            let error = Connection::open(&path, None).err().unwrap();
+            assert!(error.contains("require sslmode=verify-full"));
+        }
+    }
+
+    #[test]
+    fn rejects_remote_mysql_plaintext() {
+        let path =
+            SqlPath::parse("mysql://192.0.2.1/catalog?sslmode=disable", Provider::Mysql).unwrap();
+        let error = Connection::open(&path, None).err().unwrap();
+        assert!(error.contains("require verified TLS"));
+    }
+
+    #[test]
+    fn only_literal_loopback_ips_can_use_plaintext_sql() {
+        for host in ["127.0.0.1", "127.1.2.3", "::1"] {
+            assert!(loopback_ip(host));
+        }
+        for host in ["localhost", "192.0.2.1", "example.com"] {
+            assert!(!loopback_ip(host));
+        }
     }
 }

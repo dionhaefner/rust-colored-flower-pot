@@ -244,8 +244,15 @@ fn arity(name: &str) -> Option<usize> {
         | "masked_less_equal"
         | "masked_not_equal"
         | "masked_where" => 2,
-        "getmask" | "masked_invalid" | "abs" | "mod" | "sqrt" | "log" | "log10" | "exp" | "sin"
-        | "cos" | "tan" | "sinh" | "cosh" | "tanh" | "arcsin" | "arccos" | "arctan" | "arcsinh"
+        "mod" => {
+            if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                1
+            } else {
+                2
+            }
+        }
+        "getmask" | "masked_invalid" | "abs" | "sqrt" | "log" | "log10" | "exp" | "sin" | "cos"
+        | "tan" | "sinh" | "cosh" | "tanh" | "arcsin" | "arccos" | "arctan" | "arcsinh"
         | "arccosh" | "arctanh" => 1,
         _ => return None,
     })
@@ -428,26 +435,95 @@ fn call(name: &str, args: &[Cell]) -> Result<Cell> {
         c.mask |= args.iter().any(|a| a.mask);
     }
     match name {
-        "where"=>{c=if a.truth() {b}else{d}; c.array=args.iter().any(|a|a.array); c.mask|=a.mask;}
-        "getmask"=>{c.value=a.mask as u8 as f64;c.mask=false;c.kind=Kind::Bool;c.array=true;}
-        "setmask"=>{c.mask=a.mask||b.truth();}
-        "masked_where"=>{c=b;c.array=a.array||b.array;c.mask=b.mask||a.mask||a.truth();}
-        "masked_invalid"=>c.mask|= !a.value.is_finite(),
-        "masked_equal"=>c.mask|=a.value==b.value,
-        "masked_not_equal"=>c.mask|=a.value!=b.value,
-        "masked_greater"=>c.mask|=a.value>b.value,
-        "masked_greater_equal"=>c.mask|=a.value>=b.value,
-        "masked_less"=>c.mask|=a.value<b.value,
-        "masked_less_equal"=>c.mask|=a.value<=b.value,
-        "masked_inside"=>c.mask|=a.value>=b.value.min(d.value)&&a.value<=b.value.max(d.value),
-        "masked_outside"=>c.mask|=a.value<b.value.min(d.value)||a.value>b.value.max(d.value),
-        "minimum"|"maximum"=>{c.mask|=b.mask;c.value=if a.value.is_nan()||b.value.is_nan(){f64::NAN}else if name=="minimum" {a.value.min(b.value)}else{a.value.max(b.value)};}
-        "mod"=>return Err("unexpected error while evaluating expression: remainder() takes from 2 to 3 positional arguments but 1 were given".into()),
-        _=>{c.value=match name {"abs"=>a.value.abs(),"sqrt"=>a.value.sqrt(),"log"=>a.value.ln(),"log10"=>a.value.log10(),"exp"=>a.value.exp(),"sin"=>a.value.sin(),"cos"=>a.value.cos(),"tan"=>a.value.tan(),"sinh"=>a.value.sinh(),"cosh"=>a.value.cosh(),"tanh"=>a.value.tanh(),"arcsin"=>a.value.asin(),"arccos"=>a.value.acos(),"arctan"=>a.value.atan(),"arcsinh"=>a.value.asinh(),"arccosh"=>a.value.acosh(),"arctanh"=>a.value.atanh(),_=>unreachable!()};c.kind=match a.kind { Kind::Bool|Kind::Int(8,_)=>Kind::Float16,Kind::Int(16,_)|Kind::Float32=>Kind::Float32,Kind::Float16=>Kind::Float16,_=>Kind::Float };
-            if name=="abs" {c.kind=a.kind;}
-            c.value=cast(c.value,c.kind);
+        "where" => {
+            c = if a.truth() { b } else { d };
+            c.array = args.iter().any(|a| a.array);
+            c.mask |= a.mask;
+        }
+        "getmask" => {
+            c.value = a.mask as u8 as f64;
+            c.mask = false;
+            c.kind = Kind::Bool;
+            c.array = true;
+        }
+        "setmask" => {
+            c.mask = a.mask || b.truth();
+        }
+        "masked_where" => {
+            c = b;
+            c.array = a.array || b.array;
+            c.mask = b.mask || a.mask || a.truth();
+        }
+        "masked_invalid" => c.mask |= !a.value.is_finite(),
+        "masked_equal" => c.mask |= a.value == b.value,
+        "masked_not_equal" => c.mask |= a.value != b.value,
+        "masked_greater" => c.mask |= a.value > b.value,
+        "masked_greater_equal" => c.mask |= a.value >= b.value,
+        "masked_less" => c.mask |= a.value < b.value,
+        "masked_less_equal" => c.mask |= a.value <= b.value,
+        "masked_inside" => {
+            c.mask |= a.value >= b.value.min(d.value) && a.value <= b.value.max(d.value)
+        }
+        "masked_outside" => {
+            c.mask |= a.value < b.value.min(d.value) || a.value > b.value.max(d.value)
+        }
+        "minimum" | "maximum" => {
+            c.mask |= b.mask;
+            c.value = if a.value.is_nan() || b.value.is_nan() {
+                f64::NAN
+            } else if name == "minimum" {
+                a.value.min(b.value)
+            } else {
+                a.value.max(b.value)
+            };
+        }
+        "mod" => {
+            return if args.len() == 2 {
+                binary("%", a, b)
+            } else {
+                Err("unexpected error while evaluating expression: remainder() takes from 2 to 3 positional arguments but 1 were given".into())
+            };
+        }
+        _ => {
+            c.value = match name {
+                "abs" => a.value.abs(),
+                "sqrt" => a.value.sqrt(),
+                "log" => a.value.ln(),
+                "log10" => a.value.log10(),
+                "exp" => a.value.exp(),
+                "sin" => a.value.sin(),
+                "cos" => a.value.cos(),
+                "tan" => a.value.tan(),
+                "sinh" => a.value.sinh(),
+                "cosh" => a.value.cosh(),
+                "tanh" => a.value.tanh(),
+                "arcsin" => a.value.asin(),
+                "arccos" => a.value.acos(),
+                "arctan" => a.value.atan(),
+                "arcsinh" => a.value.asinh(),
+                "arccosh" => a.value.acosh(),
+                "arctanh" => a.value.atanh(),
+                _ => unreachable!(),
+            };
+            c.kind = match a.kind {
+                Kind::Bool | Kind::Int(8, _) => Kind::Float16,
+                Kind::Int(16, _) | Kind::Float32 => Kind::Float32,
+                Kind::Float16 => Kind::Float16,
+                _ => Kind::Float,
+            };
+            if name == "abs" {
+                c.kind = a.kind;
+            }
+            c.value = cast(c.value, c.kind);
             // NumPy masked ufuncs mark invalid domains immediately.
-            if ["sqrt","log","log10","arcsin","arccos","arccosh","arctanh"].contains(&name) && !c.value.is_finite() {c.mask=true;}
+            if [
+                "sqrt", "log", "log10", "arcsin", "arccos", "arccosh", "arctanh",
+            ]
+            .contains(&name)
+                && !c.value.is_finite()
+            {
+                c.mask = true;
+            }
         }
     }
     Ok(c)
@@ -531,14 +607,24 @@ mod tests {
     use super::*;
     #[test]
     fn expression_contract_vectors() {
-        let fixture: serde_json::Value =
-            serde_json::from_str(include_str!("../tests/fixtures/expressions.json")).unwrap();
-        check_fixture(&fixture);
-        let suites: Vec<serde_json::Value> =
-            serde_json::from_str(include_str!("../tests/fixtures/expression-types.json")).unwrap();
-        for fixture in suites {
-            check_fixture(&fixture);
-        }
+        crate::settings::scope(
+            serde_json::json!({"COMPAT_PROFILE":"terracotta-0.10.1"})
+                .as_object()
+                .unwrap()
+                .clone(),
+            || {
+                let fixture: serde_json::Value =
+                    serde_json::from_str(include_str!("../tests/fixtures/expressions.json"))
+                        .unwrap();
+                check_fixture(&fixture);
+                let suites: Vec<serde_json::Value> =
+                    serde_json::from_str(include_str!("../tests/fixtures/expression-types.json"))
+                        .unwrap();
+                for fixture in suites {
+                    check_fixture(&fixture);
+                }
+            },
+        );
     }
     fn check_fixture(fixture: &serde_json::Value) {
         let rasters: BTreeMap<String, Raster> = fixture["operands"]

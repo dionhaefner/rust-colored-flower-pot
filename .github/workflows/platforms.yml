@@ -1,32 +1,38 @@
 name: Native platform qualification
+
 on:
   workflow_call:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+
 permissions:
   contents: read
+
 jobs:
   native:
     strategy:
       fail-fast: false
       matrix:
         os:
-          [
-            ubuntu-24.04,
-            ubuntu-24.04-arm,
-            macos-15-intel,
-            macos-14,
-            windows-2022,
-          ]
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-15-intel
+          - macos-14
+          - windows-2022
+
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
+
     defaults:
       run:
         shell: bash -el {0}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: qualification
@@ -34,38 +40,62 @@ jobs:
             python=3.12 pip setuptools wheel gdal=3.10.3 rasterio=1.4.4 numpy=2 pillow
           cache-environment: true
           init-shell: bash
+
       - name: Install Rust toolchain
-        run: rustup toolchain install 1.85.1 --profile minimal --component clippy,rustfmt
+        run: rustup toolchain install 1.88.0 --profile minimal --component clippy,rustfmt
+
       - name: Locate GDAL runtime
-        run: python packaging/ci-gdal-env.py
+        run: python tests/ci-gdal-env.py
+
       - name: Build and check core
         run: |
           cargo fmt --check
           cargo test --locked
           cargo clippy --locked --all-targets -- -D warnings
           cargo build --locked --release
+
       - name: Real-raster native smoke
-        run: python tests/platform_smoke.py --native-only --binary target/release/rcfp --out build/ci/ci-smoke
+        run: |
+          python tests/platform_smoke.py \
+            --native-only \
+            --binary target/release/rcfp \
+            --out build/ci/ci-smoke
+
+      - name: Native and compatibility behavior contracts
+        run: |
+          python tests/native_contracts.py \
+            --binary target/release/rcfp \
+            --out build/ci/profile-contracts
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: native-${{ matrix.os }}
           path: |
             build/ci/ci-smoke/
+            build/ci/profile-contracts/
           retention-days: 14
+
   lambda:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - run: python -m pip install rasterio==1.4.4 numpy==2.2.6 pillow
+
       - name: Build native AL2023 artifact
         run: |
           docker build -f packaging/lambda/Dockerfile.ci -t rcfp-lambda-build .
@@ -73,13 +103,24 @@ jobs:
           mkdir -p build/ci
           docker cp "$id:/bundle" build/ci/ci-lambda-bundle
           docker rm "$id"
+
       - name: Real-raster native smoke and zip
         run: |
-          python tests/platform_smoke.py --native-only --binary build/ci/ci-lambda-bundle/bin/rcfp --out build/ci/ci-native-smoke
+          python tests/platform_smoke.py \
+            --native-only \
+            --binary build/ci/ci-lambda-bundle/bin/rcfp \
+            --out build/ci/ci-native-smoke
           packaging/build-lambda.sh build/ci/ci-lambda-bundle build/ci/ci-lambda
+
       - name: Official runtime image smoke (no AWS deployment)
         run: |
-          python tests/lambda_runtime_smoke.py --database build/ci/ci-native-smoke/platform.sqlite --bundle build/ci/ci-lambda-bundle --lambda-zip build/ci/ci-lambda/rcfp-lambda.zip --image public.ecr.aws/lambda/provided:al2023 --out build/ci/ci-lambda-smoke
+          python tests/lambda_runtime_smoke.py \
+            --database build/ci/ci-native-smoke/platform.sqlite \
+            --bundle build/ci/ci-lambda-bundle \
+            --lambda-zip build/ci/ci-lambda/rcfp-lambda.zip \
+            --image public.ecr.aws/lambda/provided:al2023 \
+            --out build/ci/ci-lambda-smoke
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,4 +1,4 @@
-exclude: ^(process/validation/(evidence/|reference/)|src/assets/(client/|static/|swagger\.json$))
+exclude: ^src/assets/(client/|static/|swagger\.json$)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -25,14 +25,14 @@ repos:
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-        files: ^packaging/
+        files: ^(packaging/|tests/reference/)
 
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.14.1-1
     hooks:
       - id: shfmt
         args: [-w, -i, "4"]
-        files: ^packaging/
+        files: ^(packaging/|tests/reference/)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v22.1.8
