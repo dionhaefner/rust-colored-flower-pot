@@ -68,7 +68,14 @@ def tile(lon, lat, zoom):
 
 @contextlib.contextmanager
 def range_server(paths, latency_ms):
-    counts = {"gets": 0, "heads": 0, "range_gets": 0, "bytes": 0}
+    versions = {name: '"' + digest(path) + '"' for name, path in paths.items()}
+    counts = {
+        "gets": 0,
+        "heads": 0,
+        "range_gets": 0,
+        "bytes": 0,
+        "conditional_gets": 0,
+    }
     lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
@@ -81,6 +88,10 @@ def range_server(paths, latency_ms):
             path = paths.get(self.path)
             if path is None:
                 self.send_error(404)
+                return
+            version = versions[self.path]
+            if self.headers.get("If-Match", version) != version:
+                self.send_error(412)
                 return
             size = path.stat().st_size
             start, stop = 0, size - 1
@@ -100,12 +111,14 @@ def range_server(paths, latency_ms):
             self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Type", "image/tiff")
             self.send_header("Content-Length", str(stop - start + 1))
+            self.send_header("ETag", version)
             if header:
                 self.send_header("Content-Range", f"bytes {start}-{stop}/{size}")
             self.end_headers()
             with lock:
                 counts["gets" if body else "heads"] += 1
                 counts["range_gets"] += int(body and bool(header))
+                counts["conditional_gets"] += int(body and "If-Match" in self.headers)
                 counts["bytes"] += stop - start + 1 if body else 0
             if body:
                 with path.open("rb") as stream:
@@ -266,6 +279,7 @@ def run_case(args, scene, mode, storage, users, overlap, trial, env, sources, me
             for zoom_index, zoom in enumerate(scene["zooms"]):
                 seen = [set() for _ in range(users)]
                 for step, offset in enumerate((0, 1, 2, 3, 0)):
+                    before = dict(traffic) if traffic else None
                     routes = []
                     for user in range(users):
                         bounds = scene.get(
@@ -309,6 +323,12 @@ def run_case(args, scene, mode, storage, users, overlap, trial, env, sources, me
                             pool.map(lambda url: fetch(origin, url, images), routes)
                         )
                     elapsed = (time.perf_counter() - started) * 1000
+                    current = json.load(urlopen(origin + "/__terracotta/metrics"))
+                    if (
+                        args.require_tiff_pixels
+                        and current["cost"]["raster_backend_reads"]["gdal"]
+                    ):
+                        raise AssertionError("TIFF-required workload used GDAL pixels")
                     requests.extend(rows)
                     steps.append(
                         {
@@ -322,9 +342,26 @@ def run_case(args, scene, mode, storage, users, overlap, trial, env, sources, me
                             "requests": len(rows),
                             "failures": sum(r["status"] != 200 for r in rows),
                             "latency_ms": quantiles([r["http_ms"] for r in rows]),
+                            "requests_per_second": len(rows) * 1000 / elapsed,
+                            "completed_raster_jobs": current["completed"],
+                            "raster_backend_reads": current["cost"][
+                                "raster_backend_reads"
+                            ],
+                            "source_traffic": {
+                                key: traffic[key] - before[key] for key in before
+                            }
+                            if before
+                            else None,
                         }
                     )
             metrics = json.load(urlopen(origin + "/__terracotta/metrics"))
+            if (
+                args.require_tiff_pixels
+                and not metrics["cost"]["raster_backend_reads"]["tiff"]
+            ):
+                raise AssertionError(
+                    "TIFF-required workload did not read raster pixels"
+                )
             resources = {}
             status_file = Path(f"/proc/{process.pid}/status")
             if status_file.exists():
@@ -395,6 +432,11 @@ def main():
     parser.add_argument("--rgb-format", choices=("png", "webp"), default="png")
     parser.add_argument("--webp-quality", type=int, default=85)
     parser.add_argument("--setting", action="append", default=[], metavar="NAME=VALUE")
+    parser.add_argument(
+        "--require-tiff-pixels",
+        action="store_true",
+        help="Fail if any pixel read reaches GDAL; requires at least one raster job",
+    )
     args = parser.parse_args()
     if min(args.trials, args.parallel, args.workers, args.cores, *args.users) < 1:
         parser.error("counts must be positive")

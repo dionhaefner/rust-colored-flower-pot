@@ -4,11 +4,13 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 
-from . import _native, exceptions
+from . import RcfpError, _native, compatibility_profile, exceptions
 from ._profile import settings as profile_settings
 
 
 def settings():
+    if compatibility_profile == "native":
+        return profile_settings()
     from . import get_settings
 
     return profile_settings(get_settings()._asdict())
@@ -23,6 +25,8 @@ def json_value(value):
 
 
 def translate(message):
+    if compatibility_profile == "native":
+        return RcfpError(message)
     if "database does not exist" in message:
         return exceptions.InvalidDatabaseError(
             message + "; make sure you ran driver.create()"
@@ -115,6 +119,8 @@ class Session:
         except RuntimeError as error:
             raise translate(str(error)) from error
         dtypes = {
+            0: "bool",
+            15: "float16",
             1: "uint8",
             2: "uint16",
             3: "int16",
@@ -145,9 +151,7 @@ _executor = None
 def submit(call, **request):
     global _executor
     if _executor is None:
-        from . import get_settings
-
         _executor = ThreadPoolExecutor(
-            max_workers=3 if get_settings().USE_MULTIPROCESSING else 1
+            max_workers=3 if settings().get("USE_MULTIPROCESSING", True) else 1
         )
     return _executor.submit(call, **request)

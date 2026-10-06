@@ -45,6 +45,13 @@ impl CompatibilityProfile {
     pub fn is_terracotta(self) -> bool {
         self == Self::Terracotta0101
     }
+
+    pub(crate) fn require_native(self) -> crate::Result<()> {
+        if self.is_terracotta() {
+            return Err("this operation requires the native profile".into());
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]

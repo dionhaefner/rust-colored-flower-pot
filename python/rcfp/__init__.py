@@ -54,6 +54,7 @@ class RcfpError(RuntimeError):
 def request(database: os.PathLike[str] | str, method: str, url: str):
     """Execute one HTTP-contract request without opening a socket.
 
+    ``database`` accepts a catalog location or local source configuration.
     Returns ``(status, content_type, body, cacheable)`` where body is bytes.
     """
 
@@ -147,8 +148,9 @@ class DataStore:
     def __init__(self, path, *, provider=None):
         self.path = os.fspath(path)
         self.provider = provider
+        self._session = None
 
-    def create(self, keys, *, key_descriptions=None):
+    def create(self, keys, *, key_descriptions=None, format="terracotta"):
         descriptions = key_descriptions or {}
         if set(descriptions) - set(keys):
             raise RcfpError("key description dict contains unknown keys")
@@ -156,6 +158,7 @@ class DataStore:
             {
                 "operation": "create",
                 "path": self.path,
+                "format": format,
                 "provider": self.provider,
                 "keys": [
                     {"key": k, "description": descriptions.get(k, "")} for k in keys
@@ -164,10 +167,31 @@ class DataStore:
         )
 
     def insert(
-        self, keys, path, *, override_path=None, metadata=None, skip_metadata=False
+        self,
+        keys,
+        path,
+        *,
+        override_path=None,
+        metadata=None,
+        skip_metadata=False,
+        band=None,
+        values=None,
+        stretch=None,
+        colormap=None,
+        revision=None,
     ):
+        options = {}
+        if band is not None:
+            options["band"] = band
+        if values is not None:
+            options["values"] = values
+        if stretch is not None or colormap is not None:
+            options["style"] = {"stretch": stretch, "colormap": colormap}
+        if revision is not None:
+            options["revision"] = revision
         return data_operation(
             {
+                **options,
                 "operation": "insert",
                 "path": self.path,
                 "provider": self.provider,
@@ -176,6 +200,61 @@ class DataStore:
                 "override_path": override_path,
                 "metadata": metadata,
                 "skip_metadata": skip_metadata,
+            }
+        )
+
+    def define(self, keys, expression, bindings, *, stretch=None, colormap=None):
+        """Persist a derived dataset using logical keyed inputs."""
+        return data_operation(
+            {
+                "operation": "define",
+                "path": self.path,
+                "provider": self.provider,
+                "keys": list(keys),
+                "expression": expression,
+                "bindings": {name: list(values) for name, values in bindings.items()},
+                "style": {"stretch": stretch, "colormap": colormap},
+            }
+        )
+
+    def ingest(
+        self,
+        source,
+        *,
+        search=None,
+        options=None,
+        key_mapping=None,
+        skip_metadata=False,
+        stretch=None,
+        colormap=None,
+    ):
+        """Import a STAC snapshot and keyed bindings into this catalog."""
+        return data_operation(
+            {
+                "operation": "ingest_source",
+                "path": self.path,
+                "provider": self.provider,
+                "source": os.fspath(source),
+                "search": search,
+                "options": options or {},
+                "key_mapping": key_mapping or {},
+                "skip_metadata": skip_metadata,
+                "style": {"stretch": stretch, "colormap": colormap},
+            }
+        )
+
+    def get_keys(self):
+        return data_operation(
+            {"operation": "keys", "path": self.path, "provider": self.provider}
+        )
+
+    def get_datasets(self, *, where=None):
+        return data_operation(
+            {
+                "operation": "datasets",
+                "path": self.path,
+                "provider": self.provider,
+                "where": where or {},
             }
         )
 
@@ -205,6 +284,32 @@ class DataStore:
         value["range"] = tuple(value["range"])
         return value
 
+    def get_raster_tile(
+        self,
+        keys,
+        *,
+        tile_bounds=None,
+        tile_size=(256, 256),
+        preserve_values=False,
+        asynchronous=False,
+    ):
+        """Read logical samples on a Web Mercator grid as a masked NumPy array."""
+        from ._bridge import Session, submit
+
+        if self._session is None:
+            self._session = Session("catalog", self.path, self.provider)
+        request = {
+            "keys": keys,
+            "tile_bounds": tile_bounds,
+            "tile_size": list(tile_size),
+            "preserve_values": preserve_values,
+        }
+        return (
+            submit(self._session.raster, **request)
+            if asynchronous
+            else self._session.raster(**request)
+        )
+
     def batch(self, operations):
         """Atomically apply structured insert/delete operations, rolling back on error."""
         return data_operation(
@@ -221,7 +326,11 @@ __all__ += ["DataStore", "compute_metadata", "data_operation"]
 
 
 class NativeApplication:
-    """Own workers, remote snapshot leases and caches for an application lifetime."""
+    """Serve a catalog with persistent workers, source leases and caches.
+
+    ``database`` accepts SQL catalogs, STAC documents and local source
+    configuration files. All use the same request interface.
+    """
 
     def __init__(self, database, settings=None):
         self._session = _native.session_open(
@@ -269,3 +378,7 @@ if compatibility_profile == "terracotta-0.10.1":
     from .drivers import get_driver
 
     __all__ += ["get_driver", "get_settings", "update_settings"]
+
+from .layers import LayerApplication, LayerStore, inspect_asset
+
+__all__ += ["LayerApplication", "LayerStore", "inspect_asset"]

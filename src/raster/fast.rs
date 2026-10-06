@@ -216,13 +216,10 @@ impl Gdal {
         }
     }
 
-    pub(crate) fn prefetch_idle_block(&self) -> bool {
-        let Some(cache) = &self.source_blocks else {
-            return false;
-        };
-        let Some(key) = cache.lock().expect("source blocks").next_prefetch() else {
-            return false;
-        };
+    pub(crate) fn prefetch_idle_block(&self) -> Option<bool> {
+        let cache = self.source_blocks.as_ref()?;
+        let key = cache.lock().expect("source blocks").next_prefetch()?;
+        let _timer = crate::telemetry::timer(crate::telemetry::Stage::Prefetch);
         let started = Instant::now();
         let result: Result<()> = (|| {
             let metadata = std::fs::metadata(&key.path).map_err(|e| e.to_string())?;
@@ -288,7 +285,7 @@ impl Gdal {
                 result.is_ok()
             );
         }
-        true
+        Some(result.is_ok())
     }
 
     pub(super) fn read_mercator_fast(

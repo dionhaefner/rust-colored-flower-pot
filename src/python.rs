@@ -14,13 +14,15 @@ use std::{
 mod driver;
 pub struct Session {
     settings: Map<String, Value>,
-    kind: Kind,
     raster: Mutex<Option<Arc<RasterExecutor>>>,
+    kind: Kind,
 }
 enum Kind {
     Store(Mutex<Store>),
+    Catalog(Mutex<Box<crate::catalog::Catalog>>),
     Http(Box<Application>),
     Raster(RasterExecutor),
+    Stac(Box<crate::stac::Selection>),
 }
 impl Session {
     pub fn open(request: &Value) -> Result<Self> {
@@ -30,6 +32,15 @@ impl Session {
             let path = request["path"].as_str().unwrap_or("");
             match request["kind"].as_str() {
                 Some("http") => Ok(Kind::Http(Box::new(Application::open(Path::new(path))?))),
+                Some("catalog") => {
+                    let catalog = match crate::catalog::Catalog::open(Path::new(path))? {
+                        crate::catalog::Opened::Datasets(c) => c,
+                        crate::catalog::Opened::Layers(_) => {
+                            Box::new(crate::catalog::Catalog::layers(Path::new(path))?)
+                        }
+                    };
+                    Ok(Kind::Catalog(Mutex::new(catalog)))
+                }
                 Some("raster") => Ok(Kind::Raster(RasterExecutor::start(
                     ExecutionConfig::from_env()?,
                 )?)),
@@ -37,6 +48,31 @@ impl Session {
                     path,
                     request["provider"].as_str(),
                 )?))),
+                Some("stac") => {
+                    if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                        return Err("STAC requires the native profile".into());
+                    }
+                    let options = serde_json::from_value(
+                        request.get("options").cloned().unwrap_or(json!({})),
+                    )
+                    .map_err(|_| "invalid STAC options")?;
+                    let selection = if let Some(endpoint) = request["endpoint"].as_str() {
+                        let headers = serde_json::from_value(
+                            request.get("headers").cloned().unwrap_or(json!({})),
+                        )
+                        .map_err(|_| "invalid STAC credential headers")?;
+                        crate::stac::Selection::search(
+                            endpoint,
+                            request["query"].clone(),
+                            &headers,
+                            options,
+                        )?
+                    } else {
+                        let items = request["items"].as_array().ok_or("STAC items required")?;
+                        crate::stac::Selection::from_items(items, options)?
+                    };
+                    Ok(Kind::Stac(Box::new(selection)))
+                }
                 _ => Err("unknown session kind".into()),
             }
         })?;
@@ -48,7 +84,35 @@ impl Session {
     }
     pub fn read_raster(&self, request: &Value) -> Result<Arc<crate::raster::Raster>> {
         crate::settings::scope(self.settings.clone(), || {
+            let mut logical_source = None;
             let path = match &self.kind {
+                Kind::Catalog(catalog) => {
+                    let mut catalog = catalog.lock().map_err(|_| "catalog lock poisoned")?;
+                    catalog.refresh()?;
+                    let keys = if let Some(mapping) = request["keys"].as_object() {
+                        if mapping.len() != catalog.keys().len() {
+                            return Err("must specify every catalog key".into());
+                        }
+                        catalog
+                            .key_names()
+                            .iter()
+                            .map(|key| {
+                                mapping
+                                    .get(*key)
+                                    .and_then(Value::as_str)
+                                    .map(str::to_owned)
+                                    .ok_or("must specify every catalog key".to_owned())
+                            })
+                            .collect::<Result<Vec<_>>>()?
+                    } else {
+                        serde_json::from_value(request["keys"].clone())
+                            .map_err(|e| e.to_string())?
+                    };
+                    let source = catalog.descriptor(&keys)?.ok_or("No dataset found")?.2;
+                    let path = source.cache_path();
+                    logical_source = Some(source);
+                    path
+                }
                 Kind::Store(store) => {
                     let mut store = store.lock().map_err(|_| "store lock poisoned")?;
                     if request["refresh"] != false {
@@ -61,6 +125,7 @@ impl Session {
                 _ => return Err("session does not support raster reads".into()),
             };
             let read = ReadRequest {
+                grid: None,
                 band: 1,
                 bounds_mercator: serde_json::from_value(
                     request.get("tile_bounds").cloned().unwrap_or(Value::Null),
@@ -95,7 +160,11 @@ impl Session {
                 }
                 Arc::clone(raster.as_ref().unwrap())
             };
-            executor.read(&path, read)
+            if let Some(source) = logical_source {
+                source.read(&executor, read)
+            } else {
+                executor.read(&path, read)
+            }
         })
     }
     pub fn http_request(
@@ -137,7 +206,19 @@ impl Session {
                     cli::store_operation(&store, r)
                 }
             }
+            Kind::Catalog(catalog) => {
+                let mut catalog = catalog.lock().map_err(|_| "catalog lock poisoned")?;
+                catalog.refresh()?;
+                catalog.operation(r)
+            }
             Kind::Http(app) => {
+                if r["operation"] == "layer_samples" {
+                    let spec =
+                        serde_json::from_value(r["spec"].clone()).map_err(|e| e.to_string())?;
+                    let rasters =
+                        app.layer_samples(r["id"].as_str().ok_or("layer id required")?, &spec)?;
+                    return Ok(json!(rasters.iter().map(|r| json!({"shape":[r.height,r.width],"values":r.values,"mask":r.mask})).collect::<Vec<_>>()));
+                }
                 let headers =
                     serde_json::from_value(r.get("headers").cloned().unwrap_or(json!({})))
                         .map_err(|e| e.to_string())?;
@@ -164,6 +245,7 @@ impl Session {
                     return Ok(json!(executor.metrics()));
                 }
                 let request = ReadRequest {
+                    grid: None,
                     band: 1,
                     bounds_mercator: serde_json::from_value(
                         r.get("tile_bounds").cloned().unwrap_or(Value::Null),
@@ -191,6 +273,22 @@ impl Session {
                     json!({"dtype":raster.data_type,"shape":[raster.height,raster.width],"values":raster.values,"mask":raster.mask}),
                 )
             }
+            Kind::Stac(selection) => match r["operation"].as_str() {
+                Some("describe") => Ok(selection.describe()),
+                Some("render") => {
+                    let executor = {
+                        let mut raster = self.raster.lock().map_err(|_| "raster lock poisoned")?;
+                        if raster.is_none() {
+                            *raster = Some(Arc::new(RasterExecutor::start(
+                                ExecutionConfig::from_env()?,
+                            )?));
+                        }
+                        Arc::clone(raster.as_ref().unwrap())
+                    };
+                    Ok(json!(selection.render(&executor, r)?))
+                }
+                _ => Err("unknown STAC operation".into()),
+            },
         })
     }
 }

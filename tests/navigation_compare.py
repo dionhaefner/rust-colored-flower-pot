@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--candidate-manifest", type=Path)
     parser.add_argument("--candidate-sources", type=Path)
     parser.add_argument("--candidate-rgb-format", choices=("png", "webp"))
+    parser.add_argument("--require-candidate-tiff-pixels", action="store_true")
     args, benchmark_args = parser.parse_known_args()
 
     def identity(route):
@@ -71,6 +72,8 @@ def main():
             for setting in settings:
                 command.extend(["--setting", setting])
             if name == "candidate":
+                if args.require_candidate_tiff_pixels:
+                    command.append("--require-tiff-pixels")
                 if args.candidate_rgb_format:
                     command.extend(["--rgb-format", args.candidate_rgb_format])
                 for option in ("manifest", "sources"):

@@ -4,13 +4,18 @@ This directory explains the current design, compatibility constraints, and
 validation boundaries needed to maintain RCFP. It is developer context and is
 excluded from source archives, wheels, and container build contexts.
 
-| Document                                      | Purpose                                                                                                                |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [Decisions](decisions.md)                     | Current architectural choices, rationale, and conditions for changing them                                             |
-| [Compatibility notes](compatibility-notes.md) | Preserved quirks, narrow accepted differences, and native safety constraints                                           |
-| [Maintenance](maintenance.md)                 | Source map, reference discipline, documentation, build and release practices                                           |
-| [Validation handoff](human-validation.md)     | Completed local evidence, raster correctness results, retained scope decisions, and remaining qualification procedures |
-| [Performance knobs](performance.md)           | Implemented/discarded native optimizations and measured single-VM SQLite navigation from local storage and S3          |
+| Document                                          | Purpose                                                                                                                |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [Decisions](decisions.md)                         | Current architectural choices, rationale, and conditions for changing them                                             |
+| [Compatibility notes](compatibility-notes.md)     | Preserved quirks, narrow accepted differences, and native safety constraints                                           |
+| [Maintenance](maintenance.md)                     | Source map, reference discipline, documentation, build and release practices                                           |
+| [Validation handoff](human-validation.md)         | Completed local evidence, raster correctness results, retained scope decisions, and remaining qualification procedures |
+| [Performance knobs](performance.md)               | Implemented/discarded native optimizations and measured single-VM SQLite navigation from local storage and S3          |
+| [Async-TIFF evaluation](async-tiff-evaluation.md) | Exact TIFF access, GDAL fallback boundaries, qualification and the independent raster probe                            |
+| [STAC adapter](stac.md)                           | Bounded provider discovery, immutable checksum selections and credential refresh boundaries                            |
+
+The [native keyed model](native-layers.md) describes persisted logical bands,
+expressions, STAC snapshots and their shared raster plans.
 
 Public behavior and procedures belong in [product documentation](../docs/README.md).
 Test entry points and fixture provenance belong in [tests](../tests/README.md),

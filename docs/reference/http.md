@@ -49,11 +49,14 @@ request APIs also return cacheability and, for full requests, response headers.
 CORS, content length, and protocol-version negotiation are part of the contract;
 inspect the specification for endpoint-specific headers and validation.
 `/__terracotta/identity` exposes embedded core implementation/protocol/database
-identity. The core implementation version can differ from the wheel distribution
+identity and `compatibility_profile`. It follows metadata CORS policy so browser
+SDKs can verify profile selection. Encoded path components are decoded after
+route splitting, preserving literal slashes in catalog keys. The core implementation version can differ from the wheel distribution
 version reported by `rcfp.__version__` and `rcfp --version`, particularly in
 development builds.
-`/__terracotta/metrics` is a separate opt-in operational endpoint, not part of
-the legacy published specification. See [errors and limits](errors.md).
+`/__terracotta/metrics` and `/__terracotta/metrics/prometheus` are separate opt-in
+operational endpoints, outside the legacy published specification. See
+[monitoring](monitoring.md) and [errors and limits](errors.md).
 
 ## Native source bands and RGB display formats
 
@@ -75,3 +78,27 @@ CPU. Use it for visual RGB layers after reviewing their quality, especially when
 client bandwidth dominates. Formats and quality participate in image-cache keys.
 Custom color transforms work with both RGB formats. The bundled libwebp encoder
 is required; external GDAL runtimes must supply that library too.
+
+A native layer database exposes `/layers`, `/layers/{id}`, and
+`POST /layers/{id}/render` through the same application. See
+[advanced layer contracts](advanced-layers.md) for explicit grids and overlap.
+Native [keyed datasets](layers.md) use the regular discovery, metadata, singleband,
+RGB and compute routes. Band bindings and default styles are stored in the database.
+
+## STAC sources
+
+`rcfp serve --source SOURCE` opens STAC documents and source configurations as a dataset
+catalog through the same routes above. Keys are `collection`, `datetime`, `item`
+and `asset`. Singleband, RGB, compute, palettes, stretch and source-band selectors
+use the existing request parameters. The viewer and SDK use normal catalog
+discovery. These sources require the native profile.
+
+Metadata statistics and render values include per-band STAC scale and offset.
+The standard metadata object's `metadata.stac` contains the public asset
+and observation descriptor, alongside `selection_id`, `search_id` and
+`selection_metrics`. Service identity includes `source_revision`.
+
+Discovery completes before listening. The first metadata or render request
+stages and verifies the whole TIFF and measures first-band statistics; later
+requests reuse the verified file. See [serving STAC](../how-to/stac.md) for
+commands, credentials, revision requirements, dataset keys and download limits.

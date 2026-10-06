@@ -10,10 +10,12 @@ from . import NativeApplication
 
 
 class Application:
+    """Host a catalog location or local source configuration through WSGI."""
+
     def __init__(self, database: str | None = None, settings=None):
         self.database = database or os.environ.get("TC_DRIVER_PATH")
         if not self.database:
-            raise RuntimeError("WSGI adapter requires a database or TC_DRIVER_PATH")
+            raise RuntimeError("WSGI adapter requires a source or TC_DRIVER_PATH")
         self.native = NativeApplication(self.database, settings)
 
     def __call__(self, environ, start_response):

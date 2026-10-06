@@ -252,3 +252,4 @@ rustc-ice-*.txt
 /.venv*/
 /docs/_generated/
 TODO.md
+node_modules/

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Leaflet SDK sample</title>
+    <link rel="stylesheet" href="/vendor/leaflet.css" />
+    <style>
+      body {
+        font-family: system-ui;
+        margin: 1rem;
+      }
+      #map {
+        height: 65vh;
+        background: #dbe4e8;
+      }
+      select {
+        padding: 0.5rem;
+      }
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body data-service="{{ hostname }}" data-profile="{{ profile }}">
+    <h1>Leaflet SDK sample</h1>
+    <label for="dataset">Dataset</label>
+    <select id="dataset"></select>
+    <p id="status" role="status">Loading…</p>
+    <div id="map" aria-label="Raster map"></div>
+    <details>
+      <summary>Metadata</summary>
+      <pre id="metadata"></pre>
+    </details>
+    <script src="/vendor/leaflet.js"></script>
+    <script type="module">
+      import { Client, LatestRequest } from "/sdk/index.js";
+      import { leafletLayer } from "/sdk/integrations.js";
+      const client = new Client(document.body.dataset.service, {
+        profile: document.body.dataset.profile,
+      });
+      const map = L.map("map").setView([0, 0], 2),
+        latest = new LatestRequest();
+      const select = document.getElementById("dataset"),
+        status = document.getElementById("status");
+      let layers, tiles;
+      async function display() {
+        if (tiles) tiles.remove();
+        try {
+          const layer = layers.find((row) => row.id === select.value);
+          const metadata = await latest.run((signal) =>
+            client.metadata(layer.keys, { signal }),
+          );
+          const render = {
+            mode: "singleband",
+            keys: layer.keys,
+            params: { stretch_range: [0, 3000] },
+          };
+          tiles = leafletLayer(L, client, render).addTo(map);
+          const [w, s, e, n] = metadata.bounds;
+          map.fitBounds(
+            [
+              [s, w],
+              [n, e],
+            ],
+            { maxZoom: 16 },
+          );
+          document.getElementById("metadata").textContent = JSON.stringify(
+            metadata,
+            null,
+            2,
+          );
+          status.textContent = layer.title;
+        } catch (error) {
+          if (error.name !== "AbortError") status.textContent = error.message;
+        }
+      }
+      try {
+        await client.connect();
+        ({ layers } = await client.discover());
+        for (const layer of layers) {
+          const option = document.createElement("option");
+          option.value = layer.id;
+          option.textContent = layer.title;
+          select.append(option);
+        }
+        select.onchange = display;
+        if (layers.length) await display();
+        else status.textContent = "No datasets";
+      } catch (error) {
+        status.textContent = error.message;
+      }
+      window.addEventListener("pagehide", () => latest.cancel());
+    </script>
+  </body>
+</html>

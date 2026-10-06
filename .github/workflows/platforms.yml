@@ -67,6 +67,12 @@ jobs:
             --binary target/release/rcfp \
             --out build/ci/profile-contracts
 
+      - name: Native database-backed multiband contracts
+        run: python tests/layer_contracts.py --binary target/release/rcfp --out build/ci/layer-contracts
+
+      - name: Request lifecycle correctness
+        run: python tests/request_lifecycle.py --binary target/release/rcfp --out build/ci/request-lifecycle
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -74,6 +80,8 @@ jobs:
           path: |
             build/ci/ci-smoke/
             build/ci/profile-contracts/
+            build/ci/layer-contracts/
+            build/ci/request-lifecycle/
           retention-days: 14
 
   lambda:

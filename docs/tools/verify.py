@@ -171,6 +171,57 @@ def verify(args):
     assert expected == decoded((DOCS / "_static/red.png").read_bytes())
     checks["first_preview"] = expected
     run(sys.executable, DOCS / "examples/render_images.py", database, folder / "images")
+    run(sys.executable, DOCS / "examples/stac_map.py", "--out", folder / "stac")
+    assert decoded((folder / "stac/observation-0.png").read_bytes())
+    stac_metadata = json.loads((folder / "stac/observations.json").read_text())
+    assert len(stac_metadata["assets"]) == 1
+    assert stac_metadata["assets"][0]["item"] == "lagoon"
+    checks["stac_item"] = stac_metadata["id"]
+    bind = port()
+    with (folder / "stac-catalog.log").open("w") as log:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "rcfp_cli",
+                "serve",
+                "--source",
+                str(DOCS / "examples/data/lagoon-catalog.json"),
+                "--bind",
+                f"127.0.0.1:{bind}",
+            ],
+            stdout=log,
+            stderr=log,
+        )
+        try:
+            origin = f"http://127.0.0.1:{bind}"
+            wait_for(origin + "/keys", process)
+            datasets = json.load(urlopen(origin + "/datasets", timeout=10))["datasets"]
+            assert [dataset["asset"] for dataset in datasets] == ["red", "green"]
+            from urllib.parse import quote
+
+            images = [
+                decoded(
+                    urlopen(
+                        origin
+                        + "/singleband/"
+                        + "/".join(
+                            quote(dataset[key], safe="")
+                            for key in ("collection", "datetime", "item", "asset")
+                        )
+                        + "/preview.png?stretch_range=[0,2000]",
+                        timeout=10,
+                    ).read()
+                )
+                for dataset in datasets
+            ]
+            assert images[0] != images[1]
+            checks["stac_catalog_cli"] = json.load(
+                urlopen(origin + "/__terracotta/identity", timeout=10)
+            )["source_revision"]
+        finally:
+            process.terminate()
+            process.wait(timeout=30)
     hashes = {}
     for name in ("rgb", "ndvi", "classes", "gamma"):
         image = (folder / "images" / f"{name}.png").read_bytes()

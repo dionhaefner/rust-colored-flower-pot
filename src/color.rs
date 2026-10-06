@@ -72,6 +72,7 @@ pub fn parse(input: &str, channels: usize) -> Result<Vec<Operation>> {
 }
 
 pub fn normalize(raster: &Raster, range: [f64; 2]) -> Raster {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     let norm = range[1] - range[0];
     Raster {
         data_type: 7,
@@ -97,6 +98,7 @@ pub fn normalize(raster: &Raster, range: [f64; 2]) -> Raster {
 }
 
 pub fn apply(channels: &mut [Raster], operations: &[Operation]) {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     for op in operations {
         if op.name == "saturation" {
             for i in 0..channels[0].values.len() {

@@ -12,6 +12,9 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime};
 
+mod compact;
+use compact::CachedRaster;
+
 pub const OVERLOADED: &str = "raster execution queue is full";
 pub const TIMED_OUT: &str = "raster execution timed out while native work continues";
 
@@ -86,6 +89,11 @@ pub struct ExecutionMetrics {
     pub remote_jobs: u64,
     pub in_flight: usize,
     pub peak_in_flight: usize,
+    pub queued: usize,
+    pub prefetch_in_flight: usize,
+    pub prefetch_completed: u64,
+    pub prefetch_failed: u64,
+    pub cost: serde_json::Value,
 }
 
 struct Counters {
@@ -100,6 +108,10 @@ struct Counters {
     remote_jobs: AtomicU64,
     in_flight: AtomicUsize,
     peak_in_flight: AtomicUsize,
+    queued: AtomicUsize,
+    prefetch_in_flight: AtomicUsize,
+    prefetch_completed: AtomicU64,
+    prefetch_failed: AtomicU64,
 }
 
 impl Counters {
@@ -116,6 +128,10 @@ impl Counters {
             remote_jobs: AtomicU64::new(0),
             in_flight: AtomicUsize::new(0),
             peak_in_flight: AtomicUsize::new(0),
+            queued: AtomicUsize::new(0),
+            prefetch_in_flight: AtomicUsize::new(0),
+            prefetch_completed: AtomicU64::new(0),
+            prefetch_failed: AtomicU64::new(0),
         }
     }
 
@@ -130,12 +146,16 @@ impl Counters {
 }
 
 struct Job {
+    enqueued: Instant,
+    context: Option<crate::telemetry::Context>,
     path: PathBuf,
     request: ReadRequest,
     result: SyncSender<Result<Arc<Raster>>>,
     interested: Arc<AtomicBool>,
 }
 struct BandJob {
+    enqueued: Instant,
+    context: Option<crate::telemetry::Context>,
     path: PathBuf,
     requests: Vec<ReadRequest>,
     result: SyncSender<Result<Vec<Arc<Raster>>>>,
@@ -191,6 +211,7 @@ enum Work {
 
 #[derive(Clone, Eq)]
 struct CacheKey {
+    grid: Option<crate::layers::GridRead>,
     band: usize,
     path: String,
     source_size: u64,
@@ -203,7 +224,8 @@ struct CacheKey {
 
 impl PartialEq for CacheKey {
     fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
+        self.grid == other.grid
+            && self.path == other.path
             && self.band == other.band
             && self.source_size == other.source_size
             && self.source_modified_ns == other.source_modified_ns
@@ -216,6 +238,7 @@ impl PartialEq for CacheKey {
 
 impl Hash for CacheKey {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        self.grid.hash(state);
         self.path.hash(state);
         self.band.hash(state);
         self.source_size.hash(state);
@@ -228,7 +251,8 @@ impl Hash for CacheKey {
 }
 
 struct CacheEntry {
-    raster: Arc<Raster>,
+    raster: CachedRaster,
+    hot: Option<Arc<Raster>>,
     inserted: Instant,
     bytes: usize,
     remote: bool,
@@ -240,20 +264,22 @@ struct RasterCache {
     bytes: usize,
     capacity: usize,
     remote_ttl: Duration,
+    compact: bool,
 }
 
 impl RasterCache {
-    fn new(capacity: usize, remote_ttl: Duration) -> Self {
+    fn new(capacity: usize, remote_ttl: Duration, compact: bool) -> Self {
         Self {
             entries: HashMap::new(),
             order: VecDeque::new(),
             bytes: 0,
             capacity,
             remote_ttl,
+            compact,
         }
     }
 
-    fn get(&mut self, key: &CacheKey) -> Option<Arc<Raster>> {
+    fn get(&mut self, key: &CacheKey) -> Option<CachedRaster> {
         let expired = self
             .entries
             .get(key)
@@ -266,19 +292,31 @@ impl RasterCache {
             self.remove(key);
             return None;
         }
-        let raster = self.entries.get(key)?.raster.clone();
+        let entry = self.entries.get(key)?;
+        let raster = entry.hot.as_ref().map_or_else(
+            || entry.raster.clone(),
+            |hot| CachedRaster::Full(hot.clone()),
+        );
         self.order.retain(|candidate| candidate != key);
         self.order.push_back(key.clone());
         Some(raster)
     }
 
     fn insert(&mut self, key: CacheKey, raster: Arc<Raster>, remote: bool) {
-        let bytes = raster.values.len() * std::mem::size_of::<f64>() + raster.mask.len();
-        if self.capacity == 0 || bytes > self.capacity {
+        if self.capacity == 0 {
+            return;
+        }
+        let hot = self.compact.then(|| raster.clone());
+        let raster = CachedRaster::new(raster, self.compact);
+        let bytes = raster.bytes();
+        if bytes > self.capacity {
             return;
         }
         self.remove(&key);
         while self.bytes.saturating_add(bytes) > self.capacity {
+            if self.compact && self.drop_oldest_hot() {
+                continue;
+            }
             let Some(oldest) = self.order.pop_front() else {
                 break;
             };
@@ -286,17 +324,70 @@ impl RasterCache {
                 self.bytes = self.bytes.saturating_sub(entry.bytes);
             }
         }
+        let hot = if matches!(raster, CachedRaster::Compact(_)) {
+            hot
+        } else {
+            None
+        };
+        let hot = hot.filter(|hot| {
+            let hot_bytes = hot.values.capacity() * 8 + hot.mask.capacity();
+            while self.bytes.saturating_add(bytes).saturating_add(hot_bytes) > self.capacity {
+                if !self.drop_oldest_hot() {
+                    return false;
+                }
+            }
+            true
+        });
+        let bytes = bytes
+            + hot.as_ref().map_or(0, |raster| {
+                raster.values.capacity() * 8 + raster.mask.capacity()
+            });
         self.bytes += bytes;
         self.order.push_back(key.clone());
         self.entries.insert(
             key,
             CacheEntry {
                 raster,
+                hot,
                 inserted: Instant::now(),
                 bytes,
                 remote,
             },
         );
+    }
+
+    fn promote(&mut self, key: &CacheKey, snapshot: &CachedRaster, raster: Arc<Raster>) {
+        if !matches!(snapshot, CachedRaster::Compact(_))
+            || !self
+                .entries
+                .get(key)
+                .is_some_and(|entry| entry.hot.is_none() && entry.raster.same(snapshot))
+        {
+            return;
+        }
+        let bytes = raster.values.capacity() * 8 + raster.mask.capacity();
+        while self.bytes.saturating_add(bytes) > self.capacity {
+            if !self.drop_oldest_hot() {
+                return;
+            }
+        }
+        let entry = self.entries.get_mut(key).expect("cached raster promotion");
+        entry.hot = Some(raster);
+        entry.bytes += bytes;
+        self.bytes += bytes;
+    }
+
+    fn drop_oldest_hot(&mut self) -> bool {
+        for key in &self.order {
+            let entry = self.entries.get_mut(key).expect("cached raster LRU entry");
+            if let Some(hot) = entry.hot.take() {
+                let bytes = hot.values.capacity() * 8 + hot.mask.capacity();
+                entry.bytes -= bytes;
+                self.bytes -= bytes;
+                return true;
+            }
+        }
+        false
     }
 
     fn remove(&mut self, key: &CacheKey) {
@@ -327,6 +418,9 @@ impl NeighborQueue {
     }
 
     fn schedule(&mut self, path: &Path, request: ReadRequest, cache: &RasterCache) {
+        if request.grid.is_some() {
+            return;
+        }
         if is_remote(path) || request.preserve_values || request.size != [256, 256] {
             return;
         }
@@ -391,6 +485,7 @@ pub struct RasterExecutor {
     counters: Arc<Counters>,
     config: ExecutionConfig,
     gdal_version: String,
+    cost: Arc<crate::telemetry::Metrics>,
 }
 
 // Keep threads owned until their GDAL thread-local destructors have finished.
@@ -421,8 +516,10 @@ impl RasterExecutor {
         let cache = Arc::new(Mutex::new(RasterCache::new(
             config.cache_bytes,
             config.remote_cache_ttl,
+            crate::settings::flag("TC_COMPACT_RASTER_CACHE", false)?,
         )));
         let counters = Arc::new(Counters::new());
+        let cost = Arc::new(crate::telemetry::Metrics::default());
         let neighbors = Arc::new(Mutex::new(NeighborQueue::new()));
         let source_blocks = Gdal::new_shared_blocks();
         let (ready_sender, ready_receiver) = mpsc::channel();
@@ -435,18 +532,21 @@ impl RasterExecutor {
             let source_blocks = source_blocks.clone();
             let ready_sender = ready_sender.clone();
             let settings = crate::settings::snapshot();
+            let cost = cost.clone();
             let worker = thread::Builder::new()
                 .name(format!("terracotta-gdal-{worker_id}"))
                 .spawn(move || {
                     crate::settings::scope(settings, || {
-                        worker_loop(
-                            receiver,
-                            cache,
-                            neighbors,
-                            source_blocks,
-                            counters,
-                            ready_sender,
-                        )
+                        crate::telemetry::scope(Some(cost.context(false)), || {
+                            worker_loop(
+                                receiver,
+                                cache,
+                                neighbors,
+                                source_blocks,
+                                counters,
+                                ready_sender,
+                            )
+                        })
                     })
                 })
                 .map_err(|error| format!("could not start raster worker: {error}"))?;
@@ -462,12 +562,17 @@ impl RasterExecutor {
         drop(ready_sender);
         Ok(Self {
             pool,
+            cost,
             cache,
             neighbors,
             counters,
             config,
             gdal_version: gdal_version.unwrap_or_else(|| "unknown".into()),
         })
+    }
+
+    pub(crate) fn cost(&self) -> &Arc<crate::telemetry::Metrics> {
+        &self.cost
     }
 
     pub fn wake_prefetch(&self) {
@@ -486,33 +591,59 @@ impl RasterExecutor {
     }
 
     pub fn read(&self, path: &Path, request: ReadRequest) -> Result<Arc<Raster>> {
-        self.submit(path, request)?
-            .wait(&self.counters, self.config.wait_timeout)
+        let context = crate::telemetry::current().or_else(|| Some(self.cost.context(false)));
+        crate::telemetry::scope(context, || {
+            self.submit(path, request)?
+                .wait(&self.counters, self.config.wait_timeout)
+        })
     }
 
     pub fn read_many(&self, requests: &[(PathBuf, ReadRequest)]) -> Result<Vec<Arc<Raster>>> {
+        let context = crate::telemetry::current().or_else(|| Some(self.cost.context(false)));
+        crate::telemetry::scope(context, || self.read_many_scoped(requests))
+    }
+
+    fn read_many_scoped(&self, requests: &[(PathBuf, ReadRequest)]) -> Result<Vec<Arc<Raster>>> {
         if requests.len() > 1
             && requests.iter().all(|(path, request)| {
                 let (first_path, first) = &requests[0];
                 path == first_path
+                    && request.grid == first.grid
                     && request.bounds_mercator == first.bounds_mercator
                     && request.size == first.size
                     && request.preserve_values == first.preserve_values
             })
         {
             let remote = is_remote(&requests[0].0);
+            let keys = requests
+                .iter()
+                .map(|(path, request)| cache_key(path, *request, remote))
+                .collect::<Vec<_>>();
             let cached = {
                 let mut cache = self.cache.lock().expect("cache lock");
-                requests
-                    .iter()
-                    .map(|(path, request)| cache.get(&cache_key(path, *request, remote)))
+                keys.iter()
+                    .map(|key| cache.get(key))
                     .collect::<Option<Vec<_>>>()
             };
             if let Some(cached) = cached {
                 self.counters
                     .cache_hits
                     .fetch_add(requests.len() as u64, Ordering::Relaxed);
-                return Ok(cached);
+                return Ok(cached
+                    .iter()
+                    .zip(&keys)
+                    .map(|(snapshot, key)| {
+                        let raster = snapshot.raster();
+                        if matches!(snapshot, CachedRaster::Compact(_)) {
+                            self.cache.lock().expect("cache lock").promote(
+                                key,
+                                snapshot,
+                                raster.clone(),
+                            );
+                        }
+                        raster
+                    })
+                    .collect());
             }
             self.counters
                 .cache_misses
@@ -520,11 +651,14 @@ impl RasterExecutor {
             let (result, receiver) = mpsc::sync_channel(1);
             let interest = Interest(Arc::new(AtomicBool::new(true)));
             let job = BandJob {
+                enqueued: Instant::now(),
+                context: crate::telemetry::current(),
                 path: requests[0].0.clone(),
                 requests: requests.iter().map(|(_, r)| *r).collect(),
                 result,
                 interested: interest.0.clone(),
             };
+            self.counters.queued.fetch_add(1, Ordering::Relaxed);
             match self
                 .pool
                 .sender
@@ -539,10 +673,12 @@ impl RasterExecutor {
                     }
                 }
                 Err(TrySendError::Full(_)) => {
+                    self.counters.queued.fetch_sub(1, Ordering::Relaxed);
                     self.counters.overloaded.fetch_add(1, Ordering::Relaxed);
                     return Err(OVERLOADED.into());
                 }
                 Err(TrySendError::Disconnected(_)) => {
+                    self.counters.queued.fetch_sub(1, Ordering::Relaxed);
                     return Err("raster execution workers are unavailable".into());
                 }
             }
@@ -586,17 +722,27 @@ impl RasterExecutor {
                     .expect("neighbor queue")
                     .schedule(path, request, &cache);
             }
-            return Ok(PendingRead::Ready(raster));
+            let result = raster.raster();
+            if matches!(raster, CachedRaster::Compact(_)) {
+                self.cache
+                    .lock()
+                    .expect("cache lock")
+                    .promote(&key, &raster, result.clone());
+            }
+            return Ok(PendingRead::Ready(result));
         }
         self.counters.cache_misses.fetch_add(1, Ordering::Relaxed);
         let (result_sender, result_receiver) = mpsc::sync_channel(1);
         let interested = Arc::new(AtomicBool::new(true));
         let job = Job {
+            enqueued: Instant::now(),
+            context: crate::telemetry::current(),
             path: path.to_path_buf(),
             request,
             result: result_sender,
             interested: interested.clone(),
         };
+        self.counters.queued.fetch_add(1, Ordering::Relaxed);
         match self
             .pool
             .sender
@@ -611,10 +757,12 @@ impl RasterExecutor {
                 }
             }
             Err(TrySendError::Full(_)) => {
+                self.counters.queued.fetch_sub(1, Ordering::Relaxed);
                 self.counters.overloaded.fetch_add(1, Ordering::Relaxed);
                 return Err(OVERLOADED.into());
             }
             Err(TrySendError::Disconnected(_)) => {
+                self.counters.queued.fetch_sub(1, Ordering::Relaxed);
                 return Err("raster execution workers are unavailable".into());
             }
         }
@@ -644,6 +792,11 @@ impl RasterExecutor {
             remote_jobs: self.counters.remote_jobs.load(Ordering::Relaxed),
             in_flight: self.counters.in_flight.load(Ordering::Relaxed),
             peak_in_flight: self.counters.peak_in_flight.load(Ordering::Relaxed),
+            queued: self.counters.queued.load(Ordering::Relaxed),
+            prefetch_in_flight: self.counters.prefetch_in_flight.load(Ordering::Relaxed),
+            prefetch_completed: self.counters.prefetch_completed.load(Ordering::Relaxed),
+            prefetch_failed: self.counters.prefetch_failed.load(Ordering::Relaxed),
+            cost: self.cost.snapshot(),
         }
     }
 }
@@ -677,15 +830,20 @@ fn worker_loop(
         };
         let foreground = matches!(work, Work::Read(_) | Work::Bands(_));
         if let Work::Bands(job) = &work {
+            counters.queued.fetch_sub(1, Ordering::Relaxed);
+            if let Some(context) = &job.context {
+                context.record(crate::telemetry::Stage::QueueWait, job.enqueued.elapsed());
+            }
             if !job.interested.load(Ordering::Acquire) {
                 counters.cancelled_queued.fetch_add(1, Ordering::Relaxed);
                 continue;
             }
             counters.begin();
             let remote = is_remote(&job.path);
-            let result = gdal
-                .read_bands(&job.path, &job.requests)
-                .map(|rasters| rasters.into_iter().map(Arc::new).collect::<Vec<_>>());
+            let result = crate::telemetry::scope(job.context.clone(), || {
+                gdal.read_bands(&job.path, &job.requests)
+                    .map(|rasters| rasters.into_iter().map(Arc::new).collect::<Vec<_>>())
+            });
             if let Ok(rasters) = &result {
                 let mut cache = cache.lock().expect("cache lock");
                 for (request, raster) in job.requests.iter().zip(rasters) {
@@ -702,6 +860,10 @@ fn worker_loop(
             counters.end();
             let _ = job.result.send(result);
         } else if let Work::Read(job) = work {
+            counters.queued.fetch_sub(1, Ordering::Relaxed);
+            if let Some(context) = &job.context {
+                context.record(crate::telemetry::Stage::QueueWait, job.enqueued.elapsed());
+            }
             if !job.interested.load(Ordering::Acquire) {
                 counters.cancelled_queued.fetch_add(1, Ordering::Relaxed);
                 continue;
@@ -709,7 +871,9 @@ fn worker_loop(
             counters.begin();
             let remote = is_remote(&job.path);
             let key = cache_key(&job.path, job.request, remote);
-            let result = gdal.read(&job.path, job.request).map(Arc::new);
+            let result = crate::telemetry::scope(job.context.clone(), || {
+                gdal.read(&job.path, job.request).map(Arc::new)
+            });
             match &result {
                 Ok(raster) => {
                     cache
@@ -748,6 +912,9 @@ fn worker_loop(
                     if foreground && std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
                         break;
                     }
+                    if counters.queued.load(Ordering::Relaxed) != 0 {
+                        break;
+                    }
                     if std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
                         let candidate = neighbors.lock().expect("neighbor queue").pop();
                         if let Some(candidate) = candidate {
@@ -758,18 +925,34 @@ fn worker_loop(
                                     .entries
                                     .contains_key(&candidate.key)
                             {
+                                counters.prefetch_in_flight.fetch_add(1, Ordering::Relaxed);
+                                let _timer =
+                                    crate::telemetry::timer(crate::telemetry::Stage::Prefetch);
                                 if let Ok(raster) = gdal.read(&candidate.path, candidate.request) {
+                                    counters.prefetch_completed.fetch_add(1, Ordering::Relaxed);
                                     cache.lock().expect("cache lock").insert(
                                         candidate.key,
                                         Arc::new(raster),
                                         false,
                                     );
+                                } else {
+                                    counters.prefetch_failed.fetch_add(1, Ordering::Relaxed);
                                 }
+                                counters.prefetch_in_flight.fetch_sub(1, Ordering::Relaxed);
                             }
                             continue;
                         }
                     }
-                    if gdal.prefetch_idle_block() {
+                    counters.prefetch_in_flight.fetch_add(1, Ordering::Relaxed);
+                    let prefetched = gdal.prefetch_idle_block();
+                    counters.prefetch_in_flight.fetch_sub(1, Ordering::Relaxed);
+                    if let Some(successful) = prefetched {
+                        let counter = if successful {
+                            &counters.prefetch_completed
+                        } else {
+                            &counters.prefetch_failed
+                        };
+                        counter.fetch_add(1, Ordering::Relaxed);
                         continue;
                     }
                     break;
@@ -796,6 +979,7 @@ fn cache_key(path: &Path, request: ReadRequest, remote: bool) -> CacheKey {
             .unwrap_or((0, 0))
     };
     CacheKey {
+        grid: request.grid,
         band: request.band,
         path: path.to_string_lossy().into_owned(),
         source_size,
@@ -878,6 +1062,64 @@ mod tests {
     use super::*;
 
     #[test]
+    fn compact_cache_drops_hot_copies_before_samples_and_rejects_stale_promotion() {
+        let raster = Arc::new(Raster {
+            width: 4,
+            height: 4,
+            data_type: 1,
+            values: (0..16).map(|i| i as f64).collect(),
+            mask: vec![false; 16],
+        });
+        let mut cache = RasterCache::new(168, Duration::ZERO, true);
+        let mut keys = Vec::new();
+        for band in 1..=3 {
+            let key = cache_key(
+                Path::new("cache-input"),
+                ReadRequest {
+                    band,
+                    ..ReadRequest::default()
+                },
+                false,
+            );
+            cache.insert(key.clone(), raster.clone(), false);
+            keys.push(key);
+            assert!(cache.bytes <= cache.capacity);
+            assert_eq!(
+                cache.bytes,
+                cache
+                    .entries
+                    .values()
+                    .map(|entry| entry.bytes)
+                    .sum::<usize>()
+            );
+        }
+        assert_eq!(cache.entries.len(), 3);
+        for key in &keys {
+            assert_eq!(cache.get(key).unwrap().raster().values, raster.values);
+        }
+        let stale = cache.get(&keys[0]).unwrap();
+        cache.insert(
+            keys[0].clone(),
+            Arc::new(Raster {
+                values: vec![2.; 16],
+                ..(*raster).clone()
+            }),
+            false,
+        );
+        cache.promote(&keys[0], &stale, raster.clone());
+        assert_eq!(cache.get(&keys[0]).unwrap().raster().values, vec![2.; 16]);
+        assert!(cache.bytes <= cache.capacity);
+        assert_eq!(
+            cache.bytes,
+            cache
+                .entries
+                .values()
+                .map(|entry| entry.bytes)
+                .sum::<usize>()
+        );
+    }
+
+    #[test]
     fn pool_drop_drains_jobs_and_waits_for_thread_local_cleanup() {
         struct Cleanup(Arc<AtomicUsize>);
         impl Drop for Cleanup {
@@ -912,6 +1154,8 @@ mod tests {
                 .as_ref()
                 .unwrap()
                 .send(Work::Read(Job {
+                    enqueued: Instant::now(),
+                    context: None,
                     path: PathBuf::new(),
                     request: ReadRequest::default(),
                     result,
@@ -922,6 +1166,31 @@ mod tests {
         drop(pool);
         assert_eq!(completed.load(Ordering::SeqCst), 3);
         assert_eq!(cleaned.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn native_grid_cache_separates_crs_resampling_revision_and_legacy_validity() {
+        use crate::layers::{GridRead, Resampling};
+        let path = Path::new("tests/fixtures/corpus/red.tif");
+        let mut request = ReadRequest {
+            grid: Some(GridRead {
+                epsg: 32632,
+                resampling: Resampling::Nearest,
+                revision: [1; 32],
+            }),
+            ..Default::default()
+        };
+        let base = cache_key(path, request, false);
+        request.grid.as_mut().unwrap().epsg = 3857;
+        assert!(base != cache_key(path, request, false));
+        request.grid.as_mut().unwrap().epsg = 32632;
+        request.grid.as_mut().unwrap().resampling = Resampling::Bilinear;
+        assert!(base != cache_key(path, request, false));
+        request.grid.as_mut().unwrap().resampling = Resampling::Nearest;
+        request.grid.as_mut().unwrap().revision = [2; 32];
+        assert!(base != cache_key(path, request, false));
+        request.grid = None;
+        assert!(base != cache_key(path, request, false));
     }
 
     #[test]

@@ -110,6 +110,7 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
         [command, rest @ ..] if command == "migrate" => {
             rcfp_core::storage::migrations::command(rest)
         }
+        [command, rest @ ..] if command == "layers" => rcfp_core::cli::layers_command(rest),
         [command, rest @ ..] if command == "ingest" => rcfp_core::cli::ingest_command(rest),
         [command, rest @ ..] if command == "optimize-rasters" => {
             rcfp_core::cli::optimize_command(rest)
@@ -136,7 +137,7 @@ fn lambda_event(args: &[String]) -> rcfp_core::Result<()> {
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "-d" | "--database" if index + 1 < args.len() => {
+            "-d" | "--database" | "--source" if index + 1 < args.len() => {
                 database = Some(PathBuf::from(&args[index + 1]));
                 index += 2;
             }
@@ -175,6 +176,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
     let mut database = None;
     let mut bind = "127.0.0.1:5000".to_owned();
     let mut pattern = None;
+    let mut stac = rcfp_core::stac::serve::ServeOptions::default();
     let mut rgb = None;
     let mut allow_all = false;
     let mut settings = rcfp_core::settings::snapshot();
@@ -182,7 +184,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "-d" | "--database" if index + 1 < args.len() => {
+            "-d" | "--database" | "--source" if index + 1 < args.len() => {
                 database = Some(PathBuf::from(&args[index + 1]));
                 index += 2;
             }
@@ -229,11 +231,25 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
                 print_help();
                 return Ok(());
             }
+            option if option.starts_with("--stac-") => stac.parse_option(args, &mut index)?,
             option => return Err(format!("unsupported serve option: {option}")),
         }
     }
-    if database.is_some() == pattern.is_some() {
-        return Err("Either --database or --raster-pattern must be given".into());
+    let sources = [
+        database.is_some(),
+        pattern.is_some(),
+        stac.item.is_some(),
+        stac.catalog.is_some(),
+        stac.search.is_some(),
+    ];
+    if sources.iter().filter(|present| **present).count() != 1 {
+        return Err(
+            "Choose one of --source/--database, --raster-pattern, --stac-item, --stac-catalog or --stac-search".into(),
+        );
+    }
+    let is_stac = stac.item.is_some() || stac.catalog.is_some() || stac.search.is_some();
+    if stac.has_options() && !is_stac {
+        return Err("STAC options require --stac-item, --stac-catalog or --stac-search".into());
     }
     let temporary = pattern.as_ref().map(|_| {
         std::env::temp_dir().join(format!(
@@ -249,7 +265,6 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
         rcfp_core::ingest::ingest(&pattern, path, rgb.as_deref(), true, false)?;
         database = Some(path.clone());
     }
-    let database = database.unwrap();
     if !explicit_bind {
         let host = if allow_all { "0.0.0.0" } else { "127.0.0.1" };
         bind = (5000..5100)
@@ -259,10 +274,15 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
     } else if allow_all {
         bind = bind.replace("127.0.0.1", "0.0.0.0");
     }
-    let application =
-        rcfp_core::settings::scope(settings, || rcfp_core::http::Application::open(&database))?;
+    let application = rcfp_core::settings::scope(settings, || {
+        if is_stac {
+            rcfp_core::http::Application::from_stac(stac.resolve()?)
+        } else {
+            rcfp_core::http::Application::open(&database.unwrap())
+        }
+    })?;
     eprintln!("GDAL {}", application.gdal_version());
-    let result = application.serve(&bind);
+    let result = application.serve_with_signals(&bind);
     if let Some(path) = temporary {
         let _ = std::fs::remove_file(path);
     }
@@ -271,7 +291,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
 
 fn print_help() {
     println!(
-        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (-d DATABASE | -r PATTERN) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
+        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (--source SOURCE | -d DATABASE | -r PATTERN | --stac-item ITEM | --stac-catalog CATALOG | --stac-search URL) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp serve --stac-item ITEM\n  rcfp serve --stac-catalog CATALOG\n  rcfp serve --stac-search URL [--stac-bbox W,S,E,N] [--stac-datetime RFC3339_INTERVAL] [--stac-collections IDS]\n  STAC options: --stac-assets KEY[,KEY...], --stac-revisions FILE, --stac-headers FILE, --stac-asset-urls FILE, --stac-max-items N, --stac-max-documents N, --stac-max-staged-bytes N\n  rcfp layers create|list DATABASE\n  rcfp layers register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]\n  rcfp layers put|describe|delete DATABASE ID\n  rcfp layers render DATABASE ID -o IMAGE [--spec SPEC]\n  rcfp layers import SOURCE DESTINATION ID BINDINGS_JSON\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
     );
 }
 

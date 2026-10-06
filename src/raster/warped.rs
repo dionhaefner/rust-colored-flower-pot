@@ -1,7 +1,7 @@
 //! Padded general-reader VRTs retain the caller's affine grid exactly.
 use super::*;
 
-type Transformer = unsafe extern "C" fn(
+pub(super) type Transformer = unsafe extern "C" fn(
     *mut c_void,
     c_int,
     c_int,
@@ -14,31 +14,31 @@ type Transformer = unsafe extern "C" fn(
 // Prefix of GDALWarpOptions' public C ABI. GDAL allocates the complete struct;
 // only these documented fields are accessed here, never its unused tail.
 #[repr(C)]
-struct WarpOptionsPrefix {
-    options: *mut *mut c_char,
-    memory_limit: f64,
-    algorithm: c_int,
-    working_type: c_int,
-    source: DatasetHandle,
-    destination: DatasetHandle,
-    band_count: c_int,
-    source_bands: *mut c_int,
-    destination_bands: *mut c_int,
-    source_alpha: c_int,
-    destination_alpha: c_int,
-    source_nodata: *mut f64,
-    source_nodata_imaginary: *mut f64,
-    destination_nodata: *mut f64,
-    destination_nodata_imaginary: *mut f64,
-    progress: *mut c_void,
-    progress_data: *mut c_void,
-    transformer: Option<Transformer>,
-    transformer_data: *mut c_void,
+pub(super) struct WarpOptionsPrefix {
+    pub(super) options: *mut *mut c_char,
+    pub(super) memory_limit: f64,
+    pub(super) algorithm: c_int,
+    pub(super) working_type: c_int,
+    pub(super) source: DatasetHandle,
+    pub(super) destination: DatasetHandle,
+    pub(super) band_count: c_int,
+    pub(super) source_bands: *mut c_int,
+    pub(super) destination_bands: *mut c_int,
+    pub(super) source_alpha: c_int,
+    pub(super) destination_alpha: c_int,
+    pub(super) source_nodata: *mut f64,
+    pub(super) source_nodata_imaginary: *mut f64,
+    pub(super) destination_nodata: *mut f64,
+    pub(super) destination_nodata_imaginary: *mut f64,
+    pub(super) progress: *mut c_void,
+    pub(super) progress_data: *mut c_void,
+    pub(super) transformer: Option<Transformer>,
+    pub(super) transformer_data: *mut c_void,
 }
 
-struct WarpOptionsGuard {
-    handle: *mut WarpOptionsPrefix,
-    destroy: unsafe extern "C" fn(*mut WarpOptionsPrefix),
+pub(super) struct WarpOptionsGuard {
+    pub(super) handle: *mut WarpOptionsPrefix,
+    pub(super) destroy: unsafe extern "C" fn(*mut WarpOptionsPrefix),
 }
 impl Drop for WarpOptionsGuard {
     fn drop(&mut self) {
@@ -48,9 +48,9 @@ impl Drop for WarpOptionsGuard {
     }
 }
 
-struct TransformerGuard {
-    handle: *mut c_void,
-    destroy: unsafe extern "C" fn(*mut c_void),
+pub(super) struct TransformerGuard {
+    pub(super) handle: *mut c_void,
+    pub(super) destroy: unsafe extern "C" fn(*mut c_void),
 }
 impl Drop for TransformerGuard {
     fn drop(&mut self) {

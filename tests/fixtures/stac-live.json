@@ -1,0 +1,55 @@
+{
+  "bbox": [12.3, 45.4, 12.4, 45.5],
+  "datetime": "2021-06-29T00:00:00Z/2021-07-05T00:00:00Z",
+  "collection": "sentinel-2-l2a",
+  "providers": [
+    {
+      "name": "earth-search",
+      "endpoint": "https://earth-search.aws.element84.com/v1/search",
+      "asset": "coastal",
+      "items": [
+        {
+          "id": "S2A_32TQR_20210629_0_L2A",
+          "datetime": "2021-06-29T10:08:14.991000Z",
+          "href": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/6/S2A_32TQR_20210629_0_L2A/B01.tif",
+          "sha256": "cbe0f5002e135195f41ae0a6540efa4856085d0bf1045797014b8468c24cce61",
+          "bytes": 2407167,
+          "file": "S2A_32TQR_20210629_0_L2A-coastal.tif"
+        },
+        {
+          "id": "S2A_32TQR_20210702_0_L2A",
+          "datetime": "2021-07-02T10:18:15.135000Z",
+          "href": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/T/QR/2021/7/S2A_32TQR_20210702_0_L2A/B01.tif",
+          "sha256": "445bdfa20bfe6e30b8ee68d5299ea98af1c3e355f35d640691d0c8706ca6583b",
+          "bytes": 4249900,
+          "file": "S2A_32TQR_20210702_0_L2A-coastal.tif"
+        }
+      ]
+    },
+    {
+      "name": "planetary-computer",
+      "endpoint": "https://planetarycomputer.microsoft.com/api/stac/v1/search",
+      "asset": "B01",
+      "items": [
+        {
+          "id": "S2A_MSIL2A_20210702T101031_R022_T32TQR_20210703T021722",
+          "datetime": "2021-07-02T10:10:31.024000Z",
+          "href": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/QR/2021/07/02/S2A_MSIL2A_20210702T101031_N0300_R022_T32TQR_20210703T021722.SAFE/GRANULE/L2A_T32TQR_A031479_20210702T101805/IMG_DATA/R60m/T32TQR_20210702T101031_B01_60m.tif",
+          "sha256": "523cde3825e392b2fc198c59dcbb5dc95d344dad7d24886253b3dde179ac65b2",
+          "bytes": 4314121,
+          "file": "S2A_MSIL2A_20210702T101031_R022_T32TQR_20210703T021722-B01.tif"
+        },
+        {
+          "id": "S2B_MSIL2A_20210704T100029_R122_T32TQR_20210705T005710",
+          "datetime": "2021-07-04T10:00:29.024000Z",
+          "href": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/QR/2021/07/04/S2B_MSIL2A_20210704T100029_N0300_R122_T32TQR_20210705T005710.SAFE/GRANULE/L2A_T32TQR_A022599_20210704T100028/IMG_DATA/R60m/T32TQR_20210704T100029_B01_60m.tif",
+          "sha256": "9f6e10c18d9e252a86462d0bf1c249ecbe6af1ea79be61008b65c73db2c75f34",
+          "bytes": 3177973,
+          "file": "S2B_MSIL2A_20210704T100029_R122_T32TQR_20210705T005710-B01.tif"
+        }
+      ]
+    }
+  ],
+  "provenance": "Original public Sentinel-2 L2A coastal-band TIFFs acquired over HTTPS; SHA-256 pins were measured from provider bytes independently of RCFP.",
+  "attribution": "Contains Copernicus Sentinel data 2021"
+}

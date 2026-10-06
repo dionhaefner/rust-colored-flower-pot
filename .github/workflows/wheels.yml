@@ -346,7 +346,16 @@ jobs:
 
           if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
             "$wheel_python" -m pip install rasterio==1.4.4
+            "$wheel_python" tests/stac_contracts.py \
+              --wheel build/ci/ci-wheels/*.whl \
+              --out build/ci/ci-stac
             "$wheel_python" tests/platform_smoke.py --out build/ci/ci-wheel-smoke
+            native_binary=$("$wheel_python" -c 'import rcfp; print(rcfp._RUNTIME_ROOT / "bin" / ("rcfp.exe" if __import__("sys").platform == "win32" else "rcfp"))')
+            "$wheel_python" tests/stac_serving.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-stac-serving
+            "$wheel_python" tests/layer_contracts.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/layer-contracts
+            if [[ "${{ matrix.platform.id }}" == linux-x86_64 ]]; then
+              "$wheel_python" tests/request_cost.py --binary "$native_binary" --out build/ci/request-cost
+            fi
             "$wheel_python" -m pip uninstall -y rasterio numpy Pillow
             "$wheel_python" tests/verify-runtime-without-rasterio.py \
               --database build/ci/ci-wheel-smoke/platform.sqlite
@@ -358,6 +367,9 @@ jobs:
           name: wheel-test-${{ matrix.platform.id }}-py${{ matrix.python-version }}
           path: |
             build/ci/ci-wheel-smoke/
+            build/ci/layer-contracts/
+            build/ci/request-cost/
+            build/ci/ci-stac/
             build/ci/ci-contracts/
             build/ci/ci-remote/
             build/ci/ci-docs-examples/

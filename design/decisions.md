@@ -11,6 +11,13 @@ handling. Native HTTP/CLI, Python, WSGI, and Lambda use that core. Keep
 transport parsing and Python-specific representations at their boundaries so
 fixes do not fork rendering or catalog semantics between entry points.
 
+Keyed catalogs adapt SQL stores, persisted native band/expression bindings and
+STAC selections behind the same metadata, array, application and HTTP interfaces.
+The `rcfp-native-2` SQLite format reuses key/dataset/metadata tables and stores
+source snapshots and logical declarations in database columns. Source detection is shared by CLI, Python, WSGI
+and Lambda. Provider search queries, credentials and discovery budgets belong to
+local deployment configuration; render parameters stay in the common requests.
+
 Python provides native byte-oriented APIs and shims for documented settings,
 driver/provider, masked-array and Future workflows. Validation, queries, writes,
 lazy metadata, and raster operations execute in Rust. NumPy representation and
@@ -38,6 +45,14 @@ in Rust. GDAL handles and VRTs belong to their worker; initialization/registrati
 is serialized, and the library handle lives for the process. Native thread-local
 destructors must execute while the loaded library is still mapped.
 
+Native mode uses async-tiff 0.4.0 for eligible TIFF dimensions, band counts,
+embedded nodata and contained EPSG:3857 reads that select stored pixels exactly.
+This replaces format access while preserving
+the existing sampling boundary. Detailed asset metadata, projection, resampling,
+sidecars, unsupported layouts/codecs and configured GDAL access use GDAL. The
+Terracotta profile always uses GDAL. `TC_ASYNC_TIFF=false` restores GDAL format
+access in native mode. See [TIFF qualification](async-tiff-evaluation.md).
+
 An application owns a bounded raster queue, worker threads, caches, and remote
 snapshot leases. Destruction drains and joins workers, including partial startup
 failure paths. Response deadlines and client disconnects do not cancel GDAL;
@@ -53,8 +68,9 @@ format, projection, mask, overview, and packaging evidence.
 
 The distribution, primary import, and console command are `rcfp`. Hatch VCS derives
 the package version from Git and supplies it to archives and installed metadata.
-HTTP protocol identity remains `0.10.1`; current catalogs use Terracotta format
-`0.10`. A new RCFP release number must not reject compatible databases or clients.
+HTTP protocol identity remains `0.10.1`. Terracotta catalogs use format `0.10`,
+native keyed catalogs use `rcfp-native-2`, and advanced layers retain `rcfp-native-1`. A new RCFP release number must not
+reject compatible databases or clients.
 No upstream import or console shim is installed; users update names explicitly.
 
 Default profile `native` and named profile `terracotta-0.10.1` are immutable
@@ -65,8 +81,8 @@ reingestion when selecting it.
 
 Keep the named profile's public workflows and pinned reference gates in every
 release that ships it. There is no planned removal date; removal requires announced
-support policy and a major release. A future native-only format needs a distinct
-marker, rejection checks, and explicit migration and rollback documentation.
+support policy and a major release. Native layer registration and import use a
+separate database, with explicit migration and rollback documentation.
 See [compatibility](../docs/compatibility.md),
 [native differences](../docs/native-migration.md), and `src/compatibility.rs`.
 
@@ -125,7 +141,7 @@ version source; changing the metadata version does not change package versioning
 
 ## Optimize only within measured input and contract boundaries
 
-The general GDAL path remains the fallback. Compatible affine Web Mercator reads,
+The general GDAL path remains the fallback. The older affine Web Mercator reads,
 worker-local geometry caching, bounded decoded blocks, and idle neighbor prefetch
 are opt-in optimizations with their own applicability checks. The native-only UTM
 sampler changes the sampling footprint; compatibility mode disables that sampler
@@ -139,13 +155,39 @@ Logical cache equality does not imply equal physical memory, and summed RSS is
 not private-memory usage. Image differences require their own acceptance evidence.
 
 Cold projection initialization and distinct source-block reads limit first views.
-Prior block singleflight and reusable-transformer experiments did not establish
-a reliable first-view gain and are not retained. Prewarming must include startup
+Prior cross-worker block singleflight and cross-file transformer experiments did
+not establish a reliable first-view gain. Native worker-local affine plans now
+avoid repeated utility setup and benefit navigation; first-view initialization
+remains a separate limit. Prewarming must include startup
 cost. Broader CRS/dtype/mask/overview/remote inputs and tail latency need measurement
 before extending a fast-path claim or enabling it by default. Current reproducible
 measurements are in [performance](../docs/explanation/performance.md).
 
 ## Bound ingress and require verified remote transport
+
+Application-owned fixed-stage histograms cover selection, raster queue wait,
+source lookup/open, GDAL raster work, coloring, encoding, coalesced waits and
+response readiness. Native transport additionally measures HTTP queue wait and
+socket delivery. Request timing contexts follow admitted raster jobs across
+workers; deadline traces are snapshots, while later completions still update
+application aggregates. Remote opening/reading have fixed subset stages rather
+than source labels. GDAL I/O and decode/reprojection remain combined where the
+C API cannot separate them reliably. Protected JSON and Prometheus diagnostics
+share the same counters; sampled X-Ray retains its existing daemon integration.
+No source identity or raw URL enters metrics, timing logs or trace routes.
+
+Retain bounded FIFO foreground admission, active render coalescing and queued
+waiter abandonment. Idle prefetch checks admitted foreground work even when
+another worker owns the receiver lock; executing native work is never forcibly
+cancelled. Isolated controls with equal budgets show successful foreground
+viewport and tail improvements from active sharing and queued expiry. The
+controlled-origin evidence and its scope are in [validation](human-validation.md).
+Per-source fairness and new cost policies require a measured workload
+benefit before changing ordering. HTTP server-loop exit owns and joins transport
+workers; Python capsule destruction releases the GIL during native pool joining.
+Standalone CLI signal handling closes the listener before draining owned workers.
+Its handler wakes blocking accept through a local connection, avoiding polling
+on the foreground path. Embedding does not install process signal handlers.
 
 Socket parsing, request headers/bodies, render dimensions, response counts, GDAL
 buffer lengths, and WSGI inputs have explicit bounds. Raster execution and HTTP
@@ -182,10 +224,12 @@ preparation is optional and explicitly changes sampling. Block size is selectabl
 remote range round trips made universal 256-pixel blocks a poor choice.
 
 Workers own dataset handles. Local generations include raster/mask/overview/aux
-file stamps. Remote handle leases are bounded and opt-in; a lease is not an ETag
+file stamps. Remote handle leases default to 60 seconds in native mode and zero in the named
+profile, with explicit zero honored. A lease is not an ETag
 freshness contract and does not clear GDAL's downloaded cache. Use revisioned
-paths for remote/VRT dependency changes. Encoded images/coalescing have a separate
-bounded budget and remote TTL; error/panic cleanup wakes followers. SQLite
+paths for remote/VRT dependency changes. Finished images have a separate bounded budget and remote TTL. Active identical
+renders coalesce even with zero retention; admission bounds active flights and
+error/panic cleanup wakes followers. SQLite
 optional descriptors use data_version, own-write invalidation and coherent
 snapshots; transactions bypass retention. These caches remain optional because
 spatial/style reuse and memory tradeoffs differ across installations.
@@ -200,6 +244,92 @@ Transform-free rendering fuses stretch and packing with the existing f64/order/
 rounding semantics. Direct PNG compression removes redundant nondefault encoding.
 Native RGB optionally uses direct libwebp display encoding with explicit quality
 and preserved alpha. PNG stays default; the measured WebP CPU/byte tradeoff and
-all other ranked dispositions are in [performance](performance.md). Typed public
-buffers, manual SIMD, connection pools and automatic prefetch need evidence of
-a bottleneck that these simpler changes do not address.
+all other ranked dispositions are in [performance](performance.md). Public buffers remain f64. Runtime AVX2 preserves normalization operation order
+and ties with scalar fallback. Lossless private typed caching stays opt-in after
+fresh-pan regressions, with compact and expanded hot entries sharing one budget.
+Nondefault PNG levels use optional bundled libdeflate; level 1 retains fdeflate
+after libdeflate regressed. Connection pools and automatic prefetch remain
+discarded for the measured workload.
+
+Eligible native affine sources own one base projection plan and at most four
+overview plans per source/worker. Tile VRTs own only their approximation wrapper;
+the source owns the base transformer and overview handles. Update destination
+grids only while that worker owns the source. Drop plans before the root dataset.
+AUTO overview selection follows bundled GDAL 3.10.3, retaining its 0.125-pixel
+approximation. Reject GCP/RPC/geolocation, compound/three-axis CRS, mixed dtypes, misplaced
+alpha and working-dtype promotion to the utility fallback. Warp only requested
+bands when all data bands lack nodata and share coverage, otherwise retain all
+bands to preserve nodata union. No fixture identity or CRS-zone allowlist is used.
+Alpha and masks retain f64 reads after a Byte-mask experiment failed to
+establish broad navigation gains.
+
+## Database-backed native assets and layers
+
+Native logical datasets use the existing keyed ingest and discovery model. The
+`rcfp-native-2` SQLite database holds selected bands, raw/scaled semantics,
+expression dependencies, display defaults and resolved STAC source snapshots.
+Band reads reuse the native alignment/validity core. Regular clients use logical
+keys through the shared metadata, arrays and tile routes. The `rcfp-native-1`
+advanced layer API retains explicit overlap, category and EPSG grid behavior.
+The Terracotta profile rejects native markers and preserves its qualified schema.
+
+See [native layers](native-layers.md) for model rationale and
+[layer contracts](../docs/reference/layers.md) for supported interfaces.
+
+## Resolve STAC discovery before reading immutable asset revisions
+
+Use the existing provider's POST STAC API Item Search index for bbox/time
+selection. Complete bounded pagination and deterministic ordering once, then
+retain a native selection separately from raster execution. Static Catalog and
+Collection sources traverse `child`/`item` links once at startup under document,
+Item and byte limits. Remote document links stay on one origin; local metadata
+stays local. Large-catalog indexed filtering remains at an API provider. Search definitions
+and resolved content have distinct canonical SHA-256 identities. Preserve the
+legacy SQL format and profile; STAC is a native adapter, not a hosting service.
+
+Require trusted SHA-256 revisions and verify whole self-contained TIFFs on first
+metadata or render request before publishing private selection-owned files. This provides content
+immutability even with mutable source URLs, keeps signing material out of cache
+keys and handles, and isolates changed revisions without changing existing raster
+caches. The initial whole-file cost is explicit; broader version-addressed range
+reads require provider-specific authentication and byte-cache freshness evidence.
+
+Public descriptors omit locations, arbitrary upstream properties and credentials.
+CLI serving adapts its startup selection to the shared key-catalog discovery,
+metadata, singleband, RGB and compute routes. Rendering choices belong to
+requests. The SDK and viewer use normal dataset discovery and a generic source
+revision for share links. CLI mappings or application callbacks refresh search headers and signed asset locations; 401/403
+retries are bounded and errors are sanitized. Embedded GDAL georeferencing,
+mask/alpha/nodata remain authoritative; STAC scale/offset applies after alignment.
+See [STAC rationale](stac.md), [field contract](../docs/how-to/stac.md), and the
+installed provider/revision checks in `tests/stac_contracts.py`.
+
+## Public browser SDK and offline viewer
+
+The dependency-free ES module SDK in `js/sdk` owns URL construction,
+profile checks, fetch/error/abort semantics, catalog discovery and revisioned
+shared state. The maintained viewer and independent Leaflet/MapLibre/OpenLayers
+applications import those same public modules. Keep metadata, image sampling,
+expressions, palettes and catalog ordering on the server. Display-pixel inspection
+is explicitly RGBA; source-value querying needs its own HTTP contract. Time
+selection uses an explicit catalog key, without inferring observation ranking.
+
+The viewer uses original, readable modules and native labeled controls with
+Leaflet. Its locally pinned assets make offline/no-token first use reproducible.
+Framework removal is a consequence of the small maintained UI, not a quality
+claim. Optional map adapters take libraries from callers so the SDK has no
+runtime dependencies. Share state validates the expected service/profile/public
+source revision and canonical render digest; immutable source identity remains
+an operator responsibility until the server exposes a revision contract.
+See [JavaScript](../docs/reference/javascript.md) for scope and support policy.
+
+SDK versions and `sdk-v` tags are independent of Hatch VCS Python releases.
+Hatch VCS Git discovery selects only `v` release tags so SDK tags cannot break
+Python version extraction. A shared qualification workflow tests Node contracts,
+strict declarations, installed
+tarballs and Chromium server/viewer behavior for both release paths. npm publishing
+uses a verified qualification artifact and job-scoped OIDC, without rebuilding or
+package lifecycle scripts. The package remains dependency-free. Test tools are
+private and locked in `packaging/sdk`. npm scope ownership and trusted-publisher
+configuration belong to the maintainer's account. See the
+[SDK release guide](../docs/how-to/release-sdk.md).

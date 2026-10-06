@@ -1,6 +1,8 @@
 """Static documentation build; reference extraction is a separate command."""
 
 import json
+import os
+import runpy
 from pathlib import Path
 
 project = "RCFP"
@@ -39,3 +41,19 @@ linkcheck_ignore = [
     r"https?://example\.(com|invalid).*",
     r"https://catalog\.example.*",
 ]
+
+
+def export_demo(app, exception):
+    if exception is None and app.builder.format == "html":
+        exporter = runpy.run_path(
+            str(Path(__file__).resolve().parents[1] / "packaging/demo/export-viewer.py")
+        )
+        exporter["export"](
+            Path(app.outdir) / "demo",
+            os.environ.get("DEMO_API_URL", ""),
+            os.environ.get("GITHUB_SHA", "unversioned"),
+        )
+
+
+def setup(app):
+    app.connect("build-finished", export_demo)

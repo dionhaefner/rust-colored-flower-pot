@@ -3,6 +3,8 @@
 use crate::{Result, raster::Raster};
 use png::{BitDepth, ColorType, Encoder};
 use std::io::Cursor;
+mod deflate;
+mod simd;
 mod webp;
 
 pub type Rgba = [u8; 4];
@@ -35,11 +37,35 @@ fn normalized_byte(value: f64, masked: bool, range: [f64; 2]) -> u8 {
 }
 
 pub fn normalized_pixels(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
+    let _coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
+    if simd::available() {
+        let mut pixels = vec![0; raster.values.len().min(raster.mask.len())];
+        simd::channel(raster, range, &mut pixels, 1, 0);
+        return pixels;
+    }
     raster
         .values
         .iter()
         .zip(&raster.mask)
         .map(|(&value, &masked)| normalized_byte(value, masked, range))
+        .collect()
+}
+
+/// Normalize a native layer channel over any finite positive numeric interval.
+pub fn native_normalized_pixels(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
+    let _coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
+    raster
+        .values
+        .iter()
+        .zip(&raster.mask)
+        .map(|(&value, &masked)| {
+            if masked {
+                0
+            } else {
+                (1.0 + ((value - range[0]) * (1.0 / (range[1] - range[0]))).clamp(0., 1.) * 254.)
+                    .round_ties_even() as u8
+            }
+        })
         .collect()
 }
 
@@ -52,7 +78,16 @@ pub fn stretched_rgb_image(
     ranges: [[f64; 2]; 3],
     format: RgbFormat,
 ) -> Result<Vec<u8>> {
+    let coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     let first = rasters[0];
+    if simd::available() {
+        let mut pixels = vec![0; first.width * first.height * 3];
+        for channel in 0..3 {
+            simd::channel(rasters[channel], ranges[channel], &mut pixels, 3, channel);
+        }
+        drop(coloring);
+        return rgb_pixels_image(first.width, first.height, &pixels, format);
+    }
     let mut pixels = Vec::with_capacity(first.width * first.height * 3);
     for i in 0..first.values.len() {
         for channel in 0..3 {
@@ -63,10 +98,12 @@ pub fn stretched_rgb_image(
             ));
         }
     }
+    drop(coloring);
     rgb_pixels_image(first.width, first.height, &pixels, format)
 }
 
 pub fn stretch_to_u8(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
+    let _coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     let normalization = range[1] - range[0];
     raster
         .values
@@ -87,6 +124,51 @@ pub fn stretch_to_u8(raster: &Raster, range: [f64; 2]) -> Vec<u8> {
 }
 
 pub fn label_values(raster: &Raster, palette: &[(f64, Rgba)]) -> Vec<u8> {
+    let _coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
+    if !palette.is_empty()
+        && palette.len() <= 255
+        && palette
+            .iter()
+            .all(|(v, _)| v.is_finite() && v.fract() == 0.)
+    {
+        let minimum = palette
+            .iter()
+            .map(|(v, _)| *v)
+            .fold(f64::INFINITY, f64::min);
+        let maximum = palette
+            .iter()
+            .map(|(v, _)| *v)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let span = maximum - minimum;
+        if (0. ..=65535.).contains(&span) {
+            let mut labels = vec![0; span as usize + 1];
+            for (i, (value, _)) in palette.iter().enumerate() {
+                let index = (*value - minimum) as usize;
+                if labels[index] == 0 {
+                    labels[index] = (i + 1) as u8;
+                }
+            }
+            return raster
+                .values
+                .iter()
+                .zip(&raster.mask)
+                .map(|(&value, &masked)| {
+                    if masked {
+                        return 0;
+                    }
+                    let delta = value - minimum;
+                    if delta >= 0. && delta <= span {
+                        let index = delta as usize;
+                        if value == minimum + index as f64 {
+                            return labels[index];
+                        }
+                    }
+                    0
+                })
+                .collect();
+        }
+    }
+
     raster
         .values
         .iter()
@@ -102,6 +184,23 @@ pub fn label_values(raster: &Raster, palette: &[(f64, Rgba)]) -> Vec<u8> {
                 .unwrap_or(0)
         })
         .collect()
+}
+
+/// Encode explicit native coverage without a color transparency key.
+pub fn rgba_png(width: usize, height: usize, pixels: &[u8]) -> Result<Vec<u8>> {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Encoding);
+    if width.checked_mul(height).and_then(|n| n.checked_mul(4)) != Some(pixels.len()) {
+        return Err("RGBA pixels do not match dimensions".into());
+    }
+    let mut bytes = Vec::new();
+    {
+        let mut encoder = Encoder::new(&mut bytes, width as u32, height as u32);
+        encoder.set_color(ColorType::Rgba);
+        encoder.set_depth(BitDepth::Eight);
+        let mut writer = encoder.write_header().map_err(|e| e.to_string())?;
+        writer.write_image_data(pixels).map_err(|e| e.to_string())?;
+    }
+    Ok(bytes)
 }
 
 pub fn grayscale_png(width: usize, height: usize, pixels: &[u8]) -> Result<Vec<u8>> {
@@ -145,6 +244,7 @@ pub fn rgb_image(
     channels: [&[u8]; 3],
     format: RgbFormat,
 ) -> Result<Vec<u8>> {
+    let coloring = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     let pixel_count = width * height;
     if channels.iter().any(|channel| channel.len() != pixel_count) {
         return Err("RGB channel length does not match dimensions".into());
@@ -153,6 +253,7 @@ pub fn rgb_image(
     for index in 0..pixel_count {
         pixels.extend_from_slice(&[channels[0][index], channels[1][index], channels[2][index]]);
     }
+    drop(coloring);
     rgb_pixels_image(width, height, &pixels, format)
 }
 
@@ -162,6 +263,7 @@ fn rgb_pixels_image(
     pixels: &[u8],
     format: RgbFormat,
 ) -> Result<Vec<u8>> {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Encoding);
     if let RgbFormat::Webp(quality) = format {
         return webp::encode(width, height, pixels, quality);
     }
@@ -193,6 +295,7 @@ fn encode_png(
     pixels: &[u8],
     palette: Option<(Vec<u8>, Vec<u8>)>,
 ) -> Result<Vec<u8>> {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Encoding);
     if pixels.len() != width * height {
         return Err("PNG pixel length does not match dimensions".into());
     }
@@ -314,21 +417,30 @@ fn compressed_png(
     if pixels.len() != stride * height {
         return Err("PNG pixel length does not match dimensions".into());
     }
-    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::new(level));
-    let mut row = vec![0; stride + 1];
+    let mut filtered = Vec::with_capacity((stride + 1) * height);
     for source in pixels.chunks_exact(stride) {
-        // The PNG Sub filter costs one pass and needs only one scanline buffer.
-        row[0] = 1;
+        filtered.push(1);
         for (i, &value) in source.iter().enumerate() {
-            row[i + 1] = value.wrapping_sub(if i >= channels {
+            filtered.push(value.wrapping_sub(if i >= channels {
                 source[i - channels]
             } else {
                 0
-            });
+            }));
         }
-        encoder.write_all(&row).map_err(|e| e.to_string())?;
     }
-    let data = encoder.finish().map_err(|e| e.to_string())?;
+    let native = if crate::settings::flag("TC_PNG_LIBDEFLATE", true)? {
+        deflate::compress(&filtered, level)
+    } else {
+        None
+    };
+    let data = if let Some(data) = native {
+        data
+    } else {
+        let mut encoder =
+            flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::new(level));
+        encoder.write_all(&filtered).map_err(|e| e.to_string())?;
+        encoder.finish().map_err(|e| e.to_string())?
+    };
     let mut out = b"\x89PNG\r\n\x1a\n".to_vec();
     let mut header = Vec::with_capacity(13);
     header.extend_from_slice(&(width as u32).to_be_bytes());
@@ -398,6 +510,58 @@ mod tests {
             mask: vec![true, false, false],
         };
         assert_eq!(stretch_to_u8(&raster, [0.0, 1.0]), vec![0, 128, 255]);
+    }
+
+    #[test]
+    fn dense_category_lookup_preserves_first_match_and_float_equality() {
+        let values = vec![
+            -1.,
+            -0.,
+            0.,
+            0.25,
+            1.,
+            2.,
+            95.,
+            f64::NAN,
+            f64::INFINITY,
+            1e18,
+            1e18 + 1024.,
+        ];
+        let raster = Raster {
+            width: values.len(),
+            height: 1,
+            data_type: 7,
+            mask: (0..values.len()).map(|i| i == 5).collect(),
+            values,
+        };
+        for labels in [
+            vec![-1., 0., -0., 1., 2., 95.],
+            vec![0.25, 1.],
+            vec![1e18, 1e18 + 1024.],
+            vec![-1e20, 1e20],
+            vec![],
+        ] {
+            let palette = labels
+                .into_iter()
+                .map(|v| (v, [1, 2, 3, 255]))
+                .collect::<Vec<_>>();
+            let expected = raster
+                .values
+                .iter()
+                .zip(&raster.mask)
+                .map(|(&v, &m)| {
+                    if m {
+                        0
+                    } else {
+                        palette
+                            .iter()
+                            .position(|(label, _)| v == *label)
+                            .map_or(0, |i| (i + 1) as u8)
+                    }
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(label_values(&raster, &palette), expected);
+        }
     }
 
     #[test]

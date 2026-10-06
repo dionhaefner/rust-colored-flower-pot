@@ -4,6 +4,7 @@ use crate::Result;
 use std::collections::BTreeMap;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, TrySendError};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -19,18 +20,54 @@ struct ParsedRequest {
     body: Vec<u8>,
 }
 
-pub(super) fn serve(application: Application, address: &str) -> Result<()> {
+struct HttpPool {
+    sender: Option<mpsc::SyncSender<(TcpStream, Instant)>>,
+    workers: Vec<std::thread::JoinHandle<()>>,
+}
+impl Drop for HttpPool {
+    fn drop(&mut self) {
+        self.sender.take();
+        for worker in self.workers.drain(..) {
+            let _ = worker.join();
+        }
+    }
+}
+
+pub(super) fn serve(application: Application, address: &str, signals: bool) -> Result<()> {
     let listener =
         TcpListener::bind(address).map_err(|error| format!("could not bind {address}: {error}"))?;
+    let shutdown = Arc::new(AtomicBool::new(false));
+    if signals {
+        let stopped = shutdown.clone();
+        let mut wake = listener.local_addr().map_err(|error| error.to_string())?;
+        if wake.ip().is_unspecified() {
+            wake.set_ip(if wake.is_ipv4() {
+                std::net::Ipv4Addr::LOCALHOST.into()
+            } else {
+                std::net::Ipv6Addr::LOCALHOST.into()
+            });
+        }
+        ctrlc::try_set_handler(move || {
+            if !stopped.swap(true, Ordering::AcqRel) {
+                // Wake blocking accept without polling the foreground request path.
+                let _ = TcpStream::connect_timeout(&wake, Duration::from_secs(1));
+            }
+        })
+        .map_err(|error| format!("could not install server signal handler: {error}"))?;
+    }
     let workers = application.http_workers;
     let queue = application.http_queue_capacity;
     let application = Arc::new(application);
     let (sender, receiver) = mpsc::sync_channel(queue);
+    let mut pool = HttpPool {
+        sender: Some(sender),
+        workers: Vec::with_capacity(workers),
+    };
     let receiver = Arc::new(Mutex::new(receiver));
     for worker_id in 0..workers {
         let application = application.clone();
         let receiver = receiver.clone();
-        std::thread::Builder::new()
+        let worker = std::thread::Builder::new()
             .name(format!("terracotta-http-{worker_id}"))
             .spawn(move || {
                 loop {
@@ -38,11 +75,18 @@ pub(super) fn serve(application: Application, address: &str) -> Result<()> {
                         let receiver = receiver.lock().expect("HTTP receiver lock");
                         receiver.recv()
                     };
-                    let Ok(socket) = socket else { return };
+                    let Ok((socket, accepted)) = socket else {
+                        return;
+                    };
+                    application
+                        .executor
+                        .cost()
+                        .record(crate::telemetry::Stage::HttpQueueWait, accepted.elapsed());
                     handle(socket, &application);
                 }
             })
             .map_err(|error| format!("could not start HTTP worker: {error}"))?;
+        pool.workers.push(worker);
     }
     eprintln!(
         "RCFP listening on http://{address} (HTTP workers {}, raster workers {}, queue {})",
@@ -51,20 +95,38 @@ pub(super) fn serve(application: Application, address: &str) -> Result<()> {
         queue
     );
     for socket in listener.incoming() {
-        let socket = socket.map_err(|error| format!("HTTP accept failed: {error}"))?;
-        match sender.try_send(socket) {
+        if shutdown.load(Ordering::Acquire) {
+            break;
+        }
+        let socket = match socket {
+            Ok(socket) => socket,
+            Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(error) => return Err(format!("HTTP accept failed: {error}")),
+        };
+        match pool
+            .sender
+            .as_ref()
+            .expect("live HTTP pool")
+            .try_send((socket, Instant::now()))
+        {
             Ok(()) => {}
-            Err(TrySendError::Full(mut socket)) => {
+            Err(TrySendError::Full((mut socket, _))) => {
+                application
+                    .executor
+                    .cost()
+                    .http_overloaded
+                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 let _ = socket.set_write_timeout(Some(Duration::from_secs(1)));
                 let _ = write_response(&mut socket, json_error(503, "HTTP request queue is full"));
             }
-            Err(TrySendError::Disconnected(mut socket)) => {
+            Err(TrySendError::Disconnected((mut socket, _))) => {
                 let _ =
                     write_response(&mut socket, json_error(503, "HTTP workers are unavailable"));
                 return Err("HTTP worker pool stopped".into());
             }
         }
     }
+    drop(listener);
     Ok(())
 }
 
@@ -95,7 +157,13 @@ fn handle(mut socket: TcpStream, application: &Application) {
             },
         ),
     };
-    let _ = write_response(&mut socket, response);
+    let started = Instant::now();
+    let body_bytes = response.body.len();
+    let result = write_response(&mut socket, response);
+    application
+        .executor
+        .cost()
+        .delivery(started.elapsed(), result.is_err(), body_bytes);
 }
 
 fn read_request(socket: &mut TcpStream) -> std::result::Result<ParsedRequest, u16> {

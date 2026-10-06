@@ -240,6 +240,98 @@ pub fn ingest(
     }
 }
 
+/// Ingest logical channels using the same pattern matcher and catalog transaction API.
+pub struct NativeIngest<'a> {
+    pub rgb: Option<&'a str>,
+    pub bands: Option<&'a str>,
+    pub band_key: &'a str,
+    pub values: &'a str,
+    pub skip_metadata: bool,
+    pub skip_existing: bool,
+}
+pub fn ingest_native(pattern: &str, output: &Path, options: NativeIngest<'_>) -> Result<usize> {
+    let NativeIngest {
+        rgb,
+        bands,
+        band_key,
+        values,
+        skip_metadata,
+        skip_existing,
+    } = options;
+    crate::compatibility::CompatibilityProfile::current().require_native()?;
+    let (mut definitions, datasets) = raster_pattern(pattern, rgb)?;
+    let mappings = if let Some(bands) = bands {
+        if definitions.iter().any(|d| d.key == band_key) {
+            return Err("band key must not already occur in the raster pattern".into());
+        }
+        definitions.push(KeyDefinition {
+            key: band_key.into(),
+            description: String::new(),
+        });
+        let mut seen = std::collections::BTreeSet::new();
+        Some(
+            bands
+                .split(',')
+                .map(|entry| {
+                    let (name, index) = entry
+                        .split_once('=')
+                        .ok_or("bands must be NAME=INDEX pairs")?;
+                    let index = index
+                        .parse::<usize>()
+                        .map_err(|_| "invalid source band index")?;
+                    if name.is_empty() || index == 0 || !seen.insert(name.to_owned()) {
+                        return Err("band names must be unique and indexes positive".into());
+                    }
+                    Ok((name.to_owned(), index))
+                })
+                .collect::<Result<Vec<_>>>()?,
+        )
+    } else {
+        None
+    };
+    let location = output.to_string_lossy();
+    let store = if output.exists() {
+        Store::open_writable(&location, None)?
+    } else {
+        Store::create_native(&location, None, &definitions)?
+    };
+    if store.key_names()
+        != definitions
+            .iter()
+            .map(|d| d.key.as_str())
+            .collect::<Vec<_>>()
+    {
+        return Err("catalog keys do not match the raster pattern and band key".into());
+    }
+    let catalog = crate::catalog::Catalog::sql(store)?;
+    let mut operations = Vec::new();
+    let existing = if skip_existing {
+        catalog
+            .query_datasets(&Default::default(), &[], true, None)?
+            .into_iter()
+            .map(|d| d.keys)
+            .collect::<std::collections::BTreeSet<_>>()
+    } else {
+        Default::default()
+    };
+    for dataset in datasets {
+        let mappings = mappings.clone().unwrap_or_else(|| vec![(String::new(), 1)]);
+        for (name, band) in mappings {
+            let mut keys = dataset.keys.clone();
+            if bands.is_some() {
+                keys.push(name);
+            }
+            if existing.contains(&keys) {
+                continue;
+            }
+            operations.push(serde_json::json!({"operation":"insert","keys":keys,"raster":dataset.path,"band":band,"values":values,"skip_metadata":skip_metadata}));
+        }
+    }
+    let count = operations.len();
+    catalog.operation(&serde_json::json!({"operation":"batch","operations":operations}))?;
+    Ok(count)
+}
+
 #[derive(Debug)]
 enum PatternPart {
     Literal(String),

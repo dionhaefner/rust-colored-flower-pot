@@ -84,6 +84,18 @@ jobs:
           path: build/ci/raster-boundaries/
           retention-days: 14
 
+      - name: Qualify exact TIFF access and fallbacks
+        run: |
+          .venv-reference/bin/python tests/tiff_backend.py \
+            --target target --out build/ci/tiff-backend
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: correctness-tiff-backend
+          path: build/ci/tiff-backend/
+          retention-days: 14
+
   services:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -225,47 +237,7 @@ jobs:
           retention-days: 14
 
   browser:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 70
-
-    defaults:
-      run:
-        shell: bash -el {0}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-name: qualification
-          create-args: >-
-            python=3.12 pip gdal=3.10.3
-          cache-environment: true
-          init-shell: bash
-
-      - name: Install Rust toolchain
-        run: rustup toolchain install 1.88.0 --profile minimal
-
-      - name: Locate GDAL runtime
-        run: python tests/ci-gdal-env.py
-
-      - name: Build native client and backend
-        run: cargo build --locked --release
-
-      - name: Install Chromium test runner
-        run: |
-          python -m pip install playwright==1.55.0
-          python -m playwright install --with-deps chromium
-
-      - name: Exercise the browser client
-        run: python tests/browser_contracts.py --binary target/release/rcfp --out build/ci/browser
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: correctness-browser
-          path: build/ci/browser/
-          retention-days: 14
+    uses: ./.github/workflows/sdk.yml
 
   large-raster:
     if: >-

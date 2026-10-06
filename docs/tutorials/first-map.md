@@ -46,9 +46,11 @@ rcfp connect localhost:5000
 ```
 
 Select `lagoon` and the `red` band in the browser. The client fetches metadata and
-imagery from the server you started. Its external basemap may require network
-access and a provider token; the raster preview above remains usable without
-that basemap. The imagery is centered around longitude 12.36°, latitude 45.46°.
+imagery from the server you started. The bundled map and three SDK examples work offline with no
+provider token. Use **Rendering** for RGB or an expression, **Inspect map center**
+for display pixels, and **Create share link** to save the current view. See the
+[JavaScript SDK reference](../reference/javascript.md) for embedding your own map
+and supplying immutable source revisions. The imagery is centered around longitude 12.36°, latitude 45.46°.
 
 Stop both processes with Ctrl+C when finished. Remove `map.sqlite` and `map.png`
 only if you no longer want this tutorial catalog; keep the supplied raster files.

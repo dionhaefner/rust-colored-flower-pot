@@ -1,5 +1,9 @@
 # Package the native Lambda runtime
 
+For the public viewer with private S3 rasters, use the
+[demo deployment](demo.md). It supplies a Lambda container image, Function URL,
+CloudFormation templates and GitHub Pages publication.
+
 RCFP supplies a custom-runtime bootstrap and API Gateway v1/v2 event adapters.
 Build a Lambda-targeted native bundle for the intended architecture and Amazon
 Linux baseline; a desktop wheel or arbitrary host-built bundle is not a Lambda

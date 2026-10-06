@@ -106,8 +106,10 @@ extern void tc_session_free(void *);
 
 static void session_destroy(PyObject *capsule) {
     void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
-    if (session != NULL)
-        tc_session_free(session);
+    if (session != NULL) {
+        Py_BEGIN_ALLOW_THREADS tc_session_free(session);
+        Py_END_ALLOW_THREADS
+    }
 }
 static PyObject *session_open(PyObject *self, PyObject *args) {
     (void)self;

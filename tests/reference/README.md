@@ -28,6 +28,12 @@ Bootstrap writes package/native versions, source and native-file hashes, and a
 resolved dependency listing under `.cache/reference`. It never regenerates the
 checked-in dependency lock. Change that lock deliberately with baseline evidence.
 
+The demo preview reference uses the supplied 512-pixel Sentinel red crop rather
+than the larger platform-smoke crop. Acquire it independently with
+`.venv-reference/bin/python tests/reference/acquire_demo.py --out build/demo-reference`.
+Compare its pinned manifest with `tests/fixtures/demo/manifest.json` before
+reviewing any fixture update. RCFP output is never a reference source.
+
 ## Run the gates
 
 Build `target/release/rcfp` and configure its GDAL runtime before HTTP checks.

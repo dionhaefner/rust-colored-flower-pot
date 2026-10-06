@@ -11,6 +11,7 @@ upgrade-terracotta
 ../compatibility
 ../native-migration
 ingest
+stac
 optimize
 configure
 categorical
@@ -19,8 +20,10 @@ color-transforms
 wsgi
 container
 lambda
+demo
 remote-data
 backup-migrate
 resources
+release-sdk
 troubleshoot
 ```

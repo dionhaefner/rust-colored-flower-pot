@@ -1,0 +1,45 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/file/v2.1.0/schema.json",
+    "https://stac-extensions.github.io/raster/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+  ],
+  "id": "lagoon",
+  "collection": "sentinel",
+  "properties": {
+    "datetime": "2021-06-29T10:00:00Z",
+    "proj:epsg": 32632
+  },
+  "bbox": [
+    12.324001000862383, 45.43963650058731, 12.392115182784645,
+    45.487567574848576
+  ],
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [12.324001000862383, 45.43963650058731],
+        [12.392115182784645, 45.43963650058731],
+        [12.392115182784645, 45.487567574848576],
+        [12.324001000862383, 45.487567574848576],
+        [12.324001000862383, 45.43963650058731]
+      ]
+    ]
+  },
+  "assets": {
+    "red": {
+      "href": "red.tif",
+      "type": "image/tiff; application=geotiff",
+      "roles": ["data"],
+      "file:checksum": "12203e268183775bbcdc013eb142e8776b6c9eda17099bed33f8db368049eed07be7",
+      "raster:bands": [
+        {
+          "nodata": 0
+        }
+      ]
+    }
+  },
+  "links": []
+}

@@ -1,0 +1,7 @@
+{
+  "terracotta": "0.10.1",
+  "gdal": "3.10.3",
+  "source_sha256": "3e268183775bbcdc013eb142e8776b6c9eda17099bed33f8db368049eed07be7",
+  "preview_sha256": "97b87761716a45755f5f0941bcf2c705e69072274b27a7f0a279737e1c261a81",
+  "attribution": "Contains modified Copernicus Sentinel data 2021"
+}

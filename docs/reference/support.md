@@ -2,7 +2,8 @@
 
 RCFP has two process profiles: default `native` and the pinned
 `terracotta-0.10.1` compatibility contract. The package and primary import are
-`rcfp`; HTTP protocol identity remains 0.10.1 and current catalog format is 0.10.
+`rcfp`; HTTP protocol identity remains 0.10.1; Terracotta catalogs use format 0.10 and
+native layer catalogs use `rcfp-native-1`.
 The package version in this site's title is supplied by Hatch VCS metadata,
 not by either compatibility identity.
 
@@ -40,3 +41,11 @@ for exclusions, verification, and rollback.
 Select artifacts using their release validation results. Do not infer a passing
 macOS/Windows/cloud deployment from a Linux docs build. The included examples
 exercise local data without external account requirements.
+
+Native `rcfp-native-2` [keyed catalogs](layers.md) currently write local SQLite
+and support read-only remote SQLite snapshots. The `rcfp-native-1` advanced
+layer format remains local SQLite.
+Their metadata, definitions, Python, CLI and HTTP rendering share the native core.
+Existing Terracotta-format SQLite/MySQL/PostgreSQL/remote workflows retain their
+separate support contract. The bundled viewer uses the public
+[JavaScript SDK](javascript.md) for key-based maps and native default layer images.

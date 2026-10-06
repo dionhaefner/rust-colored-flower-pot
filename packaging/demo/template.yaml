@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Public RCFP Lambda demo with bounded concurrency and private S3 reads.
+Parameters:
+  ImageUri:
+    Type: String
+    Description: Qualified x86_64 Lambda image, including its ECR sha256 digest.
+    AllowedPattern: ".+@sha256:[0-9a-f]{64}"
+  DataBucket:
+    Type: String
+  AllowedOrigins:
+    Type: String
+    Description: JSON array of anchored origin patterns for the static viewer.
+  Concurrency:
+    Type: Number
+    Default: 8
+    MinValue: 0
+    MaxValue: 32
+  BudgetEmail:
+    Type: String
+    Default: ""
+    Description: Optional address for account-wide USD 10 monthly budget alerts.
+Conditions:
+  HasBudgetEmail:
+    Fn::Not:
+      - Fn::Equals: [{ Ref: BudgetEmail }, ""]
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RasterReads
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:s3:::${DataBucket}/rasters/*"
+        - PolicyName: InvocationLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}:*"
+  Logs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: "/aws/lambda/${AWS::StackName}"
+      RetentionInDays: 7
+  Function:
+    Type: AWS::Lambda::Function
+    DependsOn: Logs
+    Properties:
+      FunctionName:
+        Ref: AWS::StackName
+      PackageType: Image
+      Architectures: [x86_64]
+      Code:
+        ImageUri:
+          Ref: ImageUri
+      Role:
+        Fn::GetAtt: [ExecutionRole, Arn]
+      MemorySize: 2048
+      Timeout: 30
+      ReservedConcurrentExecutions:
+        Ref: Concurrency
+      Environment:
+        Variables:
+          TC_DRIVER_PATH: /var/task/catalog.sqlite
+          TC_COMPAT_PROFILE: native
+          TC_RASTER_WORKERS: "1"
+          TC_RASTER_QUEUE_CAPACITY: "4"
+          TC_RASTER_TIMEOUT_MS: "20000"
+          TC_RASTER_CACHE_BYTES: "67108864"
+          TC_REMOTE_RASTER_CACHE_TTL_SECONDS: "60"
+          TC_EXPOSE_METRICS: "false"
+          TC_ALLOWED_ORIGINS_METADATA:
+            Ref: AllowedOrigins
+          TC_ALLOWED_ORIGINS_TILES:
+            Ref: AllowedOrigins
+  Url:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn:
+        Ref: Function
+      AuthType: NONE
+      InvokeMode: BUFFERED
+  UrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: Function
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+  InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: Function
+      Action: lambda:InvokeFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+  Budget:
+    Type: AWS::Budgets::Budget
+    Condition: HasBudgetEmail
+    Properties:
+      Budget:
+        BudgetName:
+          Fn::Sub: "${AWS::StackName}-account"
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 10
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 50
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address:
+                Ref: BudgetEmail
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address:
+                Ref: BudgetEmail
+Outputs:
+  ApiUrl:
+    Value:
+      Fn::GetAtt: [Url, FunctionUrl]
+  FunctionName:
+    Value:
+      Ref: Function

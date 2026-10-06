@@ -1,0 +1,47 @@
+[
+  {
+    "file": "leaflet.js",
+    "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+    "sha256": "db49d009c841f5ca34a888c96511ae936fd9f5533e90d8b2c4d57596f4e5641a"
+  },
+  {
+    "file": "leaflet.css",
+    "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    "sha256": "a7837102824184820dfa198d1ebcd109ff6d0ff9a2672a074b9a1b4d147d04c6"
+  },
+  {
+    "file": "leaflet-LICENSE.txt",
+    "url": "https://unpkg.com/leaflet@1.9.4/LICENSE",
+    "sha256": "53e8dc25862014e4324741ca18fbe3611e11d42ef69f59f86ea8c5389647d4cb"
+  },
+  {
+    "file": "maplibre-gl.js",
+    "url": "https://unpkg.com/maplibre-gl@5.7.3/dist/maplibre-gl.js",
+    "sha256": "2986bbddce2c7a944775791201fad5108ec8768fc2e3243cac607b23826e4bc0"
+  },
+  {
+    "file": "maplibre-gl.css",
+    "url": "https://unpkg.com/maplibre-gl@5.7.3/dist/maplibre-gl.css",
+    "sha256": "43c1d886b5fdf0aac4e7135bd6f84b823d9f48283a648012665f9be52c01389f"
+  },
+  {
+    "file": "maplibre-LICENSE.txt",
+    "url": "https://unpkg.com/maplibre-gl@5.7.3/LICENSE.txt",
+    "sha256": "ee5fc05a0677eaf69601d2c7db0d9ecd6cc27c3abc1d0733bc9ed34707cf8ef2"
+  },
+  {
+    "file": "ol.js",
+    "url": "https://cdn.jsdelivr.net/npm/ol@10.6.1/dist/ol.js",
+    "sha256": "eb5ceb37f7f15f210e9a9db54e471b994ed1f3b205af73c98a7156c95a911b77"
+  },
+  {
+    "file": "ol.css",
+    "url": "https://cdn.jsdelivr.net/npm/ol@10.6.1/ol.css",
+    "sha256": "abc8afd72cc10bd29cc143f443bae4a6804bd3cb3fb262e6b6a6bc6c924ea34f"
+  },
+  {
+    "file": "ol-LICENSE.txt",
+    "url": "https://cdn.jsdelivr.net/npm/ol@10.6.1/LICENSE.md",
+    "sha256": "6c4347b83a8c9feef18d57b18e3b6c44cf901b3c344a4a1fbd837e421555ab8e"
+  }
+]

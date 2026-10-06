@@ -63,6 +63,10 @@ pub(crate) fn flag(name: &str, default: bool) -> crate::Result<bool> {
 
 /// Parse native CLI settings with the same defaults and explicit > environment precedence.
 pub fn defaults() -> Map<String, Value> {
+    defaults_for(crate::compatibility::CompatibilityProfile::current())
+}
+
+fn defaults_for(profile: crate::compatibility::CompatibilityProfile) -> Map<String, Value> {
     let mut defaults: Map<String, Value> =
         serde_json::from_str(include_str!("assets/settings.json")).expect("settings defaults");
     defaults.insert(
@@ -74,13 +78,16 @@ pub fn defaults() -> Map<String, Value> {
                 .into(),
         ),
     );
+    if !profile.is_terracotta() {
+        defaults.insert("REMOTE_SOURCE_CACHE_TTL_SECONDS".into(), 60.into());
+    }
     defaults
 }
 
 pub fn parse(mut explicit: Map<String, Value>) -> crate::Result<Map<String, Value>> {
     let profile = crate::compatibility::CompatibilityProfile::resolve(&mut explicit)?;
     explicit.remove("COMPAT_PROFILE");
-    let mut defaults = defaults();
+    let mut defaults = defaults_for(profile);
     for key in explicit.keys() {
         if !defaults.contains_key(key) {
             return Err(format!(
@@ -238,4 +245,33 @@ pub(crate) fn protocol_version() -> String {
         .and_then(Value::as_str)
         .unwrap_or(crate::TERRACOTTA_COMPATIBILITY_VERSION)
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_lease_defaults_preserve_the_named_profile_and_explicit_zero() {
+        use crate::compatibility::CompatibilityProfile;
+        assert_eq!(
+            defaults_for(CompatibilityProfile::Native)["REMOTE_SOURCE_CACHE_TTL_SECONDS"],
+            60
+        );
+        assert_eq!(
+            defaults_for(CompatibilityProfile::Terracotta0101)["REMOTE_SOURCE_CACHE_TTL_SECONDS"],
+            0
+        );
+        for profile in ["native", "terracotta-0.10.1"] {
+            let explicit =
+                serde_json::json!({"COMPAT_PROFILE":profile, "REMOTE_SOURCE_CACHE_TTL_SECONDS":0})
+                    .as_object()
+                    .unwrap()
+                    .clone();
+            assert_eq!(
+                parse(explicit).unwrap()["REMOTE_SOURCE_CACHE_TTL_SECONDS"],
+                0
+            );
+        }
+    }
 }

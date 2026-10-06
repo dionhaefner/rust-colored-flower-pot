@@ -1,0 +1,7 @@
+{
+  "name": "rcfp-sdk-test-tools",
+  "private": true,
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

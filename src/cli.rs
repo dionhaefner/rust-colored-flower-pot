@@ -8,19 +8,54 @@ use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
 
 pub fn ingest_command(args: &[String]) -> Result<()> {
-    let (mut pattern, mut output, mut rgb) = (None, None, None);
-    let (mut skip, mut existing, mut quiet) = (false, false, false);
+    let (mut pattern, mut output, mut rgb, mut source) = (None, None, None, None);
+    let (mut skip, mut existing, mut quiet, mut native) = (false, false, false, false);
+    let mut bands = None;
+    let mut band_key = "band";
+    let mut values = "raw";
+    let mut search = None;
+    let mut mapping = json!({});
+    let mut options = json!({});
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "-o" | "--output-file" => output = Some(next(args, &mut i)?),
             "--rgb-key" => rgb = Some(next(args, &mut i)?),
+            "--format" => {
+                native = match next(args, &mut i)? {
+                    "native" => true,
+                    "terracotta" => false,
+                    _ => return Err("catalog format must be native or terracotta".into()),
+                };
+            }
+            "--bands" => {
+                bands = Some(next(args, &mut i)?);
+                native = true;
+            }
+            "--band-key" => band_key = next(args, &mut i)?,
+            "--values" => {
+                values = next(args, &mut i)?;
+                native = true;
+            }
+            "--source" => source = Some(next(args, &mut i)?),
+            "--search" => {
+                search = Some(
+                    serde_json::from_str::<Value>(next(args, &mut i)?)
+                        .map_err(|e| e.to_string())?,
+                )
+            }
+            "--key-mapping" => {
+                mapping = serde_json::from_str(next(args, &mut i)?).map_err(|e| e.to_string())?
+            }
+            "--source-options" => {
+                options = serde_json::from_str(next(args, &mut i)?).map_err(|e| e.to_string())?
+            }
             "--skip-metadata" => skip = true,
             "--skip-existing" => existing = true,
             "-q" | "--quiet" => quiet = true,
             "--help" | "-h" => {
                 println!(
-                    "Usage: rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [--rgb-key KEY] [-q]"
+                    "Usage: rcfp ingest PATTERN -o DATABASE [--format native|terracotta] [--bands red=3,green=2,blue=1] [--band-key band] [--values raw|scaled] [--skip-metadata] [--skip-existing] [--rgb-key KEY] [-q]\n       rcfp ingest --source STAC -o DATABASE [--search JSON] [--source-options JSON] [--key-mapping JSON] [--skip-metadata] [-q]"
                 );
                 return Ok(());
             }
@@ -29,15 +64,70 @@ pub fn ingest_command(args: &[String]) -> Result<()> {
         }
         i += 1;
     }
-    let n = ingest::ingest(
-        pattern.ok_or("ingest requires raster pattern")?,
-        Path::new(output.ok_or("ingest requires -o/--output-file")?),
-        rgb,
-        skip,
-        existing,
-    )?;
+    let output = output.ok_or("ingest requires -o/--output-file")?;
+    let n = if let Some(source) = source {
+        if pattern.is_some() || bands.is_some() || rgb.is_some() || existing {
+            return Err(
+                "source ingestion cannot combine raster pattern, bands, rgb-key or skip-existing"
+                    .into(),
+            );
+        }
+        let store = if Path::new(output).exists() {
+            Store::open_writable(output, None)?
+        } else {
+            let keys = if mapping.as_object().is_none_or(|m| m.is_empty()) {
+                vec!["collection", "datetime", "item", "asset"]
+            } else {
+                mapping
+                    .as_object()
+                    .ok_or("key mapping must be an object")?
+                    .keys()
+                    .map(String::as_str)
+                    .collect()
+            };
+            Store::create_native(
+                output,
+                None,
+                &keys
+                    .into_iter()
+                    .map(|k| KeyDefinition {
+                        key: k.into(),
+                        description: String::new(),
+                    })
+                    .collect::<Vec<_>>(),
+            )?
+        };
+        crate::catalog::Catalog::sql(store)?.operation(&json!({"operation":"ingest_source","source":source,"search":search,"options":options,"key_mapping":mapping,"skip_metadata":skip}))?.as_u64().ok_or("invalid ingestion result")? as usize
+    } else {
+        let pattern = pattern.ok_or("ingest requires raster pattern or --source")?;
+        if native
+            || (Path::new(output).exists()
+                && Store::open_with(output, None, true)?.db_version()?
+                    == crate::catalog::dataset::FORMAT)
+        {
+            ingest::ingest_native(
+                pattern,
+                Path::new(output),
+                ingest::NativeIngest {
+                    rgb,
+                    bands,
+                    band_key,
+                    values,
+                    skip_metadata: skip,
+                    skip_existing: existing,
+                },
+            )?
+        } else {
+            ingest::ingest(pattern, Path::new(output), rgb, skip, existing)?
+        }
+    };
     if !quiet {
-        println!("Ingested {n} raster files");
+        let noun = if native || source.is_some() {
+            "datasets"
+        } else {
+            "raster files"
+        };
+        println!("Ingested {n} {noun}");
     }
     Ok(())
 }
@@ -199,6 +289,75 @@ pub fn data_operation(request: &Value) -> Result<Value> {
             .ok_or_else(|| "path required".to_string())
     };
     match op {
+        "inspect_asset" => serde_json::to_value(crate::layers::inspect(Path::new(path()?))?)
+            .map_err(|e| e.to_string()),
+        "layer_create" => {
+            crate::layers::catalog::Catalog::create(Path::new(path()?))?;
+            Ok(Value::Null)
+        }
+        "layer_samples" => {
+            let spec =
+                serde_json::from_value(request["spec"].clone()).map_err(|e| e.to_string())?;
+            let app = crate::http::Application::open(Path::new(path()?))?;
+            Ok(json!(
+                app.layer_samples(request["id"].as_str().ok_or("layer id required")?, &spec)?
+                    .iter()
+                    .map(|r| json!({"shape":[r.height,r.width],"values":r.values,"mask":r.mask}))
+                    .collect::<Vec<_>>()
+            ))
+        }
+        "layer_ids" => Ok(json!(
+            crate::layers::catalog::Catalog::open(Path::new(path()?), false)?.ids()?
+        )),
+        "layer_get" => Ok(json!(
+            crate::layers::catalog::Catalog::open(Path::new(path()?), false)?
+                .get(request["id"].as_str().ok_or("layer id required")?)?
+        )),
+        "layer_delete" => {
+            crate::layers::catalog::Catalog::open(Path::new(path()?), true)?
+                .delete(request["id"].as_str().ok_or("layer id required")?)?;
+            Ok(Value::Null)
+        }
+        "layer_register" => {
+            let bands = request
+                .get("bands")
+                .filter(|v| !v.is_null())
+                .map(|v| serde_json::from_value(v.clone()).map_err(|e| e.to_string()))
+                .transpose()?;
+            let stretch = request
+                .get("stretch")
+                .filter(|v| !v.is_null())
+                .map(|v| serde_json::from_value(v.clone()).map_err(|e| e.to_string()))
+                .transpose()?;
+            let layer = crate::layers::raster_layer(
+                Path::new(request["raster"].as_str().ok_or("raster required")?),
+                bands,
+                stretch,
+            )?;
+            crate::layers::catalog::Catalog::open(Path::new(path()?), true)?
+                .put(request["id"].as_str().ok_or("layer id required")?, layer)?;
+            Ok(Value::Null)
+        }
+        "layer_put" => {
+            let layer =
+                serde_json::from_value(request["layer"].clone()).map_err(|e| e.to_string())?;
+            crate::layers::catalog::Catalog::open(Path::new(path()?), true)?
+                .put(request["id"].as_str().ok_or("layer id required")?, layer)?;
+            Ok(Value::Null)
+        }
+        "layer_import" => {
+            let mut source = Store::open(Path::new(
+                request["source"]
+                    .as_str()
+                    .ok_or("source catalog required")?,
+            ))?;
+            let bindings =
+                serde_json::from_value(request["bindings"].clone()).map_err(|e| e.to_string())?;
+            let layer = crate::layers::Layer::from_catalog(&mut source, &bindings)?;
+            crate::layers::catalog::Catalog::open(Path::new(path()?), true)?
+                .put(request["id"].as_str().ok_or("layer id required")?, layer)?;
+            Ok(Value::Null)
+        }
         "raster_pattern" => {
             let (keys, datasets) = ingest::raster_pattern(path()?, request["rgb_key"].as_str())?;
             Ok(
@@ -262,7 +421,15 @@ pub fn data_operation(request: &Value) -> Result<Value> {
         "create" => {
             let keys: Vec<KeyDefinition> =
                 serde_json::from_value(request["keys"].clone()).map_err(|e| e.to_string())?;
-            Store::create(path()?, request["provider"].as_str(), &keys)?;
+            match request["format"].as_str().unwrap_or("terracotta") {
+                "native" => {
+                    Store::create_native(path()?, request["provider"].as_str(), &keys)?;
+                }
+                "terracotta" => {
+                    Store::create(path()?, request["provider"].as_str(), &keys)?;
+                }
+                _ => return Err("catalog format must be native or terracotta".into()),
+            }
             Ok(Value::Null)
         }
         "driver_create" => {
@@ -298,13 +465,33 @@ pub fn data_operation(request: &Value) -> Result<Value> {
             Store::create(path()?, request["provider"].as_str(), &definitions)?;
             Ok(Value::Null)
         }
+        "keys" | "datasets" | "metadata" if request["provider"].is_null() => {
+            let catalog = match crate::catalog::Catalog::open(Path::new(path()?))? {
+                crate::catalog::Opened::Datasets(c) => c,
+                crate::catalog::Opened::Layers(_) => {
+                    Box::new(crate::catalog::Catalog::layers(Path::new(path()?))?)
+                }
+            };
+            catalog.operation(request)
+        }
         _ => {
             let store = if request["read_only"] == true {
                 Store::open_with(path()?, request["provider"].as_str(), true)?
             } else {
                 Store::open_writable(path()?, request["provider"].as_str())?
             };
-            store_operation(&store, request)
+            if store.db_version()? == crate::catalog::dataset::FORMAT {
+                crate::catalog::Catalog::sql(store)?.operation(request)
+            } else {
+                if request.get("band").is_some()
+                    || request.get("values").is_some()
+                    || request.get("style").is_some()
+                    || ["define", "ingest_source"].contains(&op)
+                {
+                    return Err("logical bands, expressions and stored sources require a native keyed catalog".into());
+                }
+                store_operation(&store, request)
+            }
         }
     }
 }
@@ -391,5 +578,54 @@ pub(crate) fn store_operation(store: &Store, request: &Value) -> Result<Value> {
             Ok(Value::Null)
         }
         _ => Err(format!("unknown data operation: {op}")),
+    }
+}
+
+/// Database-backed native layer administration and rendering.
+pub fn layers_command(args: &[String]) -> Result<()> {
+    use crate::layers::catalog::Catalog;
+    match args {
+        [command,path] if command == "create" => { Catalog::create(Path::new(path))?; Ok(()) }
+        [command,path] if command == "list" => { println!("{}",json!(Catalog::open(Path::new(path),false)?.ids()?)); Ok(()) }
+        [command,path,id] if command == "describe" => { println!("{}",json!(Catalog::open(Path::new(path),false)?.get(id)?.ok_or("No layer found")?)); Ok(()) }
+        [command,path,id] if command == "delete" => Catalog::open(Path::new(path),true)?.delete(id),
+        [command,path,id] if command == "put" => {
+            use std::io::Read;
+            let mut text = String::new(); std::io::stdin().take(1024*1024+1).read_to_string(&mut text).map_err(|e| e.to_string())?;
+            if text.len() > 1024*1024 { return Err("layer definition exceeds 1 MiB".into()); }
+            let layer = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+            Catalog::open(Path::new(path),true)?.put(id,layer)
+        }
+        [command,path,id,raster,rest @ ..] if command == "register" => {
+            let mut bands = None; let mut stretch = None; let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--bands" => bands = Some(next(rest,&mut i)?.split(',').map(|n| n.parse::<usize>().map_err(|_| "bands must be comma-separated integers".to_string())).collect::<Result<Vec<_>>>()?),
+                    "--stretch" => { let values = next(rest,&mut i)?.split(',').map(|n| n.parse::<f64>().map_err(|_| "stretch must be MIN,MAX".to_string())).collect::<Result<Vec<_>>>()?; stretch = Some(values.try_into().map_err(|_| "stretch must be MIN,MAX")?); }
+                    _ => return Err("unknown layer registration option".into()),
+                } i += 1;
+            }
+            Catalog::open(Path::new(path),true)?.put(id,crate::layers::raster_layer(Path::new(raster),bands,stretch)?)
+        }
+        [command,path,id,rest @ ..] if command == "render" => {
+            let layer = Catalog::open(Path::new(path),false)?.get(id)?.ok_or("No layer found")?;
+            let mut spec = layer.default_render.clone(); let mut output = None; let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "-o" | "--output" => output = Some(next(rest,&mut i)?),
+                    "--spec" => spec = Some(serde_json::from_slice(&std::fs::read(next(rest,&mut i)?).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?),
+                    _ => return Err("unknown layer render option".into()),
+                } i += 1;
+            }
+            let executor = crate::execution::RasterExecutor::start(crate::execution::ExecutionConfig::from_env()?)?;
+            let bytes = layer.render(&executor,&spec.ok_or("layer has no default render; provide --spec")?)?;
+            std::fs::write(output.ok_or("layer render requires -o")?,bytes).map_err(|e| e.to_string())
+        }
+        [command,source,destination,id,bindings] if command == "import" => {
+            let bindings = serde_json::from_str(bindings).map_err(|e| e.to_string())?;
+            let layer = crate::layers::Layer::from_catalog(&mut Store::open(Path::new(source))?,&bindings)?;
+            Catalog::open(Path::new(destination),true)?.put(id,layer)
+        }
+        _ => Err("Usage: rcfp layers create|list DATABASE; describe|delete|put DATABASE ID; register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]; render DATABASE ID -o IMAGE [--spec SPEC]; import SOURCE DESTINATION ID BINDINGS_JSON".into()),
     }
 }

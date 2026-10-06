@@ -135,6 +135,7 @@ def main() -> None:
             "TC_RASTER_WORKERS": "3",
             "TC_RASTER_QUEUE_CAPACITY": "64",
             "TC_RASTER_CACHE_BYTES": "0",
+            "TC_RENDER_CACHE_BYTES": "0",
             "TC_EXPOSE_METRICS": "true",
         },
     )
@@ -147,17 +148,26 @@ def main() -> None:
             "initial raster tile failed",
         )
         expected_hash = hashlib.sha256(image).hexdigest()
+        # Distinct grids exercise several workers; duplicate grids also share active work.
+        tiles = [
+            tile + f"&tile_size=%5B{size}%2C{size}%5D" for size in (128, 192, 256, 320)
+        ]
+        expected = []
+        for url in tiles:
+            status, body = fetch(url)
+            require(status == 200, "initial resource-test grid failed")
+            expected.append(hashlib.sha256(body).hexdigest())
         bad_status, _ = fetch(f"{base}/singleband/lagoon/preview.png?tile_size=invalid")
         require(bad_status == 400, "invalid tile size did not return 400")
         deadline = time.monotonic() + args.seconds
 
-        def worker() -> int:
+        def worker(index: int) -> int:
             count = 0
             while time.monotonic() < deadline:
-                status, body = fetch(tile)
+                status, body = fetch(tiles[index % len(tiles)])
                 require(status == 200, f"raster request returned HTTP {status}")
                 require(
-                    hashlib.sha256(body).hexdigest() == expected_hash,
+                    hashlib.sha256(body).hexdigest() == expected[index % len(tiles)],
                     "tile changed during repeated reads",
                 )
                 count += 1
@@ -165,7 +175,7 @@ def main() -> None:
 
         peak_rss, peak_fds = baseline_rss, baseline_fds
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-            futures = [pool.submit(worker) for _ in range(8)]
+            futures = [pool.submit(worker, index) for index in range(8)]
             while not all(future.done() for future in futures):
                 require(service.poll() is None, "server exited during load")
                 observed_rss, observed_fds = resources(service.pid)
@@ -196,8 +206,9 @@ def main() -> None:
         require(metrics["workers"] == 3, "metrics worker count changed")
         require(metrics["queue_capacity"] == 64, "metrics queue capacity changed")
         require(
-            metrics["submitted"] >= sum(counts)
-            and metrics["completed"] >= sum(counts)
+            metrics["submitted"] + metrics["render_cache"]["coalesced"] >= sum(counts)
+            and metrics["completed"] + metrics["render_cache"]["coalesced"]
+            >= sum(counts)
             and metrics["peak_in_flight"] >= 2,
             "metrics did not record concurrent raster work",
         )

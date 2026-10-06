@@ -4,7 +4,7 @@ use crate::Result;
 use crate::execution::{ExecutionConfig, OVERLOADED, RasterExecutor, TIMED_OUT};
 use crate::image::{self, Rgba};
 use crate::raster::{self, Raster, ReadRequest};
-use crate::storage::{Dataset, Metadata, Store};
+use crate::storage::{Dataset, Metadata};
 use crate::{color, expressions, palettes::Palettes};
 use serde_json::{Map, Value, json};
 use std::collections::{BTreeMap, HashMap};
@@ -17,11 +17,12 @@ use std::time::Instant;
 use tiny_http::Method;
 
 mod cache;
+use crate::catalog::{Catalog, Opened};
 mod transport;
 
 pub struct Application {
     settings: Map<String, Value>,
-    store: Mutex<Store>,
+    layers: Option<Mutex<crate::layers::catalog::Catalog>>,
     palettes: Palettes,
     default_size: [usize; 2],
     max_metadata: usize,
@@ -32,6 +33,8 @@ pub struct Application {
     render_capacity: usize,
     render_in_flight: AtomicUsize,
     fused_render: bool,
+    request_details: bool,
+    store: Option<Mutex<Catalog>>,
 }
 
 struct RenderPermit<'a>(&'a AtomicUsize);
@@ -57,6 +60,24 @@ impl Application {
     }
 
     fn open_scoped(database: &Path) -> Result<Self> {
+        match Catalog::open(database)? {
+            Opened::Datasets(catalog) => Self::configured(Some(Mutex::new(*catalog)), None),
+            Opened::Layers(catalog) => Self::configured(
+                Some(Mutex::new(Catalog::layers(database)?)),
+                Some(Mutex::new(catalog)),
+            ),
+        }
+    }
+
+    pub fn from_stac(service: crate::stac::serve::Service) -> Result<Self> {
+        crate::compatibility::CompatibilityProfile::current().require_native()?;
+        Self::configured(Some(Mutex::new(Catalog::stac(service)?)), None)
+    }
+
+    fn configured(
+        store: Option<Mutex<Catalog>>,
+        layers: Option<Mutex<crate::layers::catalog::Catalog>>,
+    ) -> Result<Self> {
         let config = ExecutionConfig::from_env()?;
         // Enough bounded HTTP workers must be able to reach raster admission
         // concurrently for a full raster queue to produce an immediate 503.
@@ -87,8 +108,14 @@ impl Application {
         );
         Ok(Self {
             fused_render: crate::settings::flag("TC_FUSED_RENDER", true)?,
+            request_details: ["TC_XRAY_PROFILE", "TC_FLASK_PROFILE", "TC_DEBUG"]
+                .iter()
+                .any(|name| crate::settings::var(name).is_ok_and(|s| s == "true"))
+                || crate::settings::var("TC_LOGLEVEL")
+                    .is_ok_and(|s| ["debug", "info"].contains(&s.as_str())),
             settings: crate::settings::snapshot(),
-            store: Mutex::new(Store::open(database)?),
+            store,
+            layers,
             palettes: Palettes::load()?,
             default_size: crate::settings::var("TC_DEFAULT_TILE_SIZE")
                 .ok()
@@ -110,6 +137,122 @@ impl Application {
             render_capacity,
             render_in_flight: AtomicUsize::new(0),
         })
+    }
+
+    fn catalog(&self) -> Result<std::sync::MutexGuard<'_, Catalog>> {
+        self.store
+            .as_ref()
+            .ok_or("this database uses native layers; use /layers")?
+            .lock()
+            .map_err(|_| "store lock poisoned".into())
+    }
+
+    pub fn layer_samples(&self, id: &str, spec: &crate::layers::RenderSpec) -> Result<Vec<Raster>> {
+        crate::settings::scope(self.settings.clone(), || {
+            let layer = self
+                .layers
+                .as_ref()
+                .ok_or("not a native layer database")?
+                .lock()
+                .map_err(|_| "layer catalog lock poisoned")?
+                .get(id)?
+                .ok_or("No layer found")?;
+            layer.samples(&self.executor, spec)
+        })
+    }
+
+    fn layer_response(
+        &self,
+        method: &Method,
+        path: &str,
+        body: &[u8],
+        content_type: Option<&str>,
+        parameters: &BTreeMap<String, String>,
+    ) -> AppResponse {
+        let Some(catalog) = &self.layers else {
+            return html_error(404);
+        };
+        let render = path.ends_with("/render");
+        let allow = if render {
+            "POST, OPTIONS"
+        } else {
+            "GET, HEAD, OPTIONS"
+        };
+        if method == &Method::Options
+            || (render && method != &Method::Post)
+            || (!render && ![Method::Get, Method::Head].contains(method))
+        {
+            let mut response = html_error(if method == &Method::Options { 200 } else { 405 });
+            response.headers.insert("Allow".into(), allow.into());
+            return response;
+        }
+        let result = (|| -> Result<AppResponse> {
+            let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
+            if !parameters.is_empty() {
+                return Err("layer routes do not accept query parameters".into());
+            }
+            let catalog = catalog.lock().map_err(|_| "layer catalog lock poisoned")?;
+            if path == "/layers" {
+                return json_response(
+                    200,
+                    &json!({"format":crate::layers::catalog::FORMAT,"layers":catalog.ids()?}),
+                );
+            }
+            let parts = path
+                .trim_start_matches("/layers/")
+                .split('/')
+                .collect::<Vec<_>>();
+            if parts.len() != if render { 2 } else { 1 } {
+                return Err("No layer found".into());
+            }
+            let layer = catalog
+                .get(&percent_decode_path(parts[0])?)?
+                .ok_or("No layer found")?;
+            drop(catalog);
+            if !render {
+                return json_response(
+                    200,
+                    &serde_json::to_value(layer).map_err(|e| e.to_string())?,
+                );
+            }
+            if content_type.is_none_or(|value| {
+                !value
+                    .split(';')
+                    .next()
+                    .unwrap_or("")
+                    .trim()
+                    .eq_ignore_ascii_case("application/json")
+            }) {
+                return Err("layer rendering requires application/json".into());
+            }
+            let value = if body.is_empty() {
+                json!({})
+            } else {
+                serde_json::from_slice(body)
+                    .map_err(|e| format!("invalid render specification: {e}"))?
+            };
+            let spec = if value.as_object().is_some_and(|object| object.is_empty()) {
+                layer
+                    .default_render
+                    .clone()
+                    .ok_or("layer has no default rendering specification")?
+            } else {
+                serde_json::from_value(value)
+                    .map_err(|e| format!("invalid render specification: {e}"))?
+            };
+            drop(selection);
+            Ok(bytes_response(
+                "image/png",
+                layer.render(&self.executor, &spec)?,
+            ))
+        })();
+        match result {
+            Ok(response) => response,
+            Err(error) if error == "No layer found" => json_error(404, &error),
+            Err(error) if error == OVERLOADED => json_error(503, &error),
+            Err(error) if error == TIMED_OUT => json_error(504, &error),
+            Err(error) => json_error(400, &error),
+        }
     }
 
     pub fn gdal_version(&self) -> String {
@@ -136,7 +279,10 @@ impl Application {
         body: &[u8],
     ) -> AppResponse {
         crate::settings::scope(self.settings.clone(), || {
-            self.request_scoped(method, url, headers, body)
+            crate::telemetry::scope(
+                Some(self.executor.cost().context(self.request_details)),
+                || self.request_scoped(method, url, headers, body),
+            )
         })
     }
 
@@ -147,8 +293,43 @@ impl Application {
         headers: &BTreeMap<String, String>,
         body: &[u8],
     ) -> AppResponse {
+        let request_timer = crate::telemetry::timer(crate::telemetry::Stage::Request);
         let started = std::time::Instant::now();
         let trace_start = std::time::SystemTime::now();
+        let response = self.request_response(method, url, headers, body);
+        let path = url.split('?').next().unwrap_or(url);
+        drop(request_timer);
+        let stages = crate::telemetry::current()
+            .map(|context| context.trace())
+            .unwrap_or_default();
+        crate::tracing::request(
+            headers,
+            method,
+            route_label(path),
+            response.status,
+            trace_start,
+            &stages,
+        );
+        let profile = crate::settings::var("TC_FLASK_PROFILE").is_ok_and(|s| s == "true");
+        let debug = crate::settings::var("TC_DEBUG").is_ok_and(|s| s == "true");
+        let level = crate::settings::var("TC_LOGLEVEL").unwrap_or_else(|_| "warning".into());
+        if profile || debug || ["debug", "info"].contains(&level.as_str()) {
+            // Query strings may contain user data; log route and timing only.
+            eprintln!(
+                "{}",
+                json!({"event":"http_request", "method":safe_method(method), "path":route_label(path), "status":response.status, "elapsed_ms":started.elapsed().as_secs_f64()*1000.0, "profile":profile,"stages_seconds":stages})
+            );
+        }
+        response
+    }
+
+    fn request_response(
+        &self,
+        method: &str,
+        url: &str,
+        headers: &BTreeMap<String, String>,
+        body: &[u8],
+    ) -> AppResponse {
         if body.len() > 1024 * 1024
             || url.len() > 8192
             || method.len() > 16
@@ -163,7 +344,7 @@ impl Application {
         }
         let raw_path = url.split('?').next().unwrap_or(url);
         let decoded_path = percent_decode_path(raw_path).unwrap_or_else(|_| raw_path.to_owned());
-        let _render_permit = if ["/singleband/", "/rgb/", "/compute/"]
+        let _render_permit = if ["/singleband/", "/rgb/", "/compute/", "/layers/"]
             .iter()
             .any(|prefix| decoded_path.starts_with(prefix))
         {
@@ -174,6 +355,10 @@ impl Application {
                 })
                 .is_err()
             {
+                self.executor
+                    .cost()
+                    .render_overloaded
+                    .fetch_add(1, Ordering::Relaxed);
                 return json_error(503, "render capacity is full");
             }
             Some(RenderPermit(&self.render_in_flight))
@@ -188,12 +373,24 @@ impl Application {
             headers.get("content-type").map(String::as_str),
         );
         let path = url.split('?').next().unwrap_or(url);
-        let tile = ["/singleband/", "/rgb/", "/compute/"]
+        let tile = ["/singleband/", "/rgb/", "/compute/", "/layers/"]
             .iter()
             .any(|p| path.starts_with(p));
-        let metadata = ["/keys", "/datasets", "/colormap", "/metadata"].contains(&path)
-            || path.starts_with("/metadata/");
-        if (tile || metadata) && response.status != 405 && (render_route(path) || metadata) {
+        let metadata = [
+            "/keys",
+            "/datasets",
+            "/colormap",
+            "/metadata",
+            "/__terracotta/identity",
+        ]
+        .contains(&path)
+            || path.starts_with("/metadata/")
+            || path == "/layers"
+            || path.starts_with("/layers/");
+        if (tile || metadata)
+            && response.status != 405
+            && (render_route(path) || metadata || path.starts_with("/layers/"))
+        {
             let setting = if tile {
                 "TC_ALLOWED_ORIGINS_TILES"
             } else {
@@ -260,22 +457,16 @@ impl Application {
                 .insert("Content-Length".into(), response.body.len().to_string());
             response.body.clear();
         }
-        crate::tracing::request(headers, method, path, response.status, trace_start);
-        let profile = crate::settings::var("TC_FLASK_PROFILE").is_ok_and(|s| s == "true");
-        let debug = crate::settings::var("TC_DEBUG").is_ok_and(|s| s == "true");
-        let level = crate::settings::var("TC_LOGLEVEL").unwrap_or_else(|_| "warning".into());
-        if profile || debug || ["debug", "info"].contains(&level.as_str()) {
-            // Query strings may contain user data; log route and timing only.
-            eprintln!(
-                "{}",
-                json!({"event":"http_request", "method":method, "path":path, "status":response.status, "elapsed_ms":started.elapsed().as_secs_f64()*1000.0, "profile":profile})
-            );
-        }
         response
     }
 
     pub fn serve(self, address: &str) -> Result<()> {
-        transport::serve(self, address)
+        transport::serve(self, address, false)
+    }
+
+    /// Install process signal handlers for the standalone server and drain on shutdown.
+    pub fn serve_with_signals(self, address: &str) -> Result<()> {
+        transport::serve(self, address, true)
     }
 
     fn handle(
@@ -286,10 +477,12 @@ impl Application {
         content_type: Option<&str>,
     ) -> AppResponse {
         let (raw_path, query) = url.split_once('?').unwrap_or((url, ""));
-        let decoded_path = percent_decode_path(raw_path).unwrap_or_else(|_| raw_path.into());
-        let decoded_path = decoded_path.replace('%', "%25");
-        let path = decoded_path.as_str();
+        // Decode each key after splitting the route so encoded slashes stay in their component.
+        let path = raw_path;
         let parameters = parse_query(query);
+        if path == "/layers" || path.starts_with("/layers/") {
+            return self.layer_response(method, path, body, content_type, &parameters);
+        }
         let known = [
             "/keys",
             "/datasets",
@@ -305,7 +498,7 @@ impl Application {
         .contains(&path)
             || path.starts_with("/metadata/")
             || render_route(path)
-            || (path == "/__terracotta/metrics"
+            || (["/__terracotta/metrics", "/__terracotta/metrics/prometheus"].contains(&path)
                 && crate::settings::var("TC_EXPOSE_METRICS").is_ok_and(|value| value == "true"));
         if !known {
             return html_error(404);
@@ -375,6 +568,7 @@ impl Application {
             )),
             "/__terracotta/identity" => self.identity(),
             "/__terracotta/metrics" => self.metrics(),
+            "/__terracotta/metrics/prometheus" => self.prometheus(),
             _ if path.starts_with("/metadata/") => self.metadata(path, &parameters),
             _ if path.starts_with("/singleband/") => self.singleband(path, &parameters),
             _ if path.starts_with("/rgb/") => self.rgb(path, &parameters),
@@ -510,7 +704,7 @@ impl Application {
     }
 
     fn keys(&self) -> Result<AppResponse> {
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         json_response(
             200,
@@ -519,18 +713,24 @@ impl Application {
     }
 
     fn identity(&self) -> Result<AppResponse> {
-        json_response(
-            200,
-            &json!({
-                "implementation": crate::IMPLEMENTATION_VERSION,
-                "protocol_compatibility": crate::TERRACOTTA_COMPATIBILITY_VERSION,
-                "database_compatibility": crate::DATABASE_COMPATIBILITY
-            }),
-        )
+        let mut identity = json!({
+            "implementation": crate::IMPLEMENTATION_VERSION,
+            "compatibility_profile": crate::compatibility::CompatibilityProfile::current().name(),
+            "protocol_compatibility": crate::TERRACOTTA_COMPATIBILITY_VERSION,
+            "database_compatibility": if self.layers.is_some() {crate::layers::catalog::FORMAT} else {crate::DATABASE_COMPATIBILITY}
+        });
+        if let Some(store) = &self.store {
+            let store = store.lock().map_err(|_| "catalog lock poisoned")?;
+            identity["database_compatibility"] = json!(store.format());
+            if let Some(revision) = store.revision() {
+                identity["source_revision"] = json!(revision);
+            }
+        }
+        json_response(200, &identity)
     }
 
     fn datasets(&self, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         let known = store.key_names();
         for key in parameters.keys() {
@@ -610,13 +810,13 @@ impl Application {
     }
 
     fn metadata(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
-        self.metadata_from_store(&store, path, parameters)
+        self.metadata_from_catalog(&store, path, parameters)
     }
-    fn metadata_from_store(
+    fn metadata_from_catalog(
         &self,
-        store: &Store,
+        store: &Catalog,
         path: &str,
         parameters: &BTreeMap<String, String>,
     ) -> Result<AppResponse> {
@@ -651,12 +851,13 @@ impl Application {
     }
 
     fn singleband(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
         let started = Instant::now();
         let components = path
             .trim_start_matches("/singleband/")
             .split('/')
             .collect::<Vec<_>>();
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         let key_count = store.keys().len();
         if components.len() != key_count + 1 && components.len() != key_count + 3 {
@@ -666,11 +867,12 @@ impl Application {
             .iter()
             .map(|item| percent_decode_path(item))
             .collect::<Result<Vec<_>>>()?;
-        let (dataset, metadata) = store
+        let (dataset, metadata, source) = store
             .descriptor(&keys)?
             .ok_or_else(|| "No dataset found".to_string())?;
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
+        drop(selection);
         let metadata_at = Instant::now();
         let size = parameters
             .get("tile_size")
@@ -703,7 +905,10 @@ impl Application {
             .map(|v| color::parse(v, 1))
             .transpose()?
             .unwrap_or_default();
-        let colormap = parameters.get("colormap").map(String::as_str);
+        let colormap = parameters
+            .get("colormap")
+            .map(String::as_str)
+            .or_else(|| metadata.metadata["defaults"]["colormap"].as_str());
         if let Some(other) = colormap {
             if !self.palettes.0.contains_key(other) && other != "explicit" {
                 return Err(format!("Encountered invalid color map {other}"));
@@ -729,9 +934,10 @@ impl Application {
             .key(path, parameters, [(dataset.path.as_path(), &metadata)]);
         let remote = crate::execution::is_remote(&dataset.path);
         let png = self.render_cache.render(key, remote, || {
-            let raster = self.executor.read(
-                &dataset.path,
+            let raster = source.read(
+                &self.executor,
                 ReadRequest {
+                    grid: None,
                     band,
                     bounds_mercator: bounds,
                     size,
@@ -748,7 +954,7 @@ impl Application {
                     .get("stretch_range")
                     .map(|value| parse_stretch(value, &metadata))
                     .transpose()?
-                    .unwrap_or(metadata.range);
+                    .unwrap_or(default_range(&metadata));
                 if legacy_decimal && uses_metadata_range(parameters.get("stretch_range")) {
                     return Err("legacy internal error".into());
                 }
@@ -776,7 +982,7 @@ impl Application {
                     (metadata_at - started).as_micros(),
                     (raster_at - metadata_at).as_micros(),
                     raster_at.elapsed().as_micros(),
-                    path,
+                    route_label(path),
                 );
             }
             Ok(png)
@@ -791,6 +997,7 @@ impl Application {
     }
 
     fn rgb(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
         let started = Instant::now();
         let format = match parameters
             .get("format")
@@ -822,7 +1029,7 @@ impl Application {
             .map(|value| parse_size(value))
             .transpose()?
             .unwrap_or(self.default_size);
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         let key_count = store.keys().len();
         let some_key_count = key_count.saturating_sub(1);
@@ -852,19 +1059,22 @@ impl Application {
             .into_iter()
             .collect::<Result<Vec<_>>>()?;
 
+        let mut sources = Vec::with_capacity(3);
         let mut paths = Vec::with_capacity(3);
         let mut metadata = Vec::with_capacity(3);
         for band in &band_values {
             let mut keys = some_keys.clone();
             keys.push(band.clone());
-            let (dataset, descriptor) = store
+            let (dataset, descriptor, source) = store
                 .descriptor(&keys)?
                 .ok_or_else(|| "No dataset found".to_string())?;
             paths.push(dataset.path);
             metadata.push(descriptor);
+            sources.push(source);
         }
         let legacy_decimal = store.legacy_decimal_stretch();
         drop(store);
+        drop(selection);
         let metadata_at = Instant::now();
 
         let tile_bounds = if preview {
@@ -888,11 +1098,16 @@ impl Application {
             }
             Some(raster::mercator_tile_bounds(x, y, z))
         };
+        let preview_grid = if preview && sources.iter().any(|source| source.mapped()) {
+            Some(shared_bounds(sources.iter())?)
+        } else {
+            None
+        };
         let channel_bounds = metadata
             .iter()
             // None independently frames each source inside the raster reader,
             // including different RGB extents and antimeridian wrapping.
-            .map(|_| tile_bounds)
+            .map(|_| tile_bounds.or(preview_grid))
             .collect::<Vec<_>>();
         let bands = channel_names
             .iter()
@@ -912,7 +1127,7 @@ impl Application {
                 .get(&name)
                 .map(|value| parse_stretch(value, &metadata[index]))
                 .transpose()?
-                .unwrap_or(metadata[index].range);
+                .unwrap_or(default_range(&metadata[index]));
             if range[1] < range[0] {
                 return Err("Upper stretch bound must be higher than lower bound".into());
             }
@@ -932,64 +1147,88 @@ impl Application {
         );
         let remote = paths.iter().any(|p| crate::execution::is_remote(p));
         let png = self.render_cache.render(key, remote, || {
-            // A repeated band is read once and independently stretched into each
-            // requested output channel.
-            let mut unique_requests = Vec::new();
-            let mut channel_sources = Vec::with_capacity(3);
-            let mut identities = HashMap::new();
-            for (channel, path) in paths.into_iter().enumerate() {
-                let identity = (
-                    path.to_string_lossy().into_owned(),
-                    channel_bounds[channel].map(|bounds| bounds.map(f64::to_bits)),
-                    bands[channel],
-                );
-                let index = if let Some(index) = identities.get(&identity) {
-                    *index
-                } else {
-                    let index = unique_requests.len();
-                    identities.insert(identity, index);
-                    unique_requests.push((path, channel_bounds[channel], bands[channel]));
-                    index
-                };
-                channel_sources.push(index);
+            for (source, band) in sources.iter().zip(&bands) {
+                source.validate(*band)?;
             }
-            let requests = unique_requests
-                .into_iter()
-                .map(|(path, bounds, band)| {
-                    (
-                        path,
-                        ReadRequest {
-                            band,
-                            bounds_mercator: bounds,
-                            size,
-                            preserve_values: false,
-                        },
-                    )
-                })
-                .collect::<Vec<_>>();
-            let rasters = self.executor.read_many(&requests)?;
-            let raster_at = Instant::now();
-            let first = &rasters[channel_sources[0]];
-            if channel_sources.iter().any(|source| {
-                rasters[*source].width != first.width || rasters[*source].height != first.height
-            }) {
+            let channels = if sources.iter().any(|source| source.mapped()) {
+                sources
+                    .iter()
+                    .enumerate()
+                    .map(|(i, source)| {
+                        source.read(
+                            &self.executor,
+                            ReadRequest {
+                                grid: None,
+                                band: bands[i],
+                                bounds_mercator: channel_bounds[i],
+                                size,
+                                preserve_values: false,
+                            },
+                        )
+                    })
+                    .collect::<Result<Vec<_>>>()?
+            } else {
+                // A repeated band is read once and independently stretched into each
+                // requested output channel.
+                let mut unique_requests = Vec::new();
+                let mut channel_sources = Vec::with_capacity(3);
+                let mut identities = HashMap::new();
+                for (channel, path) in paths.into_iter().enumerate() {
+                    let identity = (
+                        path.to_string_lossy().into_owned(),
+                        channel_bounds[channel].map(|bounds| bounds.map(f64::to_bits)),
+                        bands[channel],
+                    );
+                    let index = if let Some(index) = identities.get(&identity) {
+                        *index
+                    } else {
+                        let index = unique_requests.len();
+                        identities.insert(identity, index);
+                        unique_requests.push((path, channel_bounds[channel], bands[channel]));
+                        index
+                    };
+                    channel_sources.push(index);
+                }
+                let requests = unique_requests
+                    .into_iter()
+                    .map(|(path, bounds, band)| {
+                        (
+                            path,
+                            ReadRequest {
+                                grid: None,
+                                band,
+                                bounds_mercator: bounds,
+                                size,
+                                preserve_values: false,
+                            },
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                let rasters = self.executor.read_many(&requests)?;
+                channel_sources
+                    .iter()
+                    .map(|index| rasters[*index].clone())
+                    .collect::<Vec<_>>()
+            };
+            let first = &channels[0];
+            if channels
+                .iter()
+                .any(|r| r.width != first.width || r.height != first.height)
+            {
                 return Err("RGB bands produced different output dimensions".into());
             }
+            let raster_at = Instant::now();
             let png = if operations.is_empty() && self.fused_render {
                 image::stretched_rgb_image(
-                    [
-                        &rasters[channel_sources[0]],
-                        &rasters[channel_sources[1]],
-                        &rasters[channel_sources[2]],
-                    ],
+                    [&channels[0], &channels[1], &channels[2]],
                     [ranges[0], ranges[1], ranges[2]],
                     format,
                 )?
             } else {
-                let mut normalized = channel_sources
+                let mut normalized = channels
                     .iter()
                     .enumerate()
-                    .map(|(channel, source)| color::normalize(&rasters[*source], ranges[channel]))
+                    .map(|(channel, raster)| color::normalize(raster, ranges[channel]))
                     .collect::<Vec<_>>();
                 color::apply(&mut normalized, &operations);
                 let channels = normalized
@@ -1009,7 +1248,7 @@ impl Application {
                     (metadata_at - started).as_micros(),
                     (raster_at - metadata_at).as_micros(),
                     raster_at.elapsed().as_micros(),
-                    path,
+                    route_label(path),
                 );
             }
             Ok(png)
@@ -1056,7 +1295,7 @@ impl Application {
                 self.max_metadata
             ));
         }
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         let mut result = Vec::new();
         for keys in keys {
@@ -1068,7 +1307,7 @@ impl Application {
                     .collect::<Vec<_>>()
                     .join("/")
             );
-            let response = self.metadata_from_store(&store, &path, parameters)?;
+            let response = self.metadata_from_catalog(&store, &path, parameters)?;
             result
                 .push(serde_json::from_slice::<Value>(&response.body).map_err(|e| e.to_string())?);
         }
@@ -1123,6 +1362,7 @@ impl Application {
     }
 
     fn compute(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
         let expression = parameters
             .get("expression")
             .ok_or("{'expression': ['Missing data for required field.']}")?;
@@ -1152,7 +1392,7 @@ impl Application {
             .collect::<Vec<_>>();
         let preview = parts.last() == Some(&"preview.png");
         let tail = if preview { 1 } else { 3 };
-        let mut store = self.store.lock().expect("store lock");
+        let mut store = self.catalog()?;
         store.refresh()?;
         let n = store.keys().len() - 1;
         if parts.len() != n + tail {
@@ -1180,8 +1420,7 @@ impl Application {
             if let Some(band) = parameters.get(&var) {
                 let mut keys = keys.clone();
                 keys.push(band.clone());
-                let dataset = store.dataset(&keys)?.ok_or("No dataset found")?;
-                let metadata = store.metadata(&keys)?.ok_or("No dataset found")?;
+                let (_, metadata, source) = store.descriptor(&keys)?.ok_or("No dataset found")?;
                 let bounds = if let Some((x, y, z)) = xyz {
                     if !raster::tile_exists(metadata.bounds, x, y, z) {
                         return self.empty_tile(parameters, false);
@@ -1190,19 +1429,26 @@ impl Application {
                 } else {
                     None
                 };
-                requests.push((var, dataset.path, bounds));
+                requests.push((var, source, bounds));
             }
         }
         drop(store);
+        drop(selection);
+        let preview_grid = if preview && requests.iter().any(|(_, source, _)| source.mapped()) {
+            Some(shared_bounds(requests.iter().map(|(_, source, _)| source))?)
+        } else {
+            None
+        };
         let mut rasters = BTreeMap::new();
-        for (var, path, bounds) in requests {
+        for (var, source, bounds) in requests {
             rasters.insert(
                 var,
-                self.executor.read(
-                    &path,
+                source.read(
+                    &self.executor,
                     ReadRequest {
+                        grid: None,
                         band: 1,
-                        bounds_mercator: bounds,
+                        bounds_mercator: bounds.or(preview_grid),
                         size,
                         preserve_values: false,
                     },
@@ -1253,11 +1499,80 @@ impl Application {
         Ok(response)
     }
 
+    fn prometheus(&self) -> Result<AppResponse> {
+        use std::fmt::Write;
+        let mut output = self.executor.cost().prometheus();
+        let metrics = serde_json::to_value(self.executor.metrics()).map_err(|e| e.to_string())?;
+        for name in [
+            "submitted",
+            "completed",
+            "failed",
+            "cancelled_queued",
+            "overloaded",
+            "timed_out",
+            "cache_hits",
+            "cache_misses",
+            "remote_jobs",
+            "prefetch_completed",
+            "prefetch_failed",
+        ] {
+            let _ = writeln!(
+                output,
+                "# TYPE rcfp_raster_{name}_total counter\nrcfp_raster_{name}_total {}",
+                metrics[name]
+            );
+        }
+        for name in [
+            "workers",
+            "queue_capacity",
+            "queued",
+            "in_flight",
+            "prefetch_in_flight",
+            "cache_capacity_bytes",
+            "cache_bytes",
+            "cache_entries",
+        ] {
+            let _ = writeln!(
+                output,
+                "# TYPE rcfp_raster_{name} gauge\nrcfp_raster_{name} {}",
+                metrics[name]
+            );
+        }
+        let cache = self.render_cache.metrics();
+        for name in ["hits", "misses", "coalesced"] {
+            let _ = writeln!(
+                output,
+                "# TYPE rcfp_render_{name}_total counter\nrcfp_render_{name}_total {}",
+                cache[name]
+            );
+        }
+        for name in ["bytes", "capacity_bytes", "entries", "in_flight"] {
+            let _ = writeln!(
+                output,
+                "# TYPE rcfp_render_{name} gauge\nrcfp_render_{name} {}",
+                cache[name]
+            );
+        }
+        let _ = writeln!(
+            output,
+            "# TYPE rcfp_render_admitted gauge\nrcfp_render_admitted {}",
+            self.render_in_flight.load(Ordering::Relaxed)
+        );
+        Ok(bytes_response(
+            "text/plain; version=0.0.4; charset=utf-8",
+            output.into_bytes(),
+        ))
+    }
+
     fn metrics(&self) -> Result<AppResponse> {
         let mut value = serde_json::to_value(self.executor.metrics())
             .map_err(|error| format!("could not encode metrics: {error}"))?;
         let object = value.as_object_mut().expect("metrics object");
         object.insert("render_cache".into(), self.render_cache.metrics());
+        object.insert(
+            "render_admitted".into(),
+            json!(self.render_in_flight.load(Ordering::Relaxed)),
+        );
         object.insert("rss_bytes".into(), json!(process_rss_bytes()));
         object.insert(
             "open_file_descriptors".into(),
@@ -1347,6 +1662,27 @@ pub(crate) fn api_spec() -> Value {
                 "415": {"description": "JSON content type required"}
             }
         }});
+        spec["paths"]["/layers"] = json!({"get":{"summary":"List database-backed native layers","responses":{"200":{"description":"Native format marker and layer IDs"},"404":{"description":"Not a native layer database"}}}});
+        spec["paths"]["/layers/{id}"] = json!({"get":{"summary":"Describe observations, assets, bands and default rendering","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Complete persisted layer definition"},"404":{"description":"Unknown layer"}}}});
+        spec["paths"]["/layers/{id}/render"] = json!({"post":{
+            "summary":"Render selected native asset bands or expressions on an explicit grid",
+            "description":"An empty object uses the rendering specification stored in the database. File locations cannot be supplied in requests.",
+            "parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],
+            "requestBody":{"required":false,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/NativeRenderSpec"}}}},
+            "responses":{"200":{"description":"PNG with explicit coverage","content":{"image/png":{"schema":{"type":"string","format":"binary"}}}},"400":{"description":"Invalid bands, expressions, grid, stretch or content type"},"404":{"description":"Unknown layer"},"503":{"description":"Render or raster capacity is full"},"504":{"description":"Raster deadline elapsed; active work continues"}}
+        }});
+        spec["components"]["schemas"]["NativeRenderSpec"] = json!({
+            "type":"object","additionalProperties":false,
+            "required":["bindings","values","channels","coverage","grid","encoding"],
+            "properties":{
+                "bindings":{"type":"object","minProperties":1,"maxProperties":16,"additionalProperties":{"type":"object","additionalProperties":false,"required":["asset","band"],"properties":{"asset":{"type":"string"},"band":{"oneOf":[{"type":"integer","minimum":1},{"type":"string","minLength":1}]}}}},
+                "values":{"type":"string","enum":["raw","scaled"]},
+                "coverage":{"type":"string","enum":["any_valid","all_valid"]},
+                "encoding":{"type":"string","enum":["png"]},
+                "grid":{"type":"object","additionalProperties":false,"required":["crs","bounds","size","resampling"],"properties":{"crs":{"type":"string","pattern":"^EPSG:[1-9][0-9]*$"},"bounds":{"type":"array","minItems":4,"maxItems":4,"items":{"type":"number"}},"size":{"type":"array","minItems":2,"maxItems":2,"items":{"type":"integer","minimum":1,"maximum":2048}},"resampling":{"type":"string","enum":["nearest","bilinear","cubic","average"]}}},
+                "channels":{"type":"array","minItems":1,"maxItems":3,"items":{"type":"object","additionalProperties":false,"required":["expression"],"properties":{"expression":{"type":"string","minLength":1},"stretch":{"type":"array","nullable":true,"minItems":2,"maxItems":2,"items":{"type":"number"}},"categories":{"type":"array","maxItems":255,"items":{"type":"object","additionalProperties":false,"required":["value","color"],"properties":{"value":{"type":"number"},"color":{"type":"array","minItems":4,"maxItems":4,"items":{"type":"integer","minimum":0,"maximum":255}}}}}}}}
+            }
+        });
         for (path, entry) in spec["paths"].as_object_mut().expect("paths") {
             if path.starts_with("/rgb/") || path.starts_with("/singleband/") {
                 let parameters = entry["get"]["parameters"]
@@ -1691,6 +2027,66 @@ fn encode_path(value: &str) -> String {
 fn uses_metadata_range(raw: Option<&String>) -> bool {
     raw.and_then(|r| serde_json::from_str::<Value>(r).ok())
         .is_none_or(|v| v.as_array().is_none_or(|a| a.iter().any(Value::is_null)))
+}
+
+fn route_label(path: &str) -> &'static str {
+    for (prefix, label) in [
+        ("/singleband/", "/singleband"),
+        ("/rgb/", "/rgb"),
+        ("/compute/", "/compute"),
+        ("/metadata/", "/metadata"),
+        ("/static/", "/static"),
+        ("/layers/", "/layers"),
+    ] {
+        if path.starts_with(prefix) {
+            return label;
+        }
+    }
+    match path {
+        "/keys" => "/keys",
+        "/datasets" => "/datasets",
+        "/metadata" => "/metadata",
+        "/colormap" => "/colormap",
+        "/layers" => "/layers",
+        "/__terracotta/metrics" | "/__terracotta/metrics/prometheus" => "/metrics",
+        _ => "/other",
+    }
+}
+pub(crate) fn safe_method(method: &str) -> &'static str {
+    match method {
+        "GET" => "GET",
+        "HEAD" => "HEAD",
+        "POST" => "POST",
+        "OPTIONS" => "OPTIONS",
+        _ => "OTHER",
+    }
+}
+
+fn default_range(metadata: &Metadata) -> [f64; 2] {
+    serde_json::from_value(metadata.metadata["defaults"]["stretch"].clone())
+        .unwrap_or(metadata.range)
+}
+
+fn shared_bounds<'a>(
+    mut sources: impl Iterator<Item = &'a crate::catalog::Source>,
+) -> Result<[f64; 4]> {
+    sources.try_fold(
+        [
+            f64::INFINITY,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::NEG_INFINITY,
+        ],
+        |bounds, source| {
+            let b = source.preview_bounds()?;
+            Ok([
+                bounds[0].min(b[0]),
+                bounds[1].min(b[1]),
+                bounds[2].max(b[2]),
+                bounds[3].max(b[3]),
+            ])
+        },
+    )
 }
 
 #[cfg(test)]

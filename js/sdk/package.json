@@ -1,0 +1,44 @@
+{
+  "name": "@rcfp/sdk",
+  "version": "0.1.0",
+  "description": "Framework-independent browser client for RCFP public HTTP contracts",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./integrations": {
+      "types": "./integrations.d.ts",
+      "default": "./integrations.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "integrations.js",
+    "integrations.d.ts",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dionhaefner/rust-colored-flower-pot.git",
+    "directory": "js/sdk"
+  },
+  "homepage": "https://github.com/dionhaefner/rust-colored-flower-pot/blob/main/docs/reference/javascript.md",
+  "bugs": {
+    "url": "https://github.com/dionhaefner/rust-colored-flower-pot/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

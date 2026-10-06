@@ -1,4 +1,5 @@
 pub mod migrations;
+mod native;
 pub mod provider;
 pub mod relational;
 pub mod remote;
@@ -29,6 +30,50 @@ pub struct KeyDefinition {
 pub struct Dataset {
     pub keys: Vec<String>,
     pub path: PathBuf,
+}
+
+pub(crate) fn query_datasets(
+    mut data: Vec<Dataset>,
+    known: &[&str],
+    filters: &BTreeMap<String, Vec<String>>,
+    order: &[String],
+    ascending: bool,
+    pagination: Option<(usize, usize)>,
+) -> Result<Vec<Dataset>> {
+    for key in filters.keys().chain(order.iter()) {
+        if key != "path" && !known.contains(&key.as_str()) {
+            return Err("unrecognized dataset key".into());
+        }
+    }
+    data.retain(|d| {
+        known.iter().enumerate().all(|(i, k)| {
+            filters
+                .get(*k)
+                .is_none_or(|v| v.is_empty() || v.contains(&d.keys[i]))
+        })
+    });
+    data.sort_by(|a, b| {
+        for k in order {
+            let cmp = if k == "path" {
+                a.path.as_os_str().cmp(b.path.as_os_str())
+            } else {
+                let i = known.iter().position(|v| *v == k).unwrap();
+                a.keys[i].cmp(&b.keys[i])
+            };
+            if cmp != std::cmp::Ordering::Equal {
+                return if ascending { cmp } else { cmp.reverse() };
+            }
+        }
+        std::cmp::Ordering::Equal
+    });
+    if let Some((page, limit)) = pagination {
+        data = data
+            .into_iter()
+            .skip(page.saturating_mul(limit))
+            .take(limit)
+            .collect();
+    }
+    Ok(data)
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -71,6 +116,9 @@ impl DescriptorCache {
 
 impl SqliteStore {
     pub fn db_version(&self) -> Result<String> {
+        if self.native_format()? {
+            return Ok(crate::catalog::dataset::FORMAT.into());
+        }
         self.connection
             .query_row("SELECT version FROM terracotta LIMIT 1", [], |row| {
                 row.get(0)
@@ -110,6 +158,20 @@ impl SqliteStore {
             }) | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )
         .map_err(|error| format!("could not open database: {error}"))?;
+        let native_marker: bool = connection.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='rcfp_catalog')", [], |row| row.get(0)).map_err(db_error)?;
+        if native_marker {
+            let format: String = connection
+                .query_row(
+                    "SELECT MIN(format) FROM rcfp_catalog HAVING COUNT(*)=1",
+                    [],
+                    |row| row.get(0),
+                )
+                .map_err(|_| "invalid native catalog marker")?;
+            if format != crate::catalog::dataset::FORMAT {
+                return Err("native layer catalog cannot be opened as a Terracotta catalog; use LayerStore or /layers".into());
+            }
+            crate::compatibility::CompatibilityProfile::current().require_native()?;
+        }
         connection
             .pragma_update(None, "query_only", !writable)
             .map_err(|error| format!("could not make database read-only: {error}"))?;
@@ -122,11 +184,15 @@ impl SqliteStore {
                     .unwrap_or(10),
             ))
             .map_err(db_error)?;
-        let version: String = connection
-            .query_row("SELECT version FROM terracotta LIMIT 1", [], |row| {
-                row.get(0)
-            })
-            .map_err(|error| format!("not a Terracotta database: {error}"))?;
+        let version: String = if native_marker {
+            crate::settings::protocol_version()
+        } else {
+            connection
+                .query_row("SELECT version FROM terracotta LIMIT 1", [], |row| {
+                    row.get(0)
+                })
+                .map_err(|error| format!("not a Terracotta database: {error}"))?
+        };
         if major_minor(&version) != major_minor(&crate::settings::protocol_version()) {
             return Err(format!(
                 "Version conflict: database was created in v{version}, but this is compatible with v{TERRACOTTA_COMPATIBILITY_VERSION}"
@@ -383,6 +449,15 @@ impl SqliteStore {
                     .execute(
                         &format!("DELETE FROM {table} WHERE {predicate}"),
                         rusqlite::params_from_iter(keys),
+                    )
+                    .map_err(write_error)?;
+            }
+            if store.native_format()? {
+                store
+                    .connection
+                    .execute(
+                        "DELETE FROM rcfp_definitions WHERE keys=?",
+                        [serde_json::to_string(keys).map_err(|e| e.to_string())?],
                     )
                     .map_err(write_error)?;
             }

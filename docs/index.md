@@ -8,6 +8,7 @@ Terracotta 0.10.1 compatibility profile. Catalogs describe your data; the origin
 raster files stay where you put them.
 
 - **[Get started](tutorials/first-map.md)**: create a map from supplied real imagery.
+- **<a href="demo/index.html">Live demo</a>**: explore the supplied Sentinel-2 imagery in your browser.
 - **[Upgrade from Terracotta](how-to/upgrade-terracotta.md)**: choose a migration
   path, compare behavior, and rehearse rollback.
 - **[Why RCFP?](explanation/why-rcfp.md)**: understand deployment benefits,

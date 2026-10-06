@@ -11,6 +11,7 @@ struct SourceKey {
     path: String,
     generation: Vec<(u64, u128)>,
     metadata: Vec<u64>,
+    policy: String,
 }
 #[derive(Clone, Hash, Eq, PartialEq)]
 pub(super) struct RenderKey {
@@ -86,12 +87,8 @@ mod tests {
     }
 
     #[test]
-    fn identical_concurrent_requests_share_one_render() {
-        let cache = Arc::new(RenderCache::new(
-            1024,
-            Duration::ZERO,
-            Duration::from_secs(5),
-        ));
+    fn identical_concurrent_requests_share_one_render_without_retention() {
+        let cache = Arc::new(RenderCache::new(0, Duration::ZERO, Duration::from_secs(5)));
         let calls = Arc::new(AtomicUsize::new(0));
         let (started, ready) = std::sync::mpsc::channel();
         let (finish, proceed) = std::sync::mpsc::channel();
@@ -134,6 +131,29 @@ mod tests {
         }
         assert_eq!(calls.load(Ordering::SeqCst), 1);
         assert_eq!(cache.metrics()["in_flight"], 0);
+        assert_eq!(cache.metrics()["entries"], 0);
+        assert_eq!(cache.metrics()["bytes"], 0);
+        assert_eq!(
+            cache.render(key("a"), false, || Ok(vec![9])).unwrap(),
+            vec![9]
+        );
+    }
+
+    #[test]
+    fn eviction_releases_allocated_capacity() {
+        let key = key("a");
+        let cache = RenderCache::new(key.weight(4096), Duration::ZERO, Duration::from_secs(1));
+        cache
+            .render(key.clone(), false, || {
+                let mut bytes = Vec::with_capacity(4096);
+                bytes.push(1);
+                Ok(bytes)
+            })
+            .unwrap();
+        let mut state = cache.state.lock().unwrap();
+        RenderCache::remove(&mut state, &key);
+        assert_eq!(state.bytes, 0);
+        assert!(state.entries.is_empty());
     }
 
     #[test]
@@ -178,6 +198,11 @@ impl RenderKey {
                         path: path.to_string_lossy().into_owned(),
                         generation,
                         metadata: numbers,
+                        policy: serde_json::json!([
+                            metadata.metadata.get("revision"),
+                            metadata.metadata.get("defaults")
+                        ])
+                        .to_string(),
                     }
                 })
                 .collect(),
@@ -197,6 +222,7 @@ impl RenderKey {
                 .iter()
                 .map(|source| {
                     source.path.len()
+                        + source.policy.len()
                         + source.generation.len() * std::mem::size_of::<(u64, u128)>()
                         + source.metadata.len() * 8
                         + std::mem::size_of::<SourceKey>()
@@ -265,15 +291,7 @@ impl RenderCache {
         parameters: &BTreeMap<String, String>,
         sources: impl IntoIterator<Item = (&'a Path, &'a Metadata)>,
     ) -> RenderKey {
-        if self.capacity == 0 {
-            RenderKey {
-                route: String::new(),
-                parameters: vec![],
-                sources: vec![],
-            }
-        } else {
-            RenderKey::new(route, parameters, sources)
-        }
+        RenderKey::new(route, parameters, sources)
     }
     pub fn new(capacity: usize, remote_ttl: Duration, wait_timeout: Duration) -> Self {
         Self {
@@ -290,9 +308,6 @@ impl RenderCache {
         remote: bool,
         render: impl FnOnce() -> Result<Vec<u8>>,
     ) -> Result<Vec<u8>> {
-        if self.capacity == 0 {
-            return render();
-        }
         let (flight, leader) =
             {
                 let mut state = self.state.lock().expect("render cache");
@@ -326,6 +341,7 @@ impl RenderCache {
                 }
             };
         if !leader {
+            let _timer = crate::telemetry::timer(crate::telemetry::Stage::RenderWait);
             let result = flight.result.lock().expect("render result");
             let (result, _) = flight
                 .ready
@@ -384,7 +400,7 @@ impl RenderCache {
     fn remove(state: &mut State, key: &RenderKey) {
         if let Some(entry) = state.entries.remove(key) {
             state.order.remove(&entry.tick);
-            state.bytes -= key.weight(entry.bytes.len());
+            state.bytes -= key.weight(entry.bytes.capacity());
         }
     }
 

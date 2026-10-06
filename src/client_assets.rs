@@ -1,54 +1,70 @@
 // Bundled browser assets and MIME types.
 pub fn asset(path: &str) -> Option<(&'static [u8], &'static str)> {
     match path {
-        "/static/react/asset-manifest.json" => Some((
-            include_bytes!("assets/client/static/react/asset-manifest.json"),
-            "application/json",
+        "/examples/leaflet.html" => Some((
+            include_bytes!("assets/client/examples/leaflet.html"),
+            "text/html; charset=utf-8",
         )),
-        "/static/react/favicon.ico" => Some((
-            include_bytes!("assets/client/static/react/favicon.ico"),
-            "image/x-icon",
+        "/examples/maplibre.html" => Some((
+            include_bytes!("assets/client/examples/maplibre.html"),
+            "text/html; charset=utf-8",
         )),
-        "/static/react/logo192.png" => Some((
-            include_bytes!("assets/client/static/react/logo192.png"),
-            "image/png",
+        "/examples/openlayers.html" => Some((
+            include_bytes!("assets/client/examples/openlayers.html"),
+            "text/html; charset=utf-8",
         )),
-        "/static/react/logo512.png" => Some((
-            include_bytes!("assets/client/static/react/logo512.png"),
-            "image/png",
+        "/sdk/CHANGELOG.md" => Some((include_bytes!("../js/sdk/CHANGELOG.md"), "text/plain")),
+        "/sdk/LICENSE" => Some((include_bytes!("../js/sdk/LICENSE"), "text/plain")),
+        "/sdk/README.md" => Some((include_bytes!("../js/sdk/README.md"), "text/plain")),
+        "/sdk/index.d.ts" => Some((include_bytes!("../js/sdk/index.d.ts"), "text/plain")),
+        "/sdk/index.js" => Some((include_bytes!("../js/sdk/index.js"), "text/javascript")),
+        "/sdk/integrations.d.ts" => {
+            Some((include_bytes!("../js/sdk/integrations.d.ts"), "text/plain"))
+        }
+        "/sdk/integrations.js" => Some((
+            include_bytes!("../js/sdk/integrations.js"),
+            "text/javascript",
         )),
-        "/static/react/manifest.json" => Some((
-            include_bytes!("assets/client/static/react/manifest.json"),
-            "application/json",
+        "/sdk/package.json" => Some((include_bytes!("../js/sdk/package.json"), "application/json")),
+        "/vendor/leaflet-LICENSE.txt" => Some((
+            include_bytes!("assets/client/vendor/leaflet-LICENSE.txt"),
+            "text/plain",
         )),
-        "/static/react/robots.txt" => Some((
-            include_bytes!("assets/client/static/react/robots.txt"),
-            "application/octet-stream",
-        )),
-        "/static/react/static/css/2.19072978.chunk.css" => Some((
-            include_bytes!("assets/client/static/react/static/css/2.19072978.chunk.css"),
+        "/vendor/leaflet.css" => Some((
+            include_bytes!("assets/client/vendor/leaflet.css"),
             "text/css",
         )),
-        "/static/react/static/js/2.83c1f4db.chunk.js" => Some((
-            include_bytes!("assets/client/static/react/static/js/2.83c1f4db.chunk.js"),
-            "application/javascript",
+        "/vendor/leaflet.js" => Some((
+            include_bytes!("assets/client/vendor/leaflet.js"),
+            "text/javascript",
         )),
-        "/static/react/static/js/2.83c1f4db.chunk.js.LICENSE.txt" => Some((
-            include_bytes!("assets/client/static/react/static/js/2.83c1f4db.chunk.js.LICENSE.txt"),
-            "application/octet-stream",
+        "/vendor/manifest.json" => Some((
+            include_bytes!("assets/client/vendor/manifest.json"),
+            "application/json",
         )),
-        "/static/react/static/js/main.9ed63b1f.chunk.js" => Some((
-            include_bytes!("assets/client/static/react/static/js/main.9ed63b1f.chunk.js"),
-            "application/javascript",
+        "/vendor/maplibre-LICENSE.txt" => Some((
+            include_bytes!("assets/client/vendor/maplibre-LICENSE.txt"),
+            "text/plain",
         )),
-        "/static/react/static/js/runtime-main.b2f07bb0.js" => Some((
-            include_bytes!("assets/client/static/react/static/js/runtime-main.b2f07bb0.js"),
-            "application/javascript",
+        "/vendor/maplibre-gl.css" => Some((
+            include_bytes!("assets/client/vendor/maplibre-gl.css"),
+            "text/css",
         )),
-        "/static/react/static/media/header.87193822.svg" => Some((
-            include_bytes!("assets/client/static/react/static/media/header.87193822.svg"),
-            "image/svg+xml",
+        "/vendor/maplibre-gl.js" => Some((
+            include_bytes!("assets/client/vendor/maplibre-gl.js"),
+            "text/javascript",
         )),
+        "/vendor/ol-LICENSE.txt" => Some((
+            include_bytes!("assets/client/vendor/ol-LICENSE.txt"),
+            "text/plain",
+        )),
+        "/vendor/ol.css" => Some((include_bytes!("assets/client/vendor/ol.css"), "text/css")),
+        "/vendor/ol.js" => Some((
+            include_bytes!("assets/client/vendor/ol.js"),
+            "text/javascript",
+        )),
+        "/viewer.css" => Some((include_bytes!("assets/client/viewer.css"), "text/css")),
+        "/viewer.js" => Some((include_bytes!("assets/client/viewer.js"), "text/javascript")),
         _ => None,
     }
 }

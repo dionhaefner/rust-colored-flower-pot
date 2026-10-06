@@ -21,6 +21,11 @@ libraries. Their upstream projects and license families include:
 The bundle contains artifact-specific dependency-license inventories under
 `licenses/cargo/` and `licenses/conda/`.
 
+Native TIFF access uses Development Seed's async-tiff (MIT or Apache-2.0). Its Rust transport
+and lossless codec dependencies, including Zstandard, are recorded in the
+artifact's Cargo license inventory. GDAL/PROJ remain bundled for supported
+projection, metadata and format fallbacks.
+
 RCFP embeds Terracotta 0.10.1 palette NPY files, generated API specification,
 rendered documentation template, favicon and ReDoc JavaScript. The project's
 upstream MIT license covers Terracotta assets; ReDoc's bundled notices are
@@ -47,6 +52,10 @@ in Cargo.lock; no Python dependency is required by the native metadata engines.
 
 ## Browser client
 
-RCFP embeds Terracotta browser JavaScript, CSS, and image assets in `src/assets/client` under the upstream MIT license
-(retained in LICENSE). The browser JavaScript's upstream notice is retained in
-`packaging/licenses/CLIENT-LICENSE.txt`; source maps are omitted.
+The bundled viewer uses Leaflet 1.9.4 (BSD-2-Clause). Independent SDK examples
+also embed MapLibre GL JS 5.7.3 (BSD-3-Clause and bundled dependency notices) and
+OpenLayers 10.6.1 (BSD-2-Clause). Exact acquisition URLs and SHA-256 checksums are
+in `src/assets/client/vendor/manifest.json`. License texts are served with the
+assets and retained in `packaging/licenses/CLIENT-LICENSE.txt`, which is copied
+into native bundles and wheels. Source maps are omitted. The public SDK and viewer
+source are covered by this project's MIT license.

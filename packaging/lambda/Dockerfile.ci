@@ -4,6 +4,7 @@ RUN python -m pip install rustup==1.29.0.1 zstandard==0.25.0
 WORKDIR /workspace
 COPY Cargo.toml Cargo.lock rust-toolchain.toml pyproject.toml ./
 COPY src ./src
+COPY js ./js
 COPY tests ./tests
 COPY python ./python
 COPY packaging ./packaging

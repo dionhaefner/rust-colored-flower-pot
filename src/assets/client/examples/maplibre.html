@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MapLibre SDK sample</title>
+    <link rel="stylesheet" href="/vendor/maplibre-gl.css" />
+    <style>
+      body {
+        font-family: system-ui;
+        margin: 1rem;
+      }
+      #map {
+        height: 65vh;
+      }
+      select {
+        padding: 0.5rem;
+      }
+    </style>
+  </head>
+  <body data-service="{{ hostname }}" data-profile="{{ profile }}">
+    <h1>MapLibre SDK sample</h1>
+    <label for="dataset">Dataset</label>
+    <select id="dataset"></select>
+    <p id="status" role="status">Loading…</p>
+    <div id="map" aria-label="Raster map"></div>
+    <script src="/vendor/maplibre-gl.js"></script>
+    <script type="module">
+      import { Client, LatestRequest } from "/sdk/index.js";
+      import { mapLibreSource } from "/sdk/integrations.js";
+      const client = new Client(document.body.dataset.service, {
+        profile: document.body.dataset.profile,
+      });
+      const map = new maplibregl.Map({
+        container: "map",
+        center: [0, 0],
+        zoom: 2,
+        style: {
+          version: 8,
+          sources: {},
+          layers: [
+            {
+              id: "background",
+              type: "background",
+              paint: { "background-color": "#dbe4e8" },
+            },
+          ],
+        },
+      });
+      map.addControl(new maplibregl.NavigationControl());
+      const loaded = new Promise((resolve) => map.on("load", resolve));
+      const select = document.getElementById("dataset"),
+        status = document.getElementById("status"),
+        latest = new LatestRequest();
+      let layers;
+      map.on("error", (event) => {
+        status.textContent = event.error.message;
+      });
+      async function display() {
+        if (map.getLayer("raster")) map.removeLayer("raster");
+        if (map.getSource("raster")) map.removeSource("raster");
+        try {
+          const layer = layers.find((row) => row.id === select.value);
+          const metadata = await latest.run((signal) =>
+            client.metadata(layer.keys, { signal }),
+          );
+          const render = {
+            mode: "singleband",
+            keys: layer.keys,
+            params: { stretch_range: [0, 3000] },
+          };
+          map.addSource("raster", mapLibreSource(client, render));
+          map.addLayer({
+            id: "raster",
+            type: "raster",
+            source: "raster",
+            paint: { "raster-fade-duration": 0 },
+          });
+          const [w, s, e, n] = metadata.bounds;
+          map.fitBounds(
+            [
+              [w, s],
+              [e, n],
+            ],
+            { maxZoom: 16, duration: 0 },
+          );
+          status.textContent = layer.title;
+        } catch (error) {
+          if (error.name !== "AbortError") status.textContent = error.message;
+        }
+      }
+      try {
+        await client.connect();
+        ({ layers } = await client.discover());
+        await loaded;
+        for (const layer of layers) {
+          const option = document.createElement("option");
+          option.value = layer.id;
+          option.textContent = layer.title;
+          select.append(option);
+        }
+        select.onchange = display;
+        if (layers.length) await display();
+        else status.textContent = "No datasets";
+      } catch (error) {
+        status.textContent = error.message;
+      }
+      window.addEventListener("pagehide", () => {
+        latest.cancel();
+        map.remove();
+      });
+    </script>
+  </body>
+</html>

@@ -187,7 +187,7 @@ def server(args, engine, database, folder, categorical):
             TC_RASTER_CACHE_BYTES=str(64 * MIB),
             TC_SOURCE_BLOCK_CACHE_BYTES="0",
             TC_RENDER_CACHE_BYTES="0",
-            TC_REMOTE_SOURCE_CACHE_TTL_SECONDS="0",
+            TC_REMOTE_SOURCE_CACHE_TTL_SECONDS=str(args.rcfp_source_ttl),
             TC_PREFETCH_TILE_RING="0",
             TC_EXPOSE_METRICS="true",
             TC_GDAL_OPTIONS=json.dumps(
@@ -623,7 +623,15 @@ def main():
     parser.add_argument("--users", nargs="+", type=int, default=[1, 3])
     parser.add_argument("--latency-ms", type=float, default=15)
     parser.add_argument("--navigation-only", action="store_true")
+    parser.add_argument(
+        "--rcfp-source-ttl",
+        type=int,
+        default=60,
+        help="Native source lease in seconds; use 0 to reproduce the earlier benchmark",
+    )
     args = parser.parse_args()
+    if not 0 <= args.rcfp_source_ttl <= 86400:
+        parser.error("Source TTL must be between 0 and 86400 seconds")
     if args.trials < 1 or min(args.users) < 1:
         parser.error("Trial/user counts must be positive")
     for field in ("binary", "out"):
@@ -665,6 +673,7 @@ def main():
         "cpu_affinity": args.cpus,
         "client_cpu_affinity": args.client_cpus,
         "trials": args.trials,
+        "rcfp_source_ttl_seconds": args.rcfp_source_ttl,
         "cases": [],
         "terracotta": environment(
             args.reference_python, ["terracotta", "rasterio", "gunicorn", "numpy"]
@@ -686,7 +695,11 @@ def main():
                 "titiler": {"processes": 4, "gdal_each": 32, "curl_each": 8},
             },
             "rendered_cache": "off",
-            "remote_dataset_leases": "off",
+            "remote_dataset_leases": {
+                "rcfp_seconds": args.rcfp_source_ttl,
+                "terracotta_seconds": 0,
+                "titiler_seconds": 0,
+            },
             "png": "level 1 / explicit PNG",
             "continuous_resampling": "bilinear warp/read; different intermediate grid policies",
             "categorical_resampling": "nearest",
@@ -702,7 +715,7 @@ def main():
             "real S3 in this comparison",
             "true temporal acquisitions",
             "mosaics (no common dynamic mosaic endpoint)",
-            "deadline/disconnect drain (separate native resource gate)",
+            "deadline/disconnect drain (separate request lifecycle correctness gate)",
             "portable release qualification",
         ],
     }

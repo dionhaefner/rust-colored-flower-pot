@@ -9,10 +9,9 @@ export RCFP_COMPAT_PROFILE=native
 rcfp serve -d catalog.sqlite
 ```
 
-Native mode currently reads and writes the same Terracotta 0.10 catalog format.
-There is no RCFP-only format to migrate to. Keep existing files and catalog
-locations while changing APIs. Future native-format migrations must be explicit
-and will have their own guide and backup/rollback procedure.
+Native mode reads and writes existing Terracotta 0.10 catalogs. Keep their files
+and catalog locations while changing APIs. Native keyed datasets use a separate
+`rcfp-native-2` SQLite database, with explicit [import and rollback](reference/layers.md#import-and-rollback).
 
 ## API changes
 
@@ -21,7 +20,7 @@ and will have their own guide and backup/rollback procedure.
 | `get_driver(path)`                            | `DataStore(path, provider=...)` for catalog writes/metadata, or `data_operation` for structured native queries                                                                                       |
 | `get_settings` / `update_settings`            | Supply settings to `NativeApplication` or WSGI `Application`; CLI/server configuration also uses `TC_*`                                                                                              |
 | Driver connection contexts                    | Individual `DataStore` operations commit independently; `DataStore.batch` explicitly groups atomic insert/delete operations and rolls back on failure                                                |
-| Driver raster arrays and asynchronous futures | Use native HTTP/request/render APIs for rendered bytes; the compatibility NumPy facade requires the named compatibility profile                                                                      |
+| Driver raster arrays and asynchronous futures | Use `DataStore.get_raster_tile` for masked arrays and Futures, or native HTTP/request/render APIs for rendered bytes                                                                                 |
 | `server.app:app`                              | `rcfp.wsgi.create_app(database)` for WSGI, or the native `rcfp serve` command for HTTP                                                                                                               |
 | Named Terracotta exceptions                   | Native Python operations raise `RcfpError`; HTTP failures retain meaningful status codes and structured errors                                                                                       |
 | Legacy CLI parser                             | Native CLI supports the core commands plus `data-operation`, `lambda-event`, `lambda-runtime`, and `serve --bind`; Both profiles use the Rust CLI; Python command extensions are unsupported         |
@@ -112,6 +111,13 @@ dtype/mask behavior. The native specification advertises POST `/metadata`.
 The Terracotta profile preserves its previous labels, statuses, sorting,
 expression failure, and specification.
 
+Native remote source handles now have a 60-second lease by default; the named
+Terracotta profile defaults to zero. Publish immutable/versioned raster URLs or
+set `TC_REMOTE_SOURCE_CACHE_TTL_SECONDS=0` to disable handle reuse. Reopening does
+not clear downloaded GDAL ranges or guarantee credential refresh. Identical
+active requests share work even with zero finished-image cache; completed images
+are discarded at zero. See [resource tuning](how-to/resources.md).
+
 ## Validation and rollout
 
 1. Save the previous environment and configuration; make a backend-appropriate
@@ -149,3 +155,8 @@ SQLite/PostgreSQL migrations use transactions; MySQL DDL may commit part of a
 failed migration. Restore the pre-migration backup before retrying a failed
 MySQL migration. Downgrading after an explicit format upgrade requires restoring
 the old catalog or a separately supported reverse migration.
+
+Native multiband [keyed catalogs](reference/layers.md) use the separate
+`rcfp-native-2` SQLite marker. They keep all definitions and metadata in the
+database. Import uses explicit full-key bindings into a new database; the
+original Terracotta catalog remains unchanged for rollback.

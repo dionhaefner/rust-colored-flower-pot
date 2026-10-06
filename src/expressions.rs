@@ -259,6 +259,20 @@ fn arity(name: &str) -> Option<usize> {
 }
 
 pub fn evaluate(input: &str, operands: &BTreeMap<String, &Raster>) -> Result<Raster> {
+    evaluate_inner(input, operands, false)
+}
+
+/// Retain the computed numeric type when a result becomes a logical dataset.
+pub(crate) fn evaluate_typed(input: &str, operands: &BTreeMap<String, &Raster>) -> Result<Raster> {
+    evaluate_inner(input, operands, true)
+}
+
+fn evaluate_inner(
+    input: &str,
+    operands: &BTreeMap<String, &Raster>,
+    typed: bool,
+) -> Result<Raster> {
+    let _timer = crate::telemetry::timer(crate::telemetry::Stage::Coloring);
     let mut parser = Parser {
         tokens: tokenize(input)?,
         pos: 0,
@@ -344,6 +358,23 @@ pub fn evaluate(input: &str, operands: &BTreeMap<String, &Raster>) -> Result<Ras
         let c = stack[0];
         if !c.array {
             return Err("expression does not return an array".into());
+        }
+        if typed {
+            out.data_type = match c.kind {
+                Kind::Float => 7,
+                Kind::Float32 => 6,
+                Kind::Float16 => 15,
+                Kind::Bool => 0,
+                Kind::Int(8, false) => 1,
+                Kind::Int(8, true) => 14,
+                Kind::Int(16, false) => 2,
+                Kind::Int(16, true) => 3,
+                Kind::Int(32, false) => 4,
+                Kind::Int(32, true) => 5,
+                Kind::Int(64, false) => 12,
+                Kind::Int(64, true) => 13,
+                _ => 7,
+            };
         }
         out.values.push(c.value);
         out.mask.push(c.mask || !c.value.is_finite());
@@ -531,6 +562,8 @@ fn call(name: &str, args: &[Cell]) -> Result<Cell> {
 
 fn sample_kind(dtype: i32) -> Kind {
     match dtype {
+        0 => Kind::Bool,
+        15 => Kind::Float16,
         1 => Kind::Int(8, false),
         2 => Kind::Int(16, false),
         3 => Kind::Int(16, true),

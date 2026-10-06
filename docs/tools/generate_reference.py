@@ -33,6 +33,15 @@ def python_reference(profile):
         )
     }
     modules = ["rcfp.wsgi"]
+    if profile == "native":
+        objects.update(
+            {
+                name: getattr(rcfp, name)
+                for name in ("LayerStore", "LayerApplication", "inspect_asset")
+            }
+        )
+    if profile == "native":
+        modules += ["rcfp.stac"]
     if profile == "terracotta-0.10.1":
         objects.update(
             {

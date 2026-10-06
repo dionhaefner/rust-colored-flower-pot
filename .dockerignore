@@ -2,9 +2,12 @@
 .cache
 .venv*
 target
+build
+dist
 process
 design
 AGENTS.md
 TODO.md
 __pycache__
 **/__pycache__
+**/node_modules

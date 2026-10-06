@@ -1,0 +1,17 @@
+{
+  "type": "rcfp-source",
+  "source": "https://earth-search.aws.element84.com/v1/search",
+  "search": {
+    "collections": ["sentinel-2-l2a"],
+    "bbox": [12.3, 45.4, 12.4, 45.5],
+    "datetime": "2021-06-29T00:00:00Z/2021-07-05T00:00:00Z",
+    "ids": ["S2A_32TQR_20210629_0_L2A", "S2A_32TQR_20210702_0_L2A"],
+    "limit": 1
+  },
+  "options": {
+    "assets": ["coastal"],
+    "revisions": "earth-search-revisions.json",
+    "max_items": 10,
+    "max_staged_bytes": 33554432
+  }
+}

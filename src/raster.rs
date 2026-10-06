@@ -13,9 +13,12 @@ use std::time::{Instant, SystemTime};
 
 mod fast;
 pub(crate) use fast::SharedBlocks;
+mod assets;
 mod metadata;
 mod native;
 mod optimize;
+mod plan;
+mod tiff;
 mod utm;
 mod warped;
 pub use metadata::MetadataOptions;
@@ -50,6 +53,8 @@ pub struct Raster {
 
 #[derive(Clone, Copy, Debug)]
 pub struct ReadRequest {
+    /// Explicit native grid, per-band validity and asset revision identity.
+    pub grid: Option<crate::layers::GridRead>,
     /// One-based source band; catalog metadata remains associated with band one.
     pub band: usize,
     pub bounds_mercator: Option<[f64; 4]>,
@@ -61,6 +66,7 @@ pub struct ReadRequest {
 impl Default for ReadRequest {
     fn default() -> Self {
         Self {
+            grid: None,
             band: 1,
             bounds_mercator: None,
             size: [256, 256],
@@ -70,8 +76,10 @@ impl Default for ReadRequest {
 }
 
 pub struct Gdal {
+    tiff: tiff::Backend,
     profile_reads: bool,
     native_direct: bool,
+    native_plan: bool,
     native_target: SpatialReference,
     sources: RefCell<VecDeque<SourceEntry>>,
     remote_sources: RefCell<VecDeque<RemoteSource>>,
@@ -259,17 +267,29 @@ impl Gdal {
                 return Err("could not initialize rendering CRS".into());
             }
             let remote_source_ttl = crate::settings::var("TC_REMOTE_SOURCE_CACHE_TTL_SECONDS")
-                .unwrap_or_else(|_| "0".into())
+                .unwrap_or_else(|_| {
+                    if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                        "0".into()
+                    } else {
+                        "60".into()
+                    }
+                })
                 .parse::<u64>()
                 .map_err(|_| "invalid remote source cache TTL")?;
             if remote_source_ttl > 86400 {
                 return Err("remote source cache TTL exceeds 86400 seconds".into());
             }
             Ok(Self {
+                tiff: tiff::Backend::new(
+                    !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+                        && crate::settings::flag("TC_ASYNC_TIFF", true)?,
+                    std::time::Duration::from_secs(remote_source_ttl),
+                ),
                 profile_reads: std::env::var_os("TC_PROFILE_RASTER").is_some(),
                 native_direct: !crate::compatibility::CompatibilityProfile::current()
                     .is_terracotta()
                     && crate::settings::flag("TC_NATIVE_DIRECT_READ", true)?,
+                native_plan: crate::settings::flag("TC_NATIVE_WARP_PLAN", true)?,
                 native_target,
                 sources: RefCell::new(VecDeque::new()),
                 remote_sources: RefCell::new(VecDeque::new()),
@@ -327,11 +347,42 @@ impl Gdal {
     }
 
     pub fn band_count(&self, path: &Path) -> Result<i32> {
+        if let Some(source) = self.tiff.source(path) {
+            return Ok(source.bands() as i32);
+        }
         let source = self.open_dataset(path)?;
         Ok(unsafe { (self.raster_count)(source.handle) })
     }
 
+    /// Embedded nodata is authoritative before interpolation in STAC renders.
+    pub fn band_nodata(&self, path: &Path, band: usize) -> Result<Option<f64>> {
+        if let Some(source) = self.tiff.source(path) {
+            if band == 0 || band > source.bands() {
+                return Err("STAC band out of range".into());
+            }
+            if let Some(nodata) = source.nodata() {
+                return Ok(nodata);
+            }
+        }
+        let source = self.open_dataset(path)?;
+        // SAFETY: the checked band belongs to the live dataset guard.
+        unsafe {
+            if band == 0 || band > (self.raster_count)(source.handle) as usize {
+                return Err("STAC band out of range".into());
+            }
+            let mut present = 0;
+            let value = (self.nodata)(
+                (self.raster_band)(source.handle, band as c_int),
+                &mut present,
+            );
+            Ok((present != 0).then_some(value))
+        }
+    }
+
     pub fn inspect(&self, path: &Path) -> Result<(usize, usize, i32)> {
+        if let Some(source) = self.tiff.source(path) {
+            return Ok(source.dimensions());
+        }
         let source = self.open_dataset(path)?;
         unsafe {
             let width = (self.raster_x_size)(source.handle) as usize;
@@ -488,11 +539,23 @@ impl Gdal {
         if request.size[0] == 0 || request.size[1] == 0 {
             return Err("tile dimensions must be positive".into());
         }
+        if self.native_direct && self.target_crs.eq_ignore_ascii_case("EPSG:3857") {
+            if let Some(mut rasters) = self.tiff.read(path, &[request], self.reprojection.0) {
+                return Ok(rasters.remove(0));
+            }
+        }
         let started = Instant::now();
-        let lease = self.source(path)?;
+        crate::telemetry::raster_backend_read(crate::telemetry::RasterBackend::Gdal);
+        let lease = self.source(path, request.grid.map(|grid| grid.revision))?;
         let source_handle = lease.handle;
         let stamp = lease.stamp;
         let opened = Instant::now();
+        let _timer = crate::telemetry::timer(crate::telemetry::Stage::RasterRead);
+        let _remote_timer = crate::execution::is_remote(path)
+            .then(|| crate::telemetry::timer(crate::telemetry::Stage::RemoteRasterRead));
+        if let Some(grid) = request.grid {
+            return self.read_asset_grid(source_handle, request, grid);
+        }
         if let Some(raster) = self.read_native(source_handle, request)? {
             return Ok(raster);
         }
@@ -509,20 +572,40 @@ impl Gdal {
     }
 
     pub fn read_bands(&self, path: &Path, requests: &[ReadRequest]) -> Result<Vec<Raster>> {
-        let lease = self.source(path)?;
+        if self.native_direct && self.target_crs.eq_ignore_ascii_case("EPSG:3857") {
+            if let Some(rasters) = self.tiff.read(path, requests, self.reprojection.0) {
+                return Ok(rasters);
+            }
+        }
+        if requests.iter().any(|request| request.grid.is_some()) {
+            return requests
+                .iter()
+                .map(|request| self.read(path, *request))
+                .collect();
+        }
+        crate::telemetry::raster_backend_read(crate::telemetry::RasterBackend::Gdal);
+        let lease = self.source(path, None)?;
+        let timer = crate::telemetry::timer(crate::telemetry::Stage::RasterRead);
+        let remote_timer = crate::execution::is_remote(path)
+            .then(|| crate::telemetry::timer(crate::telemetry::Stage::RemoteRasterRead));
         if let Some(rasters) = self.read_native_bands(lease.handle, requests)? {
             return Ok(rasters);
         }
+        drop(timer);
+        drop(remote_timer);
         requests
             .iter()
             .map(|request| self.read(path, *request))
             .collect()
     }
 
-    fn source(&self, path: &Path) -> Result<SourceLease> {
+    fn source(&self, path: &Path, revision: Option<[u8; 32]>) -> Result<SourceLease> {
+        let _timer = crate::telemetry::timer(crate::telemetry::Stage::SourceAccess);
+        let _remote_timer = crate::execution::is_remote(path)
+            .then(|| crate::telemetry::timer(crate::telemetry::Stage::RemoteSourceAccess));
         // A GDAL block cache entry belongs to its open dataset. Keep local
         // sources worker-owned so adjacent map tiles can reuse decoded blocks.
-        // Remote sources retain their request lifetime for credential refresh.
+        // Remote sources use the configured bounded snapshot lease.
         let local = !crate::execution::is_remote(path);
         let stamp = if local {
             std::fs::metadata(path)
@@ -533,6 +616,7 @@ impl Gdal {
         };
         let cache_remote = !local && !self.remote_source_ttl.is_zero();
         let uncached_source = if stamp.is_none() && !cache_remote {
+            crate::telemetry::source_hit(false);
             Some(self.open_dataset(path)?)
         } else {
             None
@@ -542,12 +626,20 @@ impl Gdal {
         } else if cache_remote {
             let mut sources = self.remote_sources.borrow_mut();
             sources.retain(|entry| entry.opened.elapsed() < self.remote_source_ttl);
-            if let Some(position) = sources.iter().position(|entry| entry.path == path) {
+            if let Some(position) = sources
+                .iter()
+                .position(|entry| entry.path == path && entry.revision == revision)
+            {
+                crate::telemetry::source_hit(true);
                 let entry = sources.remove(position).expect("existing remote source");
                 sources.push_front(entry);
             } else {
+                crate::telemetry::source_hit(false);
+                sources.retain(|entry| entry.path != path);
                 sources.push_front(RemoteSource {
+                    revision,
                     path: path.to_path_buf(),
+                    native: RefCell::new(plan::NativeSource::default()),
                     dataset: self.open_dataset(path)?,
                     opened: Instant::now(),
                 });
@@ -563,18 +655,26 @@ impl Gdal {
             let stamp = stamp.expect("cached local file has metadata");
             let generation = crate::execution::source_generation(path);
             let position = sources.iter().position(|entry| {
-                entry.path == path && entry.stamp == stamp && entry.generation == generation
+                entry.path == path
+                    && entry.revision == revision
+                    && entry.stamp == stamp
+                    && entry.generation == generation
             });
             if let Some(position) = position {
+                crate::telemetry::source_hit(true);
                 let entry = sources.remove(position).expect("existing source entry");
                 sources.push_front(entry);
             } else {
+                crate::telemetry::source_hit(false);
                 let dataset = self.open_dataset(path)?;
+                sources.retain(|entry| entry.path != path);
                 sources.push_front(SourceEntry {
+                    revision,
                     generation,
                     path: path.to_path_buf(),
                     stamp,
                     suggested: [None, None],
+                    native: RefCell::new(plan::NativeSource::default()),
                     dataset,
                 });
                 sources.truncate(12);
@@ -777,8 +877,20 @@ impl Gdal {
         size: [usize; 2],
         resampling: &str,
     ) -> Result<VsiDatasetGuard> {
+        self.create_grid_warp(source, bounds, size, resampling, &self.target_crs, false)
+    }
+
+    fn create_grid_warp(
+        &self,
+        source: DatasetHandle,
+        bounds: [f64; 4],
+        size: [usize; 2],
+        resampling: &str,
+        target_crs: &str,
+        native_values: bool,
+    ) -> Result<VsiDatasetGuard> {
         let destination = CString::new(format!(
-            "/vsimem/terracotta-warp-{}-{}.vrt",
+            "/vsimem/rcfp-warp-{}-{}.vrt",
             std::process::id(),
             VRT_SEQUENCE.fetch_add(1, Ordering::Relaxed)
         ))
@@ -787,7 +899,7 @@ impl Gdal {
             "-of".to_owned(),
             "VRT".to_owned(),
             "-t_srs".to_owned(),
-            self.target_crs.clone(),
+            target_crs.to_owned(),
             // Rasterio's WarpedVRT transformer does not insert CENTER_LONG.
             // GDALWarp's default otherwise changes antimeridian mask coverage.
             "-to".to_owned(),
@@ -803,12 +915,18 @@ impl Gdal {
             "-r".to_owned(),
             resampling.to_owned(),
         ];
+        if native_values {
+            // Physical conversions are explicit scale/offset operations in native layers.
+            raw_arguments.extend(["-novshift".into(), "-dstnodata".into(), "None".into()]);
+        }
         let has_alpha = unsafe {
             (1..=(self.raster_count)(source))
                 .any(|i| (self.color_interpretation)((self.raster_band)(source, i)) == 6)
         };
         if !has_alpha {
             raw_arguments.push("-dstalpha".into());
+        } else if native_values {
+            raw_arguments.extend(["-wo".into(), "SRC_ALPHA_MAX=1".into()]);
         }
         let arguments = raw_arguments
             .into_iter()
@@ -850,6 +968,10 @@ impl Gdal {
     }
 
     fn open_dataset(&self, path: &Path) -> Result<DatasetGuard> {
+        self.open_dataset_options(path, None)
+    }
+
+    fn open_dataset_options(&self, path: &Path, overview: Option<i32>) -> Result<DatasetGuard> {
         // Local auxiliary files have known names; probe them without listing
         // directories. Remote COGs keep the no-sibling-probes default.
         let explicit_directory_policy = crate::settings::var("TC_GDAL_OPTIONS")
@@ -887,7 +1009,29 @@ impl Gdal {
         };
         let c_path = CString::new(path_string.as_bytes())
             .map_err(|_| "raster path contains a NUL byte".to_string())?;
-        let handle = unsafe { (self.open)(c_path.as_ptr(), GA_READ_ONLY) };
+        let handle = unsafe {
+            if let Some(level) = overview {
+                let open: unsafe extern "C" fn(
+                    *const c_char,
+                    u32,
+                    *const *const c_char,
+                    *const *const c_char,
+                    *const *const c_char,
+                ) -> DatasetHandle = self.symbol(b"GDALOpenEx\0")?;
+                let option =
+                    CString::new(format!("OVERVIEW_LEVEL={level}")).expect("overview option");
+                let options = [option.as_ptr(), ptr::null()];
+                open(
+                    c_path.as_ptr(),
+                    2,
+                    ptr::null(),
+                    options.as_ptr(),
+                    ptr::null(),
+                )
+            } else {
+                (self.open)(c_path.as_ptr(), GA_READ_ONLY)
+            }
+        };
         if handle.is_null() {
             return Err("error while reading raster file".into());
         }
@@ -942,16 +1086,20 @@ struct SuggestedGeometry {
 }
 
 struct RemoteSource {
+    revision: Option<[u8; 32]>,
     path: PathBuf,
+    native: RefCell<plan::NativeSource>,
     dataset: DatasetGuard,
     opened: Instant,
 }
 
 struct SourceEntry {
+    revision: Option<[u8; 32]>,
     generation: Vec<(u64, u128)>,
     path: PathBuf,
     stamp: (u64, std::time::SystemTime),
     suggested: [Option<SuggestedGeometry>; 2],
+    native: RefCell<plan::NativeSource>,
     dataset: DatasetGuard,
 }
 
@@ -1103,7 +1251,7 @@ unsafe fn read_window<T: GdalPixel>(
     Ok(())
 }
 
-fn find_gdal_library() -> Result<PathBuf> {
+pub(crate) fn find_gdal_library() -> Result<PathBuf> {
     if let Some(path) = crate::settings::var_os("TERRACOTTA_GDAL_LIBRARY") {
         let path = PathBuf::from(path);
         if path.is_file() {

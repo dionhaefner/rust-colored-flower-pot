@@ -2,7 +2,9 @@
 
 Use an installed wheel and a WSGI host appropriate to your operating system.
 The native adapter creates one owned application for its workers and caches.
-Keep that application alive across requests.
+Keep that application alive across requests. `TC_DRIVER_PATH` accepts a SQL
+catalog location, STAC document or local [source configuration](stac.md) in native
+mode. All use the same WSGI application and tile routes.
 
 ```sh
 export RCFP_COMPAT_PROFILE=native

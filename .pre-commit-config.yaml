@@ -1,4 +1,4 @@
-exclude: ^src/assets/(client/|static/|swagger\.json$)
+exclude: ^src/assets/(client/vendor/|static/|swagger\.json$)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -47,7 +47,7 @@ repos:
         entry: prettier --write
         language: node
         additional_dependencies: [prettier@3.9.9]
-        files: \.(css|html|js|json|md|ya?ml)$
+        files: \.(css|html|[cm]?js|[cm]?ts|json|md|ya?ml)$
         types: [file]
 
       - id: cargo-fmt

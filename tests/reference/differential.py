@@ -316,6 +316,17 @@ def main():
                 candidate = json.loads(json.dumps(right["json"]))
                 native = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "native"
                 if native:
+                    for route in (
+                        "/layers",
+                        "/layers/{id}",
+                        "/layers/{id}/render",
+                    ):
+                        if route not in candidate["paths"]:
+                            errors.append(f"native route missing: {route}")
+                        candidate["paths"].pop(route, None)
+                    candidate.get("components", {}).get("schemas", {}).pop(
+                        "NativeRenderSpec", None
+                    )
                     batch = candidate["paths"].pop("/metadata", {})
                     if "post" not in batch:
                         errors.append("native batch metadata route missing")

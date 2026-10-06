@@ -12,6 +12,7 @@ pub fn request(
     path: &str,
     status: u16,
     start: SystemTime,
+    stages: &serde_json::Value,
 ) {
     if !crate::settings::var("TC_XRAY_PROFILE").is_ok_and(|s| s == "true") {
         return;
@@ -31,7 +32,16 @@ pub fn request(
     let (Some(root), Some(parent)) = (fields.get("Root"), fields.get("Parent")) else {
         return;
     };
-    if root.len() != 35 || parent.len() != 16 || !parent.chars().all(|c| c.is_ascii_hexdigit()) {
+    if root.len() != 35
+        || !root.starts_with("1-")
+        || root.as_bytes()[10] != b'-'
+        || !root.as_bytes()[2..10]
+            .iter()
+            .chain(root.as_bytes()[11..].iter())
+            .all(|c| c.is_ascii_hexdigit())
+        || parent.len() != 16
+        || !parent.chars().all(|c| c.is_ascii_hexdigit())
+    {
         return;
     }
     let seconds = |t: SystemTime| {
@@ -46,7 +56,7 @@ pub fn request(
         .as_nanos() as u64
         ^ NEXT.fetch_add(1, Ordering::Relaxed);
     let segment = json!({"name":"terracotta", "type":"subsegment", "id":format!("{id:016x}"), "trace_id":root,"parent_id":parent,
-        "start_time":seconds(start),"end_time":seconds(now),"http":{"request":{"method":method,"url":path},"response":{"status":status}},"fault":status>=500,"error":(400..500).contains(&status)});
+        "start_time":seconds(start),"end_time":seconds(now),"http":{"request":{"method":super::http::safe_method(method),"url":path},"response":{"status":status}},"metadata":{"rcfp":{"stages_seconds":stages}},"fault":status>=500,"error":(400..500).contains(&status)});
     let address =
         std::env::var("AWS_XRAY_DAEMON_ADDRESS").unwrap_or_else(|_| "127.0.0.1:2000".into());
     let address = address

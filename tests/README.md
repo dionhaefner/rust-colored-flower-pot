@@ -23,6 +23,14 @@ in the [validation handoff](../design/human-validation.md).
 | Large-file and resource tests | `tests/large_raster_contracts.py`, `resource_contracts.py`                                                                  | Scheduled, manual, or tag correctness   | Physical BigTIFF reads above 4 GiB and concurrent server resource behavior.                                                                                                       |
 | Pinned reference comparison   | `tests/reference/differential.py`, `upstream.py`, `compatibility.py`                                                        | Correctness and wheels                  | 26 candidate comparisons, selected documented driver cases, and the pinned reference test baseline.                                                                               |
 
+The demo's credentials-free runtime and Pages checks are in
+`tests/demo_contracts.py`. Run them with `--image rcfp-demo` after building the
+demo image, or `--binary dist/bundle/bin/rcfp` for the native Runtime API adapter.
+The [demo guide](../docs/how-to/demo.md) describes deployment and qualification.
+The independent preview in `fixtures/demo/` was acquired with Terracotta 0.10.1
+and GDAL 3.10.3 using `reference/acquire_demo.py`; its manifest pins the raster
+and image checksums. Never replace it with output from RCFP.
+
 Reference setup, commands, and classified exclusions are documented in
 [reference/README.md](reference/README.md).
 
@@ -144,11 +152,34 @@ same fixture served by a loopback HTTP server that records byte-range requests.
 It runs against each installed platform wheel and fails when GDAL silently
 reads the whole object instead of requesting ranges.
 
-`browser_contracts.py` launches the bundled browser client and a native HTTP
-backend, then uses Chromium to select a dataset, render singleband and RGB
-layers, and open the metadata view. It records response statuses, page errors,
-metadata, and screenshots. The test serves an offline map style so it does not
-require a Mapbox token.
+`browser_contracts.py` launches the bundled viewer and all three independent SDK
+maps against a real native HTTP server in both profiles. It verifies discovery,
+metadata/legends, singleband/RGB/expression tiles, display point inspection,
+explicit catalog time browsing, revisioned state/reload, Unicode/escaped-slash
+keys, JSON preflight/CORS, errors/recovery, fetch abort and stale-view responses,
+keyboard controls and mobile layout. It blocks outbound requests and retains
+screenshots, exact executable hash and pinned fixture provenance. Time labels
+reuse a real raster to test browser selection, not temporal acquisition science.
+External provider basemaps and source-value point APIs are separate scope.
+
+Run `node tests/sdk_contracts.mjs` for SDK transport, paging, revisions, encoding,
+adapters and cancellation controls. Check public declarations using
+`tsc --strict --noEmit --module nodenext --target es2022 tests/sdk_types.mts`.
+Use Node 22 and TypeScript 5.9.3. The vendored browser libraries have SHA-256 locks
+in `src/assets/client/vendor/manifest.json`, verified by the browser runner.
+
+SDK qualification also tests Node 20/22/24, release tag/version rules and the
+installed npm tarball. Install the locked TypeScript tooling with
+`npm ci --prefix packaging/sdk --ignore-scripts --no-audit --no-fund`, then run
+`node tests/sdk_release.mjs` and `node tests/sdk_package.mjs build/sdk-package-check`.
+The package runner checks the exact file boundary and source bytes before compiling
+and executing a consumer of both public exports. Use a fresh output directory.
+The reusable SDK workflow runs through correctness qualification and independent
+SDK releases. See [testing and releases](../docs/how-to/release-sdk.md).
+
+`python tests/sdk_versioning.py` uses Hatch VCS in a temporary Git repository to
+check that interleaved stable/prerelease SDK tags preserve Python VCS versions.
+Install `hatch-vcs==0.5.0` to run it.
 
 `large_raster_contracts.py` acquires the checksum-pinned full ESA WorldCover
 source when needed, writes a physical tiled uint32 BigTIFF, checks all 5,041
@@ -186,6 +217,9 @@ PSS/USS samples include the Python masters/workers. Total logical cache budgets
 include each worker's GDAL, array and curl caches; encoded-image retention is
 off. Reports preserve every request, setting, source hash, latency and source
 traffic count. Generated evidence stays in ignored `build/`.
+Native source leases now default to 60 seconds in this runner; pass
+`--rcfp-source-ttl 0` to reproduce the earlier published configuration. Active
+identical RCFP renders coalesce even with zero finished-image retention.
 The environment recorder hashes the actual installed application/raster code and
 native Rasterio dependencies, including an editable Terracotta reference.
 
@@ -198,7 +232,9 @@ The saved-image quality runner checks independent GDAL output grids, dimensions,
 coverage and category colors and reports sampling/rounding differences. It does
 not treat any service output as a golden or relabel differences as passes.
 These comparisons leave cold disk, browser paint, actual S3, genuine temporal
-acquisitions, dynamic mosaics and deadline/disconnect qualification separate.
+acquisitions and dynamic mosaics as explicit applicability limits. Deadline and
+disconnect behavior is checked separately by `request_lifecycle.py` as correctness,
+without cross-service timing comparisons.
 
 `navigation_sources.py` acquires the complete, checksum-pinned Sentinel-2,
 WorldCover, northern/southern DEM and multiband Byte imagery listed in
@@ -221,6 +257,17 @@ use four cores/workers and four parallel requests, GDAL 64 MiB and array 64 MiB;
 actual public URLs; range mode injects 15 ms per source request and is a surrogate.
 A timeout/non-200 fails the run and remains in its report. Physically cold disk,
 WAN/browser paint and private credential refresh require separate environments.
+The controlled range origin supplies a checksum-based strong ETag and enforces
+`If-Match`, allowing version-aware readers to participate. Per-viewport reports
+include request throughput and source-traffic deltas.
+
+`--require-tiff-pixels` requires at least one production TIFF pixel read and
+fails if any pixel read invokes GDAL. Per-viewport metrics record explicit
+`cost.raster_backend_reads` counters after the timed requests finish. They count
+reader invocations, including unsuccessful attempts, rather than pixels or
+cache hits. The shared `raster_read` timer cannot identify the backend. Paired
+comparisons accept `--require-candidate-tiff-pixels` to apply this gate only to
+the candidate; choose eligible inputs and sampling settings explicitly.
 
 For three sequential alternating paired trials against a frozen baseline:
 
@@ -252,7 +299,8 @@ plus the pinned sources in `fixtures/geography-sources.json`, stored under
 `--resampling`; default is bilinear. The full matrix checks exact affine grids,
 coverage, category colors, continuous channels within one byte, polar/dateline,
 rotated real source pixels, unaligned Mercator, southern UTM, overviews, rectangular dimensions,
-multiband RGB and WebP coverage. A real-value DEM with a synthetic fractional
+multiband RGB, shared external masks, external overviews, nodata-free four-band
+pruning, three-axis vertical-unit fallback and WebP coverage (249 checks per resampling policy). A real-value DEM with a synthetic fractional
 alpha edge isolates floating alpha semantics. Reports identify every check and
 binary hash. The crop/derivative recipes are test inputs, not Terracotta goldens.
 
@@ -262,5 +310,185 @@ metadata/deletion, raster writes, and external mask creation/replacement. Unit
 checks cover TTL/eviction/coalescing/failure cleanup and queued cancellation.
 Run `resource_contracts.py` with `TC_NATIVE_DIRECT_READ=true` to exercise sustained
 new-path reads; image retention stays off in that execution-accounting test.
+The resource runner uses four output grids and eight clients to exercise both
+concurrent native work and identical active-request sharing. Its execution
+accounting includes coalesced followers.
+
+The ignored Rust `image_benchmark` test isolates lossless PNG compression. Set
+`RCFP_IMAGE_BENCHMARK_INPUTS` to a JSON array of captured navigation PNG paths and
+run `cargo test --release --test image_benchmark -- --ignored --nocapture`. Retain
+the originating navigation report with fixture/binary hashes and SHA-256 hashes
+of the captured files; the probe additionally records input CRCs. Captures are
+timing inputs, never reference goldens. It checks decoded channels/transparency
+before timing, reports level 1 once and level 6 with the optional compressor
+on/off. Library availability and native runtime identity must accompany timings.
+
 These focused native checks do not close the broader existing metadata/preview
 boundary matrix or qualify every remote provider/platform.
+
+`async_tiff_benchmark.py` drives the independent Rust crate in
+`benchmarks/async-tiff/` against the current RCFP reader. It checks checksum-pinned
+headers, exact native windows/overviews, and nearest/bilinear map-grid reads with
+PNG output. Local and instrumented range trials record timing, traffic, memory,
+and independent GDAL/Rasterio fidelity checks. Generated Landsat derivatives add
+internal masks, RGBA and same-file RGB. The crate has its own pinned Async-TIFF
+dependency and lockfile. Its GDAL control disables production Async-TIFF access. See the
+[evaluation notes](../design/async-tiff-evaluation.md) for build commands, prepared
+COG comparisons, result interpretation, and remaining qualification limits.
+
+`.venv-reference/bin/python tests/tiff_backend.py --out build/tiff-qualification`
+prepares casts/copies of the
+checksum-pinned corpus and compares exact values, masks and dtypes with Rasterio.
+It exercises local and loopback HTTP ranges, base/overview selection, the public
+reader, sidecar/revision invalidation, transport fallbacks and allocation limits.
+It requires the reference Python environment and supported GDAL runtime. The
+runner executes fixture-dependent Rust tests that ordinary `cargo test` skips.
+Format derivatives use an explicit Mercator grid to isolate pixel selection;
+three nonfinite pixels and malformed directories are narrowly synthetic edges.
+The broader native-rendering and raster-boundary suites cover sampling/fallback
+behavior. Prepared CI entries are not evidence of execution.
+
+## Request cost and contention
+
+`request_lifecycle.py` is the focused correctness gate for native HTTP in both
+profiles. It holds checksum-pinned real raster reads at a controlled range origin
+and checks response deadlines without losing active-work accounting, expired queued
+work never reaching the source, bounded 503 rejections before and after deadline
+expiry, socket-disconnect accounting, eventual drain and successful subsequent
+renders. It records status and accounting snapshots rather than performance
+ratios. It needs only Python's standard library and the candidate GDAL runtime:
+
+```sh
+python tests/request_lifecycle.py --binary /path/to/rcfp \
+  --out build/request-lifecycle-check
+```
+
+The native platform workflow runs this gate and retains its report and logs.
+Configured CI is not execution evidence. The request-cost gate below exercises
+native signal draining and Python capsule joining while a real read is blocked.
+
+`request_cost.py` checks native HTTP and a persistent Python `NativeApplication`
+against the checksum-pinned Sentinel crop behind a controlled range server.
+It verifies stage histograms, source-handle observations, protected JSON and
+Prometheus routes, X-Ray worker-stage propagation and route redaction, slow/error
+sources, expired queued waits, active-work accounting, duplicate render sharing,
+socket disconnect drain, and capsule destruction while GDAL is executing. The
+Unix signal gate closes native HTTP admission on SIGTERM/SIGINT/SIGHUP, waits for
+the blocked native read and rejects obsolete queued work, including a wildcard
+listener. Windows console shutdown remains a separate platform check. The
+Python extension must come from the candidate build; the test releases actual
+capsules rather than simulating shutdown. It also runs three alternating paired
+foreground/prefetch trials with equal worker/cache budgets and unchanged pixels,
+recording p95 separately from correctness and accounting passes.
+
+```sh
+python tests/request_cost.py --binary /path/to/rcfp/runtime/bin/rcfp \
+  --python-package /path/to/installed/site-packages --out build/request-cost-check
+```
+
+Run with the candidate's installed Python environment. The range server delays
+real fixture HEAD requests; no synthetic raster or generated oracle is used.
+Origin request/byte counts are reliable for that controlled server only. The
+native subprocess uses SIGTERM cleanup; graceful native joining is tested through
+both Unix signals and persistent Python capsule destruction. OS/release, actual S3/WAN and browser
+qualification remain separate. Reports record artifact/input hashes and those
+exclusions. The maintained resource soak complements this short contention gate:
+
+```sh
+python tests/resource_contracts.py --binary /path/to/rcfp --seconds 180 \
+  --out build/request-resource-check
+```
+
+`request_priority.py` measures successful four-request foreground viewports while
+duplicate or expired work contends for one raster worker. It runs three alternating
+pairs per workload, checks admitted/completed/cancelled job counts, compares image
+bytes and records foreground p95, median viewport time, sampled RSS and descriptors.
+Both arms use zero array/image retention and the same queue and response deadlines.
+The source serves pinned real pixels; obsolete-source HEAD requests have a controlled
+75 ms delay. Loopback measurements do not establish production or WAN latency.
+
+Supply candidate and control executables built from one frozen source tree. The
+coalescing control calls the render closure directly at zero image-cache capacity
+in `RenderCache::render`. The queued-expiry control removes the two worker checks
+that discard jobs with uninterested waiters. Keep these copies and their source
+hashes in ignored storage. The runner verifies each control's job counts and
+retains artifact hashes; it requires loopback sockets and Linux `/proc` sampling.
+
+```sh
+python tests/request_priority.py --candidate /path/to/candidate/rcfp \
+  --without-coalescing /path/to/coalescing-control/rcfp \
+  --without-queued-expiry /path/to/queued-expiry-control/rcfp \
+  --out build/request-priority-check
+```
+
+## Native database-backed multiband layers
+
+`python tests/layer_contracts.py --binary BINARY --out OUT` checks self-contained
+SQLite layer definitions, source band metadata, packed/separate RGB, multispectral
+raw/scaled arithmetic, per-band nodata/masks and fractional alpha, mixed resolutions, EPSG grids,
+category colors, overlap/selection, invalid inputs, import/rollback, CLI and real
+HTTP decoded images against independent Rasterio/NumPy references. Inputs derive
+from the checksum-pinned corpus; declaration/alpha edge cases are documented in
+the runner. No service output becomes a reference golden. Add `--wheel WHEEL`
+with that exact wheel installed to check Python masked samples, cache identity
+and WSGI. Native-only runs record those unavailable checks separately.
+
+## STAC provider and immutable asset selections
+
+Run `python tests/stac_serving.py --binary BINARY --wheel WHEEL --out OUT`
+to verify automatic `--source` discovery, local deployment configuration, shared
+Python/WSGI/Lambda applications, CLI Item/ItemCollection/Catalog/Collection/API
+sources, shared catalog
+filtering/paging/metadata, singleband/RGB/compute rendering, asset discovery,
+request-time bands/stretch, scale/offset, private refresh and HTTP methods/CORS.
+XYZ samples and coverage use independent GDAL reads on pinned Sentinel crops.
+Previews are checked for byte equality with database-backed rendering through
+the public CLI and HTTP routes. Add `--browser` with Playwright/Chromium installed
+to verify the packaged `serve` → `connect` map, asset switching, zoom and display
+inspection without external requests. Browser checks omitted from a run are
+reported separately. Static graph checks cover nesting, shared/cyclic links,
+canonical relative paths, published self links, empty graphs, credential refresh
+on later documents, origin restrictions and document/Item/byte limits. Synthetic
+JSON whitespace exercises byte budgets without changing raster reference samples.
+
+Run `python tests/stac_contracts.py --wheel WHEEL --out OUT` in the installed
+wheel environment with NumPy, Pillow and Rasterio available. Its 25 required
+cases exercise a live local POST/GET STAC API provider, pagination/limits/errors,
+credential/signature refresh and privacy, revision isolation and independent
+real-raster display/coverage checks. The real Sentinel red/green packed-band
+fixture is derived without sample/grid changes, with its hash/recipe retained
+in the report. Synthetic inputs are limited to protocol responses, malformed
+metadata and a nested-VRT rejection edge; no synthetic pixel golden is used.
+
+The runner separately measures indexed provider selection at 1000, 100,000 and
+1,000,000 rows, using five trials and retained query plans, then records first
+asset verification/render and repeated render. It does not crawl the catalog or
+read rasters during selection. Reports include the tested wheel hash, every case,
+measurements, explicit exclusions and skips. Hosted PgSTAC, cloud SDKs and WAN
+transfer performance remain separate qualification. The wheel workflow executes
+this runner on its CPython 3.12 platform cells; prepared CI is not executed evidence.
+
+Live provider qualification is opt-in and requires HTTPS access. Run
+`python tests/stac_live.py --binary BINARY --wheel WHEEL --out OUT --browser`
+with that wheel installed and Playwright/Chromium available. It queries Earth
+Search and Microsoft Planetary Computer by bbox/time, exercises pagination,
+empty results and limits, verifies pinned Sentinel TIFFs, compares Python/HTTP
+XYZ samples against independent GDAL reads, and switches dates in the regular
+viewer. Planetary Computer checks an invalid-signature 403 followed by a fresh
+signing callback. `tests/fixtures/stac-live.json` pins four original small TIFFs;
+`--cache DIR` controls their ignored download cache. Signed URL mappings stay in
+private report files and are excluded from public metadata and logs. These live
+checks are separate from deterministic CI and do not establish provider uptime
+or WAN throughput guarantees.
+
+The field and operator contract is in [STAC guidance](../docs/how-to/stac.md);
+maintainer boundaries are in [STAC rationale](../design/stac.md).
+
+`catalog_contracts.py` checks common keyed discovery, selected metadata, masked
+arrays/Futures and decoded tiles across separate TIFFs, packed TIFFs, direct
+STAC and database snapshots. It also checks stored expressions/defaults,
+transaction rollback, key mappings and binding/cache invalidation against pinned
+Sentinel crops and independent rasterio/NumPy references. Run it with the exact
+installed wheel: `python tests/catalog_contracts.py --binary BINARY --wheel WHEEL
+--out OUT`. `layer_contracts.py` retains the advanced mask, grid, overlap and
+category qualification.

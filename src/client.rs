@@ -8,14 +8,24 @@ pub fn command(args: &[String]) -> Result<()> {
     let mut host = None;
     let mut port = None;
     let mut browser = true;
+    let mut source_revision = "unversioned".to_string();
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--help" | "-h" => {
-                println!("Usage: rcfp connect HOSTNAME [--no-browser] [--port PORT]");
+                println!(
+                    "Usage: rcfp connect HOSTNAME [--no-browser] [--port PORT] [--source-revision REVISION]"
+                );
                 return Ok(());
             }
             "--no-browser" => browser = false,
+            "--source-revision" if i + 1 < args.len() => {
+                i += 1;
+                source_revision = args[i].clone();
+                if source_revision.trim().is_empty() || source_revision.len() > 256 {
+                    return Err("source revision must contain 1 to 256 bytes".into());
+                }
+            }
             "--port" if i + 1 < args.len() => {
                 i += 1;
                 port = Some(args[i].parse::<u16>().map_err(|_| "invalid port")?);
@@ -35,13 +45,30 @@ pub fn command(args: &[String]) -> Result<()> {
     if !["http", "https"].contains(&url.scheme()) {
         return Err("connect requires HTTP or HTTPS".into());
     }
+    if !url.username().is_empty()
+        || url.password().is_some()
+        || url.query().is_some()
+        || url.fragment().is_some()
+    {
+        return Err("connect URL must not contain credentials, a query or fragment".into());
+    }
     url.set_query(None);
     url.set_fragment(None);
     let host = url.to_string().trim_end_matches('/').to_string();
     let agent = ureq::AgentBuilder::new()
         .timeout(Duration::from_secs(5))
         .build();
-    agent.get(&format!("{host}/keys")).set("User-Agent","Mozilla/5.0 Terracotta").call().map_err(|_| format!("Could not connect to {host}, check hostname and ensure that Terracotta is running on the server"))?;
+    let identity = agent
+        .get(&format!("{host}/__terracotta/identity"))
+        .call()
+        .map_err(|_| format!("Could not connect to {host}, check hostname and ensure that RCFP is running on the server"))?
+        .into_string()
+        .map_err(|e| e.to_string())?;
+    let identity: serde_json::Value = serde_json::from_str(&identity).map_err(|e| e.to_string())?;
+    let profile = identity["compatibility_profile"]
+        .as_str()
+        .ok_or("server does not advertise its compatibility profile")?;
+    crate::compatibility::CompatibilityProfile::parse(profile)?;
     let spec = agent
         .get(&format!("{host}/swagger.json"))
         .call()
@@ -83,14 +110,18 @@ pub fn command(args: &[String]) -> Result<()> {
         let command = "explorer";
         let _ = std::process::Command::new(command).arg(url).spawn();
     }
-    let escaped = host
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;");
-    let index =
-        include_str!("assets/client/templates/index.html").replace("{{ hostname }}", &escaped);
+    let escape = |value: &str| {
+        value
+            .replace('&', "&amp;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
+            .replace('"', "&quot;")
+            .replace('\'', "&#39;")
+    };
+    let index = include_str!("assets/client/templates/index.html")
+        .replace("{{ hostname }}", &escape(&host))
+        .replace("{{ profile }}", &escape(profile))
+        .replace("{{ source_revision }}", &escape(&source_revision));
     for request in server.incoming_requests() {
         let path = request.url().split('?').next().unwrap_or("/");
         let (status, mime, data) =
@@ -99,13 +130,24 @@ pub fn command(args: &[String]) -> Result<()> {
             } else if path == "/" {
                 (200, "text/html; charset=utf-8", index.as_bytes().to_vec())
             } else if let Some((data, mime)) = assets::asset(path) {
-                (200, mime, data.to_vec())
+                let data = if mime.starts_with("text/html") {
+                    String::from_utf8_lossy(data)
+                        .replace("{{ hostname }}", &escape(&host))
+                        .replace("{{ profile }}", &escape(profile))
+                        .into_bytes()
+                } else {
+                    data.to_vec()
+                };
+                (200, mime, data)
             } else {
                 (404, "text/plain", b"Not Found".to_vec())
             };
-        let response = Response::from_data(data)
+        let mut response = Response::from_data(data)
             .with_status_code(StatusCode(status))
             .with_header(Header::from_bytes("Content-Type", mime).unwrap());
+        if path.starts_with("/sdk/") && status == 200 {
+            response.add_header(Header::from_bytes("Access-Control-Allow-Origin", "*").unwrap());
+        }
         let _ = request.respond(response);
     }
     Ok(())

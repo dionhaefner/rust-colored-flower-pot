@@ -160,11 +160,26 @@ quality gates cover its declared test matrix; exact Terracotta pixels are not
 its contract. Previews retain the existing reader and their broader qualification
 limits. `TC_NATIVE_DIRECT_READ=false` provides a general-reader control.
 
-Positive explicit alpha is tested in floating precision, including alpha below
-1; nodata/nonfinite values remain invalid. Map-grid float preparation without
+`ASYNC_TIFF` defaults true in native mode and is disabled by the Terracotta
+profile. Eligible header reads use TIFF access. Native reads require exact
+stored pixels on contained EPSG:3857 grids. Layer reads require nearest sampling
+on the base grid and finite or absent nodata. The path preserves native raw
+masked samples, layer fill values, source dtype, nodata and the distinct
+native/layer mask rules. Unsupported formats, sidecars, projection,
+resampling or transport return to GDAL. `TC_ASYNC_TIFF=false` supplies the GDAL
+control without changing the selected sampler. See [qualification boundaries](async-tiff-evaluation.md).
+
+Positive explicit alpha is tested in f64 precision, including alpha below 1;
+nodata/nonfinite values remain invalid. Map-grid float preparation without
 nodata/alpha uses NaN padding to preserve valid zeros. Square/rectangular output,
-partial coverage, and category identity have separate checks. Fusion retains
-normalization order and ties exactly and falls back for color transforms.
+partial coverage, and category identity have separate checks. Fusion and runtime AVX2 retain normalization order and ties exactly and fall back
+for color transforms; unsupported CPUs use scalar normalization. Native reusable
+affine plans preserve GDAL overview/approximation policy, with fallback for
+GCP/RPC/geolocation, compound/three-axis CRS, mixed dtypes and working-dtype promotion.
+Only nodata-free bands with shared coverage permit requested-band pruning.
+Private compact caching is opt-in and bit-preserving, including hidden masked
+samples. Nondefault PNG compression may use bundled libdeflate; decoded pixels
+remain lossless and level 1 retains its existing encoder.
 
 Native tiles accept one-based TIFF band selectors; catalog metadata is still
 band 1, so nondefault bands require explicit numeric stretches. Native RGB
@@ -179,7 +194,50 @@ independent GDAL quality gate instead.
 Encoded images key source file generations, metadata/stretch/grid/style/bands/
 format. SQLite descriptors invalidate on data_version and own writes; no
 transaction/rollback data is retained. Main file and external mask/overview/aux
-stamps invalidate local source handles and arrays. Remote handle/image retention
-requires explicit TTLs; no claim of immediate mutable-URL/credential refresh is
-made from handle TTL alone. Coalescing errors/panics release followers. Queued
+stamps invalidate local source handles and arrays. Remote source leases default to 60 seconds in native mode and zero in the named
+profile; explicit zero is honored. Remote finished-image retention still requires
+an explicit TTL and budget. No claim of immediate mutable-URL/credential refresh
+is made from handle TTL alone. Identical active requests coalesce even with zero image budget; no finished image
+is retained at zero. Coalescing errors/panics release followers. Queued
 abandoned work may be skipped, while active GDAL work remains accounted.
+
+Operational metrics remain outside the legacy specification. JSON counters gain
+fixed-stage histogram fields and a separately protected Prometheus text route;
+both profiles use the same counters and ownership. Timing logs and X-Ray use
+fixed method/route vocabularies instead of dataset paths. Worker stage completion
+after a response deadline updates aggregate counters without changing an emitted
+trace. Python session destruction releases the GIL while joining native work;
+it still waits for executing GDAL rather than detaching or cancelling it.
+Native CLI SIGINT/SIGTERM/SIGHUP and Windows console interrupts close HTTP
+admission and drain owned workers. Embedded application ownership retains
+host-controlled process signals. Forceful termination remains OS-owned.
+
+## Native database-backed layers
+
+The `rcfp-native-2` SQLite format preserves the ordered-key contract while
+storing band/expression definitions, defaults and STAC snapshots in additional
+catalog tables. It reuses the existing metadata encoding and transaction code;
+portable cross-endian percentile encoding is not qualified. Terracotta catalogs
+retain their marker, schema and numerical behavior. The named profile rejects
+native markers. Import creates a separate database for rollback.
+
+Logical native datasets resolve physical band selection before requests. Band
+metadata uses selected validity and declared calibration. Expression statistics
+are sampled and include an extent polygon, rather than an exact valid-data hull.
+Mapped RGB/compute previews share a union grid; legacy SQL preview framing remains
+unchanged. The `rcfp-native-1` advanced layer API retains explicit grids, overlap,
+category palettes and coverage policies. Its default channels can be read through
+the ordinary catalog adapter.
+
+See [native design](native-layers.md) and [public contracts](../docs/reference/layers.md).
+
+## Browser profile and encoded selection
+
+The identity endpoint now includes the application's immutable
+`compatibility_profile` and uses metadata CORS. This additive discovery field
+lets the public SDK reject mismatched server policy. Route splitting precedes
+key percent-decoding so literal encoded slashes, plus and percent survive as
+individual key values. Raster and metadata response shapes remain unchanged.
+The browser SDK starts with existing key-catalog rendering/time contracts;
+registered native layers expose their existing definition/default image APIs.
+Display inspection does not imply a raw source-value point-query contract.

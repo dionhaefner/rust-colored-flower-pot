@@ -14,6 +14,7 @@ import io
 import json
 import math
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
@@ -220,6 +221,63 @@ def main():
             dst.write(src.read(window=window))
             dst.write_mask(src.read_masks(1, window=window))
     sources["rotated-real"] = args.out / "rotated-real.tif"
+    # Real pixels with a shared mask and no per-band nodata exercise safe band pruning.
+    with rasterio.open(sources["rgb-byte"]) as src:
+        profile = dict(
+            src.profile,
+            count=4,
+            nodata=None,
+            tiled=True,
+            blockxsize=256,
+            blockysize=256,
+        )
+        with (
+            rasterio.Env(GDAL_TIFF_INTERNAL_MASK=False),
+            rasterio.open(args.out / "multiband-mask.tif", "w", **profile) as dst,
+        ):
+            dst.write(src.read(), indexes=[1, 2, 3])
+            dst.write(src.read(1), 4)
+            dst.write_mask(src.dataset_mask())
+    sources["multiband-mask"] = args.out / "multiband-mask.tif"
+    # Read-only GDAL overview creation writes an external .ovr beside real pixels.
+    external = args.out / "external-overviews.tif"
+    shutil.copyfile(sources["rgb-byte"], external)
+    lib = ctypes.CDLL(os.environ["TERRACOTTA_GDAL_LIBRARY"])
+    lib.GDALAllRegister()
+    lib.GDALOpen.argtypes, lib.GDALOpen.restype = (
+        [ctypes.c_char_p, ctypes.c_int],
+        ctypes.c_void_p,
+    )
+    lib.GDALBuildOverviews.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.POINTER(ctypes.c_int),
+        ctypes.c_int,
+        ctypes.POINTER(ctypes.c_int),
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+    ]
+    lib.GDALClose.argtypes = [ctypes.c_void_p]
+    handle = lib.GDALOpen(os.fsencode(external), 0)
+    assert handle
+    try:
+        levels = (ctypes.c_int * 3)(2, 4, 8)
+        assert (
+            lib.GDALBuildOverviews(handle, b"NEAREST", 3, levels, 0, None, None, None)
+            == 0
+        )
+    finally:
+        lib.GDALClose(handle)
+    assert Path(str(external) + ".ovr").is_file()
+    sources["external-overviews"] = external
+    # A three-axis CRS can trigger GDAL's vertical value/unit adjustments.
+    with rasterio.open(ROOT / "tests/fixtures/corpus/elevation.tif") as src:
+        profile = dict(src.profile, crs="EPSG:4979")
+        with rasterio.open(args.out / "three-axis-dem.tif", "w", **profile) as dst:
+            dst.write(src.read())
+            dst.set_band_unit(1, "ft")
+    sources["three-axis-dem"] = args.out / "three-axis-dem.tif"
     with rasterio.open(sources["dem-south"]) as src:
         transform, width, height = calculate_default_transform(
             src.crs, "EPSG:32734", src.width, src.height, *src.bounds
@@ -484,7 +542,13 @@ def main():
                                 "alpha": "exact",
                             }
                         )
-                        if key in ("rgb-byte", "map-rgb", "mercator-unaligned"):
+                        if key in (
+                            "rgb-byte",
+                            "map-rgb",
+                            "mercator-unaligned",
+                            "multiband-mask",
+                            "external-overviews",
+                        ):
                             channels = []
                             for band in (1, 2, 3):
                                 values, valid = expected(

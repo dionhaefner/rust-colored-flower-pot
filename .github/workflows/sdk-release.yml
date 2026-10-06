@@ -1,0 +1,70 @@
+name: Publish JavaScript SDK to npm
+
+on:
+  push:
+    tags:
+      - "sdk-v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      npm_tag: ${{ steps.release.outputs.npm_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Require a release from main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Verify SDK tag and source version
+        id: release
+        run: node packaging/verify-sdk-release.mjs "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+
+  qualification:
+    needs: validate
+    uses: ./.github/workflows/sdk.yml
+
+  publish:
+    needs: [validate, qualification]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install the trusted-publishing CLI
+        run: npm install --global npm@11.6.2 --ignore-scripts
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdk-package-24
+          path: dist
+
+      - name: Publish the tested tarball
+        working-directory: dist
+        env:
+          NPM_TAG: ${{ needs.validate.outputs.npm_tag }}
+        run: |
+          sha256sum --check SHA256SUMS
+          npm publish ./*.tgz --access public --tag "$NPM_TAG" --ignore-scripts --registry https://registry.npmjs.org/

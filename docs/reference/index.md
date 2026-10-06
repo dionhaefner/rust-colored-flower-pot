@@ -10,11 +10,15 @@ version in this site's title.
 cli
 configuration
 http
+javascript
 python
 compatibility-python
 support
 catalogs
+layers
+advanced-layers
 artifacts
 errors
+monitoring
 palettes
 ```

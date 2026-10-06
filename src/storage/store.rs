@@ -19,6 +19,30 @@ pub enum Store {
     },
 }
 impl Store {
+    pub(crate) fn definition(&self, keys: &[String]) -> Result<Option<Value>> {
+        match self {
+            Self::Sqlite(s) | Self::Remote { store: s, .. } => s.definition(keys),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) fn put_definition(&self, keys: &[String], value: &Value) -> Result<()> {
+        match self {
+            Self::Sqlite(s) => s.put_definition(keys, value),
+            _ => Err("native keyed catalog writes currently require local SQLite".into()),
+        }
+    }
+    pub(crate) fn source_definition(&self, id: &str) -> Result<Option<Value>> {
+        match self {
+            Self::Sqlite(s) | Self::Remote { store: s, .. } => s.source_definition(id),
+            _ => Ok(None),
+        }
+    }
+    pub(crate) fn put_source(&self, id: &str, value: &Value) -> Result<()> {
+        match self {
+            Self::Sqlite(s) => s.put_source(id, value),
+            _ => Err("native keyed catalog writes currently require local SQLite".into()),
+        }
+    }
     pub fn db_version(&self) -> Result<String> {
         match self {
             Self::Sqlite(s) | Self::Remote { store: s, .. } => s.db_version(),
@@ -62,6 +86,20 @@ impl Store {
             Self::open_with(path, provider, false)
         }
     }
+    pub fn create_native(
+        path: &str,
+        provider: Option<&str>,
+        keys: &[KeyDefinition],
+    ) -> Result<Self> {
+        if Provider::detect(path, provider)? != Provider::Sqlite {
+            return Err("native keyed catalog creation requires local SQLite".into());
+        }
+        Ok(Self::Sqlite(SqliteStore::create_native(
+            &local_path(path)?,
+            keys,
+        )?))
+    }
+
     pub fn create(path: &str, provider: Option<&str>, keys: &[KeyDefinition]) -> Result<Self> {
         match Provider::detect(path, provider)? {
             Provider::Sqlite => Ok(Self::Sqlite(SqliteStore::create(local_path(path)?, keys)?)),
@@ -126,42 +164,14 @@ impl Store {
             Self::Sqlite(s) | Self::Remote { store: s, .. } => s,
             _ => unreachable!(),
         };
-        let known = self.key_names();
-        let mut data = s.datasets()?;
-        for key in filters.keys().chain(order.iter()) {
-            if key != "path" && !known.contains(&key.as_str()) {
-                return Err("unrecognized dataset key".into());
-            }
-        }
-        data.retain(|d| {
-            known.iter().enumerate().all(|(i, k)| {
-                filters
-                    .get(*k)
-                    .is_none_or(|v| v.is_empty() || v.contains(&d.keys[i]))
-            })
-        });
-        data.sort_by(|a, b| {
-            for k in order {
-                let cmp = if k == "path" {
-                    a.path.as_os_str().cmp(b.path.as_os_str())
-                } else {
-                    let i = known.iter().position(|v| *v == k).unwrap();
-                    a.keys[i].cmp(&b.keys[i])
-                };
-                if cmp != std::cmp::Ordering::Equal {
-                    return if ascending { cmp } else { cmp.reverse() };
-                }
-            }
-            std::cmp::Ordering::Equal
-        });
-        if let Some((page, limit)) = pagination {
-            data = data
-                .into_iter()
-                .skip(page.saturating_mul(limit))
-                .take(limit)
-                .collect();
-        }
-        Ok(data)
+        super::query_datasets(
+            s.datasets()?,
+            &self.key_names(),
+            filters,
+            order,
+            ascending,
+            pagination,
+        )
     }
     pub fn dataset(&self, keys: &[String]) -> Result<Option<Dataset>> {
         match self {

@@ -39,6 +39,7 @@ impl Gdal {
         } else {
             self.reprojection.0
         };
+        let started = Instant::now();
         unsafe {
             if requests.iter().any(|request| {
                 request.band == 0 || request.band > (self.raster_count)(source) as usize
@@ -87,6 +88,13 @@ impl Gdal {
                         .map(Some);
                 }
             }
+            if self.native_plan {
+                if let Some(rasters) =
+                    self.read_planned_native(source, requests, bounds, algorithm)?
+                {
+                    return Ok(Some(rasters));
+                }
+            }
             let warped = self.create_warped_dataset(
                 source,
                 bounds,
@@ -97,6 +105,12 @@ impl Gdal {
                     self.reprojection.1
                 },
             )?;
+            if self.profile_reads {
+                eprintln!(
+                    "raster_profile native_warp_us={}",
+                    started.elapsed().as_micros()
+                );
+            }
             requests
                 .iter()
                 .map(|request| {
@@ -114,7 +128,7 @@ impl Gdal {
         }
     }
 
-    unsafe fn native_samples(
+    pub(super) unsafe fn native_samples(
         &self,
         source: DatasetHandle,
         index: c_int,

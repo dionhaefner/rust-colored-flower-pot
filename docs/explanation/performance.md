@@ -127,9 +127,9 @@ default. See [map preparation](../how-to/optimize.md),
 
 ## Terracotta and TiTiler navigation comparison
 
-A 2026-10-05 Linux x86_64 run on an AMD Ryzen 5 5600 measured the native
+A 2026-10-06 Linux x86_64 run on an AMD Ryzen 5 5600 measured the native
 development executable with SHA-256
-`4624c1e46b84613b6d496ed9a928685bab62d3a696631f64e89898dbec8f7ed3`.
+`ecfdc05bbe70aa46354ee996d97c71dfb2a1a8d07845330b2294f023a29a1c8c`.
 All 216 fresh-service cases and 45,360 tile requests succeeded. Each service
 completed the same 15,120 requests. The table reports medians across nine
 singleband cells (three raster families × three user arrangements) or three RGB
@@ -139,18 +139,18 @@ cell-by-cell ratios, so they need not equal a ratio of the aggregate time column
 
 | Storage | Layer | Action | RCFP (ms) | Terracotta (ms) | TiTiler (ms) | vs Terracotta | vs TiTiler |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| Local | Singleband | First viewport | 70.9 | 331.6 | 209.4 | 4.17× | 3.58× |
-| Local | Singleband | Pan | 5.1 | 87.3 | 46.7 | 9.52× | 8.69× |
-| Local | Singleband | Zoom | 27.8 | 223.5 | 124.2 | 7.09× | 4.34× |
-| Local | RGB | First viewport | 174.1 | 627.9 | 737.6 | 3.61× | 3.88× |
-| Local | RGB | Pan | 19.3 | 213.4 | 234.9 | 5.77× | 4.64× |
-| Local | RGB | Zoom | 130.1 | 615.1 | 687.5 | 3.66× | 4.05× |
-| Remote ranges | Singleband | First viewport | 226.6 | 541.1 | 313.9 | 2.01× | 1.45× |
-| Remote ranges | Singleband | Pan | 34.8 | 93.6 | 55.0 | 2.43× | 1.89× |
-| Remote ranges | Singleband | Zoom | 88.0 | 280.2 | 148.3 | 2.41× | 2.22× |
-| Remote ranges | RGB | First viewport | 520.4 | 1277.3 | 849.3 | 2.38× | 1.58× |
-| Remote ranges | RGB | Pan | 87.9 | 307.2 | 224.4 | 4.00× | 2.56× |
-| Remote ranges | RGB | Zoom | 286.7 | 940.3 | 711.4 | 2.93× | 2.24× |
+| Local | Singleband | First viewport | 64.6 | 336.8 | 225.6 | 5.21× | 4.75× |
+| Local | Singleband | Pan | 4.3 | 84.2 | 50.9 | 18.83× | 13.27× |
+| Local | Singleband | Zoom | 24.0 | 226.5 | 131.8 | 8.64× | 6.08× |
+| Local | RGB | First viewport | 112.8 | 704.8 | 764.9 | 5.55× | 6.02× |
+| Local | RGB | Pan | 12.5 | 228.8 | 217.6 | 8.65× | 7.34× |
+| Local | RGB | Zoom | 73.8 | 533.2 | 687.3 | 3.92× | 4.33× |
+| Remote ranges | Singleband | First viewport | 182.8 | 556.2 | 308.1 | 2.57× | 1.69× |
+| Remote ranges | Singleband | Pan | 10.5 | 85.7 | 57.6 | 9.21× | 8.46× |
+| Remote ranges | Singleband | Zoom | 35.2 | 270.5 | 153.1 | 4.34× | 4.35× |
+| Remote ranges | RGB | First viewport | 352.9 | 1333.1 | 881.9 | 3.30× | 2.15× |
+| Remote ranges | RGB | Pan | 23.1 | 296.2 | 237.6 | 10.02× | 5.18× |
+| Remote ranges | RGB | Zoom | 103.6 | 921.8 | 754.0 | 4.44× | 3.41× |
 
 The loaded request distribution below combines local/remote, all layers and
 navigation/style/expression stages for both three-user arrangements, with
@@ -159,16 +159,16 @@ all cases, not a process memory limit or a sustained-capacity claim.
 
 | Service | Loaded p50 / p95 / p99 (ms) | Median sampled peak PSS / USS (MiB) |
 | --- | ---: | ---: |
-| RCFP | 4.56 / 120.38 / 219.76 | 195 / 194 |
-| Terracotta | 78.18 / 336.14 / 500.38 | 300 / 236 |
-| TiTiler/rio-tiler | 83.32 / 348.15 / 539.56 | 544 / 480 |
+| RCFP | 3.17 / 76.77 / 163.86 | 214 / 213 |
+| Terracotta | 76.94 / 340.76 / 518.20 | 299 / 235 |
+| TiTiler/rio-tiler | 84.01 / 351.03 / 546.55 | 546 / 491 |
 
-Across the remote cases, source GETs / fetched MiB totaled 3,383 / 2,464 for
-RCFP, 7,420 / 5,219 for Terracotta and 11,021 / 9,075 for TiTiler. Median
-service startup-to-readiness was 51 / 460 / 1,160 ms respectively and is reported
+Across the remote cases, source GETs / fetched MiB totaled 1,856 / 1,164 for
+RCFP, 7,462 / 5,275 for Terracotta and 10,890 / 8,942 for TiTiler. Median
+service startup-to-readiness was 51 / 459 / 1,155 ms respectively and is reported
 separately from the first image. TiTiler readiness requires all four worker PIDs.
 Startup prepares no raster. Timed-batch throughput, excluding startup and client
-decode, was 279 / 69 / 72 requests/s for this request mix; this is not maximum
+decode, was 436 / 69 / 72 requests/s for this request mix; this is not maximum
 sustained capacity. Of each service's
 15,120 requests, 1,260 were transparent and 12,210 entirely valid; the rest
 intersected source/nodata edges. Local and remote decoded images matched exactly
@@ -220,7 +220,10 @@ aggregate logical cache budget, including curl's downloaded-range cache:
 | Terracotta | 4 × 16 MiB | 4 × 16 MiB | 4 × 8 MiB |
 | TiTiler/rio-tiler | 4 × 32 MiB | none | 4 × 8 MiB |
 
-Finished-image caches, prefetch and RCFP remote dataset leases are off. Cache
+Finished-image caches and prefetch are off. Native RCFP uses its default
+60-second remote source leases and shares identical active renders even with
+zero finished-image retention. Source/overview handles add memory outside the
+logical block/array/range budgets; the memory table includes that cost. Cache
 equality does not imply equal physical memory. Process-tree memory samples every
 100 ms sum PSS (which apportions shared pages) and USS (private resident pages),
 including Python masters/workers; summed RSS is diagnostic only. Reports retain
@@ -260,7 +263,11 @@ Local sources have a warm OS page cache and fresh service/GDAL state. Remote
 sources use a self-hosted byte-range origin with 15 ms delay per source request,
 giving exact request/byte accounting; this is a controlled remote surrogate,
 not an actual S3 comparison. Physically cold disk, browser paint/WAN, private
-credentials, true time-series acquisitions, packed multiband TIFF comparisons,
-dynamic mosaics and cross-service deadline/disconnect draining remain separate.
-The native resource suite establishes its own bounded-drain evidence. No public
-tile service is load-tested and this benchmark does not qualify a portable wheel.
+credentials, true time-series acquisitions, packed multiband TIFF comparisons
+and dynamic mosaics are explicit applicability limits. A representative real
+deployment using the intended client network and S3 storage is the next validation
+step; the deployment must retain its own artifact identities and results.
+Deadline, disconnect, bounded rejection and recovery behavior have a separate
+request-lifecycle correctness gate, without cross-service timing comparisons.
+No public tile service is load-tested and this benchmark does not qualify a
+portable wheel.

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OpenLayers SDK sample</title>
+    <link rel="stylesheet" href="/vendor/ol.css" />
+    <style>
+      body {
+        font-family: system-ui;
+        margin: 1rem;
+      }
+      #map {
+        height: 65vh;
+        background: #dbe4e8;
+      }
+      select {
+        padding: 0.5rem;
+      }
+    </style>
+  </head>
+  <body data-service="{{ hostname }}" data-profile="{{ profile }}">
+    <h1>OpenLayers SDK sample</h1>
+    <label for="dataset">Dataset</label>
+    <select id="dataset"></select>
+    <p id="status" role="status">Loading…</p>
+    <div id="map" aria-label="Raster map"></div>
+    <script src="/vendor/ol.js"></script>
+    <script type="module">
+      import { Client, LatestRequest } from "/sdk/index.js";
+      import { openLayersSource } from "/sdk/integrations.js";
+      const client = new Client(document.body.dataset.service, {
+        profile: document.body.dataset.profile,
+      });
+      const map = new ol.Map({
+        target: "map",
+        layers: [],
+        view: new ol.View({ center: [0, 0], zoom: 2 }),
+      });
+      const select = document.getElementById("dataset"),
+        status = document.getElementById("status"),
+        latest = new LatestRequest();
+      let layers, tileLayer;
+      async function display() {
+        if (tileLayer) map.removeLayer(tileLayer);
+        try {
+          const layer = layers.find((row) => row.id === select.value);
+          const metadata = await latest.run((signal) =>
+            client.metadata(layer.keys, { signal }),
+          );
+          const render = {
+            mode: "singleband",
+            keys: layer.keys,
+            params: { stretch_range: [0, 3000] },
+          };
+          tileLayer = new ol.layer.Tile({
+            source: openLayersSource(ol, client, render),
+          });
+          map.addLayer(tileLayer);
+          map
+            .getView()
+            .fit(
+              ol.proj.transformExtent(
+                metadata.bounds,
+                "EPSG:4326",
+                "EPSG:3857",
+              ),
+              { size: map.getSize(), maxZoom: 16 },
+            );
+          status.textContent = layer.title;
+        } catch (error) {
+          if (error.name !== "AbortError") status.textContent = error.message;
+        }
+      }
+      try {
+        await client.connect();
+        ({ layers } = await client.discover());
+        for (const layer of layers) {
+          const option = document.createElement("option");
+          option.value = layer.id;
+          option.textContent = layer.title;
+          select.append(option);
+        }
+        select.onchange = display;
+        if (layers.length) await display();
+        else status.textContent = "No datasets";
+      } catch (error) {
+        status.textContent = error.message;
+      }
+      window.addEventListener("pagehide", () => {
+        latest.cancel();
+        map.setTarget(undefined);
+      });
+    </script>
+  </body>
+</html>

@@ -417,7 +417,7 @@ macro_rules! pairwise_impl {
 pairwise_impl!(pairwise, f64);
 pairwise_impl!(pairwise_f32, f32);
 
-struct Coordinates {
+pub(super) struct Coordinates {
     source: *mut c_void,
     target: *mut c_void,
     handle: *mut c_void,
@@ -441,7 +441,11 @@ impl Coordinates {
     unsafe fn new(g: &Gdal, projection: *const c_char) -> Result<Self> {
         unsafe { Self::new_to(g, projection, c"EPSG:4326".as_ptr()) }
     }
-    unsafe fn new_to(g: &Gdal, projection: *const c_char, target: *const c_char) -> Result<Self> {
+    pub(super) unsafe fn new_to(
+        g: &Gdal,
+        projection: *const c_char,
+        target: *const c_char,
+    ) -> Result<Self> {
         unsafe {
             let new: unsafe extern "C" fn(*const c_char) -> *mut c_void =
                 g.symbol(b"OSRNewSpatialReference\0")?;
@@ -482,7 +486,7 @@ impl Coordinates {
         }
         Ok([x, y])
     }
-    fn bounds(&self, b: [f64; 4]) -> Result<[f64; 4]> {
+    pub(super) fn bounds(&self, b: [f64; 4]) -> Result<[f64; 4]> {
         let (mut a, mut c, mut d, mut e) = (0., 0., 0., 0.);
         if unsafe {
             (self.transform_bounds)(
