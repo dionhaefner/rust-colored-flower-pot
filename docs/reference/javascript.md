@@ -102,11 +102,18 @@ const mapLibreRaster = mapLibreSource(client, render);
 const openLayersTiles = openLayersSource(ol, client, render);
 ```
 
+`leafletLayer` shares a three-request limit across layers and discards pending
+tiles when removed. It uses the client's fetch transport and retries HTTP 503
+responses at most twice, after 150 and 300 ms. Permanent errors remain tile
+errors. This paces RGB views at the server's default raster capacity; unrelated
+clients or smaller deployment limits can still exhaust it.
+
 Three complete, independent applications are served at
 `/examples/leaflet.html`, `/examples/maplibre.html`, and
 `/examples/openlayers.html`. Their source is in `src/assets/client/examples`.
-Each imports the public SDK, discovers datasets, retrieves metadata, frames the
-raster and supplies its map source through an adapter. They share no viewer
+In native mode each imports the public SDK, discovers tilesets and uses their
+TileJSON manifests to frame and display the raster. The named compatibility
+profile uses keyed discovery and metadata. They share no viewer
 internals or URL-building code. Leaflet 1.9.4, MapLibre GL JS 5.7.3 and OpenLayers
 10.6.1 are bundled locally with acquisition checksums and licenses. MapLibre
 requires WebGL. The viewer's Leaflet map uses DOM tiles. Raster backgrounds are empty
@@ -119,6 +126,12 @@ An application may add a provider basemap separately. Keep its authentication in
 application configuration, obey its provider policy, and qualify actual network,
 CORS, token restrictions and attribution before deployment. External basemap
 integration is separate from the locally verified offline workflows.
+
+Native `discoverTilesets`, `tileJSON` and `point` expose
+[map discovery and source values](native-services.md). The additional
+`leafletTileJSON`, `mapLibreTileJSONSource` and `openLayersTileJSONSource`
+integrations consume the same TileJSON manifest. The original rendering adapters
+remain available in both profiles.
 
 ## Time and point inspection
 
@@ -230,3 +243,9 @@ expandable metadata and a narrow-screen layout. Leaflet provides keyboard map
 pan/zoom, and inspection is also available without a pointer. Application authors
 must retain equivalent alternatives when using custom controls. Automated
 Chromium tests exercise keyboard controls and mobile layout. Formal WCAG and screen-reader qualification remain separate. The SDK requires ES modules, fetch, AbortController, Web Crypto and createImageBitmap. Chromium is the executed browser gate. Firefox and Safari remain unqualified.
+
+Python-hosted compute layers use the same native discovery and TileJSON methods.
+`tileJSON(keys, { gain: 2, crop: "wheat", colormap: "viridis" })` passes declared
+model parameters alongside display settings. Computed descriptors expose
+`rcfp.compute`; source inspection, output percentiles and source revision fields
+can be absent for these layers. See [Python compute layers](../how-to/python-compute.md).

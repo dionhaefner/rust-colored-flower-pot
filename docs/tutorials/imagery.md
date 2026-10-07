@@ -2,7 +2,8 @@
 
 You will combine three bands into a color preview, compute NDVI from red and NIR,
 and compare categorical rendering. Start with the catalog from
-[the catalog tutorial](catalog.md).
+[the catalog tutorial](catalog.md). These additional scripts require a source
+checkout or archive. Run from that root and use your catalog path.
 
 ```sh
 python docs/examples/render_images.py catalog.sqlite images

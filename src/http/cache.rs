@@ -1,23 +1,39 @@
 //! Bounded encoded-image reuse with shared results for identical in-flight renders.
 
 use crate::{Result, storage::Metadata};
+use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Hash, Eq, PartialEq)]
+fn public_location(path: &str) -> String {
+    let path = path.strip_prefix("/vsicurl/").unwrap_or(path);
+    if let Ok(mut url) = url::Url::parse(path) {
+        let _ = url.set_username("");
+        let _ = url.set_password(None);
+        url.set_query(None);
+        url.set_fragment(None);
+        url.to_string()
+    } else {
+        path.to_owned()
+    }
+}
+
+#[derive(Clone, Hash, Eq, PartialEq, Serialize)]
 struct SourceKey {
     path: String,
     generation: Vec<(u64, u128)>,
     metadata: Vec<u64>,
     policy: String,
 }
-#[derive(Clone, Hash, Eq, PartialEq)]
+#[derive(Clone, Hash, Eq, PartialEq, Serialize)]
 pub(super) struct RenderKey {
     route: String,
     parameters: Vec<(String, String)>,
     sources: Vec<SourceKey>,
+    semantics: String,
 }
 
 #[cfg(test)]
@@ -30,7 +46,96 @@ mod tests {
             route: name.into(),
             parameters: vec![],
             sources: vec![],
+            semantics: String::new(),
         }
+    }
+
+    #[test]
+    fn validator_accepts_full_width_file_generation_stamps() {
+        let mut key = key("raster");
+        key.sources.push(SourceKey {
+            path: "raster.tif".into(),
+            generation: vec![(123, u128::MAX)],
+            metadata: vec![],
+            policy: String::new(),
+        });
+        assert_eq!(key.validator("image/png", &[1]).len(), 66);
+    }
+
+    #[test]
+    fn signed_access_is_private_but_explicit_revision_is_stable() {
+        let metadata = Metadata {
+            keys: BTreeMap::new(),
+            bounds: [0.; 4],
+            convex_hull: serde_json::Value::Null,
+            valid_percentage: 100.,
+            range: [0., 1.],
+            mean: 0.,
+            stdev: 0.,
+            percentiles: vec![],
+            metadata: serde_json::json!({"revision":"verified-content"}),
+        };
+        let a = RenderKey::new(
+            "/singleband/scene/red/preview.png",
+            &BTreeMap::new(),
+            [(
+                Path::new("https://user:secret@example.com/a.tif?signature=one"),
+                &metadata,
+            )],
+        );
+        let b = RenderKey::new(
+            "/singleband/scene/red/preview.png",
+            &BTreeMap::new(),
+            [(
+                Path::new("https://user:renewed@example.com/a.tif?signature=two"),
+                &metadata,
+            )],
+        );
+        assert!(a != b);
+        assert_eq!(
+            a.validator("image/png", &[1]),
+            b.validator("image/png", &[1])
+        );
+        assert_ne!(
+            a.validator("image/png", &[1]),
+            b.validator("image/png", &[2])
+        );
+        let mut changed = metadata.clone();
+        changed.metadata["revision"] = "new-content".into();
+        let c = RenderKey::new(
+            "/singleband/scene/red/preview.png",
+            &BTreeMap::new(),
+            [(Path::new("https://example.com/a.tif"), &changed)],
+        );
+        assert_ne!(
+            a.validator("image/png", &[1]),
+            c.validator("image/png", &[1])
+        );
+    }
+
+    #[test]
+    fn changing_a_source_during_render_never_retains_the_result() {
+        let folder = tempfile::tempdir().unwrap();
+        let path = folder.path().join("scene.tif");
+        std::fs::write(&path, [1]).unwrap();
+        let mut key = key("a");
+        key.sources.push(SourceKey {
+            path: path.to_string_lossy().into(),
+            generation: crate::execution::source_generation(&path),
+            metadata: vec![],
+            policy: String::new(),
+        });
+        let cache = RenderCache::new(4096, Duration::ZERO, Duration::from_secs(1));
+        assert!(
+            cache
+                .render(key, false, || {
+                    std::fs::write(&path, [2, 3]).unwrap();
+                    Ok(vec![1])
+                })
+                .is_err()
+        );
+        assert_eq!(cache.metrics()["entries"], 0);
+        assert_eq!(cache.metrics()["in_flight"], 0);
     }
 
     #[test]
@@ -172,6 +277,81 @@ mod tests {
 }
 
 impl RenderKey {
+    fn current(&self) -> bool {
+        self.sources.iter().all(|source| {
+            source.generation == crate::execution::source_generation(Path::new(&source.path))
+        })
+    }
+
+    pub fn layer(
+        route: &str,
+        parameters: &BTreeMap<String, String>,
+        layer: &crate::layers::Layer,
+        spec: &crate::layers::RenderSpec,
+    ) -> Self {
+        let mut key = Self::new(route, parameters, []);
+        key.sources = layer
+            .observations
+            .iter()
+            .flat_map(|o| o.assets.values())
+            .map(|a| SourceKey {
+                path: a.location.to_string_lossy().into_owned(),
+                generation: crate::execution::source_generation(&a.location),
+                metadata: vec![],
+                policy: String::new(),
+            })
+            .collect();
+        let mut definition = serde_json::to_value(layer).expect("layer identity");
+        for (observation, value) in layer.observations.iter().zip(
+            definition["observations"]
+                .as_array_mut()
+                .expect("observations"),
+        ) {
+            for (name, asset) in &observation.assets {
+                value["assets"][name] = asset.identity();
+            }
+        }
+        key.semantics
+            .push_str(&serde_json::to_string(&(definition, spec)).expect("layer identity"));
+        key
+    }
+
+    pub fn validator(&self, content_type: &str, bytes: &[u8]) -> String {
+        let mut hash = Sha256::new();
+        let sources = self
+            .sources
+            .iter()
+            .map(|s| {
+                let revisioned = serde_json::from_str::<serde_json::Value>(&s.policy)
+                    .ok()
+                    .is_some_and(|v| !v[0].is_null());
+                let path = if revisioned || self.route.starts_with("/layers/") {
+                    String::new()
+                } else {
+                    public_location(&s.path)
+                };
+                let generation = s
+                    .generation
+                    .iter()
+                    .map(|(size, stamp)| (*size, stamp.to_string()))
+                    .collect::<Vec<_>>();
+                serde_json::json!([path, generation, s.metadata, s.policy])
+            })
+            .collect::<Vec<_>>();
+        hash.update(
+            serde_json::to_vec(&(
+                self.route.as_str(),
+                &self.parameters,
+                &self.semantics,
+                sources,
+            ))
+            .expect("render identity"),
+        );
+        hash.update(content_type);
+        hash.update(bytes);
+        format!("\"{:x}\"", hash.finalize())
+    }
+
     pub fn new<'a>(
         route: &str,
         parameters: &BTreeMap<String, String>,
@@ -179,9 +359,23 @@ impl RenderKey {
     ) -> Self {
         Self {
             route: route.into(),
+            semantics: serde_json::json!({
+                "contract": "rcfp-render-1",
+                "version": crate::IMPLEMENTATION_VERSION,
+                "settings": (["TC_REPROJECTION_METHOD", "TC_RESAMPLING_METHOD", "TC_NATIVE_DIRECT_READ", "TC_RUST_UTM_FAST", "TC_RUST_MERCATOR_FAST", "TC_PNG_COMPRESS_LEVEL", "TC_DEFAULT_TILE_SIZE"].map(|k| {
+                    let defaults = crate::settings::defaults();
+                    let default = defaults.get(k.trim_start_matches("TC_"));
+                    let value = crate::settings::var(k).ok().or_else(|| default.map(|v| v.as_str().map(str::to_owned).unwrap_or_else(|| v.to_string())));
+                    let value = if let Some(value) = default.and_then(serde_json::Value::as_bool) {
+                        crate::settings::flag(k, value).ok().map(|v| v.to_string())
+                    } else { value.map(|v| serde_json::from_str::<serde_json::Value>(&v).map(|v| v.to_string()).unwrap_or(v)) };
+                    (k, value)
+                }))
+            }).to_string(),
             parameters: parameters
                 .iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
+                .filter(|(k, _)| ["tile_size", "color_transform", "colormap", "explicit_color_map", "stretch_range", "band", "r", "g", "b", "r_band", "g_band", "b_band", "r_range", "g_range", "b_range", "expression", "v1", "v2", "v3", "v4", "v5", "format", "quality"].contains(&k.as_str()))
+                .map(|(k, v)| (k.clone(), serde_json::from_str::<serde_json::Value>(v).map(|v| v.to_string()).unwrap_or_else(|_| v.clone())))
                 .collect(),
             sources: sources
                 .into_iter()
@@ -212,6 +406,7 @@ impl RenderKey {
     fn bytes(&self) -> usize {
         std::mem::size_of::<Self>()
             + self.route.len()
+            + self.semantics.len()
             + self
                 .parameters
                 .iter()
@@ -308,6 +503,9 @@ impl RenderCache {
         remote: bool,
         render: impl FnOnce() -> Result<Vec<u8>>,
     ) -> Result<Vec<u8>> {
+        if !key.current() {
+            return Err("source changed during rendering; retry".into());
+        }
         let (flight, leader) =
             {
                 let mut state = self.state.lock().expect("render cache");
@@ -359,7 +557,13 @@ impl RenderCache {
             state: &self.state,
             key: key.clone(),
         };
-        let result = render().map(Arc::new);
+        let result = render().and_then(|bytes| {
+            if key.current() {
+                Ok(Arc::new(bytes))
+            } else {
+                Err("source changed during rendering; retry".into())
+            }
+        });
         {
             let mut state = self.state.lock().expect("render cache");
             if let Ok(bytes) = &result {

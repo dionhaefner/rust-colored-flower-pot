@@ -164,9 +164,13 @@ async function apply(fit = false, restored) {
     showLegend(data.legend);
     const version = revision;
     tiles = leafletLayer(L, client, data.render).addTo(map);
-    tiles.on("tileerror", () => {
+    tiles.on("tileerror", ({ error }) => {
       if (version === revision)
-        status("Tile failed; check service availability and tile CORS.");
+        status(
+          error?.status === 503
+            ? "Tile service is busy; retry after requests finish or increase the server raster queue capacity."
+            : "Tile failed; check service availability and tile CORS.",
+        );
     });
     active = data.render;
     if (fit) {

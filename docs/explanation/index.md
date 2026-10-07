@@ -12,5 +12,6 @@ why-rcfp
 rendering
 deployment
 performance
+raster-corpus
 glossary
 ```

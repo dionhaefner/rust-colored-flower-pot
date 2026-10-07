@@ -66,7 +66,7 @@ export interface Discovery {
 export interface Metadata {
   bounds: [number, number, number, number];
   range: [number, number];
-  percentiles: number[];
+  percentiles?: number[];
   [field: string]: unknown;
 }
 export interface Identity {
@@ -131,6 +131,76 @@ export class LatestRequest {
   cancel(): void;
   run<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T>;
 }
+export type TileMatrixSetId =
+  "WebMercatorQuad" | "WorldCRS84Quad" | "RCFPArcticQuad" | "RCFPAntarcticQuad";
+export interface PythonComputeDeclaration {
+  version: string;
+  observation: string;
+  parameters: Record<
+    string,
+    {
+      type: "number" | "integer" | "boolean" | "string";
+      default: number | boolean | string;
+      minimum?: number;
+      maximum?: number;
+      enum?: (number | boolean | string)[];
+    }
+  >;
+}
+export interface Tileset {
+  id: string;
+  keys: string[];
+  title: string;
+  tilejson: string;
+  point?: string;
+  compute?: PythonComputeDeclaration;
+  tileMatrixSets: { id: TileMatrixSetId; definition: string; tiles: string }[];
+}
+export interface TileJSON {
+  tilejson: "3.0.0";
+  name: string;
+  tiles: string[];
+  scheme: "xyz";
+  minzoom: number;
+  maxzoom: number;
+  bounds: [number, number, number, number];
+  attribution: string;
+  tileSize: 256;
+  rcfp: {
+    keys: string[];
+    tileMatrixSet: "WebMercatorQuad";
+    revision?: string;
+    defaults: unknown;
+    parameters?: Record<string, string>;
+    point?: string;
+    compute?: PythonComputeDeclaration;
+  };
+}
+export interface PointValues {
+  value: number | null;
+  raw: number | null;
+  scaled: number | null;
+  valid: boolean;
+  values: "raw" | "scaled" | "expression";
+  units: string | null;
+  scale?: number;
+  offset?: number;
+  provenance: {
+    revision: string;
+    band?: number;
+    name?: string;
+    source_crs?: string;
+    expression?: string;
+    operands?: Record<string, PointValues>;
+    observations?: string[];
+  };
+}
+export interface PointInspection extends PointValues {
+  coordinate: [number, number];
+  crs: "OGC:CRS84";
+  interpolation: "nearest";
+  keys: string[];
+}
 export class Client {
   constructor(
     serviceUrl: string,
@@ -165,6 +235,28 @@ export class Client {
   discover(
     options?: RequestOptions & { maxPages?: number },
   ): Promise<Discovery>;
+  tilesets(
+    options?: RequestOptions & { page?: number; limit?: number },
+  ): Promise<{ tilesets: Tileset[]; page: number; limit: number }>;
+  discoverTilesets(
+    options?: RequestOptions & { maxPages?: number },
+  ): Promise<{ tilesets: Tileset[] }>;
+  tileJSON(
+    keys: string[],
+    params?: {
+      [parameter: string]: unknown;
+      stretch_range?: [number | string, number | string];
+      colormap?: string;
+      explicit_color_map?: unknown;
+      color_transform?: string;
+    },
+    options?: RequestOptions,
+  ): Promise<TileJSON>;
+  point(
+    keys: string[],
+    coordinate: { longitude: number; latitude: number },
+    options?: RequestOptions,
+  ): Promise<PointInspection>;
   metadata(keys: string[], options?: RequestOptions): Promise<Metadata>;
   batchMetadata(
     keys: string[][],

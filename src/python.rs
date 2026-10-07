@@ -184,6 +184,13 @@ impl Session {
         }
     }
 
+    pub fn compute_binary(&self, request: &Value, body: &[u8]) -> Result<crate::http::AppResponse> {
+        match &self.kind {
+            Kind::Http(app) => app.compute_binary(request, body),
+            _ => Err("compute requires an HTTP application".into()),
+        }
+    }
+
     pub fn operation(&self, r: &Value) -> Result<Value> {
         if r["operation"] == "settings" {
             return Ok(json!(self.settings));
@@ -212,12 +219,39 @@ impl Session {
                 catalog.operation(r)
             }
             Kind::Http(app) => {
+                if r["operation"] == "compute_url" {
+                    let headers =
+                        serde_json::from_value(r["headers"].clone()).map_err(|e| e.to_string())?;
+                    return Ok(json!(app.compute_url(&headers, r["absolute"] == true)?));
+                }
+                if r["operation"] == "compute_style" {
+                    let parameters =
+                        serde_json::from_value(r["style"].clone()).map_err(|e| e.to_string())?;
+                    app.compute_style(&parameters)?;
+                    return Ok(Value::Null);
+                }
+                if r["operation"] == "compute_prepare" {
+                    return app.compute_prepare(r);
+                }
+                if r["operation"] == "compute_grid" {
+                    let matrix = crate::tile_matrix::TileMatrixSet::parse(
+                        r["matrix"].as_str().ok_or("matrix required")?,
+                    )?;
+                    let coords: [u32; 3] = serde_json::from_value(r["coordinates"].clone())
+                        .map_err(|e| e.to_string())?;
+                    return Ok(
+                        json!({"crs":format!("EPSG:{}",matrix.epsg()),"bounds":matrix.bounds(coords[0],coords[1],coords[2])?,"size":[256,256],"resampling":r["resampling"]}),
+                    );
+                }
                 if r["operation"] == "layer_samples" {
                     let spec =
                         serde_json::from_value(r["spec"].clone()).map_err(|e| e.to_string())?;
-                    let rasters =
-                        app.layer_samples(r["id"].as_str().ok_or("layer id required")?, &spec)?;
-                    return Ok(json!(rasters.iter().map(|r| json!({"shape":[r.height,r.width],"values":r.values,"mask":r.mask})).collect::<Vec<_>>()));
+                    let samples = app.layer_sample_result(
+                        r["id"].as_str().ok_or("layer id required")?,
+                        &spec,
+                        r["provenance"] == true,
+                    )?;
+                    return Ok(samples.json(r["provenance"] == true));
                 }
                 let headers =
                     serde_json::from_value(r.get("headers").cloned().unwrap_or(json!({})))

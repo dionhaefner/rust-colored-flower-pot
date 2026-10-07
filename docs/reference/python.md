@@ -60,3 +60,9 @@ catalog adapter. Array reads support the existing masked-array/Future pattern.
 See [logical datasets](layers.md) for registration, defaults and rollback.
 The [advanced layer API](advanced-layers.md) remains available for explicit
 overlap, category palettes and arbitrary grids.
+
+`ComputeApplication` registers trusted Python scalar models over explicitly
+selected native observations and shares raster workers and native image rendering.
+`ComputeContext` describes the supplied arrays and dependency revisions. See
+[Python compute layers](../how-to/python-compute.md) for registration, binary
+array ownership, parameter schemas, caching and host lifecycle contracts.

@@ -12,6 +12,7 @@ pub mod raster;
 pub mod stac;
 mod statistics;
 pub mod storage;
+pub mod tile_matrix;
 
 /// RCFP release version, independent of protocol and database versions.
 pub const IMPLEMENTATION_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -26,6 +27,7 @@ pub mod expressions;
 pub mod palettes;
 
 pub mod cli;
+pub mod diagnostics;
 pub mod ingest;
 
 pub mod python;

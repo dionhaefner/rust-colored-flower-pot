@@ -77,6 +77,17 @@ function base(value) {
     );
   return url.href.replace(/\/$/, "");
 }
+function tilesetId(keys) {
+  if (!Array.isArray(keys) || !keys.length)
+    fail("Tileset selection requires dataset keys");
+  keys.forEach(encode);
+  return (
+    "k-" +
+    Array.from(new TextEncoder().encode(JSON.stringify(keys)), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("")
+  );
+}
 function encode(value) {
   if (typeof value !== "string" || !value || value === "." || value === "..")
     fail("Key components must be nonempty strings other than dot segments");
@@ -331,6 +342,62 @@ export class Client {
     }
     fail(
       "Discovery exceeded its page bound; narrow the catalog or use paginated datasets",
+    );
+  }
+  tilesets({ signal, page = 0, limit = 1000 } = {}) {
+    if (this.profile !== "native")
+      fail("Tilesets require the native profile", "profile");
+    if (
+      !Number.isInteger(page) ||
+      page < 0 ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 1000
+    )
+      fail("Invalid tileset pagination");
+    return this.request(this.url(["tilesets"], { page, limit }), { signal });
+  }
+  async discoverTilesets({ signal, maxPages = 100 } = {}) {
+    if (!Number.isInteger(maxPages) || maxPages < 1)
+      fail("Invalid discovery page bound");
+    const tilesets = [];
+    for (let page = 0; page < maxPages; page++) {
+      const result = await this.tilesets({ signal, page });
+      if (!Array.isArray(result.tilesets))
+        fail("Invalid tileset discovery response");
+      tilesets.push(...result.tilesets);
+      if (result.tilesets.length < 1000) return { tilesets };
+    }
+    fail("Tileset discovery exceeded its page bound");
+  }
+  tileJSON(keys, params = {}, options) {
+    if (this.profile !== "native")
+      fail("TileJSON requires the native profile", "profile");
+    if (!Array.isArray(keys) || !keys.length)
+      fail("TileJSON requires dataset keys");
+    keys.forEach(encode);
+    return this.request(
+      this.url(["tilejson", tilesetId(keys) + ".json"], params),
+      options,
+    );
+  }
+  point(keys, { longitude, latitude }, options) {
+    if (this.profile !== "native")
+      fail("Source inspection requires the native profile", "profile");
+    if (
+      !Array.isArray(keys) ||
+      !keys.length ||
+      !Number.isFinite(longitude) ||
+      longitude < -180 ||
+      longitude > 180 ||
+      !Number.isFinite(latitude) ||
+      latitude < -90 ||
+      latitude > 90
+    )
+      fail("Invalid point selection");
+    return this.request(
+      this.url(["point", tilesetId(keys)], { lon: longitude, lat: latitude }),
+      options,
     );
   }
   metadata(keys, options) {

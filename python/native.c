@@ -204,7 +204,25 @@ static PyObject *session_raster(PyObject *self, PyObject *args) {
     return result;
 }
 
+extern TcResponse *tc_session_compute(const void *, const char *, const unsigned char *, size_t);
+static PyObject *session_compute(PyObject *self, PyObject *args) {
+    (void)self;
+    PyObject *capsule;
+    const char *request, *body;
+    Py_ssize_t body_len;
+    if (!PyArg_ParseTuple(args, "Osy#:session_compute", &capsule, &request, &body, &body_len))
+        return NULL;
+    void *session = PyCapsule_GetPointer(capsule, "rcfp.session");
+    if (!session)
+        return NULL;
+    TcResponse *response;
+    Py_BEGIN_ALLOW_THREADS response =
+        tc_session_compute(session, request, (const unsigned char *)body, (size_t)body_len);
+    Py_END_ALLOW_THREADS return response_to_python(response, 1);
+}
+
 static PyMethodDef methods[] = {
+    {"session_compute", session_compute, METH_VARARGS, "Transfer host compute buffers."},
     {"session_raster", session_raster, METH_VARARGS, "Read native raster sample and mask buffers."},
     {"session_open", session_open, METH_VARARGS, "Create an owned native session."},
     {"session_operation", session_operation, METH_VARARGS, "Execute on an owned session."},

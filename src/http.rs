@@ -17,6 +17,9 @@ use std::time::Instant;
 use tiny_http::Method;
 
 mod cache;
+mod delivery;
+mod native;
+mod python_compute;
 use crate::catalog::{Catalog, Opened};
 mod transport;
 
@@ -28,6 +31,7 @@ pub struct Application {
     max_metadata: usize,
     executor: RasterExecutor,
     render_cache: cache::RenderCache,
+    cache_public: bool,
     http_workers: usize,
     http_queue_capacity: usize,
     render_capacity: usize,
@@ -107,6 +111,7 @@ impl Application {
             config.wait_timeout,
         );
         Ok(Self {
+            cache_public: crate::settings::flag("TC_HTTP_CACHE_PUBLIC", false)?,
             fused_render: crate::settings::flag("TC_FUSED_RENDER", true)?,
             request_details: ["TC_XRAY_PROFILE", "TC_FLASK_PROFILE", "TC_DEBUG"]
                 .iter()
@@ -148,17 +153,51 @@ impl Application {
     }
 
     pub fn layer_samples(&self, id: &str, spec: &crate::layers::RenderSpec) -> Result<Vec<Raster>> {
+        Ok(self.layer_sample_result(id, spec, false)?.rasters)
+    }
+
+    pub fn layer_samples_with_provenance(
+        &self,
+        id: &str,
+        spec: &crate::layers::RenderSpec,
+    ) -> Result<crate::layers::mosaic::Samples> {
+        self.layer_sample_result(id, spec, true)
+    }
+    pub fn layer_sample_result(
+        &self,
+        id: &str,
+        spec: &crate::layers::RenderSpec,
+        trace: bool,
+    ) -> Result<crate::layers::mosaic::Samples> {
+        let _permit = self.layer_permit()?;
         crate::settings::scope(self.settings.clone(), || {
-            let layer = self
+            let (layer, spec) = self
                 .layers
                 .as_ref()
                 .ok_or("not a native layer database")?
                 .lock()
                 .map_err(|_| "layer catalog lock poisoned")?
-                .get(id)?
+                .for_render(id, Some(spec.clone()))?
                 .ok_or("No layer found")?;
-            layer.samples(&self.executor, spec)
+            if trace {
+                layer.samples_with_provenance(&self.executor, &spec)
+            } else {
+                Ok(crate::layers::mosaic::Samples {
+                    rasters: layer.samples(&self.executor, &spec)?,
+                    contributors: vec![],
+                    provenance: vec![],
+                })
+            }
         })
+    }
+
+    fn layer_permit(&self) -> Result<RenderPermit<'_>> {
+        self.render_in_flight
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+                (current < self.render_capacity).then_some(current + 1)
+            })
+            .map_err(|_| OVERLOADED.to_string())?;
+        Ok(RenderPermit(&self.render_in_flight))
     }
 
     fn layer_response(
@@ -172,15 +211,17 @@ impl Application {
         let Some(catalog) = &self.layers else {
             return html_error(404);
         };
-        let render = path.ends_with("/render");
-        let allow = if render {
+        let get_render = path.ends_with("/render.png");
+        let plan = path.ends_with("/plan");
+        let render = path.ends_with("/render") || get_render || plan;
+        let allow = if render && !get_render {
             "POST, OPTIONS"
         } else {
             "GET, HEAD, OPTIONS"
         };
         if method == &Method::Options
-            || (render && method != &Method::Post)
-            || (!render && ![Method::Get, Method::Head].contains(method))
+            || (render && !get_render && method != &Method::Post)
+            || ((!render || get_render) && ![Method::Get, Method::Head].contains(method))
         {
             let mut response = html_error(if method == &Method::Options { 200 } else { 405 });
             response.headers.insert("Allow".into(), allow.into());
@@ -188,8 +229,8 @@ impl Application {
         }
         let result = (|| -> Result<AppResponse> {
             let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
-            if !parameters.is_empty() {
-                return Err("layer routes do not accept query parameters".into());
+            if parameters.keys().any(|key| !get_render || key != "spec") {
+                return Err("unrecognized layer option".into());
             }
             let catalog = catalog.lock().map_err(|_| "layer catalog lock poisoned")?;
             if path == "/layers" {
@@ -205,52 +246,85 @@ impl Application {
             if parts.len() != if render { 2 } else { 1 } {
                 return Err("No layer found".into());
             }
-            let layer = catalog
-                .get(&percent_decode_path(parts[0])?)?
-                .ok_or("No layer found")?;
-            drop(catalog);
             if !render {
+                let layer = catalog
+                    .get(&percent_decode_path(parts[0])?)?
+                    .ok_or("No layer found")?;
                 return json_response(
                     200,
                     &serde_json::to_value(layer).map_err(|e| e.to_string())?,
                 );
             }
-            if content_type.is_none_or(|value| {
-                !value
-                    .split(';')
-                    .next()
-                    .unwrap_or("")
-                    .trim()
-                    .eq_ignore_ascii_case("application/json")
-            }) {
+            if !get_render
+                && content_type.is_none_or(|value| {
+                    !value
+                        .split(';')
+                        .next()
+                        .unwrap_or("")
+                        .trim()
+                        .eq_ignore_ascii_case("application/json")
+                })
+            {
                 return Err("layer rendering requires application/json".into());
             }
-            let value = if body.is_empty() {
+            let render_body = if get_render {
+                parameters
+                    .get("spec")
+                    .map_or(b"{}".as_slice(), |s| s.as_bytes())
+            } else {
+                body
+            };
+            let value = if render_body.is_empty() {
                 json!({})
             } else {
-                serde_json::from_slice(body)
+                serde_json::from_slice(render_body)
                     .map_err(|e| format!("invalid render specification: {e}"))?
             };
             let spec = if value.as_object().is_some_and(|object| object.is_empty()) {
-                layer
-                    .default_render
-                    .clone()
-                    .ok_or("layer has no default rendering specification")?
+                None
             } else {
-                serde_json::from_value(value)
-                    .map_err(|e| format!("invalid render specification: {e}"))?
+                Some(
+                    serde_json::from_value(value)
+                        .map_err(|e| format!("invalid render specification: {e}"))?,
+                )
             };
+            let (layer, spec) = catalog
+                .for_render(&percent_decode_path(parts[0])?, spec)?
+                .ok_or("No layer found")?;
+            drop(catalog);
+            if plan {
+                layer.validate_spec(&spec)?;
+                let budget = layer
+                    .mosaic
+                    .as_ref()
+                    .ok_or("layer planning requires an indexed mosaic")?;
+                return json_response(
+                    200,
+                    &serde_json::to_value(budget.check(&layer, &spec)?)
+                        .map_err(|e| e.to_string())?,
+                );
+            }
             drop(selection);
-            Ok(bytes_response(
-                "image/png",
-                layer.render(&self.executor, &spec)?,
-            ))
+            let key = cache::RenderKey::layer(path, &BTreeMap::new(), &layer, &spec);
+            let remote = layer
+                .observations
+                .iter()
+                .flat_map(|o| o.assets.values())
+                .any(|a| crate::execution::is_remote(&a.location));
+            let png = self
+                .render_cache
+                .render(key.clone(), remote, || layer.render(&self.executor, &spec))?;
+            Ok(render_identity(bytes_response("image/png", png), &key))
         })();
         match result {
             Ok(response) => response,
             Err(error) if error == "No layer found" => json_error(404, &error),
             Err(error) if error == OVERLOADED => json_error(503, &error),
             Err(error) if error == TIMED_OUT => json_error(504, &error),
+            Err(error) if error == crate::layers::mosaic::EXCEEDED => json_error(422, &error),
+            Err(error) if error == "source changed during rendering; retry" => {
+                json_error(409, &error)
+            }
             Err(error) => json_error(400, &error),
         }
     }
@@ -296,7 +370,19 @@ impl Application {
         let request_timer = crate::telemetry::timer(crate::telemetry::Stage::Request);
         let started = std::time::Instant::now();
         let trace_start = std::time::SystemTime::now();
-        let response = self.request_response(method, url, headers, body);
+        let headers = headers
+            .iter()
+            .map(|(k, v)| (k.to_ascii_lowercase(), v.clone()))
+            .collect();
+        let headers = &headers;
+        let mut response = self.request_response(method, url, headers, body);
+        delivery::apply(&mut response, method, url, headers, self.cache_public);
+        if method == "HEAD" && response.status != 304 {
+            response
+                .headers
+                .insert("Content-Length".into(), response.body.len().to_string());
+            response.body.clear();
+        }
         let path = url.split('?').next().unwrap_or(url);
         drop(request_timer);
         let stages = crate::telemetry::current()
@@ -344,9 +430,16 @@ impl Application {
         }
         let raw_path = url.split('?').next().unwrap_or(url);
         let decoded_path = percent_decode_path(raw_path).unwrap_or_else(|_| raw_path.to_owned());
-        let _render_permit = if ["/singleband/", "/rgb/", "/compute/", "/layers/"]
-            .iter()
-            .any(|prefix| decoded_path.starts_with(prefix))
+        let _render_permit = if [
+            "/singleband/",
+            "/rgb/",
+            "/compute/",
+            "/layers/",
+            "/tiles/",
+            "/point/",
+        ]
+        .iter()
+        .any(|prefix| decoded_path.starts_with(prefix))
         {
             if self
                 .render_in_flight
@@ -371,11 +464,13 @@ impl Application {
             url,
             body,
             headers.get("content-type").map(String::as_str),
+            headers,
         );
         let path = url.split('?').next().unwrap_or(url);
         let tile = ["/singleband/", "/rgb/", "/compute/", "/layers/"]
             .iter()
-            .any(|p| path.starts_with(p));
+            .any(|p| path.starts_with(p))
+            || (path.starts_with("/tiles/") && path.ends_with(".png"));
         let metadata = [
             "/keys",
             "/datasets",
@@ -386,10 +481,14 @@ impl Application {
         .contains(&path)
             || path.starts_with("/metadata/")
             || path == "/layers"
-            || path.starts_with("/layers/");
+            || path.starts_with("/layers/")
+            || native::route(path);
         if (tile || metadata)
             && response.status != 405
-            && (render_route(path) || metadata || path.starts_with("/layers/"))
+            && (render_route(path)
+                || metadata
+                || path.starts_with("/layers/")
+                || native::route(path))
         {
             let setting = if tile {
                 "TC_ALLOWED_ORIGINS_TILES"
@@ -451,12 +550,6 @@ impl Application {
         if path.starts_with("/static/") && response.status == 200 {
             response.cache = true;
         }
-        if method == "HEAD" {
-            response
-                .headers
-                .insert("Content-Length".into(), response.body.len().to_string());
-            response.body.clear();
-        }
         response
     }
 
@@ -475,11 +568,20 @@ impl Application {
         url: &str,
         body: &[u8],
         content_type: Option<&str>,
+        headers: &BTreeMap<String, String>,
     ) -> AppResponse {
         let (raw_path, query) = url.split_once('?').unwrap_or((url, ""));
         // Decode each key after splitting the route so encoded slashes stay in their component.
         let path = raw_path;
-        let parameters = parse_query(query);
+        let mut parameters = parse_query(query);
+        if !crate::compatibility::CompatibilityProfile::current().is_terracotta()
+            && (render_route(path) || path.ends_with("/render.png"))
+        {
+            parameters.remove("revision");
+        }
+        if native::route(path) {
+            return self.native_response(method, path, headers, &parameters);
+        }
         if path == "/layers" || path.starts_with("/layers/") {
             return self.layer_response(method, path, body, content_type, &parameters);
         }
@@ -583,6 +685,9 @@ impl Application {
                 .unwrap_or_else(|e| json_error(400, &e)),
             Err(error) if error == OVERLOADED => json_error(503, &error),
             Err(error) if error == TIMED_OUT => json_error(504, &error),
+            Err(error) if error == "source changed during rendering; retry" => {
+                json_error(409, &error)
+            }
             Err(error)
                 if error.contains("not writable") || error.starts_with("Lazy loading requires") =>
             {
@@ -851,6 +956,15 @@ impl Application {
     }
 
     fn singleband(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
+        self.singleband_on(path, parameters, None)
+    }
+
+    fn singleband_on(
+        &self,
+        path: &str,
+        parameters: &BTreeMap<String, String>,
+        grid: Option<(crate::layers::GridRead, [f64; 4])>,
+    ) -> Result<AppResponse> {
         let selection = crate::telemetry::timer(crate::telemetry::Stage::Selection);
         let started = Instant::now();
         let components = path
@@ -878,8 +992,22 @@ impl Application {
             .get("tile_size")
             .map(|value| parse_size(value))
             .transpose()?
-            .unwrap_or(self.default_size);
-        let bounds = if components.len() == key_count + 1 {
+            .unwrap_or(if grid.is_some() {
+                [256, 256]
+            } else {
+                self.default_size
+            });
+        let cache_path = grid
+            .and_then(|(g, _)| g.matrix)
+            .map(|matrix| format!("{}/{path}", matrix.id()));
+        let key = self.render_cache.key(
+            cache_path.as_deref().unwrap_or(path),
+            parameters,
+            [(dataset.path.as_path(), &metadata)],
+        );
+        let bounds = if let Some((_, bounds)) = grid {
+            Some(bounds)
+        } else if components.len() == key_count + 1 {
             if components[key_count] != "preview.png" {
                 return Err("invalid singleband preview route".into());
             }
@@ -896,7 +1024,7 @@ impl Application {
                 .parse::<f64>()
                 .map_err(|_| "invalid tile y".to_string())?;
             if !raster::tile_exists(metadata.bounds, x, y, z) {
-                return self.empty_tile(parameters, false);
+                return Ok(render_identity(self.empty_tile(parameters, false)?, &key));
             }
             Some(raster::mercator_tile_bounds(x, y, z))
         };
@@ -929,15 +1057,12 @@ impl Application {
         if band != 1 && bounds.is_none() {
             return Err("source band selectors are supported on tiles".into());
         }
-        let key = self
-            .render_cache
-            .key(path, parameters, [(dataset.path.as_path(), &metadata)]);
-        let remote = crate::execution::is_remote(&dataset.path);
-        let png = self.render_cache.render(key, remote, || {
+        let remote = source.remote();
+        let png = self.render_cache.render(key.clone(), remote, || {
             let raster = source.read(
                 &self.executor,
                 ReadRequest {
-                    grid: None,
+                    grid: grid.map(|(grid, _)| grid),
                     band,
                     bounds_mercator: bounds,
                     size,
@@ -945,10 +1070,8 @@ impl Application {
                 },
             )?;
             let raster_at = Instant::now();
-            let png = if let Some(palette) = explicit {
-                let pixels = image::label_values(&raster, &palette);
-                let colors = palette.iter().map(|(_, color)| *color).collect::<Vec<_>>();
-                image::palette_png(raster.width, raster.height, &pixels, &colors)?
+            let range = if explicit.is_some() {
+                [0., 1.]
             } else {
                 let range = parameters
                     .get("stretch_range")
@@ -958,24 +1081,10 @@ impl Application {
                 if legacy_decimal && uses_metadata_range(parameters.get("stretch_range")) {
                     return Err("legacy internal error".into());
                 }
-                let pixels = if operations.is_empty() && self.fused_render {
-                    image::normalized_pixels(&raster, range)
-                } else {
-                    let mut channels = vec![color::normalize(&raster, range)];
-                    color::apply(&mut channels, &operations);
-                    image::stretch_to_u8(&channels[0], [0.0, 1.0])
-                };
-                if let Some(name) = colormap {
-                    image::palette_png(
-                        raster.width,
-                        raster.height,
-                        &pixels,
-                        &self.palettes.get(name)?,
-                    )?
-                } else {
-                    image::grayscale_png(raster.width, raster.height, &pixels)?
-                }
+                range
             };
+            let png =
+                self.scalar_image(&raster, range, &operations, explicit.as_deref(), colormap)?;
             if std::env::var_os("TC_PROFILE_HTTP").is_some() {
                 eprintln!(
                     "http_profile mode=singleband metadata_us={} raster_us={} render_us={} path={}",
@@ -987,13 +1096,39 @@ impl Application {
             }
             Ok(png)
         })?;
-        Ok(AppResponse {
-            status: 200,
-            content_type: "image/png",
-            body: png,
-            cache: true,
-            headers: BTreeMap::new(),
-        })
+        Ok(render_identity(bytes_response("image/png", png), &key))
+    }
+
+    fn scalar_image(
+        &self,
+        raster: &Raster,
+        range: [f64; 2],
+        operations: &[color::Operation],
+        explicit: Option<&[(f64, Rgba)]>,
+        colormap: Option<&str>,
+    ) -> Result<Vec<u8>> {
+        if let Some(palette) = explicit {
+            let pixels = image::label_values(raster, palette);
+            let colors = palette.iter().map(|(_, color)| *color).collect::<Vec<_>>();
+            return image::palette_png(raster.width, raster.height, &pixels, &colors);
+        }
+        let pixels = if operations.is_empty() && self.fused_render {
+            image::normalized_pixels(raster, range)
+        } else {
+            let mut channels = vec![color::normalize(raster, range)];
+            color::apply(&mut channels, operations);
+            image::stretch_to_u8(&channels[0], [0., 1.])
+        };
+        if let Some(name) = colormap {
+            image::palette_png(
+                raster.width,
+                raster.height,
+                &pixels,
+                &self.palettes.get(name)?,
+            )
+        } else {
+            image::grayscale_png(raster.width, raster.height, &pixels)
+        }
     }
 
     fn rgb(&self, path: &str, parameters: &BTreeMap<String, String>) -> Result<AppResponse> {
@@ -1077,6 +1212,11 @@ impl Application {
         drop(selection);
         let metadata_at = Instant::now();
 
+        let key = self.render_cache.key(
+            path,
+            parameters,
+            paths.iter().zip(&metadata).map(|(p, m)| (p.as_path(), m)),
+        );
         let tile_bounds = if preview {
             None
         } else {
@@ -1094,7 +1234,7 @@ impl Application {
                 .iter()
                 .any(|item| !raster::tile_exists(item.bounds, x, y, z))
             {
-                return self.empty_tile(parameters, true);
+                return Ok(render_identity(self.empty_tile(parameters, true)?, &key));
             }
             Some(raster::mercator_tile_bounds(x, y, z))
         };
@@ -1140,13 +1280,8 @@ impl Application {
         if tile_bounds.is_none() && bands.iter().any(|&band| band != 1) {
             return Err("source band selectors are supported on tiles".into());
         }
-        let key = self.render_cache.key(
-            path,
-            parameters,
-            paths.iter().zip(&metadata).map(|(p, m)| (p.as_path(), m)),
-        );
-        let remote = paths.iter().any(|p| crate::execution::is_remote(p));
-        let png = self.render_cache.render(key, remote, || {
+        let remote = sources.iter().any(crate::catalog::Source::remote);
+        let png = self.render_cache.render(key.clone(), remote, || {
             for (source, band) in sources.iter().zip(&bands) {
                 source.validate(*band)?;
             }
@@ -1253,13 +1388,10 @@ impl Application {
             }
             Ok(png)
         })?;
-        Ok(AppResponse {
-            status: 200,
-            content_type: format.content_type(),
-            body: png,
-            cache: true,
-            headers: BTreeMap::new(),
-        })
+        Ok(render_identity(
+            bytes_response(format.content_type(), png),
+            &key,
+        ))
     }
 
     fn batch_metadata(
@@ -1415,15 +1547,22 @@ impl Application {
             ))
         };
         let mut requests = Vec::new();
+        let mut descriptors = Vec::new();
+        let mut outside = false;
         for i in 1..=5 {
             let var = format!("v{i}");
             if let Some(band) = parameters.get(&var) {
                 let mut keys = keys.clone();
                 keys.push(band.clone());
-                let (_, metadata, source) = store.descriptor(&keys)?.ok_or("No dataset found")?;
+                let (dataset, metadata, source) =
+                    store.descriptor(&keys)?.ok_or("No dataset found")?;
+                descriptors.push((dataset.path, metadata.clone()));
                 let bounds = if let Some((x, y, z)) = xyz {
                     if !raster::tile_exists(metadata.bounds, x, y, z) {
-                        return self.empty_tile(parameters, false);
+                        if crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+                            return self.empty_tile(parameters, false);
+                        }
+                        outside = true;
                     }
                     Some(raster::mercator_tile_bounds(x, y, z))
                 } else {
@@ -1434,42 +1573,52 @@ impl Application {
         }
         drop(store);
         drop(selection);
-        let preview_grid = if preview && requests.iter().any(|(_, source, _)| source.mapped()) {
-            Some(shared_bounds(requests.iter().map(|(_, source, _)| source))?)
-        } else {
-            None
-        };
-        let mut rasters = BTreeMap::new();
-        for (var, source, bounds) in requests {
-            rasters.insert(
-                var,
-                source.read(
-                    &self.executor,
-                    ReadRequest {
-                        grid: None,
-                        band: 1,
-                        bounds_mercator: bounds.or(preview_grid),
-                        size,
-                        preserve_values: false,
-                    },
-                )?,
-            );
+        let key = self.render_cache.key(
+            path,
+            parameters,
+            descriptors.iter().map(|(p, m)| (p.as_path(), m)),
+        );
+        if outside {
+            return Ok(render_identity(self.empty_tile(parameters, false)?, &key));
         }
-        let operands = rasters
-            .iter()
-            .map(|(k, v)| (k.clone(), v.as_ref()))
-            .collect();
-        let result = expressions::evaluate(expression, &operands)
-            .map_err(|e| format!("error while executing expression: {e}"))?;
-        let pixels = image::stretch_to_u8(&result, range);
-        let png = if let Some(colors) = palette {
-            image::palette_png(result.width, result.height, &pixels, &colors)?
-        } else {
-            image::grayscale_png(result.width, result.height, &pixels)?
-        };
-        let mut response = bytes_response("image/png", png);
-        response.cache = true;
-        Ok(response)
+        let remote = requests.iter().any(|(_, source, _)| source.remote());
+        let png = self.render_cache.render(key.clone(), remote, || {
+            let preview_grid = if preview && requests.iter().any(|(_, source, _)| source.mapped()) {
+                Some(shared_bounds(requests.iter().map(|(_, source, _)| source))?)
+            } else {
+                None
+            };
+            let mut rasters = BTreeMap::new();
+            for (var, source, bounds) in requests {
+                rasters.insert(
+                    var,
+                    source.read(
+                        &self.executor,
+                        ReadRequest {
+                            grid: None,
+                            band: 1,
+                            bounds_mercator: bounds.or(preview_grid),
+                            size,
+                            preserve_values: false,
+                        },
+                    )?,
+                );
+            }
+            let operands = rasters
+                .iter()
+                .map(|(k, v)| (k.clone(), v.as_ref()))
+                .collect();
+            let result = expressions::evaluate(expression, &operands)
+                .map_err(|e| format!("error while executing expression: {e}"))?;
+            let pixels = image::stretch_to_u8(&result, range);
+            let png = if let Some(colors) = palette {
+                image::palette_png(result.width, result.height, &pixels, &colors)?
+            } else {
+                image::grayscale_png(result.width, result.height, &pixels)?
+            };
+            Ok(png)
+        })?;
+        Ok(render_identity(bytes_response("image/png", png), &key))
     }
     fn empty_tile(&self, parameters: &BTreeMap<String, String>, rgb: bool) -> Result<AppResponse> {
         let legacy = crate::compatibility::CompatibilityProfile::current().is_terracotta();
@@ -1583,6 +1732,17 @@ impl Application {
     }
 }
 
+fn render_identity(mut response: AppResponse, key: &cache::RenderKey) -> AppResponse {
+    response.cache = true;
+    if !crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+        response.headers.insert(
+            "ETag".into(),
+            key.validator(response.content_type, &response.body),
+        );
+    }
+    response
+}
+
 fn bytes_response(content_type: &'static str, body: Vec<u8>) -> AppResponse {
     AppResponse {
         status: 200,
@@ -1645,6 +1805,8 @@ pub(crate) fn api_spec() -> Value {
     let mut spec: Value =
         serde_json::from_str(include_str!("assets/swagger.json")).expect("embedded spec");
     if !crate::compatibility::CompatibilityProfile::current().is_terracotta() {
+        spec["info"]["description"] = "RCFP raster tile service.".into();
+        native::update_spec(&mut spec);
         spec["paths"]["/metadata"] = json!({"post": {
             "summary": "/metadata (batch)",
             "description": "Retrieve metadata for a list of dataset key combinations. The configured MAX_POST_METADATA_KEYS limits the batch size.",
@@ -1669,12 +1831,19 @@ pub(crate) fn api_spec() -> Value {
             "description":"An empty object uses the rendering specification stored in the database. File locations cannot be supplied in requests.",
             "parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],
             "requestBody":{"required":false,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/NativeRenderSpec"}}}},
-            "responses":{"200":{"description":"PNG with explicit coverage","content":{"image/png":{"schema":{"type":"string","format":"binary"}}}},"400":{"description":"Invalid bands, expressions, grid, stretch or content type"},"404":{"description":"Unknown layer"},"503":{"description":"Render or raster capacity is full"},"504":{"description":"Raster deadline elapsed; active work continues"}}
+            "responses":{"200":{"description":"PNG with explicit coverage","content":{"image/png":{"schema":{"type":"string","format":"binary"}}}},"400":{"description":"Invalid bands, expressions, grid, stretch or content type"},"404":{"description":"Unknown layer"},"422":{"description":"Mosaic budget exceeded before raster reads"},"503":{"description":"Render or raster capacity is full"},"504":{"description":"Raster deadline elapsed; active work continues"}}
+        }});
+        spec["paths"]["/layers/{id}/plan"] = json!({"post":{
+            "summary":"Select indexed mosaic observations and estimate bounded work without raster reads",
+            "parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],
+            "requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/NativeRenderSpec"}}}},
+            "responses":{"200":{"description":"Ordered observations, read count, buffer reservation and uncompressed source estimate"},"400":{"description":"Invalid mosaic specification"},"404":{"description":"Unknown layer"},"422":{"description":"Mosaic budget exceeded"}}
         }});
         spec["components"]["schemas"]["NativeRenderSpec"] = json!({
             "type":"object","additionalProperties":false,
             "required":["bindings","values","channels","coverage","grid","encoding"],
             "properties":{
+                "selection":{"type":"object","description":"Exact observation attributes for indexed mosaics; narrows the stored selection"},
                 "bindings":{"type":"object","minProperties":1,"maxProperties":16,"additionalProperties":{"type":"object","additionalProperties":false,"required":["asset","band"],"properties":{"asset":{"type":"string"},"band":{"oneOf":[{"type":"integer","minimum":1},{"type":"string","minLength":1}]}}}},
                 "values":{"type":"string","enum":["raw","scaled"]},
                 "coverage":{"type":"string","enum":["any_valid","all_valid"]},
@@ -1711,6 +1880,7 @@ pub(crate) fn api_spec() -> Value {
                 }
             }
         }
+        delivery::update_spec(&mut spec);
     }
     spec
 }
@@ -2037,6 +2207,10 @@ fn route_label(path: &str) -> &'static str {
         ("/metadata/", "/metadata"),
         ("/static/", "/static"),
         ("/layers/", "/layers"),
+        ("/tiles/", "/tiles"),
+        ("/tilejson/", "/tilejson"),
+        ("/point/", "/point"),
+        ("/tileMatrixSets/", "/tileMatrixSets"),
     ] {
         if path.starts_with(prefix) {
             return label;
@@ -2048,6 +2222,8 @@ fn route_label(path: &str) -> &'static str {
         "/metadata" => "/metadata",
         "/colormap" => "/colormap",
         "/layers" => "/layers",
+        "/tilesets" => "/tilesets",
+        "/tileMatrixSets" => "/tileMatrixSets",
         "/__terracotta/metrics" | "/__terracotta/metrics/prometheus" => "/metrics",
         _ => "/other",
     }

@@ -52,6 +52,15 @@ changing installation, settings, rendering, storage, or deployment.
 
 ## Repository checks
 
+For code or test contributions, start with a focused issue and a small
+reproduction. Read the repository `AGENTS.md`, `design/README.md`, and relevant
+compatibility/decision notes in a checkout. `tests/README.md` maps each behavior to
+its maintained runner. Keep acquired data and generated reports in ignored
+storage. Include exact artifact/input identities and separate unavailable checks
+from passes. The [public corpus](explanation/raster-corpus.md) describes fixture
+provenance, independent expectations, and contribution requirements. Support and
+ownership expectations are in the [maintenance policy](support-policy.md).
+
 Install `pre-commit` and run `pre-commit install`, then
 `pre-commit run --all-files`. Hooks format Rust, Python, C, shell, maintained
 Markdown/YAML/JSON/HTML/CSS/JavaScript and lint applicable source. Rust hooks use

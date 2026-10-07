@@ -316,10 +316,14 @@ def main():
                 candidate = json.loads(json.dumps(right["json"]))
                 native = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "native"
                 if native:
+                    if candidate["info"]["description"] != "RCFP raster tile service.":
+                        errors.append("native service description differs")
+                    candidate["info"]["description"] = original["info"]["description"]
                     for route in (
                         "/layers",
                         "/layers/{id}",
                         "/layers/{id}/render",
+                        "/layers/{id}/render.png",
                     ):
                         if route not in candidate["paths"]:
                             errors.append(f"native route missing: {route}")
@@ -327,14 +331,43 @@ def main():
                     candidate.get("components", {}).get("schemas", {}).pop(
                         "NativeRenderSpec", None
                     )
+                    for route in (
+                        "/layers/{id}/plan",
+                        "/tilesets",
+                        "/tileMatrixSets",
+                        "/tileMatrixSets/{id}",
+                        "/tilejson/{id}.json",
+                        "/tiles/{id}/{tileMatrixSet}/{z}/{x}/{y}.png",
+                        "/point/{id}",
+                    ):
+                        candidate["paths"].pop(route, None)
+                    for schema in (
+                        "Tilesets",
+                        "TileMatrixSets",
+                        "TileMatrixSet",
+                        "TileJSON",
+                        "PointInspection",
+                    ):
+                        candidate.get("components", {}).get("schemas", {}).pop(
+                            schema, None
+                        )
                     batch = candidate["paths"].pop("/metadata", {})
                     if "post" not in batch:
                         errors.append("native batch metadata route missing")
                     for path, entry in candidate["paths"].items():
-                        if not path.startswith(("/rgb/", "/singleband/")):
+                        if not path.startswith(("/rgb/", "/singleband/", "/compute/")):
                             continue
-                        names = set()
-                        if not path.endswith("preview.png"):
+                        names = {"revision"}
+                        for status in ("304", "409", "412"):
+                            entry["get"]["responses"].pop(status, None)
+                        headers = entry["get"]["responses"]["200"].get("headers", {})
+                        for name in ("ETag", "X-RCFP-Revision", "Cache-Control"):
+                            headers.pop(name, None)
+                        if not headers:
+                            entry["get"]["responses"]["200"].pop("headers", None)
+                        if not path.endswith("preview.png") and not path.startswith(
+                            "/compute/"
+                        ):
                             names.update(
                                 ("r_band", "g_band", "b_band")
                                 if path.startswith("/rgb/")

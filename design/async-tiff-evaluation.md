@@ -90,15 +90,17 @@ The table reports TIFF-enabled changes relative to GDAL. Workload rows weight
 the three user cells equally using geometric means of three-trial median ratios.
 Throughput divides responses by active viewport time and is not saturation
 throughput. Small differences remain subject to local timing variation.
+The HTTP rows include origin TCP packet delays identified in the transport
+diagnostic below; they do not isolate raster-reader overhead.
 
-| Workload | Storage | First viewport | Pan | Zoom | Throughput |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Imagery singleband | Local | 41% faster | 6% faster | 5% faster | 22% higher |
-| Imagery RGB | Local | 44% faster | 15% faster | 15% faster | 28% higher |
-| Elevation | Local | 44% faster | 21% faster | 16% faster | 31% higher |
-| Imagery singleband | HTTP ranges | Approximately equal | 73% slower | 108% slower | 19% lower |
-| Imagery RGB | HTTP ranges | 68% slower | 67% slower | 86% slower | 41% lower |
-| Elevation | HTTP ranges | 48% faster | Approximately equal | 7% faster | 9% higher |
+| Workload           | Storage     |      First viewport |                 Pan |        Zoom | Throughput |
+| ------------------ | ----------- | ------------------: | ------------------: | ----------: | ---------: |
+| Imagery singleband | Local       |          41% faster |           6% faster |   5% faster | 22% higher |
+| Imagery RGB        | Local       |          44% faster |          15% faster |  15% faster | 28% higher |
+| Elevation          | Local       |          44% faster |          21% faster |  16% faster | 31% higher |
+| Imagery singleband | HTTP ranges | Approximately equal |          73% slower | 108% slower |  19% lower |
+| Imagery RGB        | HTTP ranges |          68% slower |          67% slower |  86% slower |  41% lower |
+| Elevation          | HTTP ranges |          48% faster | Approximately equal |   7% faster |  9% higher |
 
 Across local cells, first viewports are 43% faster and throughput is 27% higher.
 CPU usage is 23% lower and peak RSS 8% lower. Across HTTP cells, CPU usage is
@@ -141,6 +143,108 @@ results. Reproduce with its prepared manifest and a configured runtime:
   --setting TC_REPROJECTION_METHOD=nearest --setting TC_RENDER_CACHE_BYTES=0
 ```
 
+### HTTP latency mechanism
+
+Local files expose the benefit of direct stored-pixel reads without GDAL dataset
+opening and its general raster-access machinery. The measured CPU and RSS
+reductions support a lower-overhead path, but individual opening/decoding costs
+were not isolated. HTTP adds latency for every uncached range. GDAL's `/vsicurl/`
+reads use aligned chunks, adaptive read-ahead and a process-wide compressed-byte
+cache, as described in the
+[GDAL virtual-file-system documentation](https://gdal.org/en/stable/user/virtual_file_systems.html#vsicurl-http-https-ftp-files-random-access).
+TIFF retains exact ranges within each worker's bounded cache. Its range
+merging covers one window at a time. These aligned requests usually need one
+stored block, so the limit of four simultaneous ranges provides little internal
+parallelism. Each worker waits for its window before taking another job.
+
+The controlled origin also wrote HTTP headers and body separately with Nagle
+enabled. Three balanced paired trials change only `TCP_NODELAY` on accepted
+origin sockets, using the frozen executable, 15 ms origin delay and one-user
+imagery. All **1,296 responses across 24 services** match decoded pixels, and
+all **864 candidate pixel reads use TIFF**, with zero GDAL fallback. TIFF request
+counts and bytes are identical with either origin setting. Completion times are
+medians of three trial medians:
+
+| Mode       | Origin Nagle | GDAL first / pan / zoom (ms) | TIFF first / pan / zoom (ms) |
+| ---------- | ------------ | ---------------------------: | ---------------------------: |
+| Singleband | Enabled      |                174 / 41 / 83 |               175 / 60 / 138 |
+| Singleband | Disabled     |                129 / 20 / 60 |                 91 / 20 / 60 |
+| RGB        | Enabled      |               293 / 79 / 172 |              501 / 135 / 381 |
+| RGB        | Disabled     |               190 / 47 / 128 |               177 / 53 / 120 |
+
+Disabling Nagle removes the observed approximately 40 ms stalls and most of the
+RGB latency gap. This is consistent with Nagle interacting with delayed
+acknowledgments; no packet capture was performed. Exact client packet behavior
+and the remaining range-strategy contribution are not separately quantified.
+TIFF RGB pans remain about 12% slower in this narrow diagnostic. It does not
+repeat the full multi-user/elevation matrix or qualify WAN/S3. The maintained
+origin now disables Nagle; original timing reports retain the origin setting
+under which they were measured. Commands, source hashes, all trials and traffic
+are retained in ignored `build/async-tiff-mechanism/summary.md` and `report.json`.
+
+## Concurrent service TIFF pipeline on 2026-10-07
+
+An isolated service snapshot in ignored `build/async-tiff-pipeline/` evaluates
+overlapping queued windows, separate decode scheduling and range merging across
+windows. It retains the existing TIFF eligibility, validity and GDAL fallback
+rules. Each worker takes up to eight single-band jobs, subject to a batch pixel
+limit. A shared semaphore caps active decodes at four and network reads at 32.
+Optional 500-microsecond batching merges ranges sharing a worker-owned source.
+Metadata opens remain sequential within each worker; merging does not span
+workers or different files. Production scheduling and settings are unchanged.
+
+Three alternating paired trials against the current TIFF adapter pass **108
+services and 13,608 responses**. All **6,804 ordered response pairs** have exact
+decoded pixels. Both variants record **3,690 TIFF pixel reads and zero GDAL
+pixel reads**. The candidate reaches 25 overlapping windows and 22 network
+reads while decoding stays capped at four. Independent Rasterio/NumPy checks
+pass **2,214 images across 153 unique reference tiles**, with exact colors and
+masks. The same real-scene derivatives, four CPU cores, cache budgets and
+15 ms origin delay are used on both sides, with origin Nagle disabled.
+
+Completion times below are medians of three trial medians. All-enabled pipeline
+results are compared with the current synchronous TIFF scheduling:
+
+| Remote RGB workload     | Current first / pan / zoom (ms) | Pipeline first / pan / zoom (ms) |
+| ----------------------- | ------------------------------: | -------------------------------: |
+| One user                |                  175 / 53 / 119 |                    157 / 26 / 71 |
+| Three overlapping users |                  177 / 54 / 121 |                    111 / 28 / 54 |
+| Three independent users |                  257 / 53 / 234 |                    132 / 28 / 82 |
+
+Three additional paired trials against GDAL pass **54 services and 6,804
+responses**, with all **3,402 ordered pairs** matching exactly. For three
+overlapping RGB users, GDAL first/pan/zoom completion is **190/50/131 ms** versus
+**116/31/54 ms** for the pipeline. The candidate's 1,845 pixel reads all use TIFF;
+the control's 1,845 reads all use GDAL.
+
+Three clean rotated ablation trials identify overlapping I/O as the main gain.
+For three overlapping RGB users, I/O alone changes first/pan/zoom completion
+from **177/55/123 ms to 115/29/53 ms**, with identical **120 GETs and 6,943,241
+transferred bytes**. Separate decoding adds no consistent improvement on these
+small stored tiles. Merging saves approximately **2–8% of GETs** across the
+tested workloads, but its batching delay often offsets those savings. All
+5,832 ordered ablation comparisons match exact pixels.
+
+The all-enabled prototype makes local first views a median **14% slower** across
+cells and generally regresses single-band pans. Paired CPU ratios increase about
+3–4%, and peak-RSS ratios about 1–3%. Revisits change little. The evidence favors
+concurrent remote reads while preserving the local fast path. It does not support
+enabling every scheduling feature globally.
+
+The prototype passes **328 pinned window cases, 19 grid cases and eight fallback
+cases**, including concurrent comparisons against independently acquired values,
+masks and dtypes. Its unit suite passes **62 tests**, with the two fixture-dependent
+tests passing separately in that qualification. A merged-range unit test checks
+byte slicing and source-version failure propagation. Release Clippy with warnings
+denied and formatting pass. WAN/S3, authenticated storage, other platforms, larger
+decode workloads and whole-service cancellation under saturation remain
+unqualified. Logical cache and buffer limits do not establish an RSS bound.
+
+The retained executable, source changes, commands, raw results, independent
+checks and exclusions are indexed by `build/async-tiff-pipeline/summary.md` and
+its JSON reports. An ablation trial that overlapped oracle calculation is excluded
+and replaced by a clean trial. Experimental settings exist only in that snapshot.
+
 ## Ordinary-input navigation benchmark on 2026-10-06
 
 The integration regresses the tested navigation workloads. Across **324 fresh
@@ -166,12 +270,12 @@ Each row weights workload/user cells equally using geometric means of ratios
 between three-trial median timings. Small differences remain subject to local
 timing variation; individual cells and raw timings are retained.
 
-| Inputs | Storage | First viewport | Pan | Zoom | Revisit |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Original scenes | Local | 14% slower | 3% slower | 2% slower | Approximately equal |
-| Original scenes | HTTP ranges | 20% slower | 2% faster | 4% slower | 2% slower |
-| Prepared Mercator scenes | Local | 15% slower | 2% slower | 4% slower | 3% slower |
-| Prepared Mercator scenes | HTTP ranges | 10% slower | 5% faster | 3% faster | 8% slower |
+| Inputs                   | Storage     | First viewport |       Pan |      Zoom |             Revisit |
+| ------------------------ | ----------- | -------------: | --------: | --------: | ------------------: |
+| Original scenes          | Local       |     14% slower | 3% slower | 2% slower | Approximately equal |
+| Original scenes          | HTTP ranges |     20% slower | 2% faster | 4% slower |           2% slower |
+| Prepared Mercator scenes | Local       |     15% slower | 2% slower | 4% slower |           3% slower |
+| Prepared Mercator scenes | HTTP ranges |     10% slower | 5% faster | 3% faster |           8% slower |
 
 Across those default-sampling groups, aggregate active-request throughput is
 2–7% lower and peak service RSS is 4–5% higher. Original-scene HTTP sources use
@@ -217,11 +321,11 @@ WAN/S3, authenticated providers and other platforms remain unmeasured.
 
 ## What the probe measures
 
-| Engine | TIFF access | Projection and sampling | Output |
-| --- | --- | --- | --- |
-| `rcfp` | Worker-owned GDAL datasets with Async-TIFF disabled | Native RCFP reader and reusable GDAL plans | Shared RCFP stretch and PNG encoder |
-| `async-native` | Async-TIFF with bounded concurrent range reads and a typed decoded-block cache | PROJ transforms the requested grid; a Rust nearest/bilinear sampler selects overviews and samples pixels | Same encoder |
-| `async-gdal` | Same Async-TIFF reader | A selected source window becomes a GDAL MEM dataset with its source dtype, nodata or validity mask; GDAL warps that window | Same encoder |
+| Engine         | TIFF access                                                                    | Projection and sampling                                                                                                    | Output                              |
+| -------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `rcfp`         | Worker-owned GDAL datasets with Async-TIFF disabled                            | Native RCFP reader and reusable GDAL plans                                                                                 | Shared RCFP stretch and PNG encoder |
+| `async-native` | Async-TIFF with bounded concurrent range reads and a typed decoded-block cache | PROJ transforms the requested grid; a Rust nearest/bilinear sampler selects overviews and samples pixels                   | Same encoder                        |
+| `async-gdal`   | Same Async-TIFF reader                                                         | A selected source window becomes a GDAL MEM dataset with its source dtype, nodata or validity mask; GDAL warps that window | Same encoder                        |
 
 The HTTP reader implements Async-TIFF's public `AsyncFileReader` trait. It merges
 nearby ranges within a request and bounds concurrent reads and decoding separately.
@@ -381,18 +485,18 @@ Tile completion ratios below are median baseline/candidate ratios. Ratios above
 one favor the candidate. Fidelity differences remain separate, and phases with
 failed reads are excluded from comparisons.
 
-| Candidate | Layout | Storage | First | Pan | Zoom | Revisit |
-| --- | --- | --- | ---: | ---: | ---: | ---: |
-| async-native | Original | Local | 0.48 | 0.45 | 0.31 | 0.45 |
-| async-native | Original | Range | 1.26 | 0.84 | 0.94 | 1.11 |
-| async-native | Prepared | Local | 0.54 | 0.64 | 0.46 | 0.48 |
-| async-native | Prepared | Range | 1.62 | 1.56 | 1.37 | 1.12 |
-| async-gdal | Original | Local | 0.36 | 0.44 | 0.36 | 0.41 |
-| async-gdal | Original | Range | 1.01 | 1.08 | 0.97 | 0.92 |
-| async-gdal | Prepared | Local | 0.23 | 1.31 | 0.85 | 1.02 |
-| async-gdal | Prepared | Range | 0.60 | 2.70 | 2.07 | 2.05 |
-| async-native | Original | Public S3 | 1.03 | 7.64 | 8.39 | 16.02 |
-| async-gdal | Original | Public S3 | 1.10 | 9.09 | 11.46 | 12.38 |
+| Candidate    | Layout   | Storage   | First |  Pan |  Zoom | Revisit |
+| ------------ | -------- | --------- | ----: | ---: | ----: | ------: |
+| async-native | Original | Local     |  0.48 | 0.45 |  0.31 |    0.45 |
+| async-native | Original | Range     |  1.26 | 0.84 |  0.94 |    1.11 |
+| async-native | Prepared | Local     |  0.54 | 0.64 |  0.46 |    0.48 |
+| async-native | Prepared | Range     |  1.62 | 1.56 |  1.37 |    1.12 |
+| async-gdal   | Original | Local     |  0.36 | 0.44 |  0.36 |    0.41 |
+| async-gdal   | Original | Range     |  1.01 | 1.08 |  0.97 |    0.92 |
+| async-gdal   | Prepared | Local     |  0.23 | 1.31 |  0.85 |    1.02 |
+| async-gdal   | Prepared | Range     |  0.60 | 2.70 |  2.07 |    2.05 |
+| async-native | Original | Public S3 |  1.03 | 7.64 |  8.39 |   16.02 |
+| async-gdal   | Original | Public S3 |  1.10 | 9.09 | 11.46 |   12.38 |
 
 Public S3 median first views are 7.44 seconds for RCFP, 7.04 for async-native
 and 6.82 for the hybrid. Median new-pan batches are 2.39 seconds, 0.30 and

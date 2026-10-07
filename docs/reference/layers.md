@@ -105,7 +105,8 @@ Inputs align on a common north-up Web Mercator grid before expressions. XYZ
 requests supply that grid; RGB and compute previews use the union of input
 extents. Continuous data uses `TC_REPROJECTION_METHOD`; embedded categorical
 bands use nearest sampling and require raw values. Raw expressions retain
-source dtype arithmetic. Scaled values use `raw * scale + offset` in f64 after
+source dtype arithmetic. Samples cross the core as f64, so integers beyond its
+exact integer range can lose precision. Scaled values use `raw * scale + offset` in f64 after
 alignment. Units are descriptive; no implicit unit or vertical conversion occurs.
 
 Each selected band's validity combines nodata, nonfinite values, masks and

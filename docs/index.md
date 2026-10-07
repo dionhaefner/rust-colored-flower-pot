@@ -34,6 +34,7 @@ explanation/index
 :caption: Project
 
 contributing
+support-policy
 releases
 notices
 ```

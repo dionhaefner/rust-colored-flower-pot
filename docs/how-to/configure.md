@@ -28,6 +28,10 @@ policy; deploy authentication/access control through your application or proxy
 if needed. Bind `0.0.0.0:5000` only when the deployment should accept external
 connections, and configure its public routing/HTTPS accordingly.
 
+Use `rcfp -c settings.toml inspect --json` to report configuration values and
+origins before starting workers. See [diagnostics](diagnostics.md) for local
+raster/catalog checks and bounded probes.
+
 For native diagnostics use `serve --debug`; for JSON request timing use
 `serve --profile`. Native debug does not supply a Python interactive debugger or
 reloader. Settings are captured when an application/session starts. Restart the

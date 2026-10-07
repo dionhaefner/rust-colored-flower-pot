@@ -6,6 +6,7 @@ use crate::layers::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use sha2::Digest;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BandInfo {
@@ -103,10 +104,8 @@ impl Source {
             Some(Plan::Band {
                 asset,
                 band,
-                values,
-            }) if matches!(values, Values::Raw) => {
-                asset.band(&BandSelector::Index(*band))?.data_type
-            }
+                values: Values::Raw,
+            }) => asset.band(&BandSelector::Index(*band))?.data_type,
             Some(Plan::Expression {
                 expression,
                 bindings,
@@ -160,6 +159,29 @@ impl Source {
                 band,
                 values,
             } => {
+                if let Some(mut grid) = request.grid {
+                    grid.revision = sha2::Sha256::digest(asset.revision.as_bytes()).into();
+                    let info = asset.band(&BandSelector::Index(*band))?;
+                    if asset.categorical_bands.contains(band)
+                        || !info.categories.is_empty()
+                        || info.color_interpretation == "Palette"
+                    {
+                        grid.resampling = layers::Resampling::Nearest;
+                    }
+                    request.grid = Some(grid);
+                    request.band = *band;
+                    let raw = executor.read(&asset.location, request)?;
+                    if matches!(values, Values::Raw) {
+                        return Ok(raw);
+                    }
+                    let mut scaled = (*raw).clone();
+                    scaled.data_type = 7;
+                    for (value, mask) in scaled.values.iter_mut().zip(&mut scaled.mask) {
+                        *value = *value * info.scale + info.offset;
+                        *mask |= !value.is_finite();
+                    }
+                    return Ok(Arc::new(scaled));
+                }
                 let layer = Layer {
                     observations: vec![Observation {
                         id: "dataset".into(),
@@ -169,8 +191,10 @@ impl Source {
                     overlap: Overlap::FirstValid,
                     selection: BTreeMap::new(),
                     default_render: None,
+                    mosaic: None,
                 };
                 let spec = RenderSpec {
+                    selection: BTreeMap::new(),
                     bindings: BTreeMap::from([(
                         "v".into(),
                         Binding {
@@ -218,12 +242,14 @@ impl Source {
             Plan::Layer { layer, spec } => {
                 let mut spec = spec.clone();
                 spec.grid = Grid {
-                    crs: "EPSG:3857".into(),
+                    crs: format!("EPSG:{}", request.grid.map_or(3857, |g| g.epsg)),
                     bounds,
                     size: request.size,
                     resampling: spec.grid.resampling,
                 };
-                Ok(Arc::new(layer.samples(executor, &spec)?.remove(0)))
+                Ok(Arc::new(
+                    layer.samples_on(executor, &spec, request.grid)?.remove(0),
+                ))
             }
         }
     }

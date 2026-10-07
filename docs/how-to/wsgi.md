@@ -41,3 +41,12 @@ the same kind of adapter with an explicit catalog. Follow
 [native migration](../native-migration.md) when changing entry points. Shutdown
 waits for outstanding native work and can outlast an HTTP response deadline;
 configure your host's graceful timeout.
+
+Run [read-only diagnostics](diagnostics.md) from this installed environment with
+the same catalog, TOML and environment settings before starting WSGI. Use
+`--render-probe` for a bounded local check and apply configuration before Python
+imports when selecting the compatibility profile.
+
+For trusted Python models, pass a persistent `ComputeApplication` as
+`Application(application=host)`. Register layers before serving and call
+`host.close()` in the host shutdown hook. See [Python compute layers](python-compute.md).

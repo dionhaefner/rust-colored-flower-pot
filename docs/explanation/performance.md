@@ -137,31 +137,31 @@ cells. Each cell first takes the median of its three trials; pan/zoom timings
 also take the median of that case's navigation steps. Ratios summarize the
 cell-by-cell ratios, so they need not equal a ratio of the aggregate time columns.
 
-| Storage | Layer | Action | RCFP (ms) | Terracotta (ms) | TiTiler (ms) | vs Terracotta | vs TiTiler |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| Local | Singleband | First viewport | 64.6 | 336.8 | 225.6 | 5.21× | 4.75× |
-| Local | Singleband | Pan | 4.3 | 84.2 | 50.9 | 18.83× | 13.27× |
-| Local | Singleband | Zoom | 24.0 | 226.5 | 131.8 | 8.64× | 6.08× |
-| Local | RGB | First viewport | 112.8 | 704.8 | 764.9 | 5.55× | 6.02× |
-| Local | RGB | Pan | 12.5 | 228.8 | 217.6 | 8.65× | 7.34× |
-| Local | RGB | Zoom | 73.8 | 533.2 | 687.3 | 3.92× | 4.33× |
-| Remote ranges | Singleband | First viewport | 182.8 | 556.2 | 308.1 | 2.57× | 1.69× |
-| Remote ranges | Singleband | Pan | 10.5 | 85.7 | 57.6 | 9.21× | 8.46× |
-| Remote ranges | Singleband | Zoom | 35.2 | 270.5 | 153.1 | 4.34× | 4.35× |
-| Remote ranges | RGB | First viewport | 352.9 | 1333.1 | 881.9 | 3.30× | 2.15× |
-| Remote ranges | RGB | Pan | 23.1 | 296.2 | 237.6 | 10.02× | 5.18× |
-| Remote ranges | RGB | Zoom | 103.6 | 921.8 | 754.0 | 4.44× | 3.41× |
+| Storage       | Layer      | Action         | RCFP (ms) | Terracotta (ms) | TiTiler (ms) | vs Terracotta | vs TiTiler |
+| ------------- | ---------- | -------------- | --------: | --------------: | -----------: | ------------: | ---------: |
+| Local         | Singleband | First viewport |      64.6 |           336.8 |        225.6 |         5.21× |      4.75× |
+| Local         | Singleband | Pan            |       4.3 |            84.2 |         50.9 |        18.83× |     13.27× |
+| Local         | Singleband | Zoom           |      24.0 |           226.5 |        131.8 |         8.64× |      6.08× |
+| Local         | RGB        | First viewport |     112.8 |           704.8 |        764.9 |         5.55× |      6.02× |
+| Local         | RGB        | Pan            |      12.5 |           228.8 |        217.6 |         8.65× |      7.34× |
+| Local         | RGB        | Zoom           |      73.8 |           533.2 |        687.3 |         3.92× |      4.33× |
+| Remote ranges | Singleband | First viewport |     182.8 |           556.2 |        308.1 |         2.57× |      1.69× |
+| Remote ranges | Singleband | Pan            |      10.5 |            85.7 |         57.6 |         9.21× |      8.46× |
+| Remote ranges | Singleband | Zoom           |      35.2 |           270.5 |        153.1 |         4.34× |      4.35× |
+| Remote ranges | RGB        | First viewport |     352.9 |          1333.1 |        881.9 |         3.30× |      2.15× |
+| Remote ranges | RGB        | Pan            |      23.1 |           296.2 |        237.6 |        10.02× |      5.18× |
+| Remote ranges | RGB        | Zoom           |     103.6 |           921.8 |        754.0 |         4.44× |      3.41× |
 
 The loaded request distribution below combines local/remote, all layers and
 navigation/style/expression stages for both three-user arrangements, with
 12,960 requests per service. Memory is the median of the sampled peak across
 all cases, not a process memory limit or a sustained-capacity claim.
 
-| Service | Loaded p50 / p95 / p99 (ms) | Median sampled peak PSS / USS (MiB) |
-| --- | ---: | ---: |
-| RCFP | 3.17 / 76.77 / 163.86 | 214 / 213 |
-| Terracotta | 76.94 / 340.76 / 518.20 | 299 / 235 |
-| TiTiler/rio-tiler | 84.01 / 351.03 / 546.55 | 546 / 491 |
+| Service           | Loaded p50 / p95 / p99 (ms) | Median sampled peak PSS / USS (MiB) |
+| ----------------- | --------------------------: | ----------------------------------: |
+| RCFP              |       3.17 / 76.77 / 163.86 |                           214 / 213 |
+| Terracotta        |     76.94 / 340.76 / 518.20 |                           299 / 235 |
+| TiTiler/rio-tiler |     84.01 / 351.03 / 546.55 |                           546 / 491 |
 
 Across the remote cases, source GETs / fetched MiB totaled 1,856 / 1,164 for
 RCFP, 7,462 / 5,275 for Terracotta and 10,890 / 8,942 for TiTiler. Median
@@ -214,11 +214,11 @@ rio-tiler asset reads; RCFP uses four raster workers. TiTiler timing starts only
 after health responses confirm that all four worker PIDs are ready. Each service has a 160 MiB
 aggregate logical cache budget, including curl's downloaded-range cache:
 
-| Service | GDAL blocks | Raster arrays | Downloaded ranges |
-| --- | ---: | ---: | ---: |
-| RCFP | 64 MiB | 64 MiB | 32 MiB |
-| Terracotta | 4 × 16 MiB | 4 × 16 MiB | 4 × 8 MiB |
-| TiTiler/rio-tiler | 4 × 32 MiB | none | 4 × 8 MiB |
+| Service           | GDAL blocks | Raster arrays | Downloaded ranges |
+| ----------------- | ----------: | ------------: | ----------------: |
+| RCFP              |      64 MiB |        64 MiB |            32 MiB |
+| Terracotta        |  4 × 16 MiB |    4 × 16 MiB |         4 × 8 MiB |
+| TiTiler/rio-tiler |  4 × 32 MiB |          none |         4 × 8 MiB |
 
 Finished-image caches and prefetch are off. Native RCFP uses its default
 60-second remote source leases and shares identical active renders even with

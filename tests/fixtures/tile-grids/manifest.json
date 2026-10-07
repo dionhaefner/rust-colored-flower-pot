@@ -1,0 +1,100 @@
+{
+  "recipe": "Native 256 by 256 source windows, unchanged samples, CRS, affine, nodata; lossless deflate TIFF without source overviews.",
+  "fixtures": [
+    {
+      "id": "arctic",
+      "file": "arctic.tif",
+      "sha256": "0765e0f670a5f8fee9fe263ee454b404d8398746685f3ae4f760f3ddd2e8d2f5",
+      "parent_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N78_00_E015_00_DEM/Copernicus_DSM_COG_10_N78_00_E015_00_DEM.tif",
+      "parent_sha256": "4d211ea7b9d074eda9dd893a430bc9661069ea98ea4735d9d9dbf94c2bd2ef68",
+      "window": [472, 1672, 256, 256],
+      "valid_pixels": 65536,
+      "crs": "EPSG:4326",
+      "transform": [
+        0.0008333333333333333, 0.0, 15.392916666666666, 0.0,
+        -0.0002777777777777778, 78.53569444444445
+      ],
+      "attribution": "Copernicus DEM 2021, European Union / Airbus",
+      "dtype": "float32",
+      "nodata": null,
+      "pixel_sha256": "686da318c65b34b0ab7f92ef2f80bd3ffc7c42168947bf4ddf3486cc707e8d3d",
+      "mask_sha256": "71189f7fb6aed638640078fba3a35fda6c39c8962e74dcc75935aac948da9063",
+      "center_pixel": 89.57035827636719,
+      "geographic_bounds": [
+        15.392916666666666, 78.46458333333334, 15.60625, 78.53569444444445
+      ]
+    },
+    {
+      "id": "south",
+      "file": "south.tif",
+      "sha256": "bdaebbb23f052511217e4166a0cac0c215b0334d5cdca51b705f6007c986aa4a",
+      "parent_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_S34_00_E018_00_DEM/Copernicus_DSM_COG_10_S34_00_E018_00_DEM.tif",
+      "parent_sha256": "1a41c3310b250d0e03c590c4f3d431f4c8b7f613dbad00cbe58b9f4588c045aa",
+      "window": [1672, 1672, 256, 256],
+      "valid_pixels": 65536,
+      "crs": "EPSG:4326",
+      "transform": [
+        0.0002777777777777778, 0.0, 18.46430555555556, 0.0,
+        -0.0002777777777777778, -33.464305555555555
+      ],
+      "attribution": "Copernicus DEM 2021, European Union / Airbus",
+      "dtype": "float32",
+      "nodata": null,
+      "pixel_sha256": "69ec3751c1918a537dbbdf24c4daaa4312e12265a32595de3f053c26a5b108eb",
+      "mask_sha256": "71189f7fb6aed638640078fba3a35fda6c39c8962e74dcc75935aac948da9063",
+      "center_pixel": 362.48907470703125,
+      "geographic_bounds": [
+        18.46430555555556, -33.53541666666666, 18.53541666666667,
+        -33.464305555555555
+      ]
+    },
+    {
+      "id": "dateline-east",
+      "file": "dateline-east.tif",
+      "sha256": "9072d40e47a1d4a05f0dda53a760b4dd0a7dd0d58ea4e688061fc975b25bb17b",
+      "parent_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N51_00_E179_00_DEM/Copernicus_DSM_COG_10_N51_00_E179_00_DEM.tif",
+      "parent_sha256": "9047d94e6c4efacdc7e63848082ac25e950be2bc04e4aab423c792d690ae09e9",
+      "window": [1072, 1672, 256, 256],
+      "valid_pixels": 65536,
+      "crs": "EPSG:4326",
+      "transform": [
+        0.00041666666666666664, 0.0, 179.4464583333333, 0.0,
+        -0.0002777777777777778, 51.535694444444445
+      ],
+      "attribution": "Copernicus DEM 2021, European Union / Airbus",
+      "dtype": "float32",
+      "nodata": null,
+      "pixel_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90",
+      "mask_sha256": "71189f7fb6aed638640078fba3a35fda6c39c8962e74dcc75935aac948da9063",
+      "center_pixel": 0.0,
+      "geographic_bounds": [
+        179.4464583333333, 51.46458333333334, 179.55312499999997,
+        51.535694444444445
+      ]
+    },
+    {
+      "id": "dateline-west",
+      "file": "dateline-west.tif",
+      "sha256": "d87d161e3c3c304ec44a4fa00713b8278e3cff9fe321d7ce3afc5eb8e001386c",
+      "parent_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N51_00_W180_00_DEM/Copernicus_DSM_COG_10_N51_00_W180_00_DEM.tif",
+      "parent_sha256": "0af995168f5a2d182e30e24db024fb045f88a2dac2780e02c1b9cdc6830aac0a",
+      "window": [1072, 1672, 256, 256],
+      "valid_pixels": 65536,
+      "crs": "EPSG:4326",
+      "transform": [
+        0.00041666666666666664, 0.0, -179.5535416666667, 0.0,
+        -0.0002777777777777778, 51.535694444444445
+      ],
+      "attribution": "Copernicus DEM 2021, European Union / Airbus",
+      "dtype": "float32",
+      "nodata": null,
+      "pixel_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90",
+      "mask_sha256": "71189f7fb6aed638640078fba3a35fda6c39c8962e74dcc75935aac948da9063",
+      "center_pixel": 0.0,
+      "geographic_bounds": [
+        -179.5535416666667, 51.46458333333334, -179.44687500000003,
+        51.535694444444445
+      ]
+    }
+  ]
+}

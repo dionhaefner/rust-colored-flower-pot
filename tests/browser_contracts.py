@@ -429,18 +429,33 @@ def main() -> None:
                 for example in ("leaflet", "maplibre", "openlayers"):
                     before = len(responses)
                     page.goto(client_url + f"/examples/{example}.html")
-                    page.get_by_label("Dataset", exact=True).select_option(selected())
+                    page.get_by_label("Dataset", exact=True).select_option(
+                        label="lagoon / 2024-01-01 / red"
+                    )
                     expect(page.locator("#status")).to_contain_text(
                         "lagoon / 2024-01-01 / red"
                     )
+                    tile_prefix = (
+                        "/tiles/" if profile == "native" else "/singleband/lagoon/"
+                    )
                     page.wait_for_function(
-                        "performance.getEntriesByType('resource').some(r=>r.name.includes('/singleband/lagoon/'))"
+                        "prefix => performance.getEntriesByType('resource').some(r=>r.name.includes(prefix))",
+                        arg=tile_prefix,
                     )
                     page.wait_for_timeout(500)
                     assert any(
-                        "/singleband/lagoon/" in row["url"] and row["status"] == 200
+                        tile_prefix in row["url"] and row["status"] == 200
                         for row in responses[before:]
                     ), example
+                    if profile == "native":
+                        assert any(
+                            "/tilesets?" in row["url"] and row["status"] == 200
+                            for row in responses[before:]
+                        ), example
+                        assert any(
+                            "/tilejson/" in row["url"] and row["status"] == 200
+                            for row in responses[before:]
+                        ), example
                     page.screenshot(path=str(out / f"{profile}-{example}.png"))
                     checks.append(f"independent-{example}-public-sdk-offline")
                 assert not external, external

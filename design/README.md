@@ -14,6 +14,15 @@ excluded from source archives, wheels, and container build contexts.
 | [Async-TIFF evaluation](async-tiff-evaluation.md) | Exact TIFF access, GDAL fallback boundaries, qualification and the independent raster probe                            |
 | [STAC adapter](stac.md)                           | Bounded provider discovery, immutable checksum selections and credential refresh boundaries                            |
 
+The [rendered caching design](rendered-caching.md) records publication identity,
+conditional responses, access scopes and retained-cache freshness.
+
+The [inspection design](diagnostics.md) records read-only diagnostics, bounded
+probes and supplied offline first use.
+
+The [application validation plan](adoption.md) records evidence boundaries,
+maintenance ownership, review cadence, continuity gaps and funding criteria.
+
 The [native keyed model](native-layers.md) describes persisted logical bands,
 expressions, STAC snapshots and their shared raster plans.
 
@@ -29,3 +38,6 @@ Keep experiments and generated check reports in ignored storage or CI/release
 artifacts. Put repeatable assertions and pinned reference expectations in `tests/`;
 keep consequential design rationale and validation limits here. Establish support
 claims with fresh results for the exact source and artifacts being qualified.
+
+The [Python compute boundary](python-compute.md) describes trusted host callbacks,
+binary aligned inputs, result identity and bounded execution.

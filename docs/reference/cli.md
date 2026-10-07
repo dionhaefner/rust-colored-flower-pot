@@ -21,6 +21,18 @@ address. `--debug` adds diagnostics; `--profile` emits request timing JSON.
 `connect HOSTNAME --no-browser --port PORT` starts the bundled client without
 launching a browser, useful for a remote shell or controlled deployment.
 
+### Inspect and supplied samples
+
+`sample -o NEW_DIRECTORY` exports checksum-pinned imagery, attribution and the
+Python catalog helper for [offline first use](../tutorials/first-map.md).
+`inspect` reports configuration, local raster/catalog checks and an optional
+ingestion destination. See [diagnostics](../how-to/diagnostics.md) for its
+JSON/exit-status contract and explicit probe limits.
+
+```{literalinclude} ../_generated/cli-native-inspect.txt
+:language: text
+```
+
 ### Ingest
 
 ```{literalinclude} ../_generated/cli-native-ingest.txt

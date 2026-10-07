@@ -66,6 +66,8 @@ fn tiff_windows_match_independent_arrays() {
                 .iter()
                 .map(|&band| ReadRequest {
                     grid: matches!(mode, Validity::Asset).then_some(crate::layers::GridRead {
+                        matrix: None,
+                        point: None,
                         epsg: 3857,
                         resampling: crate::layers::Resampling::Nearest,
                         revision: [9; 32],

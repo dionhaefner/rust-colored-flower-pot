@@ -118,6 +118,13 @@ not clear downloaded GDAL ranges or guarantee credential refresh. Identical
 active requests share work even with zero finished-image cache; completed images
 are discarded at zero. See [resource tuning](how-to/resources.md).
 
+Native GET/HEAD responses provide ETags and conditional responses. Mutable URLs
+revalidate; matching `revision` queries pin rendered images for immutable
+caching. Publication remains private unless `HTTP_CACHE_PUBLIC=true`.
+Authorization/cookie requests, errors and POST responses use `no-store`.
+The named Terracotta profile retains its existing headers and behavior. See
+[rendered delivery](how-to/rendered-caching.md) for freshness and proxy setup.
+
 ## Validation and rollout
 
 1. Save the previous environment and configuration; make a backend-appropriate

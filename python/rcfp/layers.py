@@ -68,22 +68,54 @@ class LayerApplication(NativeApplication):
             raise RcfpError(data.decode(errors="replace"))
         return data
 
-    def samples(self, name, spec):
+    def samples(self, name, spec, *, provenance=False):
         """Return one f64 masked NumPy array per output channel, before display stretch."""
         import numpy as np
 
         result = json.loads(
             _native.session_operation(
                 self._session,
-                json.dumps({"operation": "layer_samples", "id": name, "spec": spec}),
+                json.dumps(
+                    {
+                        "operation": "layer_samples",
+                        "id": name,
+                        "spec": spec,
+                        "provenance": provenance,
+                    }
+                ),
             )
         )
         if "error" in result:
             raise RcfpError(result["error"])
-        return [
+        payload = result["ok"]
+        samples = [
             np.ma.array(
                 np.array(r["values"], dtype="float64").reshape(r["shape"]),
                 mask=np.array(r["mask"], dtype=bool).reshape(r["shape"]),
             )
-            for r in result["ok"]
+            for r in (payload["samples"] if provenance else payload)
         ]
+        if provenance:
+            return (
+                samples,
+                payload["contributors"],
+                [
+                    np.array(
+                        [-1 if i is None else i for i in owners], dtype="int32"
+                    ).reshape(samples[0].shape)
+                    for owners in payload["provenance"]
+                ],
+            )
+        return samples
+
+    def plan(self, name, spec=None):
+        """Select indexed mosaic candidates and check budgets without raster reads."""
+        status, _, data, _, _ = self.request(
+            "POST",
+            "/layers/" + quote(name, safe="") + "/plan",
+            {"content-type": "application/json"},
+            json.dumps(spec or {}).encode(),
+        )
+        if status != 200:
+            raise RcfpError(data.decode(errors="replace"))
+        return json.loads(data)

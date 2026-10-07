@@ -5,6 +5,10 @@ Start with `rcfp --version`, `rcfp --help`, the selected profile, and the server
 status, sanitized logs, relevant configuration, and raster/catalog metadata.
 Do not include passwords or signed URLs in an issue report.
 
+`rcfp inspect -d catalog.sqlite` reports read-only path, band, raster-layout and
+configuration checks. Add `--render-probe` for a bounded local preview or `--json`
+for a report. [Diagnostics](diagnostics.md) describes next steps and skipped checks.
+
 | Symptom                                       | Check                                              | Action                                                                                                           |
 | --------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Native library fails to load                  | Wheel platform tag or separated bundle directories | Install a matching wheel or restore the bundle's `bin/lib/share` layout; check its OS baseline.                  |

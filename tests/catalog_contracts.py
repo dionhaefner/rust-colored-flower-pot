@@ -17,7 +17,7 @@ import os
 import sqlite3
 import subprocess
 from pathlib import Path
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, unquote, urlencode
 
 import numpy as np
 import rasterio
@@ -257,7 +257,7 @@ def main():
                 app(
                     {
                         "REQUEST_METHOD": "GET",
-                        "PATH_INFO": path,
+                        "PATH_INFO": unquote(path),
                         "QUERY_STRING": query,
                         "wsgi.input": io.BytesIO(),
                     },
@@ -356,6 +356,15 @@ def main():
         store.define(["inverse"], "~v", {"v": ["boolean"]}, stretch=[0, 1])
         inverse = store.get_raster_tile(["inverse"], tile_bounds=bounds, tile_size=size)
         compare(inverse, ~(raw > 3000))
+        store.define(["half"], "sqrt(v)", {"v": ["boolean"]}, stretch=[0, 1])
+        half = store.get_raster_tile(["half"], tile_bounds=bounds, tile_size=size)
+        assert half.dtype == np.dtype("float16")
+        compare(half, np.sqrt(raw > 3000))
+        store.define(["half_sum"], "v+v", {"v": ["half"]}, stretch=[0, 2])
+        half_sum = store.get_raster_tile(
+            ["half_sum"], tile_bounds=bounds, tile_size=size
+        )
+        compare(half_sum, np.sqrt(raw > 3000) + np.sqrt(raw > 3000))
         store.insert(["red"], packed, band=2, values="raw", skip_metadata=True)
         np.testing.assert_allclose(
             store.get_metadata(["red"])["range"],

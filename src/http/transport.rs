@@ -296,6 +296,8 @@ fn write_response(socket: &mut TcpStream, response: AppResponse) -> std::io::Res
         403 => "Forbidden",
         404 => "Not Found",
         405 => "Method Not Allowed",
+        409 => "Conflict",
+        412 => "Precondition Failed",
         408 => "Request Timeout",
         413 => "Payload Too Large",
         415 => "Unsupported Media Type",
@@ -313,21 +315,16 @@ fn write_response(socket: &mut TcpStream, response: AppResponse) -> std::io::Res
         .and_then(|length| length.parse::<usize>().ok())
         .unwrap_or(response.body.len());
     let mut head = format!(
-        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n",
-        response.status, reason, response.content_type, content_length
+        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nConnection: close\r\n",
+        response.status, reason, response.content_type
     );
-    if response.cache {
-        head.push_str("Cache-Control: no-cache\r\n");
+    if response.status != 304 {
+        head.push_str(&format!("Content-Length: {content_length}\r\n"));
     }
     for (name, value) in response.headers {
-        if [
-            "content-length",
-            "connection",
-            "content-type",
-            "cache-control",
-        ]
-        .iter()
-        .any(|reserved| name.eq_ignore_ascii_case(reserved))
+        if ["content-length", "connection", "content-type"]
+            .iter()
+            .any(|reserved| name.eq_ignore_ascii_case(reserved))
         {
             continue;
         }

@@ -68,9 +68,6 @@ pub fn handle_event_with_application(application: &Application, event: &Value) -
         "content-type".into(),
         Value::String(response.content_type.into()),
     );
-    if response.cache {
-        headers.insert("cache-control".into(), Value::String("no-cache".into()));
-    }
     Ok(json!({
         "statusCode": response.status,
         "headers": headers,

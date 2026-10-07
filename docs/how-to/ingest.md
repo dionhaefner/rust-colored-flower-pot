@@ -8,9 +8,15 @@ files. Make those paths reachable by the serving process.
 ## Match filenames
 
 ```sh
+rcfp inspect -r '/data/{scene}_{band}.tif' -o catalog.sqlite --rgb-key band
 rcfp ingest '/data/{scene}_{band}.tif' -o catalog.sqlite --rgb-key band
 rcfp serve -d catalog.sqlite
 ```
+
+Inspection shows the actual catalog destination, ordered keys and selected
+rasters without writing the catalog. It also explains missing overviews and
+configuration origins. See [diagnostics](diagnostics.md) for JSON output and
+explicit render/remote probes.
 
 Quote the pattern so the shell does not expand it. Named braces create ordered
 keys; `{}` ignores a field. `--rgb-key` places the band key last for RGB/compute

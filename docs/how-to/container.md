@@ -21,6 +21,10 @@ docker build -t rcfp-local container-context
 docker run --rm -p 127.0.0.1:5000:5000 -v "$PWD/deployment-data:/data" rcfp-local
 ```
 
+Before startup, run [read-only diagnostics](diagnostics.md) inside the image
+with the same `/data` mount and environment. Its reported paths identify missing
+mounts; remote raster checks remain explicit.
+
 The default command serves `/data/catalog.sqlite` and binds `0.0.0.0:5000`
 inside the container. The host port above accepts local connections only.
 Check `http://127.0.0.1:5000/keys` and a known image. Set worker/cache configuration

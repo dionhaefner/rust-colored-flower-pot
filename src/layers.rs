@@ -13,6 +13,7 @@ use std::{
 };
 
 pub mod catalog;
+pub mod mosaic;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
@@ -34,6 +35,8 @@ impl Resampling {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct GridRead {
+    pub matrix: Option<crate::tile_matrix::TileMatrixSet>,
+    pub point: Option<[u64; 2]>,
     pub epsg: u32,
     pub resampling: Resampling,
     pub revision: [u8; 32],
@@ -58,6 +61,8 @@ pub struct BandMetadata {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct AssetMetadata {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation: Option<String>,
     pub crs: String,
     pub size: [usize; 2],
     pub transform: [f64; 6],
@@ -101,6 +106,8 @@ pub struct Layer {
     pub selection: BTreeMap<String, Value>,
     #[serde(default)]
     pub default_render: Option<RenderSpec>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mosaic: Option<mosaic::Budget>,
 }
 #[derive(Clone, Debug, Serialize)]
 #[serde(untagged)]
@@ -176,6 +183,8 @@ pub enum Encoding {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RenderSpec {
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub selection: BTreeMap<String, Value>,
     pub bindings: BTreeMap<String, Binding>,
     pub values: Values,
     pub channels: Vec<Channel>,
@@ -212,6 +221,17 @@ impl Grid {
     }
 }
 impl Asset {
+    pub(crate) fn identity(&self) -> Value {
+        let mut value = serde_json::to_value(self).expect("asset identity");
+        if !self.revision.is_empty() {
+            value
+                .as_object_mut()
+                .expect("asset object")
+                .remove("location");
+        }
+        value
+    }
+
     pub fn inspect(&mut self, gdal: &Gdal) -> Result<()> {
         if !crate::execution::is_remote(&self.location) {
             self.location = std::fs::canonicalize(&self.location)
@@ -263,10 +283,30 @@ impl Asset {
     }
 }
 impl Layer {
+    pub(crate) fn identity(&self) -> Value {
+        let mut value = serde_json::to_value(self).expect("layer identity");
+        for (observation, item) in self
+            .observations
+            .iter()
+            .zip(value["observations"].as_array_mut().expect("observations"))
+        {
+            for (name, asset) in &observation.assets {
+                item["assets"][name] = asset.identity();
+            }
+        }
+        value
+    }
+
     pub fn validate(&self) -> Result<()> {
         require_native()?;
-        if self.observations.is_empty() || self.observations.len() > 64 {
-            return Err("layer requires between 1 and 64 observations".into());
+        let limit = if self.mosaic.is_some() { 100_000 } else { 64 };
+        if (self.observations.is_empty() && self.mosaic.is_none())
+            || self.observations.len() > limit
+        {
+            return Err(format!("layer requires between 1 and {limit} observations"));
+        }
+        if let Some(budget) = &self.mosaic {
+            budget.validate()?;
         }
         let mut ids = BTreeSet::new();
         for observation in &self.observations {
@@ -284,10 +324,23 @@ impl Layer {
     }
     pub fn register(&mut self) -> Result<()> {
         self.validate()?;
+        if self.observations.is_empty() {
+            return Err("layer requires observations".into());
+        }
         let gdal = Gdal::load()?;
         for observation in &mut self.observations {
             for asset in observation.assets.values_mut() {
+                let generation = self
+                    .mosaic
+                    .as_ref()
+                    .and_then(|_| mosaic::generation(&asset.location));
                 asset.inspect(&gdal)?;
+                if self.mosaic.is_some() {
+                    if generation != mosaic::generation(&asset.location) {
+                        return Err("mosaic source changed during registration".into());
+                    }
+                    asset.metadata.as_mut().expect("inspected asset").generation = generation;
+                }
             }
         }
         if let Some(spec) = &self.default_render {
@@ -302,8 +355,11 @@ impl Layer {
                 .all(|(k, v)| o.attributes.get(k) == Some(v))
         })
     }
-    fn validate_spec(&self, spec: &RenderSpec) -> Result<()> {
+    pub(crate) fn validate_spec(&self, spec: &RenderSpec) -> Result<()> {
         self.validate()?;
+        if self.mosaic.is_none() && !spec.selection.is_empty() {
+            return Err("request selection requires an indexed mosaic".into());
+        }
         spec.grid.epsg()?;
         if spec.bindings.is_empty() || spec.bindings.len() > 16 {
             return Err("render requires between 1 and 16 bindings".into());
@@ -371,8 +427,30 @@ impl Layer {
                 }
             }
         }
-        if !selected {
+        if !selected && self.mosaic.is_none() {
             return Err("layer selection matches no observations".into());
+        }
+        if !selected {
+            let rasters = spec
+                .bindings
+                .keys()
+                .map(|name| {
+                    (
+                        name.clone(),
+                        Raster {
+                            data_type: 7,
+                            width: 1,
+                            height: 1,
+                            values: vec![1.],
+                            mask: vec![false],
+                        },
+                    )
+                })
+                .collect::<BTreeMap<_, _>>();
+            let refs = rasters.iter().map(|(k, v)| (k.clone(), v)).collect();
+            for channel in &spec.channels {
+                expressions::evaluate(&channel.expression, &refs)?;
+            }
         }
         // Compile and validate arithmetic with source dtypes before allocating grids or reading data.
         for observation in self.selected() {
@@ -405,6 +483,34 @@ impl Layer {
         Ok(())
     }
     pub fn samples(&self, executor: &RasterExecutor, spec: &RenderSpec) -> Result<Vec<Raster>> {
+        self.samples_on(executor, spec, None)
+    }
+
+    pub(crate) fn samples_on(
+        &self,
+        executor: &RasterExecutor,
+        spec: &RenderSpec,
+        read: Option<GridRead>,
+    ) -> Result<Vec<Raster>> {
+        Ok(self.samples_with_read(executor, spec, read, false)?.rasters)
+    }
+    pub fn samples_with_provenance(
+        &self,
+        executor: &RasterExecutor,
+        spec: &RenderSpec,
+    ) -> Result<mosaic::Samples> {
+        self.samples_with_read(executor, spec, None, true)
+    }
+    fn samples_with_read(
+        &self,
+        executor: &RasterExecutor,
+        spec: &RenderSpec,
+        read: Option<GridRead>,
+        trace: bool,
+    ) -> Result<mosaic::Samples> {
+        if let Some(budget) = &self.mosaic {
+            budget.check(self, spec)?;
+        }
         self.validate_spec(spec)?;
         let [height, width] = spec.grid.size;
         let epsg = spec.grid.epsg()?;
@@ -419,7 +525,12 @@ impl Layer {
                 mask: vec![true; width * height],
             })
             .collect::<Vec<_>>();
+        let mut provenance =
+            vec![vec![None; if trace { width * height } else { 0 }]; spec.channels.len()];
+        let mut contributors = Vec::new();
         for observation in self.selected() {
+            let contributor = contributors.len();
+            contributors.push(observation.id.clone());
             let requests = spec
                 .bindings
                 .values()
@@ -432,6 +543,8 @@ impl Layer {
                         asset.location.clone(),
                         ReadRequest {
                             grid: Some(GridRead {
+                                matrix: read.and_then(|r| r.matrix),
+                                point: read.and_then(|r| r.point),
                                 epsg,
                                 revision,
                                 resampling: if asset.categorical_bands.contains(&band.index)
@@ -465,19 +578,27 @@ impl Layer {
                 rasters.insert(name.clone(), raster);
             }
             let refs = rasters.iter().map(|(k, v)| (k.clone(), v)).collect();
-            for (channel, output) in spec.channels.iter().zip(&mut outputs) {
+            for ((channel, output), owners) in
+                spec.channels.iter().zip(&mut outputs).zip(&mut provenance)
+            {
                 let computed = expressions::evaluate(&channel.expression, &refs)?;
-                for i in 0..width * height {
-                    if !computed.mask[i]
-                        && (output.mask[i] || matches!(self.overlap, Overlap::LastValid))
-                    {
-                        output.values[i] = computed.values[i];
+                for (i, (&value, &masked)) in computed.values.iter().zip(&computed.mask).enumerate()
+                {
+                    if !masked && (output.mask[i] || matches!(self.overlap, Overlap::LastValid)) {
+                        output.values[i] = value;
                         output.mask[i] = false;
+                        if let Some(owner) = owners.get_mut(i) {
+                            *owner = Some(contributor);
+                        }
                     }
                 }
             }
         }
-        Ok(outputs)
+        Ok(mosaic::Samples {
+            rasters: outputs,
+            contributors,
+            provenance,
+        })
     }
     pub fn render(&self, executor: &RasterExecutor, spec: &RenderSpec) -> Result<Vec<u8>> {
         let rasters = self.samples(executor, spec)?;
@@ -553,6 +674,7 @@ impl Layer {
             overlap: Overlap::FirstValid,
             selection: BTreeMap::new(),
             default_render: None,
+            mosaic: None,
         };
         layer.register()?;
         Ok(layer)
@@ -630,6 +752,7 @@ pub fn raster_layer(
         })
         .collect();
     let spec = RenderSpec {
+        selection: BTreeMap::new(),
         bindings,
         channels,
         values: Values::Raw,
@@ -651,6 +774,7 @@ pub fn raster_layer(
         overlap: Overlap::FirstValid,
         selection: BTreeMap::new(),
         default_render: Some(spec),
+        mosaic: None,
     };
     layer.validate_spec(layer.default_render.as_ref().expect("default render"))?;
     Ok(layer)

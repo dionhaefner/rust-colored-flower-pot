@@ -1,5 +1,9 @@
 # Maintenance practices
 
+The [application validation plan](adoption.md) assigns ownership and review
+cadence. Public expectations are in the [support policy](../docs/support-policy.md);
+application evidence uses the [evaluation record](../docs/examples/application-evaluation.md).
+
 ## Source and supported commands
 
 | Area                             | Entry points                                                                                                       |

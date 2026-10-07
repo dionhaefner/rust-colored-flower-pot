@@ -102,3 +102,10 @@ Discovery completes before listening. The first metadata or render request
 stages and verifies the whole TIFF and measures first-band statistics; later
 requests reuse the verified file. See [serving STAC](../how-to/stac.md) for
 commands, credentials, revision requirements, dataset keys and download limits.
+
+## Native tileset discovery and inspection
+
+Use [native map services](native-services.md) for client-ready TileJSON, source
+values and explicit geographic/polar tile grids. `/tilesets` supplies opaque IDs
+and URLs across supported catalog layouts. The native-only routes share the
+HTTP, Python, WSGI and Lambda core and appear in the running `/swagger.json`.

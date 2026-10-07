@@ -1005,15 +1005,29 @@ pub(crate) fn source_generation(path: &Path) -> Vec<(u64, u128)> {
             std::fs::metadata(Path::new(&filename))
                 .ok()
                 .map(|metadata| {
-                    (
-                        metadata.len(),
-                        metadata
-                            .modified()
-                            .unwrap_or(SystemTime::UNIX_EPOCH)
-                            .duration_since(SystemTime::UNIX_EPOCH)
-                            .unwrap_or_default()
-                            .as_nanos(),
-                    )
+                    let modified = metadata
+                        .modified()
+                        .unwrap_or(SystemTime::UNIX_EPOCH)
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .unwrap_or_default()
+                        .as_nanos();
+                    #[cfg(unix)]
+                    let stamp = {
+                        use sha2::{Digest, Sha256};
+                        use std::os::unix::fs::MetadataExt;
+                        let mut hash = Sha256::new();
+                        hash.update(modified.to_le_bytes());
+                        hash.update(metadata.dev().to_le_bytes());
+                        hash.update(metadata.ino().to_le_bytes());
+                        hash.update(metadata.ctime().to_le_bytes());
+                        hash.update(metadata.ctime_nsec().to_le_bytes());
+                        u128::from(u64::from_le_bytes(
+                            hash.finalize()[..8].try_into().expect("file stamp"),
+                        ))
+                    };
+                    #[cfg(not(unix))]
+                    let stamp = modified;
+                    (metadata.len(), stamp)
                 })
                 .unwrap_or((0, 0))
         })
@@ -1174,6 +1188,8 @@ mod tests {
         let path = Path::new("tests/fixtures/corpus/red.tif");
         let mut request = ReadRequest {
             grid: Some(GridRead {
+                matrix: None,
+                point: None,
                 epsg: 32632,
                 resampling: Resampling::Nearest,
                 revision: [1; 32],
@@ -1189,6 +1205,16 @@ mod tests {
         request.grid.as_mut().unwrap().resampling = Resampling::Nearest;
         request.grid.as_mut().unwrap().revision = [2; 32];
         assert!(base != cache_key(path, request, false));
+        request.grid.as_mut().unwrap().revision = [1; 32];
+        request.grid.as_mut().unwrap().matrix =
+            Some(crate::tile_matrix::TileMatrixSet::WebMercatorQuad);
+        assert!(base != cache_key(path, request, false));
+        request.grid.as_mut().unwrap().matrix = None;
+        request.grid.as_mut().unwrap().point = Some([12.0f64.to_bits(), 45.0f64.to_bits()]);
+        assert!(base != cache_key(path, request, false));
+        let point = cache_key(path, request, false);
+        request.grid.as_mut().unwrap().point = Some([13.0f64.to_bits(), 45.0f64.to_bits()]);
+        assert!(point != cache_key(path, request, false));
         request.grid = None;
         assert!(base != cache_key(path, request, false));
     }

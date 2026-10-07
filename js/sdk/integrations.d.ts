@@ -1,5 +1,12 @@
 import type { Client, Render } from "./index.js";
-export function leafletLayer<T>(
+export interface LeafletTileLayer {
+  getTileUrl(coords: { x: number; y: number; z: number }): string;
+  on(
+    event: "tileunload",
+    callback: (event: { tile: HTMLImageElement }) => void,
+  ): unknown;
+}
+export function leafletLayer<T extends LeafletTileLayer>(
   library: {
     tileLayer(
       url: string,
@@ -38,4 +45,45 @@ export function openLayersSource<T>(
   },
   client: Client,
   render: Render,
+): T;
+
+export function leafletTileJSON<T>(
+  library: {
+    tileLayer(
+      url: string,
+      options: {
+        tileSize: number;
+        minZoom: number;
+        maxZoom: number;
+        attribution: string;
+        crossOrigin: string;
+        noWrap: boolean;
+        bounds: number[][];
+      },
+    ): T;
+  },
+  tilejson: import("./index.js").TileJSON,
+): T;
+export function mapLibreTileJSONSource(
+  tilejson: import("./index.js").TileJSON,
+): {
+  type: "raster";
+  tiles: string[];
+  tileSize: number;
+  minzoom: number;
+  maxzoom: number;
+  bounds: [number, number, number, number];
+  attribution: string;
+};
+export function openLayersTileJSONSource<T>(
+  library: {
+    source: {
+      TileJSON: new (options: {
+        tileJSON: import("./index.js").TileJSON;
+        crossOrigin: string;
+        wrapX: boolean;
+      }) => T;
+    };
+  },
+  tilejson: import("./index.js").TileJSON,
 ): T;

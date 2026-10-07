@@ -51,7 +51,7 @@ test("all map adapters consume the same SDK template", () => {
   assert.equal(mapLibreSource(client, render).tiles[0], expected);
   assert.equal(
     leafletLayer(
-      { tileLayer: (url, options) => ({ url, options }) },
+      { tileLayer: (url, options) => ({ url, options, on() {} }) },
       client,
       render,
     ).url,
@@ -270,4 +270,149 @@ test("literal braces in keys and selectors remain encoded in map templates", () 
   const url = client.tileTemplate(rgb);
   assert.ok(url.includes("/%7Bz%7D/%7Bx%7D/{z}/{x}/{y}.png"));
   assert.ok(url.includes("r=%7By%7D"));
+});
+
+test("native discovery, TileJSON and source inspection preserve URLs and profile", async () => {
+  const requested = [];
+  const native = new Client("https://example.test/prefix", {
+    fetch: async (url) => {
+      requested.push(new URL(url));
+      return new Response(JSON.stringify({ tilesets: [] }));
+    },
+  });
+  assert.deepEqual(await native.discoverTilesets(), { tilesets: [] });
+  await native.tileJSON(render.keys, { stretch_range: [0, 3000] });
+  assert.equal(
+    requested.at(-1).pathname,
+    "/prefix/tilejson/k-" +
+      Buffer.from(JSON.stringify(render.keys)).toString("hex") +
+      ".json",
+  );
+  assert.equal(requested.at(-1).searchParams.get("stretch_range"), "[0,3000]");
+  await native.point(render.keys, { longitude: 12.3, latitude: 45.4 });
+  assert.equal(requested.at(-1).searchParams.get("lon"), "12.3");
+  assert.equal(requested.at(-1).searchParams.get("lat"), "45.4");
+  assert.throws(() =>
+    native.point(render.keys, { longitude: NaN, latitude: 0 }),
+  );
+  assert.throws(() => native.point([], { longitude: 0, latitude: 0 }));
+  assert.throws(() => native.tilesets({ limit: 0 }));
+  const legacy = new Client("https://example.test", {
+    profile: "terracotta-0.10.1",
+  });
+  assert.throws(() => legacy.tileJSON(["red"]));
+  assert.throws(() => legacy.point(["red"], { longitude: 0, latitude: 0 }));
+  assert.throws(() => legacy.tilesets());
+});
+
+test("Leaflet paces requests across layers, retries busy tiles and drops removed work", async () => {
+  const originalDocument = globalThis.document;
+  globalThis.document = {
+    createElement: () => ({
+      set src(value) {
+        this.url = value;
+        queueMicrotask(() => this.onload?.());
+      },
+    }),
+  };
+  let active = 0,
+    maximum = 0,
+    calls = 0;
+  const attempts = new Map();
+  const api = new Client("https://example.test", {
+    fetch: async (url, { signal }) => {
+      signal.throwIfAborted();
+      calls++;
+      active++;
+      maximum = Math.max(maximum, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active--;
+      const count = (attempts.get(url) ?? 0) + 1;
+      attempts.set(url, count);
+      return new Response("image", {
+        status: url.endsWith("/0.png") && count === 1 ? 503 : 200,
+      });
+    },
+  });
+  const library = {
+    tileLayer: () => ({
+      handlers: {},
+      on(name, callback) {
+        this.handlers[name] = callback;
+      },
+      getTileUrl(coords) {
+        return `https://example.test/${coords.x}.png`;
+      },
+    }),
+  };
+  const layers = [
+    leafletLayer(library, api, render),
+    leafletLayer(library, api, render),
+  ];
+  const tiles = [],
+    completed = [];
+  let removedCompleted = false;
+  try {
+    for (let x = 0; x < 20; x++) {
+      const layer = layers[x % 2];
+      const completion = new Promise((resolve, reject) => {
+        const tile = layer.createTile({ x }, (error) => {
+          if (x === 19) removedCompleted = true;
+          error ? reject(error) : resolve();
+        });
+        tiles.push({ layer, tile });
+      });
+      if (x !== 19) completed.push(completion);
+    }
+    tiles[19].layer.handlers.tileunload({ tile: tiles[19].tile });
+    await Promise.all(completed);
+    assert.equal(maximum, 3);
+    assert.equal(calls, 20); // Nineteen retained tiles and one bounded retry.
+    assert.equal(attempts.get("https://example.test/0.png"), 2);
+    assert.equal(attempts.has("https://example.test/19.png"), false);
+    assert.equal(removedCompleted, false);
+    assert.ok(
+      tiles.slice(0, 19).every(({ tile }) => tile.url.startsWith("blob:")),
+    );
+    let permanentCalls = 0;
+    const missing = new Client("https://example.test", {
+      fetch: async () => {
+        permanentCalls++;
+        return new Response("missing", { status: 404 });
+      },
+    });
+    const missingLayer = leafletLayer(library, missing, render);
+    const failure = await new Promise((resolve) =>
+      missingLayer.createTile({ x: 99 }, resolve),
+    );
+    assert.equal(failure.status, 404);
+    assert.equal(permanentCalls, 1);
+
+    let aborted = false,
+      completedAfterRemoval = false;
+    const waiting = new Client("https://example.test", {
+      fetch: (_url, { signal }) =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener(
+            "abort",
+            () => {
+              aborted = true;
+              reject(new DOMException("removed", "AbortError"));
+            },
+            { once: true },
+          );
+        }),
+    });
+    const waitingLayer = leafletLayer(library, waiting, render);
+    const waitingTile = waitingLayer.createTile({ x: 100 }, () => {
+      completedAfterRemoval = true;
+    });
+    waitingLayer.handlers.tileunload({ tile: waitingTile });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(aborted, true);
+    assert.equal(completedAfterRemoval, false);
+  } finally {
+    for (const { layer, tile } of tiles) layer.handlers.tileunload({ tile });
+    globalThis.document = originalDocument;
+  }
 });

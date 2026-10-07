@@ -50,6 +50,11 @@ A layer contains 1–64 ordered `observations`, an `overlap` policy, optional
 requested attribute with exact JSON equality. A selection matching nothing
 fails clearly.
 
+An optional `mosaic` budget enables indexed spatial and exact attribute selection
+for up to 100,000 observations on EPSG:3857 output grids. Oversized views fail
+before raster reads. See [virtual mosaics](../how-to/mosaics.md) for limits,
+contributor ownership and reproducible broad-view snapshots.
+
 Each asset has `location`, optional immutable `revision`, optional
 `band_names` mapping aliases to one-based indexes, and optional
 `categorical_bands` indexes. Registration inspects its metadata and stores:

@@ -70,6 +70,10 @@ jobs:
       - name: Native database-backed multiband contracts
         run: python tests/layer_contracts.py --binary target/release/rcfp --out build/ci/layer-contracts
 
+      - name: Indexed mosaic correctness and viewport measurements
+        if: runner.os == 'Linux'
+        run: python tests/mosaic_contracts.py --binary target/release/rcfp --out build/ci/mosaic-contracts
+
       - name: Request lifecycle correctness
         run: python tests/request_lifecycle.py --binary target/release/rcfp --out build/ci/request-lifecycle
 
@@ -81,6 +85,7 @@ jobs:
             build/ci/ci-smoke/
             build/ci/profile-contracts/
             build/ci/layer-contracts/
+            build/ci/mosaic-contracts/
             build/ci/request-lifecycle/
           retention-days: 14
 

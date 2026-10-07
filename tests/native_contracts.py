@@ -485,6 +485,11 @@ def main():
                         "constant compute range",
                     )
                     spec = json.loads(request("/swagger.json")[1])
+                    if not legacy:
+                        check(
+                            spec["info"]["description"] == "RCFP raster tile service.",
+                            "native service description",
+                        )
                     check(
                         ("/metadata" in spec["paths"]) != legacy,
                         "batch metadata specification",

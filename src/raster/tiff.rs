@@ -203,7 +203,10 @@ impl Backend {
             return None;
         }
         let mode = if let Some(grid) = first.grid {
-            if grid.epsg != 3857 || grid.resampling != crate::layers::Resampling::Nearest {
+            if grid.point.is_some()
+                || grid.epsg != 3857
+                || grid.resampling != crate::layers::Resampling::Nearest
+            {
                 return None;
             }
             Validity::Asset

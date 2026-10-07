@@ -27,7 +27,10 @@
     <script src="/vendor/maplibre-gl.js"></script>
     <script type="module">
       import { Client, LatestRequest } from "/sdk/index.js";
-      import { mapLibreSource } from "/sdk/integrations.js";
+      import {
+        mapLibreSource,
+        mapLibreTileJSONSource,
+      } from "/sdk/integrations.js";
       const client = new Client(document.body.dataset.service, {
         profile: document.body.dataset.profile,
       });
@@ -61,15 +64,32 @@
         if (map.getSource("raster")) map.removeSource("raster");
         try {
           const layer = layers.find((row) => row.id === select.value);
-          const metadata = await latest.run((signal) =>
-            client.metadata(layer.keys, { signal }),
-          );
+          const tilejson =
+            client.profile === "native"
+              ? await latest.run((signal) =>
+                  client.tileJSON(
+                    layer.keys,
+                    { stretch_range: [0, 3000] },
+                    { signal },
+                  ),
+                )
+              : null;
+          const metadata =
+            tilejson ??
+            (await latest.run((signal) =>
+              client.metadata(layer.keys, { signal }),
+            ));
           const render = {
             mode: "singleband",
             keys: layer.keys,
             params: { stretch_range: [0, 3000] },
           };
-          map.addSource("raster", mapLibreSource(client, render));
+          map.addSource(
+            "raster",
+            tilejson
+              ? mapLibreTileJSONSource(tilejson)
+              : mapLibreSource(client, render),
+          );
           map.addLayer({
             id: "raster",
             type: "raster",
@@ -91,7 +111,9 @@
       }
       try {
         await client.connect();
-        ({ layers } = await client.discover());
+        if (client.profile === "native")
+          ({ tilesets: layers } = await client.discoverTilesets());
+        else ({ layers } = await client.discover());
         await loaded;
         for (const layer of layers) {
           const option = document.createElement("option");

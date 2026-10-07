@@ -56,3 +56,8 @@ rather than Terracotta's Python SDK decorators.
 
 Keep the previous function version and routing configuration for rollback.
 Publish service-specific support only after those real-service checks pass.
+
+Use [read-only diagnostics](diagnostics.md) to inspect the packaged local SQLite
+catalog before deployment. The report distinguishes stored raster paths from
+the catalog location and explicitly skips remote reads. Private raster access
+still needs a render under the function's actual role/provider credentials.

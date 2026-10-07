@@ -1,5 +1,35 @@
 # Test suites and fixtures
 
+The [public raster corpus](fixtures/README.md) maps real inputs to independent
+fidelity and performance checks. Run its offline integrity gate with NumPy and
+Rasterio, then the controlled failures:
+
+```sh
+python tests/corpus_contracts.py --out build/corpus-integrity
+python -m unittest discover -s tests -p 'test_corpus_contracts.py'
+```
+
+`upgrade_contracts.py` compares two exact installed wheels in separate processes
+and rehearses compatible SQLite reads/writes, previous-version restart, committed
+WAL backup, and restore. Both environments need Pillow. It checks installed
+package files against the supplied wheel before running, requires distinct
+artifacts, and records failures and excluded deployment/adopter scopes:
+
+```sh
+python tests/upgrade_contracts.py \
+  --previous-python /path/to/previous-env/bin/python \
+  --previous-wheel /path/to/previous.whl \
+  --candidate-python /path/to/candidate-env/bin/python \
+  --candidate-wheel /path/to/candidate.whl \
+  --out build/application-upgrade
+```
+
+This rehearsal uses the Terracotta profile and legacy SQLite format. Native
+keyed schemas, explicit format migrations, remote providers and real deployment
+need their own checks. [Application evaluation](../docs/how-to/evaluate.md) and
+the [maintenance plan](../design/adoption.md) distinguish automated checks from
+independent adoption and retained production usage.
+
 Tests are organized by the interface they exercise. The Python end-to-end
 runners are standalone scripts that write JSON reports; the installed-wheel
 contract runner also writes JUnit XML. They are not collected by `pytest`.
@@ -22,6 +52,15 @@ in the [validation handoff](../design/human-validation.md).
 | Other standalone end-to-end   | `tests/storage_contracts.py`, `remote_contracts.py`, `browser_contracts.py`, `platform_smoke.py`, `lambda_runtime_smoke.py` | Correctness, wheels, native platforms   | Live databases, HTTP ranges, Chromium UI, real raster, and official local Lambda runtime.                                                                                         |
 | Large-file and resource tests | `tests/large_raster_contracts.py`, `resource_contracts.py`                                                                  | Scheduled, manual, or tag correctness   | Physical BigTIFF reads above 4 GiB and concurrent server resource behavior.                                                                                                       |
 | Pinned reference comparison   | `tests/reference/differential.py`, `upstream.py`, `compatibility.py`                                                        | Correctness and wheels                  | 26 candidate comparisons, selected documented driver cases, and the pinned reference test baseline.                                                                               |
+
+`rendered_cache_contracts.py` verifies publication and conditional responses
+across the installed Python wheel, WSGI, native HTTP and Lambda. On Linux,
+run it with `--binary`, a fresh `--out`, and optionally `--nginx /usr/sbin/nginx
+--browser` to exercise the downloadable proxy/browser examples. Three paired
+nine-tile trials measure encoded retention, conditional bandwidth, RSS and
+duplicate work using checksum-pinned real pixels with explicit Mercator geometry.
+Reports list unavailable nginx/Chromium checks separately. The Linux x86_64
+CPython 3.12 wheel job runs the complete suite.
 
 The demo's credentials-free runtime and Pages checks are in
 `tests/demo_contracts.py`. Run them with `--image rcfp-demo` after building the
@@ -258,7 +297,9 @@ actual public URLs; range mode injects 15 ms per source request and is a surroga
 A timeout/non-200 fails the run and remains in its report. Physically cold disk,
 WAN/browser paint and private credential refresh require separate environments.
 The controlled range origin supplies a checksum-based strong ETag and enforces
-`If-Match`, allowing version-aware readers to participate. Per-viewport reports
+`If-Match`, allowing version-aware readers to participate. It disables Nagle on
+accepted sockets so separate header/body writes do not add packet delays to the
+configured origin latency. Per-viewport reports
 include request throughput and source-traffic deltas.
 
 `--require-tiff-pixels` requires at least one production TIFF pixel read and
@@ -491,4 +532,103 @@ transaction rollback, key mappings and binding/cache invalidation against pinned
 Sentinel crops and independent rasterio/NumPy references. Run it with the exact
 installed wheel: `python tests/catalog_contracts.py --binary BINARY --wheel WHEEL
 --out OUT`. `layer_contracts.py` retains the advanced mask, grid, overlap and
-category qualification.
+category qualification. The wheel workflow runs both suites in its CPython 3.12
+platform cells and retains their reports. Prepared CI is not execution evidence.
+
+`cloud_test_contracts.py --bundle BUNDLE --out OUT` checks disposable EC2
+deployment preparation without credentials. It copies precomputed catalogs,
+verifies S3 path/checksum preparation, extracts a complete native bundle, checks
+loopback HTTP and browser viewport behavior against the independent demo PNG,
+and exercises provisioning/collection failure handling. It needs Python 3.12+,
+PyYAML, Pillow and Playwright/Chromium. Infrastructure schema validation uses
+`cfn-lint packaging/cloud-test/storage.yaml packaging/cloud-test/template.yaml`.
+
+`cloud_deployment.py --session SESSION --out OUT` runs against an existing cloud
+host from an external client. `--url URL` also accepts another deployed endpoint.
+Use `--workload JSON` for representative PNG viewport/pan/zoom/revisit requests
+and optional checksum-pinned independent references; the default bundled crops
+provide a smoke check. Add `--viewer-binary BINARY` to include Chromium navigation.
+Reports distinguish decoding from independent image acceptance and omitted
+browser checks. Operator procedures and spending/expiry behavior are in
+[cloud test guidance](../docs/how-to/cloud-test.md).
+
+## Diagnostics and first use
+
+`diagnostic_contracts.py --binary INSTALLED_RCFP --out build/diagnostics` checks
+configuration origins/redaction, pattern/destination failures, read-only catalogs,
+physical band selection, local layout/masks/overviews, bounded render and HTTP
+range probes, and supplied sample integrity. It requires installed RCFP, NumPy,
+Pillow and Rasterio; `--browser` also requires Playwright/Chromium. Real raster
+derivatives retain pinned source pixels, changing tiling and band count. An explicit Mercator affine isolates physical
+band selection from projection differences; it does not qualify acquisition
+geography.
+The VRT text is a narrowly synthetic edge to verify external dependencies are
+rejected before GDAL opens them. A tiny C library with a blocked initializer
+checks the native child deadline on POSIX systems with a C compiler; other
+platforms record that case as skipped.
+
+The runner exports imagery and executes the published first-map steps from a
+fresh directory. Its PNG comparison uses the retained, independently acquired
+Terracotta demo reference. Optional Chromium blocks external requests and checks
+the offline map, RGB share restoration and repeated zoom at default server limits,
+and the API-docs page. Each zoom waits for animation and successful decoding of
+every tile. `first-use.json` records completion time, warnings/obstacles and
+artifact identity. This automated trial does not claim a human usability study.
+CPython 3.12 wheel cells run the contracts; configured
+CI is separate from completed local qualification.
+
+## Indexed virtual mosaics
+
+`mosaic_contracts.py --binary BINARY --out OUT` checks native footprint/attribute
+selection, seams, first/last-valid ownership, mixed CRS/resolution, masks,
+categories, dated selection and empty coverage with checksum-pinned real pixels.
+Mercator/crop/decimation derivatives and repeated date labels isolate geometry
+and selection; they do not establish acquisition history. Independent
+Rasterio/NumPy calculations verify expressions before overlap and valid-mean or
+center-nearest snapshot reduction. Preparation reproducibility, freshness,
+category-average rejection, incomplete-product cleanup, RTree query plans and
+index replacement/deletion have explicit checks.
+
+The runner prepares a 100-file placement collection outside request timings,
+then measures distinct four-request detailed and broad-product viewports on local
+storage and a controlled 2 ms range origin. Reports retain source counts, planned
+and actual reader invocations, source GET/HEAD/range counts and bytes, response
+bytes, sampled service RSS, viewport completion and failures. Exhausted views
+must submit no raster jobs or source requests. `--wheel WHEEL` also checks the
+installed Python ownership/plan APIs. Linux native CI runs this suite and retains
+its report; prepared CI is not execution evidence. Cloud/WAN, physically cold
+disk, browser paint and additional platforms remain separate qualification.
+
+## Native map services
+
+`native_services.py --binary BINARY --wheel WHEEL --out OUT --browser` checks
+opaque tileset discovery, TileJSON, source points, selected-band calibration,
+rotated affines, fractional alpha/nonfinite declarations, expressions, all four
+named grids, dateline edges, cache reuse, schemas and Python/WSGI/Lambda. Run with
+the exact wheel installed and NumPy, Pillow, Rasterio, jsonschema and optional
+Playwright/Chromium. `fixtures/tile-grids/manifest.json` pins small native DEM
+windows, original hashes/URLs and crop recipes. Arctic and southern stereographic
+views use real source samples; the southern window is near 34°S. Browser grid
+checks construct independent OpenLayers geographic/polar views from descriptors.
+`browser_contracts.py` additionally checks the Leaflet/MapLibre/OpenLayers
+TileJSON examples in native mode and unchanged keyed examples in compatibility
+mode. Reports retain failures, skips and unavailable deployment/platform checks.
+
+## Python-hosted compute layers
+
+`python_compute_contracts.py --wheel WHEEL --out OUT --browser` runs against an
+independently installed wheel. It checks explicit observations, named raw/scaled
+binary inputs, independent per-band validity, mixed-resolution alignment, native
+scalar rendering, output validation, version/source/parameter/dependency/style
+identities, separate bounded caches, callback sharing, deadlines and shutdown.
+Its threaded WSGI host demonstrates concurrent satellite-model requests with a
+declared weather revision. Browser checks use the installed `rcfp connect` viewer
+and the existing Leaflet, MapLibre and OpenLayers SDK examples.
+
+Rasterio independently aligns the checksum-pinned Sentinel inputs. Calibration,
+nodata declarations, decimation and value-preserving Float64 casts isolate numeric
+and validity contracts; callback algorithms are test model declarations. No RCFP
+output becomes an oracle. The report records the exact wheel hash, Python runtime,
+every case, metrics and separate skips/exclusions. Python 3.12 wheel CI cells run
+the suite; Linux additionally prepares browser execution. Prepared CI is separate
+from completed local platform qualification.

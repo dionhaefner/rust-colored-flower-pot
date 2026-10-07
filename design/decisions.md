@@ -110,6 +110,14 @@ See `src/storage/`, [catalogs](../docs/reference/catalogs.md), and
 [backup/migration](../docs/how-to/backup-migrate.md). A portable byte encoding or
 different transaction contract requires an explicit format/interface change.
 
+## Publish guarded rendered revisions
+
+Rendered publication uses shared application ETags, revalidated mutable URLs
+and digest-guarded immutable image URLs. Shared caching is an explicit operator
+choice; authorization/cookie requests and errors use no-store. Encoded image
+reuse and request coalescing retain their existing bounded ownership. See
+[rendered caching](rendered-caching.md) for identity and freshness boundaries.
+
 ## Package a private native runtime and qualify the final artifact
 
 Wheels carry the executable, shared core, limited-API extension, GDAL/PROJ
@@ -311,7 +319,8 @@ profile checks, fetch/error/abort semantics, catalog discovery and revisioned
 shared state. The maintained viewer and independent Leaflet/MapLibre/OpenLayers
 applications import those same public modules. Keep metadata, image sampling,
 expressions, palettes and catalog ordering on the server. Display-pixel inspection
-is explicitly RGBA; source-value querying needs its own HTTP contract. Time
+is explicitly RGBA. Native point inspection has a separate nearest source-cell
+contract with declared calibration, validity and provenance. Time
 selection uses an explicit catalog key, without inferring observation ranking.
 
 The viewer uses original, readable modules and native labeled controls with
@@ -333,3 +342,51 @@ package lifecycle scripts. The package remains dependency-free. Test tools are
 private and locked in `packaging/sdk`. npm scope ownership and trusted-publisher
 configuration belong to the maintainer's account. See the
 [SDK release guide](../docs/how-to/release-sdk.md).
+
+## Indexed native mosaics and explicit broad-view snapshots
+
+An opt-in advanced layer budget enables persisted SQLite RTree extent lookup
+and indexed exact observation attributes. Registration atomically replaces the
+header, footprints, attributes and observations. Rendering reads one database
+snapshot and loads a bounded ordered candidate set. It rejects exhausted source,
+read, request-buffer or uncompressed-source estimates before raster execution.
+Existing worker queues, admission and per-channel first/last-valid overlap remain
+shared with ordinary native layers. SQL/Terracotta dataset routes retain their
+selection semantics.
+
+Collection-level products are explicit immutable layers. The local preparation
+helper aligns and calibrates bands, evaluates expressions per observation,
+composites in observation order, then averages valid computed samples or selects
+the center sample. Category averaging is rejected. Parent/definition/output
+checksums and block-level contribution counts accompany each product. Freshness
+checks and regeneration happen outside request handling; applications deliberately
+select the detailed or broad layer. This avoids silently changing scientific
+aggregation after budget exhaustion. See [mosaic operations](../docs/how-to/mosaics.md).
+
+## Native discovery and explicit map grids
+
+Native `/tilesets` discovery returns opaque single-component IDs and URLs across
+SQL, keyed native, STAC and advanced-layer projections. IDs encode the ordered
+key tuple and survive WSGI decoded paths, including keys with literal slashes.
+TileJSON 3.0 supplies absolute Mercator templates; PUBLIC_URL owns HTTPS/prefix
+configuration without trusting forwarded headers. Geographic and RCFP polar
+grids use explicit matrix definitions with x/y axes and top-left row order.
+Array and image caches include matrix identity. No WMTS or OGC API service
+conformance is inferred from these descriptors.
+
+Point reads execute in the bounded raster pool on the base source affine. They
+reuse native selected-band validity, then apply declared calibration and typed
+expression semantics independently of display rendering. Public provenance omits
+source locations and credentials. See [map services](../docs/reference/native-services.md)
+and `tests/native_services.py` for the supported grids and qualification scope.
+
+## Host Python callbacks over the shared native core
+
+Trusted Python hosts can register scalar compute layers over one explicit native
+observation. Keep callback execution in the bounded Python host pool; native
+workers only read/resample inputs. Reuse the native scalar renderer for returned
+values and keep raster, computed and image cache budgets separate. Model versions
+and declared external revisions determine derived identity, never Python function
+identity. Source mutation during a model cannot publish its result. Undeclared
+dependencies disable derived caching. Standalone Rust and compatibility adapters
+retain their current boundaries. See [Python computation](python-compute.md).

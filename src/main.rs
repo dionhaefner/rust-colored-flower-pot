@@ -8,7 +8,13 @@ fn main() -> ExitCode {
     match configured_run(&args) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
-            eprintln!("error: {error}");
+            if rcfp_core::diagnostics::is_inspection(&args)
+                && error != "inspection found errors; follow the reported next steps"
+            {
+                rcfp_core::diagnostics::configuration_error(&args);
+            } else {
+                eprintln!("error: {error}");
+            }
             ExitCode::from(2)
         }
     }
@@ -41,7 +47,9 @@ fn reexec_with_gdal_dependencies() {}
 
 fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     let mut config = serde_json::Map::new();
+    let mut origins = serde_json::Map::new();
     let mut profile = None;
+    let mut loglevel = None;
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
@@ -62,10 +70,11 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
                     .as_object()
                     .ok_or("configuration must be a table")?
                     .clone();
+                origins = config.keys().map(|k| (k.clone(), "toml".into())).collect();
                 index += 2;
             }
             "--loglevel" if index + 1 < args.len() => {
-                config.insert("LOGLEVEL".into(), args[index + 1].clone().into());
+                loglevel = Some(args[index + 1].clone());
                 index += 2;
             }
             _ => break,
@@ -73,9 +82,19 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     }
     if let Some(profile) = profile {
         config.insert("COMPAT_PROFILE".into(), profile.into());
+        origins.insert("COMPAT_PROFILE".into(), "cli".into());
+    }
+    if let Some(loglevel) = loglevel {
+        config.insert("LOGLEVEL".into(), loglevel.into());
+        origins.insert("LOGLEVEL".into(), "cli".into());
     }
     let config = rcfp_core::settings::parse(config)?;
-    rcfp_core::settings::scope(config, || run(&args[index..]))
+    rcfp_core::settings::scope(config, || match &args[index..] {
+        [command, rest @ ..] if command == "inspect" => {
+            rcfp_core::diagnostics::command(rest, &origins)
+        }
+        _ => run(&args[index..]),
+    })
 }
 
 fn run(args: &[String]) -> rcfp_core::Result<()> {
@@ -112,6 +131,8 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
         }
         [command, rest @ ..] if command == "layers" => rcfp_core::cli::layers_command(rest),
         [command, rest @ ..] if command == "ingest" => rcfp_core::cli::ingest_command(rest),
+        [command, rest @ ..] if command == "sample" => rcfp_core::diagnostics::sample_command(rest),
+        [command] if command == "inspect-raster-worker" => rcfp_core::diagnostics::raster_worker(),
         [command, rest @ ..] if command == "optimize-rasters" => {
             rcfp_core::cli::optimize_command(rest)
         }
@@ -291,7 +312,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
 
 fn print_help() {
     println!(
-        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (--source SOURCE | -d DATABASE | -r PATTERN | --stac-item ITEM | --stac-catalog CATALOG | --stac-search URL) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp serve --stac-item ITEM\n  rcfp serve --stac-catalog CATALOG\n  rcfp serve --stac-search URL [--stac-bbox W,S,E,N] [--stac-datetime RFC3339_INTERVAL] [--stac-collections IDS]\n  STAC options: --stac-assets KEY[,KEY...], --stac-revisions FILE, --stac-headers FILE, --stac-asset-urls FILE, --stac-max-items N, --stac-max-documents N, --stac-max-staged-bytes N\n  rcfp layers create|list DATABASE\n  rcfp layers register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]\n  rcfp layers put|describe|delete DATABASE ID\n  rcfp layers render DATABASE ID -o IMAGE [--spec SPEC]\n  rcfp layers import SOURCE DESTINATION ID BINDINGS_JSON\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
+        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (--source SOURCE | -d DATABASE | -r PATTERN | --stac-item ITEM | --stac-catalog CATALOG | --stac-search URL) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp serve --stac-item ITEM\n  rcfp serve --stac-catalog CATALOG\n  rcfp serve --stac-search URL [--stac-bbox W,S,E,N] [--stac-datetime RFC3339_INTERVAL] [--stac-collections IDS]\n  STAC options: --stac-assets KEY[,KEY...], --stac-revisions FILE, --stac-headers FILE, --stac-asset-urls FILE, --stac-max-items N, --stac-max-documents N, --stac-max-staged-bytes N\n  rcfp layers create|list DATABASE\n  rcfp layers register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]\n  rcfp layers put|describe|delete DATABASE ID\n  rcfp layers render DATABASE ID -o IMAGE [--spec SPEC]\n  rcfp layers import SOURCE DESTINATION ID BINDINGS_JSON\n  rcfp inspect [--raster FILE | -r PATTERN | -d DATABASE] [-o DESTINATION] [--render-probe] [--probe-remote] [--json]\n  rcfp sample -o NEW_DIRECTORY\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
     );
 }
 

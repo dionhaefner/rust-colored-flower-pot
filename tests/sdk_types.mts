@@ -57,6 +57,20 @@ const state = await createState({
 await restoreState("#rcfp=state", state);
 const result: string = await new LatestRequest().run(async () => "result");
 void result;
+leafletLayer(
+  {
+    tileLayer: (url: string) => ({
+      url,
+      on() {},
+      getTileUrl() {
+        return url;
+      },
+    }),
+  },
+  client,
+  render,
+);
+// @ts-expect-error A Leaflet factory must return the tile URL/lifecycle methods.
 leafletLayer({ tileLayer: (url: string) => ({ url }) }, client, render);
 class XYZ {
   constructor(readonly options: { url: string }) {}
@@ -81,3 +95,24 @@ const secret: Render = {
   params: { token: "secret" },
 };
 void secret;
+const nativeTilesets = (await client.discoverTilesets()).tilesets;
+const tileJSON = await client.tileJSON(nativeTilesets[0].keys, {
+  colormap: "viridis",
+});
+const sourceValue: number | null = (
+  await client.point(nativeTilesets[0].keys, { longitude: 12, latitude: 45 })
+).raw;
+void tileJSON;
+void sourceValue;
+
+const pythonTileJSON = await client.tileJSON(
+  ["stress", "2021-06-29", "value"],
+  {
+    gain: 2,
+    crop: "corn",
+    irrigated: true,
+    stretch_range: [-1, 3],
+  },
+);
+const computeVersion: string | undefined = pythonTileJSON.rcfp.compute?.version;
+void computeVersion;

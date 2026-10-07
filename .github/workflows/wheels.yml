@@ -353,8 +353,20 @@ jobs:
             native_binary=$("$wheel_python" -c 'import rcfp; print(rcfp._RUNTIME_ROOT / "bin" / ("rcfp.exe" if __import__("sys").platform == "win32" else "rcfp"))')
             "$wheel_python" tests/stac_serving.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/ci-stac-serving
             "$wheel_python" tests/layer_contracts.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/layer-contracts
+            "$wheel_python" tests/diagnostic_contracts.py --binary "$native_binary" --out build/ci/diagnostics
+            "$wheel_python" tests/catalog_contracts.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/catalog-contracts
+            "$wheel_python" -m pip install jsonschema==4.25.1
+            "$wheel_python" tests/native_services.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --out build/ci/native-services
+            "$wheel_python" tests/python_compute_contracts.py --wheel build/ci/ci-wheels/*.whl --out build/ci/python-compute
             if [[ "${{ matrix.platform.id }}" == linux-x86_64 ]]; then
               "$wheel_python" tests/request_cost.py --binary "$native_binary" --out build/ci/request-cost
+              sudo apt-get update
+              sudo apt-get install -y nginx
+              "$wheel_python" -m pip install playwright==1.55.0
+              "$wheel_python" -m playwright install --with-deps chromium
+              "$wheel_python" tests/native_services.py --binary "$native_binary" --wheel build/ci/ci-wheels/*.whl --browser --out build/ci/native-services-browser
+              "$wheel_python" tests/python_compute_contracts.py --wheel build/ci/ci-wheels/*.whl --browser --out build/ci/python-compute-browser
+              "$wheel_python" tests/rendered_cache_contracts.py --binary "$native_binary" --nginx /usr/sbin/nginx --browser --out build/ci/rendered-cache
             fi
             "$wheel_python" -m pip uninstall -y rasterio numpy Pillow
             "$wheel_python" tests/verify-runtime-without-rasterio.py \
@@ -368,7 +380,13 @@ jobs:
           path: |
             build/ci/ci-wheel-smoke/
             build/ci/layer-contracts/
+            build/ci/catalog-contracts/
+            build/ci/native-services/
+            build/ci/python-compute/
+            build/ci/python-compute-browser/
+            build/ci/native-services-browser/
             build/ci/request-cost/
+            build/ci/rendered-cache/
             build/ci/ci-stac/
             build/ci/ci-contracts/
             build/ci/ci-remote/

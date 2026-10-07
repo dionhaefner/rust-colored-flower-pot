@@ -12,7 +12,11 @@ from . import NativeApplication
 class Application:
     """Host a catalog location or local source configuration through WSGI."""
 
-    def __init__(self, database: str | None = None, settings=None):
+    def __init__(self, database: str | None = None, settings=None, *, application=None):
+        if application is not None:
+            self.database = database
+            self.native = application
+            return
         self.database = database or os.environ.get("TC_DRIVER_PATH")
         if not self.database:
             raise RuntimeError("WSGI adapter requires a source or TC_DRIVER_PATH")
@@ -45,7 +49,7 @@ class Application:
         body = (
             environ["wsgi.input"].read(min(length, 1024 * 1024 + 1)) if length else b""
         )
-        status, content_type, body, cacheable, extra_headers = self.native.request(
+        status, content_type, body, _cacheable, extra_headers = self.native.request(
             method, url, request_headers, body
         )
         phrase = (
@@ -54,11 +58,11 @@ class Application:
             else "Unknown"
         )
         headers = [("Content-Type", content_type), ("Content-Length", str(len(body)))]
+        if status == 304:
+            headers = [(k, v) for k, v in headers if k != "Content-Length"]
         if "Content-Length" in extra_headers:
             headers = [(k, v) for k, v in headers if k != "Content-Length"]
         headers.extend(extra_headers.items())
-        if cacheable:
-            headers.append(("Cache-Control", "no-cache"))
         start_response(f"{status} {phrase}", headers)
         return [body]
 

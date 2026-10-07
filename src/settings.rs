@@ -79,6 +79,7 @@ fn defaults_for(profile: crate::compatibility::CompatibilityProfile) -> Map<Stri
         ),
     );
     if !profile.is_terracotta() {
+        defaults.insert("PUBLIC_URL".into(), Value::String(String::new()));
         defaults.insert("REMOTE_SOURCE_CACHE_TTL_SECONDS".into(), 60.into());
     }
     defaults

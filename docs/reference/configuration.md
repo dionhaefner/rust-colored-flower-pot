@@ -32,6 +32,10 @@ it for warping. Supported names are `nearest`,
 `ALLOWED_ORIGINS_METADATA` and `ALLOWED_ORIGINS_TILES` govern separate HTTP groups.
 `MAX_POST_METADATA_KEYS` bounds bulk metadata selection.
 
+`HTTP_CACHE_PUBLIC` defaults to false. Set it to true only for anonymously
+published catalogs to permit shared caching. The [rendered caching guide](../how-to/rendered-caching.md)
+defines validators, revision-pinned URLs, access scopes and source freshness.
+
 `SQL_USER`/`SQL_PASSWORD` supersede the deprecated MySQL/PostgreSQL-specific
 aliases, which warn. Standard AWS metadata credentials and raster-specific
 `RASTER_AWS_*` settings have different consumers. The remote snapshot directory
@@ -130,3 +134,8 @@ Bundled runtimes carry a CA certificate file for verified HTTPS. Set
 `CURL_CA_BUNDLE` or the `CURL_CA_BUNDLE` entry in `TC_GDAL_OPTIONS` to use an
 operator-managed trust store. Explicit GDAL options take precedence over the
 bundled default. TLS verification remains enabled.
+
+Native-only `PUBLIC_URL` (environment `TC_PUBLIC_URL`) sets the absolute public
+HTTP(S) base for TileJSON, including any deployment prefix. It defaults to an
+empty string, which uses plain HTTP and `Host`. See
+[native map services](native-services.md) for proxy and socketless requests.

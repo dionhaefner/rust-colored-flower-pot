@@ -80,6 +80,7 @@ def range_server(paths, latency_ms):
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
+        disable_nagle_algorithm = True
 
         def log_message(self, *_args):
             pass

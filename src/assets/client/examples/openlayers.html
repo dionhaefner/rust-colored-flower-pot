@@ -28,7 +28,10 @@
     <script src="/vendor/ol.js"></script>
     <script type="module">
       import { Client, LatestRequest } from "/sdk/index.js";
-      import { openLayersSource } from "/sdk/integrations.js";
+      import {
+        openLayersSource,
+        openLayersTileJSONSource,
+      } from "/sdk/integrations.js";
       const client = new Client(document.body.dataset.service, {
         profile: document.body.dataset.profile,
       });
@@ -45,16 +48,30 @@
         if (tileLayer) map.removeLayer(tileLayer);
         try {
           const layer = layers.find((row) => row.id === select.value);
-          const metadata = await latest.run((signal) =>
-            client.metadata(layer.keys, { signal }),
-          );
+          const tilejson =
+            client.profile === "native"
+              ? await latest.run((signal) =>
+                  client.tileJSON(
+                    layer.keys,
+                    { stretch_range: [0, 3000] },
+                    { signal },
+                  ),
+                )
+              : null;
+          const metadata =
+            tilejson ??
+            (await latest.run((signal) =>
+              client.metadata(layer.keys, { signal }),
+            ));
           const render = {
             mode: "singleband",
             keys: layer.keys,
             params: { stretch_range: [0, 3000] },
           };
           tileLayer = new ol.layer.Tile({
-            source: openLayersSource(ol, client, render),
+            source: tilejson
+              ? openLayersTileJSONSource(ol, tilejson)
+              : openLayersSource(ol, client, render),
           });
           map.addLayer(tileLayer);
           map
@@ -74,7 +91,9 @@
       }
       try {
         await client.connect();
-        ({ layers } = await client.discover());
+        if (client.profile === "native")
+          ({ tilesets: layers } = await client.discoverTilesets());
+        else ({ layers } = await client.discover());
         for (const layer of layers) {
           const option = document.createElement("option");
           option.value = layer.id;

@@ -14,6 +14,7 @@ use std::time::{Instant, SystemTime};
 mod fast;
 pub(crate) use fast::SharedBlocks;
 mod assets;
+mod diagnostics;
 mod metadata;
 mod native;
 mod optimize;

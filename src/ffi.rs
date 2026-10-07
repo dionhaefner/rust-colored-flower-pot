@@ -355,3 +355,34 @@ pub unsafe extern "C" fn tc_raster_free(raster: *mut TcRaster) {
         drop(unsafe { CString::from_raw(raster.error) });
     }
 }
+
+/// Transfer compute inputs or render a scalar output through a Python-owned application.
+/// # Safety
+/// Session and NUL-terminated request remain live during the call. Body points to
+/// body_len readable bytes, or is null for zero length. Free the response once.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn tc_session_compute(
+    session: *const crate::python::Session,
+    request: *const c_char,
+    body: *const u8,
+    body_len: usize,
+) -> *mut TcResponse {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if session.is_null() || (body_len != 0 && body.is_null()) {
+            return Err("null compute pointer".into());
+        }
+        if body_len > 9 * 1024 * 1024 {
+            return Err("compute buffer exceeds 9 MiB".into());
+        }
+        let request =
+            serde_json::from_str(&c_string(request, "request")?).map_err(|e| e.to_string())?;
+        let body = if body_len == 0 {
+            &[]
+        } else {
+            unsafe { std::slice::from_raw_parts(body, body_len) }
+        };
+        unsafe { &*session }.compute_binary(&request, body)
+    }))
+    .unwrap_or_else(|_| Err("native compute boundary panic".into()));
+    response_pointer(result)
+}

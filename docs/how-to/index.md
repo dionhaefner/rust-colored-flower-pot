@@ -8,12 +8,16 @@ through [your first map](../tutorials/first-map.md) first.
 
 install
 upgrade-terracotta
+evaluate
 ../compatibility
 ../native-migration
 ingest
 stac
+mosaics
+python-compute
 optimize
 configure
+diagnostics
 categorical
 palettes
 color-transforms
@@ -21,9 +25,11 @@ wsgi
 container
 lambda
 demo
+cloud-test
 remote-data
 backup-migrate
 resources
+rendered-caching
 release-sdk
 troubleshoot
 ```

@@ -464,9 +464,12 @@ impl Coordinates {
                 transform: g.symbol(b"OCTTransform\0")?,
                 transform_bounds: g.symbol(b"OCTTransformBounds\0")?,
             };
-            result.source = new(projection);
+            result.source = new(ptr::null());
             result.target = new(ptr::null());
-            if result.source.is_null() || result.target.is_null() || set(result.target, target) != 0
+            if result.source.is_null()
+                || result.target.is_null()
+                || set(result.source, projection) != 0
+                || set(result.target, target) != 0
             {
                 return Err("invalid coordinate system".into());
             }
@@ -479,7 +482,7 @@ impl Coordinates {
             Ok(result)
         }
     }
-    fn point(&self, p: [f64; 2]) -> Result<[f64; 2]> {
+    pub(super) fn point(&self, p: [f64; 2]) -> Result<[f64; 2]> {
         let [mut x, mut y] = p;
         if unsafe { (self.transform)(self.handle, 1, &mut x, &mut y, ptr::null_mut()) } == 0 {
             return Err("coordinate transformation failed".into());

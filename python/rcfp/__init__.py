@@ -382,3 +382,7 @@ if compatibility_profile == "terracotta-0.10.1":
 from .layers import LayerApplication, LayerStore, inspect_asset
 
 __all__ += ["LayerApplication", "LayerStore", "inspect_asset"]
+
+from .compute import ComputeApplication, ComputeContext
+
+__all__ += ["ComputeApplication", "ComputeContext"]

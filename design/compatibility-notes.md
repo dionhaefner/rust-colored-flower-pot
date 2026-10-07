@@ -212,6 +212,15 @@ Native CLI SIGINT/SIGTERM/SIGHUP and Windows console interrupts close HTTP
 admission and drain owned workers. Embedded application ownership retains
 host-controlled process signals. Forceful termination remains OS-owned.
 
+## Native rendered delivery
+
+Native retrievals use shared ETags and revalidation. Revision-pinned rendered
+URLs are immutable only after the origin verifies the requested digest; mismatch
+and source-change errors are no-store. Publication is private by default, and
+authorization/cookie requests bypass downstream storage. The named Terracotta
+profile retains its original no-cache headers and conditional behavior. See
+[rendered caching](rendered-caching.md) for freshness and access-scope boundaries.
+
 ## Native database-backed layers
 
 The `rcfp-native-2` SQLite format preserves the ordered-key contract while
@@ -240,4 +249,19 @@ key percent-decoding so literal encoded slashes, plus and percent survive as
 individual key values. Raster and metadata response shapes remain unchanged.
 The browser SDK starts with existing key-catalog rendering/time contracts;
 registered native layers expose their existing definition/default image APIs.
-Display inspection does not imply a raw source-value point-query contract.
+Native `/point/{id}` provides a separate source-cell contract. Native TileJSON
+and explicit matrix routes are fenced from the named compatibility profile.
+They do not modify its XYZ grid, wrapping, empty-tile or image semantics.
+
+## Python-hosted computed layers
+
+`ComputeApplication` requires native mode and a native layer catalog with explicit
+observations. It does not alter standalone native or Terracotta callback support.
+Scalar output shares native singleband normalization/palettes/encoding; its stretch
+is numeric because no callback-wide percentile metadata exists. Inputs retain
+GDAL's source-band sampling precision before binary f64 transfer, with calibration
+applied afterward. Independent validity masks are supplied without per-band
+compositing. Registered discovery entries precede the native catalog group;
+filtering/ordering stays within each group and native catalog paging is retained.
+See [the host contract](../docs/how-to/python-compute.md) for revisions, arrays,
+request deadlines and shutdown. Existing byte-only APIs keep lazy NumPy imports.

@@ -37,7 +37,13 @@ def python_reference(profile):
         objects.update(
             {
                 name: getattr(rcfp, name)
-                for name in ("LayerStore", "LayerApplication", "inspect_asset")
+                for name in (
+                    "LayerStore",
+                    "LayerApplication",
+                    "inspect_asset",
+                    "ComputeApplication",
+                    "ComputeContext",
+                )
             }
         )
     if profile == "native":
@@ -142,6 +148,8 @@ def snapshots():
             "main",
             "serve",
             "ingest",
+            "inspect",
+            "sample",
             "optimize-rasters",
             "connect",
             "migrate",

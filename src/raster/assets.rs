@@ -138,6 +138,7 @@ impl Gdal {
                 return Err("asset has no raster bands".into());
             }
             Ok(AssetMetadata {
+                generation: None,
                 crs,
                 size: [height, width],
                 transform,
@@ -351,6 +352,71 @@ impl Gdal {
         )
     }
 
+    fn read_asset_point(
+        &self,
+        source: DatasetHandle,
+        band: usize,
+        point: [f64; 2],
+    ) -> Result<Raster> {
+        unsafe {
+            let projection: unsafe extern "C" fn(DatasetHandle) -> *const c_char =
+                self.symbol(b"GDALGetProjectionRef\0")?;
+            let coordinates = Coordinates::new_to(self, c"EPSG:4326".as_ptr(), projection(source))?;
+            let [x, y] = coordinates.point(point)?;
+            let mut affine = [0.; 6];
+            if (self.geo_transform)(source, affine.as_mut_ptr()) != 0 {
+                return Err("point inspection requires an affine source".into());
+            }
+            let determinant = affine[1] * affine[5] - affine[2] * affine[4];
+            if determinant == 0. || !determinant.is_finite() {
+                return Err("source has an invalid affine transform".into());
+            }
+            let cell = |a: f64, b: f64| {
+                let coordinate = (a * (x - affine[0]) - b * (y - affine[3])) / determinant;
+                let tolerance = 8.
+                    * f64::EPSILON
+                    * (a.abs() * (x.abs() + affine[0].abs())
+                        + b.abs() * (y.abs() + affine[3].abs()))
+                    / determinant.abs();
+                // Affine subtraction can place an exact cell edge just below its integer.
+                let integer = coordinate.round();
+                if (coordinate - integer).abs() <= tolerance {
+                    integer
+                } else {
+                    coordinate.floor()
+                }
+            };
+            let column = cell(affine[5], affine[2]);
+            let row = cell(-affine[4], -affine[1]);
+            if !column.is_finite()
+                || !row.is_finite()
+                || column < 0.
+                || row < 0.
+                || column >= (self.raster_x_size)(source) as f64
+                || row >= (self.raster_y_size)(source) as f64
+            {
+                return Ok(Raster {
+                    data_type: 7,
+                    width: 1,
+                    height: 1,
+                    values: vec![f64::NAN],
+                    mask: vec![true],
+                });
+            }
+            let (_selected, covered) = self.select_asset_band(source, band)?;
+            let mut sample = self.native_samples(
+                covered.handle,
+                1,
+                [column, row, 1., 1.],
+                [1, 1],
+                GRIORA_NEAREST,
+                true,
+            )?;
+            sample.data_type = (self.band_data_type)((self.raster_band)(source, band as c_int));
+            Ok(sample)
+        }
+    }
+
     pub(super) fn read_asset_grid(
         &self,
         source: DatasetHandle,
@@ -358,6 +424,9 @@ impl Gdal {
         grid: GridRead,
     ) -> Result<Raster> {
         crate::layers::require_native()?;
+        if let Some(point) = grid.point {
+            return self.read_asset_point(source, request.band, point.map(f64::from_bits));
+        }
         let bounds = request
             .bounds_mercator
             .ok_or("native asset read requires explicit grid bounds")?;

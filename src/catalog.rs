@@ -11,6 +11,7 @@ use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, sync::Arc};
 
 pub(crate) mod dataset;
 pub(crate) mod plan;
+mod point;
 mod source;
 mod write;
 use dataset::Definition;
@@ -418,6 +419,19 @@ pub(crate) struct Source {
     bounds: Option<[f64; 4]>,
 }
 impl Source {
+    pub(crate) fn remote(&self) -> bool {
+        match &self.plan {
+            Some(Plan::Band { asset, .. }) => crate::execution::is_remote(&asset.location),
+            Some(Plan::Expression { bindings, .. }) => bindings.values().any(Self::remote),
+            Some(Plan::Layer { layer, .. }) => layer
+                .observations
+                .iter()
+                .flat_map(|o| o.assets.values())
+                .any(|a| crate::execution::is_remote(&a.location)),
+            None => crate::execution::is_remote(&self.path),
+        }
+    }
+
     pub fn validate(&self, band: usize) -> Result<()> {
         if self.mapped() && band != 1 {
             return Err(
@@ -437,7 +451,7 @@ impl Source {
                 band,
                 values,
             }) => {
-                json!({"asset":asset,"band":band,"values":values,"generation":crate::execution::source_generation(&asset.location)})
+                json!({"asset":asset.identity(),"band":band,"values":values,"generation":crate::execution::source_generation(&asset.location)})
             }
             Some(Plan::Expression {
                 expression,
@@ -446,7 +460,7 @@ impl Source {
                 json!({"expression":expression,"bindings":bindings.iter().map(|(k,v)|(k,v.identity())).collect::<BTreeMap<_,_>>()})
             }
             Some(Plan::Layer { layer, spec }) => {
-                json!({"layer":layer,"spec":spec,"generations":layer.observations.iter().flat_map(|o|o.assets.values()).map(|a|crate::execution::source_generation(&a.location)).collect::<Vec<_>>()})
+                json!({"layer":layer.identity(),"spec":spec,"generations":layer.observations.iter().flat_map(|o|o.assets.values()).map(|a|crate::execution::source_generation(&a.location)).collect::<Vec<_>>()})
             }
             None => {
                 json!({"path":self.path,"generation":crate::execution::source_generation(&self.path)})

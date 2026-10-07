@@ -5,6 +5,8 @@ WORKDIR /workspace
 COPY Cargo.toml Cargo.lock rust-toolchain.toml pyproject.toml ./
 COPY src ./src
 COPY js ./js
+COPY docs/examples/data ./docs/examples/data
+COPY docs/examples/create_catalog.py ./docs/examples/create_catalog.py
 COPY tests ./tests
 COPY python ./python
 COPY packaging ./packaging

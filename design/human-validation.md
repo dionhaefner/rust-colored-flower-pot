@@ -1,5 +1,12 @@
 # Validation handoff
 
+The [application validation plan](adoption.md#executed-repository-evidence)
+records fresh automated migration, upgrade/restore, mosaic, scientific-grid,
+first-use and corpus qualification from 2026-10-07. Independent application
+integration, production cost/latency, continued usage and consented case studies
+are post-release follow-up observations to collect as applications adopt RCFP.
+They remain unqualified and are not release acceptance criteria.
+
 This document records completed local checks, raster correctness results,
 and the remaining platform, service, release, and conditional support
 qualification. Earlier local evidence was collected on **2026-10-05**, with the additional
@@ -765,10 +772,60 @@ The frozen snapshot passes **54 Rust unit tests**, with two fixture-dependent
 tests explicitly ignored, release Clippy with warnings denied, and formatting.
 Python benchmark helpers pass Ruff. The TIFF decoder, selection rules and default
 setting are unchanged. Explicit JSON/Prometheus counters and benchmark usage
-gates are the production/test additions. Reports, commands, input recipes, source
+gates are the production/test additions. Strict Sphinx and **5,240 local links
+across 55 pages** pass for the documentation. Reports, commands, input recipes, source
 identities and raw results are in ignored `build/async-tiff-active/`. The initial
 mostly-nodata imagery run and smoke timings are excluded; snapshot build/argument
 setup failures and sandbox socket failures remain separate from successful reruns.
+
+The HTTP origin in this matrix had Nagle enabled. A transport diagnostic on
+2026-10-07 changes only origin `TCP_NODELAY` and passes **24 services and 1,296
+responses** over three balanced paired trials of one-user singleband/RGB imagery.
+All **864 candidate reads use TIFF**, with zero GDAL fallback and identical decoded
+pixels across all four backend/origin variants. TIFF request counts and bytes
+remain identical. Disabling Nagle changes RGB first viewport from **501 to 177 ms**
+and median pan from **135 to 53 ms**; corresponding GDAL timings change from
+293 to 190 ms and 79 to 47 ms. This identifies a substantial origin transport
+contribution to the matrix's HTTP regressions. The maintained origin now disables
+Nagle. The diagnostic does not replace the full multi-user/elevation matrix or
+qualify WAN/S3; packet capture and the remaining request-strategy cost are not
+established. Evidence is retained in ignored `build/async-tiff-mechanism/`.
+
+## Experimental TIFF pipeline
+
+The isolated service snapshot in `build/async-tiff-pipeline/` evaluates concurrent
+windows, separate decode tasks and cross-window range merging on 2026-10-07.
+The timed executable SHA-256 is
+`c31b833ece9c2d8ed372ff0479eca32f016ff1215cf1de1da0ae428e1e6a49d6`.
+Production scheduling and defaults are unchanged.
+
+Three paired trials against the current TIFF adapter pass **108 services and
+13,608 responses**, with all **6,804 ordered pairs** matching exact pixels.
+Both sides perform **3,690 TIFF pixel reads and zero GDAL pixel reads**.
+Three paired trials against GDAL pass **54 services and 6,804 responses**, with
+all **3,402 ordered pairs** matching. The candidate uses TIFF for all 1,845 reads;
+the control uses GDAL for all 1,845 reads. Three clean rotated ablation trials
+pass **5,832 ordered candidate/control comparisons**. Overlapping remote I/O
+supplies most of the RGB navigation improvement; extra decode scheduling and
+range merging supply little additional benefit on these aligned inputs.
+
+Independent Rasterio/NumPy checks pass **2,214 images across 153 unique reference
+tiles** with exact masks and colors. Pinned qualification passes **328 window
+cases, 19 grid cases and eight fallbacks**, including concurrent output checks.
+The complete unit suite passes **62 tests**, with two fixture-dependent tests
+passing separately in that qualification. The merged-range test verifies slices
+and source-version failure propagation. Release warnings-as-errors Clippy and
+formatting pass. The [evaluation](async-tiff-evaluation.md#concurrent-service-tiff-pipeline-on-2026-10-07)
+records timing, resource regressions and scope limits.
+
+This qualifies the experiment's measured behavior, not a production scheduler
+change. Whole-service cancellation under saturation, larger decode workloads,
+WAN/S3, authenticated storage and other platforms remain unqualified.
+`summary.md`, JSON reports, source changes, the frozen executable and separately
+labeled source hashes are retained in that ignored directory. Initial test setup
+and lint failures, exploratory timings and an ablation trial that overlapped oracle
+calculation remain separate from the successful runs. The contaminated ablation
+trial is excluded and replaced with a clean trial.
 
 ## Lambda demo preparation
 
@@ -800,3 +857,386 @@ The demo workflow prepares the image/emulator checks without AWS credentials.
 CloudFormation deployment/removal helpers have not been run against an account.
 No resources were provisioned or published. Fresh image and real-service checks
 are required before calling the demo qualified or drawing cloud latency claims.
+
+## Native keyed catalog qualification on 2026-10-07
+
+The `rcfp-native-2` catalog stores logical band bindings, expressions, display
+defaults and resolved STAC selections in SQLite. Separate files, packed TIFFs,
+direct STAC and database snapshots share keyed discovery, metadata, array and
+tile APIs. The advanced `rcfp-native-1` layer interface remains supported and
+also projects its channels into keyed discovery. Native keyed writes require
+local SQLite; original Terracotta catalogs retain their format.
+
+The frozen executable SHA-256 is
+`11b0994278452b9ba71273f4fb62da513bb44312eb4a78a48db674e91ed292aa`;
+the core library SHA-256 is
+`b041f1d15f1e0ca3236c0b3a197edc5823c6e5c11ba1e849b38e60237ea0195e`.
+The installed CPython 3.12 Linux x86_64 wheel contains these exact binaries.
+Its SHA-256 is
+`9932d94d929f5abf30fd92edd8884e10e20b8fa5d90b4e751e982e9b564cee3a`.
+Artifact identities and reports are in ignored `build/catalog-reuse/verification.json`.
+
+All **274 contract checks** pass against those artifacts. They include **23
+keyed catalog cases across six source layouts**, **51 advanced layer cases**,
+**30 STAC serving cases including Chromium**, **25 STAC selection cases**, and
+the public, compatibility, profile and cache suites. Both pinned Terracotta
+differential profiles pass **26 cases** each. Keyed cases use checksum-pinned
+Sentinel crops and independent Rasterio/NumPy references for selected metadata,
+calibration, masks, decoded images, integer overflow, and chained integer,
+boolean and float16 expressions. They also exercise WSGI/Lambda, persisted
+defaults, atomic rollback, cache invalidation and serving after the source
+metadata documents are removed. Raster bytes remain external to the database.
+
+Rust passes **54 unit tests**. Two TIFF tests requiring the separately prepared
+fixture matrix remain explicitly ignored. Clippy with warnings denied, Rust
+formatting and Ruff pass. Strict Sphinx builds **55 pages** and checks **5,240
+local links**. Executable documentation examples pass, including native HTTP,
+WSGI, Lambda and the upstream catalog read/write and migration roundtrip.
+Source archive/wheel boundaries and Hatch VCS versioning pass. The wheel
+workflow includes the keyed suite in its CPython 3.12 platform cells; this is
+prepared CI, rather than evidence of execution on additional platforms.
+
+Earlier debug wheels and superseded runs are excluded from this qualification.
+Hosted providers, cloud credential-chain integration, deployment, WAN performance
+and other operating systems/architectures remain unexecuted for this snapshot.
+No new navigation performance claim is made. Derived statistics remain sampled
+preview statistics, and their extent polygon is not an exact valid-data hull.
+
+## Disposable cloud host preparation
+
+`packaging/cloud-test/` defines separate CloudFormation storage and host stacks,
+with Ubuntu 24.04, an on-demand C7i instance, restricted HTTP ingress, SSM access
+and instance-role S3 permissions. The CLI prepares complete native bundles and
+copies precomputed Terracotta-format SQLite catalogs into deployment artifacts.
+Self-contained local TIFFs become digest-addressed S3 objects; original catalogs
+are preserved. Stored native bindings and STAC source catalogs need separate
+staging. A guest timer uses an absolute deadline, attempts report collection and
+terminates the host; retained storage has explicit removal commands.
+
+All **12 credential-free checks** pass against the native executable with SHA-256
+`11b0994278452b9ba71273f4fb62da513bb44312eb4a78a48db674e91ed292aa`.
+They cover catalog copying, bundle extraction, HTTP viewport requests, exact
+independent preview pixels, Chromium first view/pan/zoom/revisit and simulated
+provisioning, archive, command and collection failures. Expired-host report
+retrieval and missing-report failures are separate cases. Invalid image and
+reference controls fail as intended. Initial browser harness failures remain
+separate from final passes. Reports are in ignored `build/cloud-test-validation/`.
+
+cfn-lint 1.40.4 validates both templates. Bootstrap shell syntax, the UTC calendar
+expression, Ruff and formatting pass. Strict Sphinx builds **56 HTML pages** and
+checks **5,396 local links**. Source archive/wheel boundaries and Hatch VCS
+requirements pass. The qualification workflow builds and retains a native
+bundle without AWS credentials; prepared CI is not evidence of execution.
+
+AWS pricing/image lookups, stack provisioning/removal, SSM connectivity, private
+S3 reads through instance credentials and scheduled termination remain
+unexecuted. Docker is unavailable locally, so the AL2023 build in the workflow
+has not run here. Local runtime checks use loopback HTTP on the native host and
+do not qualify the Ubuntu AMI, WAN latency or EC2 performance. No cloud resources
+were provisioned. The operator procedure is in
+[cloud test guidance](../docs/how-to/cloud-test.md).
+
+## Native discovery, point values and explicit grids
+
+Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
+wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
+Its SHA-256 is
+`4c722efb6a2b6c7e6083f289b88e5ec0e764995d937068afa04dc4cd55bf4196`;
+the bundled executable is
+`319e64822bc93daef6a0708f90bdd0dfc4cef21e8fc08ddaa001cf2c03c5eabd`
+and shared core is
+`a6cd21165b47950f126379e14870d50ddc22abb5072ef9c9fb5f615c53149903`.
+
+All **55 native service cases** pass. Source points match independent Rasterio
+reads for physical bands, calibration/units, rotated affines, fractional alpha,
+nonfinite samples, typed expressions, out-of-source coordinates and half-open
+cell boundaries. Discovery covers SQL, keyed native, STAC and advanced-layer
+projections across Python, WSGI and Lambda, including slash-containing keys and
+deployment prefixes. TileJSON bounds, attribution, zooms, defaults and style
+parameters are checked against stored declarations.
+
+Independent nearest-neighbor reprojection checks exact decoded pixels and masks
+for Mercator, geographic, Arctic and southern stereographic grids, including
+source windows on both sides of the dateline. Cache reuse, matrix separation
+and conditional/pinned image responses pass. The four matrix descriptors also
+validate against downloaded official OGC TMS 2.0 schemas, whose hashes are
+retained with the local report. OpenLayers completes visible geographic/polar
+renders using grids constructed from those descriptors. The separate browser
+suite passes **37 checks**, including Leaflet, MapLibre and OpenLayers consuming
+the native TileJSON manifests and the existing named-profile examples.
+
+The same frozen artifacts pass **23 keyed catalog cases**, **51 advanced-layer
+cases**, **53 public contract cases** and the **26-case pinned Terracotta HTTP
+differential** in the named profile. Rust passes **61 tests**; two fixture-dependent
+TIFF tests and one image timing benchmark remain explicitly ignored. Clippy with
+warnings denied, Rust formatting, Ruff, SDK contracts and TypeScript checks pass.
+Strict Sphinx builds **61 pages**, checks **6,058 local links**, and executable
+documentation examples pass against the installed wheel. Archive checks preserve
+Hatch VCS versioning and exclude developer context. Reports and initial failed or
+superseded runs are retained separately in ignored `build/native-services/`.
+
+Qualification covers the pinned windows and declared sampling policies. The
+southern polar view uses a source near 34°S, rather than an Antarctic acquisition.
+Hosted deployments, remote providers, WAN behavior and other platforms remain
+unexecuted. Prepared wheel CI is not execution evidence. TileJSON 3.0 and OGC
+matrix descriptors are the supported interfaces; WMTS and OGC API service
+conformance are not claimed.
+
+## Rendered publication and reuse
+
+Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
+wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
+Its SHA-256 is
+`85f74eeaae63c265b5a34798c0c67c393679570f0e11d79670ebc2649fd61d72`;
+the executable is
+`f8be8738fda624cbdeec960ec857e050bd69f9047136da7de9d149af99ef7322`
+and shared core is
+`8c725d19e8a63e61a5dd07849497b974a4de01e6efa6d89ce0fba75f0ee3e8b1`.
+
+All **101 delivery checks** pass across Python, WSGI, native HTTP and Lambda
+events. They cover identical validators, strong/weak conditions, HEAD, CORS,
+private/public publication, authorization/cookie isolation, empty images,
+errors, style/grid/encoding changes and catalog/source invalidation. A source
+write preserving both file size and modification time rejects the old pinned
+identity. Compute and registered-layer cache hits avoid raster submissions.
+Native matrix tiles receive the same conditional and revision policy. The named
+Terracotta profile retains its headers and ignores conditional requests.
+Independent Rasterio/NumPy expectations verify decoded pixels. nginx 1.28.3
+serves the documented configuration, and Chromium loads the downloadable example
+with exact canvas pixels and a retained screenshot.
+
+The runner records **30 measurement cells** across three alternating paired
+nine-tile viewport trials. The source derivative retains checksum-pinned real
+Sentinel pixels with explicit Mercator geometry. With zero encoded retention,
+median first/revisit/conditional times are 37.81/7.36/6.36 ms, with nine raster
+jobs at each stage. With 4 MiB retention they are 37.06/5.13/3.05 ms, with
+nine/zero/zero jobs and 521,324 accounted retained bytes. Each image viewport
+transfers 245,731 payload bytes; conditional responses transfer zero. End-stage
+origin RSS spans approximately 71–76 MB and is not a peak-memory measurement.
+Eight simultaneous identical requests produce one raster job and seven
+coalesced followers at both budgets in every trial. Pinned nginx revisits hit
+the proxy cache without origin requests, while authorization/cookie requests
+bypass it. These loopback measurements qualify this workload only.
+
+The same frozen artifacts pass **53 public contracts**, **14 compatibility
+contracts**, **51 advanced-layer cases**, **25 STAC cases** and **seven cache
+freshness cases**. Both HTTP profiles pass the **26-case pinned Terracotta
+differential**. Rust passes **61 tests**; the ordinary run separately ignores
+two fixture-dependent TIFF tests and one image timing benchmark. The dedicated
+TIFF runner passes 328 windows, 19 grids and eight fallback cases. Clippy with
+warnings denied, Rust formatting, Ruff, workflow lint and archive checks pass.
+Strict Sphinx builds **61 pages** and checks **6,061 local links**. Archives
+preserve Hatch VCS requirements and exclude developer context.
+
+Reports, artifact/source hashes, superseded runs and initial failed setup or
+regression checks are retained separately in ignored `build/rendered-caching/`.
+The Linux wheel workflow now includes nginx/Chromium delivery checks; prepared
+CI is not evidence of hosted execution. Other platforms, hosted Lambda runtime,
+cloud/CDN/WAN behavior and authenticated remote providers remain unexecuted.
+Unversioned remote freshness retains the documented TTL boundary. The origin
+revision guard does not archive old sources or purge external immutable caches.
+
+## Installed diagnostics and offline first use
+
+The repaired Linux x86_64 wheel passes **19 diagnostic contracts**, with zero
+failures, errors or skips. Checks cover read-only catalogs, selected physical
+bands, configuration origins and redaction, ingestion destinations and key order,
+layout warnings, HTTP range/access failures and bounded native/network probes.
+The wheel SHA-256 is
+`19e776214299b4245dd1ea497b80d34fbcc61a95c04dd093f0bd1767e7894841`.
+Its executable and core match the frozen bundle byte for byte.
+
+An automated first-use trial runs outside the checkout, exports the supplied
+checksum-pinned real imagery, creates a catalog, serves a preview and displays
+the map in Chromium with **zero external requests**. Decoded preview pixels
+equal the pinned independent Terracotta reference. The recorded trial takes
+**1.473 seconds** and reports the sample's missing overviews and full-width
+strips as nonblocking warnings. This is automated independent-reference evidence;
+no human-participant usability trial has been performed. A separate environment
+containing only the installed wheel and NumPy also creates the catalog and exact
+reference preview, without Rasterio, Pillow or browser-test dependencies.
+
+The frozen artifacts also pass **53 public contracts** and **18 profile
+contracts**. Rust passes **61 tests**, with two fixture-dependent TIFF tests and
+one image timing benchmark separately ignored. Clippy with warnings denied,
+changed-file formatting, Ruff, workflow lint, installed reference extraction and
+archive checks pass. Strict Sphinx builds **61 pages** and checks **6,061 local
+links**. Source/wheel checks preserve Hatch VCS requirements and exclude developer
+context. Diagnostic/browser checks are prepared in the docs and wheel workflows;
+this is not evidence of hosted CI execution.
+
+Artifact hashes, reports, the browser screenshot, minimal-dependency checks and
+superseded failures are retained separately in ignored `build/first-use/`.
+Additional platforms/Python versions, private-provider IAM access, hosted CI and
+Docker/Lambda image execution remain unexecuted; Docker is unavailable locally.
+
+An additional independent AI-user trial uses a subagent with no conversation
+history, an empty working/home directory, a fresh Python environment, the same
+repaired wheel and only public HTML documentation. The application is installed
+offline with NumPy as its only dependency; browser tooling is isolated separately.
+The participant does not consult source, maintained tests, prior reports or
+design context. Installation finishes at **27.7 seconds**, a useful image is
+produced at **40.2 seconds**, and a useful selected browser map is visually
+inspected at **162.2 seconds**. Overall time including evidence preparation is
+**374.2 seconds**. Grayscale/RGB rendering, center inspection and share restoration
+work. This is an independent AI-user trial, not a human-participant trial or a
+performance benchmark.
+
+The participant records a basic first-use pass with obstacles. Loopback sandbox
+permissions and headless browser launch require environment workarounds. The
+viewer makes zero external request attempts, but the separate API-docs page
+attempts two blocked decorative assets from Google Fonts and the Redoc CDN.
+One RGB zoom after share restoration returns six HTTP 503 tile responses and
+leaves visible gaps. The trial preserves this failure without server tuning or
+root-cause investigation; it does not qualify zoom reliability. Independent
+reports, commands, request logs and success/failure screenshots are retained in
+ignored `build/first-use/independent-agent/`.
+
+## Offline map interaction qualification
+
+The current Leaflet adapter shares three tile requests across view changes,
+drops removed queued tiles and bounds retries for busy responses. This keeps
+RGB viewport bursts within the default raster capacity without increasing
+server limits. The API-docs renderer uses local system fonts and a text footer
+label. Its native service description is corrected; the named compatibility
+profile retains its reference specification.
+
+The repaired Linux x86_64 wheel SHA-256 is
+`af1272e9bcb7b8ad139b0fc5d91eaaf84ba80191cb16e4cfd2bb0f758f9a93a3`.
+It passes **19 diagnostic**, **53 public-package**, **18 profile** and **37
+browser** checks. Both profiles pass **26 pinned reference comparisons** each.
+The SDK passes **13 tests**, including shared admission, busy-response retry,
+queued/active removal and permanent errors. Strict TypeScript compilation,
+Clippy with warnings denied, formatting, Ruff, installed reference extraction
+and archive checks pass. Strict Sphinx builds **65 pages** and checks **6,758
+local links**. The RGB regression waits for each zoom animation and successful
+decoding of every tile at default server settings. API-docs monitoring includes
+requests blocked before routing by CSP and observes no external attempts.
+
+A further independent AI-user trial starts without conversation history, using
+only public documentation, a fresh home/working directory and the supplied raw
+Linux wheel. Its executable and core match the final repaired installed wheel
+byte for byte. Installation completes at **30.8 seconds**, a useful PNG is
+created at **36.4 seconds**, and the documented selected browser map is captured
+at **152.0 seconds**. Overall time including evidence preparation is **301.7
+seconds**. Grayscale/RGB, share restoration in a fresh browser context, ordinary
+zoom, center inspection, API docs and all three SDK examples pass visual
+inspection. All **405 observed HTTP responses** succeed, with **zero external
+request attempts** and no settled tile gaps. Six initial local requests are
+cancelled during reframing. Services are stopped and reaped. Minor friction is
+scrolling to share controls and the sandbox's initial loopback restriction.
+This is AI-user evidence, not a human usability study or performance benchmark.
+
+Reports, screenshots, commands, request events and artifact hashes are retained
+in ignored `build/first-use/offline-independent-agent/` and
+`build/first-use/offline-verification.json`. Earlier zoom failures and the
+CSP-only candidate's blocked logo requests remain separately recorded.
+Human participants, other platforms/browsers, hosted CI and cloud deployments
+remain unqualified by these checks.
+
+## Indexed virtual mosaics and broad-view snapshots
+
+Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
+wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
+Its SHA-256 is
+`90029b5a53fd8b38edb80723553c8dbfcfbf73ab0604565258d50dc9897e2d57`;
+the executable is
+`b88bceaf68d11329f44f07cc1913bf8c98cbaf9213d104c7d909ae96d7ce4e87`
+and shared Rust core is
+`b6e44780aa6853e9300ab58d2eb72ef20da8d7e8fee7b52948619985f758f8da`.
+Installed executable/core bytes match the frozen bundle. The Python extension
+matches the wheel, and the source archive retains the helper, runner, guide and
+Hatch VCS requirements.
+
+All **20 mosaic cases** pass. They cover indexed footprint and exact attribute
+selection, deterministic per-channel overlap and ownership, mixed CRS and grids,
+seams, masks/nodata, empty selections, source generation changes, and rejection
+of every budget before raster submissions. A 100-file collection exercises
+bounded window preparation. Independent Rasterio/NumPy expectations verify
+samples and decoded viewport pixels. Product checks verify expression evaluation
+before overlap and aggregation, reproducible output, parent/definition/output
+freshness, failed preparation cleanup, and explicit nearest category handling.
+The documented prepare/check/register/render CLI sequence also passes.
+
+Four requests per viewport select **1, 2, 1, 2** sources for detailed views and
+**1, 1, 1, 1** for broad products. Measured reader calls equal those plans: six
+and four. Local viewport completion is **24.52/9.01 ms** for detailed/broad
+views, with sampled peak service RSS of **63.14/63.75 MB**. An instrumented
+loopback range origin with 2 ms request delay records **33.33/17.84 ms**,
+**120,184/7,240 source bytes**, and **67.20/67.47 MB** sampled peak RSS.
+All 16 responses are HTTP 200. Reports retain HEAD/GET/range counts, response
+bytes, source-byte estimates and backend counters. These are observations from
+one workload with two workers, disabled sample/render retention, a shared
+service and warm filesystem; they are not comparative performance claims or
+hard RSS/network bounds. Broad products remain explicitly selected immutable
+layers with operator freshness checks and regeneration.
+
+The same artifacts pass **205 contract cases** in total: 20 mosaics, 51 advanced
+layers, 23 catalogs, 53 public contracts, 14 compatibility contracts, 26 pinned
+Terracotta differential cases and 18 profile cases. Rust passes **61 tests**;
+two fixture-dependent TIFF tests and one image timing benchmark are separately
+ignored. Clippy with warnings denied, changed-file Rust formatting, Ruff,
+archive checks and strict Sphinx pass. Sphinx builds **61 pages** and checks
+**6,061 local links**. The product scan only matches the intentional obsolete
+package exclusion assertion in the archive checker.
+
+Artifact and frozen-source hashes, report hashes, measurements, logs and
+superseded failures are recorded in ignored
+`build/mosaic-validation/verification.json`. The snapshot includes concurrent
+workspace changes present at capture; later unrelated changes are outside this
+artifact qualification, with a separate current-workspace all-target Cargo
+check passing. Input derivatives retain checksum-pinned real pixels with
+declared Mercator crops, decimation, masks and shifted placement. Reused date
+labels test selection, not acquisition history. This unrepaired local wheel does
+not qualify other platforms/Python versions, hosted CI, cloud/WAN access,
+physically cold storage or browser paint. Prepared Linux CI is not execution
+evidence.
+
+## Python-hosted scalar compute layers
+
+Local Linux x86_64 qualification on 2026-10-07 uses the repaired
+`cp312-abi3-manylinux_2_39_x86_64` wheel. Its SHA-256 is
+`36c07ac993c8030eec250da2d68b87e879d61db9909a6ac0bf63439c13aaf73a`.
+Independent installations pass **21 compute cases on CPython 3.12** and **20
+each on 3.13 and 3.14**. The additional 3.12 case displays discovered models
+through the regular viewer and existing Leaflet, MapLibre and OpenLayers clients.
+Browser execution is separately skipped on 3.13 and 3.14.
+
+The runner uses checksum-pinned real Sentinel pixels and records derivatives
+with calibration, independent validity, decimation and explicit Float64 casts.
+Independent Rasterio expectations verify aligned inputs and decoded model
+images. Cases cover coherent observation selection, physical band names,
+raw/scaled and categorical inputs, immutable context/buffer lifetime, malformed
+and nonfinite outputs, sanitized failures, parameters, source/model/dependency
+revisions, style-only reuse and independent bounded cache budgets. Loopback
+range-origin tests exercise unrevisioned remote retention and immutable
+revision-addressed inputs. Concurrent tests cover callback sharing, saturation,
+expired queued work, running deadlines, source mutation and graceful shutdown,
+including 503 responses for callers whose queued work is removed during close.
+Both a maintained WSGI host and the published satellite/weather host example
+serve concurrent requests using installed public APIs.
+
+Publication checks verify configured HTTPS/prefix URLs, invalid origins and Host
+headers, and forwarded-header isolation through the shared native URL builder.
+An installed host mounted at `/imagery` serves discovery, TileJSON and a visible
+tile by following the published URLs over loopback HTTP.
+
+The final wheel also passes **53 native public contracts**, **15 compatibility
+contracts**, **51 advanced-layer**, **54 native-service** and **26 pinned
+differential cases per profile**. Its byte-image API passes in a separate
+installation without NumPy, Rasterio or Pillow. Rust passes **61 tests**, with two
+fixture-dependent TIFF
+tests and one image timing benchmark separately ignored. Clippy with warnings
+denied, Rust formatting, Ruff, **13 SDK tests**, strict TypeScript compilation,
+installed reference extraction, wheel/archive checks and strict Sphinx pass.
+Sphinx builds **65 pages** and checks **6,759 local links**. The source archive
+preserves Hatch VCS configuration and the compute guide, example and runner.
+
+Reports, artifact/source hashes, screenshots, logs and separately retained
+superseded failures are in ignored `build/python-compute/`. This qualifies one
+local Linux platform and loopback origin. Other platforms, hosted CI, deployed
+hosts, WAN/provider freshness, GPU/subprocess/async callbacks and multiprocess
+cache sharing remain unexecuted. Spatial padding and multiple-observation
+compositing are outside the scalar contract. The example's weather formula
+illustrates integration and has no agronomic qualification. Prepared CI is not
+execution evidence.

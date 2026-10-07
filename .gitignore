@@ -248,6 +248,9 @@ rustc-ice-*.txt
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# VSCode
+.vscode/
+
 # RCFP local environments and generated documentation
 /.venv*/
 /docs/_generated/

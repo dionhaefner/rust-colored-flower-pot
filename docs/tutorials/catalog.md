@@ -5,7 +5,7 @@ installed environment and sample data as [your first map](first-map.md). Choose 
 new filename: the example refuses to replace an existing catalog.
 
 ```sh
-python docs/examples/create_catalog.py catalog.sqlite
+python sample/create_catalog.py catalog.sqlite
 ```
 
 Here is the script you just ran. The checksum check makes the sample reproducible;
@@ -15,7 +15,7 @@ Here is the script you just ran. The checksum check makes the sample reproducibl
 :language: python
 ```
 
-Open Python from the repository root:
+Open Python from the directory containing your catalog:
 
 ```python
 import json
@@ -35,10 +35,12 @@ The bounds are geographic coordinates even though the Sentinel sample is stored
 in UTM zone 32N. The discovery response lists the four lagoon bands and the
 WorldCover layer. Key values select records; they need not match filenames.
 
-Now create a backup with the supplied [SQLite backup script](../how-to/backup-migrate.md):
+If you also have a source checkout or archive, create a backup with its supplied
+[SQLite backup script](../how-to/backup-migrate.md). Run from that source root and
+replace the paths below with your catalog and backup locations:
 
 ```sh
-python docs/examples/backup_catalog.py catalog.sqlite catalog-backup.sqlite
+python docs/examples/backup_catalog.py /path/to/catalog.sqlite /path/to/catalog-backup.sqlite
 ```
 
 The backup remains a catalog, referring to the same raster locations. It is not

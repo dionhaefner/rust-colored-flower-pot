@@ -299,12 +299,13 @@ pub fn data_operation(request: &Value) -> Result<Value> {
             let spec =
                 serde_json::from_value(request["spec"].clone()).map_err(|e| e.to_string())?;
             let app = crate::http::Application::open(Path::new(path()?))?;
-            Ok(json!(
-                app.layer_samples(request["id"].as_str().ok_or("layer id required")?, &spec)?
-                    .iter()
-                    .map(|r| json!({"shape":[r.height,r.width],"values":r.values,"mask":r.mask}))
-                    .collect::<Vec<_>>()
-            ))
+            Ok(app
+                .layer_sample_result(
+                    request["id"].as_str().ok_or("layer id required")?,
+                    &spec,
+                    request["provenance"] == true,
+                )?
+                .json(request["provenance"] == true))
         }
         "layer_ids" => Ok(json!(
             crate::layers::catalog::Catalog::open(Path::new(path()?), false)?.ids()?

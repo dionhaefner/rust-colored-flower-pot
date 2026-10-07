@@ -45,6 +45,18 @@ jobs:
       - name: Prepare pinned reference release
         run: tests/reference/bootstrap.sh
 
+      - name: Verify public corpus and corruption controls
+        run: |
+          .venv-reference/bin/python tests/corpus_contracts.py --out build/ci/corpus
+          .venv-reference/bin/python -m unittest discover -s tests -p 'test_corpus_contracts.py'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: correctness-corpus
+          path: build/ci/corpus/
+          retention-days: 14
+
       - name: Compare HTTP and images
         run: |
           python tests/reference/differential.py \

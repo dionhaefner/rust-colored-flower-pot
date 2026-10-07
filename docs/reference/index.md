@@ -10,6 +10,7 @@ version in this site's title.
 cli
 configuration
 http
+native-services
 javascript
 python
 compatibility-python
