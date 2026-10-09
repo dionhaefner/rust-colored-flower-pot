@@ -586,46 +586,76 @@ pub(crate) fn store_operation(store: &Store, request: &Value) -> Result<Value> {
 pub fn layers_command(args: &[String]) -> Result<()> {
     use crate::layers::catalog::Catalog;
     match args {
-        [command,path] if command == "create" => { Catalog::create(Path::new(path))?; Ok(()) }
-        [command,path] if command == "list" => { println!("{}",json!(Catalog::open(Path::new(path),false)?.ids()?)); Ok(()) }
-        [command,path,id] if command == "describe" => { println!("{}",json!(Catalog::open(Path::new(path),false)?.get(id)?.ok_or("No layer found")?)); Ok(()) }
-        [command,path,id] if command == "delete" => Catalog::open(Path::new(path),true)?.delete(id),
-        [command,path,id] if command == "put" => {
+        [command, path] if command == "create" => {
+            Catalog::create(Path::new(path))?;
+            Ok(())
+        }
+        [command, path] if command == "list" => {
+            println!("{}", json!(Catalog::open(Path::new(path), false)?.ids()?));
+            Ok(())
+        }
+        [command, path, id] if command == "describe" => {
+            let layer = Catalog::open(Path::new(path), false)?.get(id)?.ok_or("No layer found")?;
+            println!("{}", json!(layer));
+            Ok(())
+        }
+        [command, path, id] if command == "delete" => {
+            Catalog::open(Path::new(path), true)?.delete(id)
+        }
+        [command, path, id] if command == "put" => {
             use std::io::Read;
-            let mut text = String::new(); std::io::stdin().take(1024*1024+1).read_to_string(&mut text).map_err(|e| e.to_string())?;
-            if text.len() > 1024*1024 { return Err("layer definition exceeds 1 MiB".into()); }
+            let mut text = String::new();
+            std::io::stdin().take(1024 * 1024 + 1).read_to_string(&mut text).map_err(|e| e.to_string())?;
+            if text.len() > 1024 * 1024 {
+                return Err("layer definition exceeds 1 MiB".into());
+            }
             let layer = serde_json::from_str(&text).map_err(|e| e.to_string())?;
-            Catalog::open(Path::new(path),true)?.put(id,layer)
+            Catalog::open(Path::new(path), true)?.put(id, layer)
         }
-        [command,path,id,raster,rest @ ..] if command == "register" => {
-            let mut bands = None; let mut stretch = None; let mut i = 0;
+        [command, path, id, raster, rest @ ..] if command == "register" => {
+            let mut bands = None;
+            let mut stretch = None;
+            let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
-                    "--bands" => bands = Some(next(rest,&mut i)?.split(',').map(|n| n.parse::<usize>().map_err(|_| "bands must be comma-separated integers".to_string())).collect::<Result<Vec<_>>>()?),
-                    "--stretch" => { let values = next(rest,&mut i)?.split(',').map(|n| n.parse::<f64>().map_err(|_| "stretch must be MIN,MAX".to_string())).collect::<Result<Vec<_>>>()?; stretch = Some(values.try_into().map_err(|_| "stretch must be MIN,MAX")?); }
+                    "--bands" => {
+                        bands = Some(next(rest, &mut i)?.split(',').map(|n| n.parse::<usize>().map_err(|_| "bands must be comma-separated integers".to_string())).collect::<Result<Vec<_>>>()?);
+                    }
+                    "--stretch" => {
+                        let values = next(rest, &mut i)?.split(',').map(|n| n.parse::<f64>().map_err(|_| "stretch must be MIN,MAX".to_string())).collect::<Result<Vec<_>>>()?;
+                        stretch = Some(values.try_into().map_err(|_| "stretch must be MIN,MAX")?);
+                    }
                     _ => return Err("unknown layer registration option".into()),
-                } i += 1;
+                }
+                i += 1;
             }
-            Catalog::open(Path::new(path),true)?.put(id,crate::layers::raster_layer(Path::new(raster),bands,stretch)?)
+            Catalog::open(Path::new(path), true)?.put(id, crate::layers::raster_layer(Path::new(raster), bands, stretch)?)
         }
-        [command,path,id,rest @ ..] if command == "render" => {
-            let layer = Catalog::open(Path::new(path),false)?.get(id)?.ok_or("No layer found")?;
-            let mut spec = layer.default_render.clone(); let mut output = None; let mut i = 0;
+        [command, path, id, rest @ ..] if command == "render" => {
+            let catalog = Catalog::open(Path::new(path), false)?;
+            let mut spec = None;
+            let mut output = None;
+            let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
-                    "-o" | "--output" => output = Some(next(rest,&mut i)?),
-                    "--spec" => spec = Some(serde_json::from_slice(&std::fs::read(next(rest,&mut i)?).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?),
+                    "-o" | "--output" => output = Some(next(rest, &mut i)?),
+                    "--spec" => {
+                        let bytes = std::fs::read(next(rest, &mut i)?).map_err(|e| e.to_string())?;
+                        spec = Some(serde_json::from_slice(&bytes).map_err(|e| e.to_string())?);
+                    }
                     _ => return Err("unknown layer render option".into()),
-                } i += 1;
+                }
+                i += 1;
             }
+            let (layer, spec) = catalog.for_render(id, spec)?.ok_or("No layer found")?;
             let executor = crate::execution::RasterExecutor::start(crate::execution::ExecutionConfig::from_env()?)?;
-            let bytes = layer.render(&executor,&spec.ok_or("layer has no default render; provide --spec")?)?;
-            std::fs::write(output.ok_or("layer render requires -o")?,bytes).map_err(|e| e.to_string())
+            let bytes = layer.render(&executor, &spec)?;
+            std::fs::write(output.ok_or("layer render requires -o")?, bytes).map_err(|e| e.to_string())
         }
-        [command,source,destination,id,bindings] if command == "import" => {
+        [command, source, destination, id, bindings] if command == "import" => {
             let bindings = serde_json::from_str(bindings).map_err(|e| e.to_string())?;
-            let layer = crate::layers::Layer::from_catalog(&mut Store::open(Path::new(source))?,&bindings)?;
-            Catalog::open(Path::new(destination),true)?.put(id,layer)
+            let layer = crate::layers::Layer::from_catalog(&mut Store::open(Path::new(source))?, &bindings)?;
+            Catalog::open(Path::new(destination), true)?.put(id, layer)
         }
         _ => Err("Usage: rcfp layers create|list DATABASE; describe|delete|put DATABASE ID; register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]; render DATABASE ID -o IMAGE [--spec SPEC]; import SOURCE DESTINATION ID BINDINGS_JSON".into()),
     }

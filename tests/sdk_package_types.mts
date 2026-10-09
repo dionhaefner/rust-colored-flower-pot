@@ -29,8 +29,19 @@ check(
   "MapLibre template differs",
 );
 check(
-  leafletLayer({ tileLayer: (url: string) => url }, client, render) ===
-    template,
+  leafletLayer(
+    {
+      tileLayer: (url: string) => ({
+        url,
+        on() {},
+        getTileUrl() {
+          return url;
+        },
+      }),
+    },
+    client,
+    render,
+  ).url === template,
   "Leaflet template differs",
 );
 class XYZ {

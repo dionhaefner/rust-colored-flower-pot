@@ -38,6 +38,10 @@ def stage(prefix: Path, runtime: Path) -> dict[str, Path]:
     lib_out.mkdir(parents=True, exist_ok=True)
     target = lib_out / selected.name
     shutil.copy2(selected.resolve(), target)
+    suffix = "*.dll" if sys.platform == "win32" else "*.dylib"
+    for library in sorted(libraries.glob(suffix)):
+        if "gdal" not in library.name.lower():
+            shutil.copy2(library.resolve(), lib_out / library.name)
 
     for name in ("gdal", "proj"):
         source = share / name

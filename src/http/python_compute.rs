@@ -160,7 +160,7 @@ impl Application {
     }
 
     pub(crate) fn compute_binary(&self, r: &Value, body: &[u8]) -> Result<AppResponse> {
-        let _permit = self.layer_permit()?;
+        let _permit = self.render_permit()?;
         crate::settings::scope(self.settings.clone(), || {
             crate::layers::require_native()?;
             match r["operation"].as_str() {

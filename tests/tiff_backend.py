@@ -421,7 +421,7 @@ def main():
             "--offline",
             "--release",
             "--lib",
-            "raster::tiff::tests",
+            "raster::",
             "--",
             "--include-ignored",
             "--test-threads=1",
@@ -441,6 +441,7 @@ def main():
         {
             "status": "passed" if result.returncode == 0 else "failed",
             "exit_code": result.returncode,
+            "rust_test_filter": "raster::",
             "windows": len(matrix["windows"]),
             "grids": len(matrix["grids"]),
             "fallbacks": len(matrix["fallbacks"]),

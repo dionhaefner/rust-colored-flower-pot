@@ -85,10 +85,7 @@ def main():
         path = source / name
         target = tests / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        if path.is_dir():
-            shutil.copytree(path, target)
-        else:
-            target.write_text(select_tests(path.read_text(), required))
+        target.write_text(select_tests(path.read_text(), required))
     for path in tests.rglob("*.py"):
         tokens = []
         for token in tokenize.generate_tokens(io.StringIO(path.read_text()).readline):

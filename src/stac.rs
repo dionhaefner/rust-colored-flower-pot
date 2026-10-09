@@ -181,7 +181,16 @@ pub struct Asset {
     #[serde(skip)]
     href: String,
 }
-pub use crate::catalog::plan::BandInfo as Band;
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Band {
+    pub band: usize,
+    pub name: Option<String>,
+    pub common_name: Option<String>,
+    pub scale: f64,
+    pub offset: f64,
+    pub nodata: serde_json::Value,
+}
+
 #[derive(Default, Serialize)]
 pub struct SelectionMetrics {
     pub pages: usize,

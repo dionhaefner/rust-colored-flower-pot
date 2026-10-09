@@ -152,15 +152,25 @@ class Native:
                 },
             },
         )
-        ready(self.base + "/keys", self.process)
+        try:
+            ready(self.base + "/keys", self.process)
+        except BaseException:
+            self.close()
+            raise
 
     def request(self, path):
         return fetch(self.base + path)
 
     def close(self):
-        self.process.terminate()
-        self.process.wait(timeout=10)
-        self.log.close()
+        try:
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.wait(timeout=5)
+        finally:
+            self.log.close()
 
 
 class PythonApplication:

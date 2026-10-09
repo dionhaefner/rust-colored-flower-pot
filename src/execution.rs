@@ -4,7 +4,6 @@ use crate::Result;
 use crate::raster::{Gdal, Raster, ReadRequest};
 use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
-use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
@@ -209,45 +208,15 @@ enum Work {
     Wake,
 }
 
-#[derive(Clone, Eq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 struct CacheKey {
     grid: Option<crate::layers::GridRead>,
     band: usize,
     path: String,
-    source_size: u64,
-    source_modified_ns: u128,
     generation: Vec<(u64, u128)>,
     bounds: Option<[u64; 4]>,
     size: [usize; 2],
     preserve_values: bool,
-}
-
-impl PartialEq for CacheKey {
-    fn eq(&self, other: &Self) -> bool {
-        self.grid == other.grid
-            && self.path == other.path
-            && self.band == other.band
-            && self.source_size == other.source_size
-            && self.source_modified_ns == other.source_modified_ns
-            && self.generation == other.generation
-            && self.bounds == other.bounds
-            && self.size == other.size
-            && self.preserve_values == other.preserve_values
-    }
-}
-
-impl Hash for CacheKey {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.grid.hash(state);
-        self.path.hash(state);
-        self.band.hash(state);
-        self.source_size.hash(state);
-        self.source_modified_ns.hash(state);
-        self.generation.hash(state);
-        self.bounds.hash(state);
-        self.size.hash(state);
-        self.preserve_values.hash(state);
-    }
 }
 
 struct CacheEntry {
@@ -454,7 +423,7 @@ impl NeighborQueue {
                 bounds_mercator: Some(crate::raster::mercator_tile_bounds(nx, ny, zoom)),
                 ..request
             };
-            let key = cache_key(path, shifted, false);
+            let key = cache_key(path, shifted);
             if cache.entries.contains_key(&key) || !self.keys.insert(key.clone()) {
                 continue;
             }
@@ -617,7 +586,7 @@ impl RasterExecutor {
             let remote = is_remote(&requests[0].0);
             let keys = requests
                 .iter()
-                .map(|(path, request)| cache_key(path, *request, remote))
+                .map(|(path, request)| cache_key(path, *request))
                 .collect::<Vec<_>>();
             let cached = {
                 let mut cache = self.cache.lock().expect("cache lock");
@@ -711,7 +680,7 @@ impl RasterExecutor {
 
     fn submit(&self, path: &Path, request: ReadRequest) -> Result<PendingRead> {
         let remote = is_remote(path);
-        let key = cache_key(path, request, remote);
+        let key = cache_key(path, request);
         let cached = self.cache.lock().expect("cache lock").get(&key);
         if let Some(raster) = cached {
             self.counters.cache_hits.fetch_add(1, Ordering::Relaxed);
@@ -847,11 +816,7 @@ fn worker_loop(
             if let Ok(rasters) = &result {
                 let mut cache = cache.lock().expect("cache lock");
                 for (request, raster) in job.requests.iter().zip(rasters) {
-                    cache.insert(
-                        cache_key(&job.path, *request, remote),
-                        raster.clone(),
-                        remote,
-                    );
+                    cache.insert(cache_key(&job.path, *request), raster.clone(), remote);
                 }
                 counters.completed.fetch_add(1, Ordering::Relaxed);
             } else {
@@ -870,7 +835,7 @@ fn worker_loop(
             }
             counters.begin();
             let remote = is_remote(&job.path);
-            let key = cache_key(&job.path, job.request, remote);
+            let key = cache_key(&job.path, job.request);
             let result = crate::telemetry::scope(job.context.clone(), || {
                 gdal.read(&job.path, job.request).map(Arc::new)
             });
@@ -918,7 +883,7 @@ fn worker_loop(
                     if std::env::var_os("TC_PREFETCH_TILE_RING").is_some() {
                         let candidate = neighbors.lock().expect("neighbor queue").pop();
                         if let Some(candidate) = candidate {
-                            if candidate.key == cache_key(&candidate.path, candidate.request, false)
+                            if candidate.key == cache_key(&candidate.path, candidate.request)
                                 && !cache
                                     .lock()
                                     .expect("cache lock")
@@ -962,28 +927,11 @@ fn worker_loop(
     }
 }
 
-fn cache_key(path: &Path, request: ReadRequest, remote: bool) -> CacheKey {
-    let (source_size, source_modified_ns) = if remote {
-        (0, 0)
-    } else {
-        std::fs::metadata(path)
-            .ok()
-            .map(|metadata| {
-                let modified = metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH);
-                let nanos = modified
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_nanos();
-                (metadata.len(), nanos)
-            })
-            .unwrap_or((0, 0))
-    };
+fn cache_key(path: &Path, request: ReadRequest) -> CacheKey {
     CacheKey {
         grid: request.grid,
         band: request.band,
         path: path.to_string_lossy().into_owned(),
-        source_size,
-        source_modified_ns,
         generation: source_generation(path),
         bounds: request
             .bounds_mercator
@@ -1093,7 +1041,6 @@ mod tests {
                     band,
                     ..ReadRequest::default()
                 },
-                false,
             );
             cache.insert(key.clone(), raster.clone(), false);
             keys.push(key);
@@ -1196,41 +1143,40 @@ mod tests {
             }),
             ..Default::default()
         };
-        let base = cache_key(path, request, false);
+        let base = cache_key(path, request);
         request.grid.as_mut().unwrap().epsg = 3857;
-        assert!(base != cache_key(path, request, false));
+        assert!(base != cache_key(path, request));
         request.grid.as_mut().unwrap().epsg = 32632;
         request.grid.as_mut().unwrap().resampling = Resampling::Bilinear;
-        assert!(base != cache_key(path, request, false));
+        assert!(base != cache_key(path, request));
         request.grid.as_mut().unwrap().resampling = Resampling::Nearest;
         request.grid.as_mut().unwrap().revision = [2; 32];
-        assert!(base != cache_key(path, request, false));
+        assert!(base != cache_key(path, request));
         request.grid.as_mut().unwrap().revision = [1; 32];
         request.grid.as_mut().unwrap().matrix =
             Some(crate::tile_matrix::TileMatrixSet::WebMercatorQuad);
-        assert!(base != cache_key(path, request, false));
+        assert!(base != cache_key(path, request));
         request.grid.as_mut().unwrap().matrix = None;
         request.grid.as_mut().unwrap().point = Some([12.0f64.to_bits(), 45.0f64.to_bits()]);
-        assert!(base != cache_key(path, request, false));
-        let point = cache_key(path, request, false);
+        assert!(base != cache_key(path, request));
+        let point = cache_key(path, request);
         request.grid.as_mut().unwrap().point = Some([13.0f64.to_bits(), 45.0f64.to_bits()]);
-        assert!(point != cache_key(path, request, false));
+        assert!(point != cache_key(path, request));
         request.grid = None;
-        assert!(base != cache_key(path, request, false));
+        assert!(base != cache_key(path, request));
     }
 
     #[test]
     fn cache_identity_covers_rendering_inputs_and_file_generation() {
         let path = Path::new("tests/fixtures/lagoon-red-preview.png");
         let request = ReadRequest::default();
-        let base = cache_key(path, request, false);
+        let base = cache_key(path, request);
         let changed_size = cache_key(
             path,
             ReadRequest {
                 size: [128, 256],
                 ..request
             },
-            false,
         );
         let categorical = cache_key(
             path,
@@ -1238,7 +1184,6 @@ mod tests {
                 preserve_values: true,
                 ..request
             },
-            false,
         );
         assert_ne!(base.size, changed_size.size);
         assert_ne!(base.preserve_values, categorical.preserve_values);

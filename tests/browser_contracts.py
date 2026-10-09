@@ -593,7 +593,7 @@ def main() -> None:
             "profiles": reports,
             "exclusions": [
                 "External provider basemaps, tokens and WAN",
-                "Raw source-value point queries (not a current server contract)",
+                "Source-cell point queries, covered separately by native_services.py",
                 "True temporal acquisition correctness; labels reuse a pinned raster",
             ],
         }

@@ -112,16 +112,13 @@ pub(super) fn apply(
     };
     response.headers.insert("Cache-Control".into(), policy);
     if cacheable {
-        let tag = response
-            .headers
-            .entry("ETag".into())
-            .or_insert_with(|| {
-                let mut hash = Sha256::new();
-                hash.update(response.content_type);
-                hash.update(&response.body);
-                format!("\"{:x}\"", hash.finalize())
-            })
-            .clone();
+        let tag = if let Some(tag) = response.headers.get("ETag") {
+            tag.clone()
+        } else {
+            let tag = validator(response);
+            response.headers.insert("ETag".into(), tag.clone());
+            tag
+        };
         if headers
             .get("if-match")
             .is_some_and(|value| value.trim() != "*" && !value.split(',').any(|v| v.trim() == tag))

@@ -28,7 +28,7 @@ def decoded(png):
     return np.asarray(Image.open(io.BytesIO(png)).convert("RGBA"))
 
 
-def run(lambda_zip, bundle, database_source, out, image):
+def run(lambda_zip, database_source, out, image):
     if out.exists():
         raise FileExistsError("choose a fresh Lambda runtime output directory")
     package = out / "package"
@@ -126,16 +126,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lambda-zip", type=Path, default=ROOT / "build/ci/ci-lambda/rcfp-lambda.zip"
     )
-    parser.add_argument(
-        "--bundle", type=Path, default=ROOT / "build/ci/ci-lambda-bundle"
-    )
     parser.add_argument("--database", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--image", default=DEFAULT_IMAGE)
     args = parser.parse_args()
     run(
         args.lambda_zip.resolve(),
-        args.bundle.resolve(),
         args.database.resolve(),
         args.out.resolve(),
         args.image,

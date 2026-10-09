@@ -4,8 +4,10 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 
-from . import RcfpError, _native, compatibility_profile, exceptions
+from . import RcfpError, _metadata, _native, compatibility_profile, exceptions
 from ._profile import settings as profile_settings
+
+metadata = _metadata
 
 
 def settings():
@@ -135,14 +137,6 @@ class Session:
         values = np.frombuffer(values, dtype="=f8").astype(dtypes[dtype]).reshape(shape)
         mask = np.frombuffer(mask, dtype=bool).reshape(shape).copy()
         return np.ma.array(values, mask=mask)
-
-
-def metadata(value):
-    if value is not None:
-        value.pop("keys", None)
-        value["bounds"] = tuple(value["bounds"])
-        value["range"] = tuple(value["range"])
-    return value
 
 
 _executor = None

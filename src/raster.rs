@@ -402,7 +402,6 @@ impl Gdal {
         &self,
         source: DatasetHandle,
         algorithm: c_int,
-        _path: &Path,
     ) -> Result<SuggestedGeometry> {
         // calculate_default_transform uses the source bounding rectangle and
         // dimensions, rather than the source's rotated affine coefficients.
@@ -510,7 +509,6 @@ impl Gdal {
         &self,
         source: DatasetHandle,
         algorithm: c_int,
-        path: &Path,
         stamp: Option<(u64, std::time::SystemTime)>,
         suggested_index: usize,
     ) -> Result<SuggestedGeometry> {
@@ -524,7 +522,7 @@ impl Gdal {
             if let Some(cached) = cached {
                 return Ok(cached);
             }
-            let geometry = self.suggested_geometry(source, algorithm, path)?;
+            let geometry = self.suggested_geometry(source, algorithm)?;
             self.sources
                 .borrow_mut()
                 .front_mut()
@@ -532,7 +530,7 @@ impl Gdal {
                 .suggested[suggested_index] = Some(geometry);
             Ok(geometry)
         } else {
-            self.suggested_geometry(source, algorithm, path)
+            self.suggested_geometry(source, algorithm)
         }
     }
 
@@ -569,7 +567,7 @@ impl Gdal {
         if let Some(raster) = self.read_mercator_fast(path, stamp, source_handle, request)? {
             return Ok(raster);
         }
-        self.read_general(path, request, source_handle, stamp, started, opened)
+        self.read_general(request, source_handle, stamp, started, opened)
     }
 
     pub fn read_bands(&self, path: &Path, requests: &[ReadRequest]) -> Result<Vec<Raster>> {
@@ -691,7 +689,6 @@ impl Gdal {
 
     fn read_general(
         &self,
-        path: &Path,
         request: ReadRequest,
         source_handle: DatasetHandle,
         stamp: Option<(u64, SystemTime)>,
@@ -706,7 +703,6 @@ impl Gdal {
         let geometry = self.cached_suggested_geometry(
             source_handle,
             algorithm,
-            path,
             stamp,
             usize::from(request.preserve_values),
         )?;
@@ -845,7 +841,6 @@ impl Gdal {
         // GDAL resampling must write the source dtype before widening the
         // transfer buffer: Float64 output changes integer and Float32 rounding.
         let dtype = unsafe { (self.band_data_type)(band) };
-        spec.data_type = dtype;
         macro_rules! read {
             ($ty:ty) => {{
                 spec.data_type = <$ty as GdalPixel>::DATA_TYPE;

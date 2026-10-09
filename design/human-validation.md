@@ -791,6 +791,50 @@ Nagle. The diagnostic does not replace the full multi-user/elevation matrix or
 qualify WAN/S3; packet capture and the remaining request-strategy cost are not
 established. Evidence is retained in ignored `build/async-tiff-mechanism/`.
 
+## TIFF scheduling decision on 2026-10-09
+
+The additional remote-window scheduler is **no-go**. The existing default native
+TIFF reader remains in production. Candidate source trees and the integration
+draft are removed; frozen evidence is archived in ignored storage. No new
+production switch or inactive scheduler is retained. The
+[evaluation](async-tiff-evaluation.md#scheduling-decision-on-2026-10-09) records
+the decision and workload limits.
+
+The eligible and ordinary-input comparisons each complete **108 services,
+13,608 responses and 6,804 exact ordered pairs**. Eligible remote RGB first
+views are 1.3–1.7 times faster and zooms 1.8–2.4 times faster. Both eligible
+variants perform 3,690 TIFF pixel reads and zero GDAL pixel reads. The ordinary
+map-navigation corpus performs **zero TIFF pixel reads** in either variant,
+so this candidate supplies no pixel I/O concurrency benefit for that corpus.
+Paired eligible peak RSS does not increase materially; median remote CPU rises
+about 3%. Original ordinary-input timing includes regressions. Additional
+five-trial and three-trial repetitions have unstable timings under host
+contention and do not establish the no-regression gate. Their 12,096 ordered
+pairs match exactly, with all pixel reads using GDAL; their timings are excluded
+from adoption evidence.
+
+Candidate and serial control each pass seven HTTP lifecycle cases on independently
+prepared, ordinary 10 m Mercator layer grids: exact rendering and retention,
+queue overload, deadlines, version changes, origin failure, client disconnect
+and shutdown. Each correctness case checks 313 independently expected PNGs.
+One candidate worker overlaps four windows/network reads; control concurrency
+is one. Both drain admitted accounting and retain stable descriptors. This
+qualifies those frozen executables, not the current working tree or a broader
+transport/resource envelope.
+
+The compared executable SHA-256 values are:
+
+- Serial: `43d26e8c3e21203883dda6e24bfb2113cdf0e9c03d51975c67515cb42f6b3f7e`.
+- Concurrent: `48682fb4abc91d74bd183545675917be2a1310ddecdaeddb33a241fa56496a68`.
+
+`build/async-tiff-decision/decision.json` indexes verification, source archives,
+resource ratios and lifecycle reports. The initial deferred-job smoke failure
+and two lifecycle setup failures remain excluded. New concurrent array unit
+assertions were not executed; prior pipeline fixture/unit/Clippy results belong
+to that earlier artifact. WAN/S3, authenticated transport, additional platforms
+and larger decode workloads remain unqualified. No cloud upload or spending
+was required.
+
 ## Experimental TIFF pipeline
 
 The isolated service snapshot in `build/async-tiff-pipeline/` evaluates concurrent

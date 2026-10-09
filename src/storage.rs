@@ -234,15 +234,8 @@ impl SqliteStore {
     }
 
     pub fn create(path: impl AsRef<Path>, definitions: &[KeyDefinition]) -> Result<Self> {
-        let name = regex::Regex::new(r"^\w+$").unwrap();
-        if definitions.is_empty()
-            || definitions.iter().any(|d| {
-                !name.is_match(&d.key)
-                    || ["limit", "page", "order_by", "ascending"].contains(&d.key.as_str())
-            })
-        {
-            return Err("key names must be alphanumeric and not reserved".into());
-        }
+        validate_definitions(definitions)
+            .map_err(|_| "key names must be alphanumeric and not reserved".to_owned())?;
         let mut connection = Connection::open(path.as_ref()).map_err(write_error)?;
         let transaction = connection.transaction().map_err(write_error)?;
         let connection = &transaction;
@@ -752,7 +745,7 @@ impl SqliteStore {
     fn quoted_key_columns(&self) -> Vec<String> {
         self.key_definitions
             .iter()
-            .map(|definition| format!("\"{}\"", definition.key.replace('"', "\"\"")))
+            .map(|definition| quote_identifier(&definition.key))
             .collect()
     }
 }

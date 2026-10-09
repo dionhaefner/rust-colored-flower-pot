@@ -211,22 +211,7 @@ impl Gdal {
                         t[3] + p[0] * t[4] + p[1] * t[5],
                     ]
                 });
-                let b = corners.iter().fold(
-                    [
-                        f64::INFINITY,
-                        f64::INFINITY,
-                        f64::NEG_INFINITY,
-                        f64::NEG_INFINITY,
-                    ],
-                    |b, p| {
-                        [
-                            b[0].min(p[0]),
-                            b[1].min(p[1]),
-                            b[2].max(p[0]),
-                            b[3].max(p[1]),
-                        ]
-                    },
-                );
+                let b = metadata::extent(&corners);
                 let proxy_path = TempPath {
                     gdal: self,
                     path: CString::new(format!(
@@ -442,6 +427,15 @@ impl Gdal {
             // Rasterio dataset_mask: dataset/alpha mask, RGBA fourth band, otherwise OR band masks.
             let alpha = (1..=count)
                 .find(|&i| (self.color_interpretation)((self.raster_band)(source.handle, i)) == 6);
+            let mask_bands = if mask_flags & 2 != 0 {
+                vec![get_mask(band)]
+            } else if let Some(i) = alpha {
+                vec![(self.raster_band)(source.handle, i)]
+            } else {
+                (1..=count)
+                    .map(|i| get_mask((self.raster_band)(source.handle, i)))
+                    .collect()
+            };
             for y in (0..height).step_by(256) {
                 for x in (0..width).step_by(256) {
                     let w = (width - x).min(256) as usize;
@@ -478,16 +472,7 @@ impl Gdal {
                         return Err("cannot write data".into());
                     }
                     let mut mask = vec![0u8; w * h];
-                    let bands = if mask_flags & 2 != 0 {
-                        vec![get_mask(band)]
-                    } else if let Some(i) = alpha {
-                        vec![(self.raster_band)(source.handle, i)]
-                    } else {
-                        (1..=count)
-                            .map(|i| get_mask((self.raster_band)(source.handle, i)))
-                            .collect()
-                    };
-                    for b in bands {
+                    for &b in &mask_bands {
                         let mut m = vec![0u8; w * h];
                         read_window(
                             self.raster_io_ex,

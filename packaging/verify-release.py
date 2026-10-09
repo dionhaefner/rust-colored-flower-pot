@@ -36,6 +36,7 @@ def main() -> None:
             "packaging/bootstrap-gdal.py",
             "packaging/gdal-packages.lock.json",
             "packaging/stage-gdal-runtime.py",
+            "packaging/stage-licenses.py",
             "tests/verify-runtime-without-rasterio.py",
             "packaging/licenses/CLIENT-LICENSE.txt",
             "packaging/cargo.sh",

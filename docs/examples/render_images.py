@@ -10,7 +10,6 @@ import rcfp
 
 def render(database, output):
     output.mkdir(parents=True, exist_ok=True)
-    app = rcfp.NativeApplication(database)
     requests = {
         "rgb": (
             "/rgb/lagoon/preview.png",
@@ -59,17 +58,21 @@ def render(database, output):
             },
         ),
     }
-    for name, (path, parameters) in requests.items():
-        query = urlencode(
-            {
-                key: json.dumps(value) if isinstance(value, (dict, list)) else value
-                for key, value in parameters.items()
-            }
-        )
-        status, mime, body, _, _ = app.request("GET", f"{path}?{query}")
-        if status != 200 or mime != "image/png":
-            raise RuntimeError(f"{name}: {status}, {body!r}")
-        (output / f"{name}.png").write_bytes(body)
+    app = rcfp.NativeApplication(database)
+    try:
+        for name, (path, parameters) in requests.items():
+            query = urlencode(
+                {
+                    key: json.dumps(value) if isinstance(value, (dict, list)) else value
+                    for key, value in parameters.items()
+                }
+            )
+            status, mime, body, _, _ = app.request("GET", f"{path}?{query}")
+            if status != 200 or mime != "image/png":
+                raise RuntimeError(f"{name}: {status}, {body!r}")
+            (output / f"{name}.png").write_bytes(body)
+    finally:
+        del app
 
 
 if __name__ == "__main__":

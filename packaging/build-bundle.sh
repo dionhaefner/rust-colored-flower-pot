@@ -54,14 +54,6 @@ if [[ -d "$native_target/runtime-libs" ]]; then
     cp -a "$native_target/runtime-libs/." "$output/lib/"
     cp -a "$native_target/licenses/." "$output/licenses/"
 fi
-cp "$root/LICENSE" "$output/licenses/TERRACOTTA-LICENSE.txt"
-cp "$root/src/assets/COLOR_OPERATIONS_LICENSE.txt" "$output/licenses/"
-cp "$root/src/assets/CRICK_LICENSE.txt" "$output/licenses/"
-cp "$root/src/assets/TDIGEST_LICENSE.txt" "$output/licenses/"
-cp "$root/src/assets/static/redoc.standalone.js.LICENSE.txt" "$output/licenses/REDOC-LICENSE.txt"
-cp "$root/packaging/licenses/CLIENT-LICENSE.txt" "$output/licenses/CLIENT-LICENSE.txt"
-cp "$root/THIRD_PARTY_NOTICES.md" "$output/licenses/THIRD_PARTY_NOTICES.md"
-
-"$build_python" "$root/packaging/collect-licenses.py" "$output/licenses/cargo"
+"$build_python" "$root/packaging/stage-licenses.py" "$output/licenses"
 
 "$output/bin/rcfp" --version-json

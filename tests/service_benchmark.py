@@ -279,6 +279,8 @@ def server(args, engine, database, folder, categorical):
                     if len(workers) == 4:
                         break
                     time.sleep(0.05)
+                else:
+                    raise TimeoutError("Not all Terracotta workers became ready")
             elif engine == "titiler":
                 ready_workers = set()
                 while time.monotonic() < deadline:

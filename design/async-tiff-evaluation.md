@@ -7,6 +7,88 @@ approaches. Its maintained code lives in
 derivatives, binaries, independent expectations, and reports belong in ignored
 storage. GDAL/PROJ remain required runtime dependencies.
 
+## Scheduling decision on 2026-10-09
+
+**No-go for the additional cross-window scheduler.** The existing exact TIFF
+reader remains on the default native production path. Remote window batching,
+a separate decode pool and cross-window range coalescing are not integrated.
+The candidate source trees and integration draft have been removed. Frozen
+binaries, source archives and reports remain in ignored storage as measurement
+provenance; no new production setting or dormant scheduler is retained.
+
+The reduced candidate overlaps only immediately queued, eligible remote reads.
+It caps each worker at four windows, one million batch pixels and four network
+reads, without a collection delay or separate decode pool. It preserves the
+existing selection, sampling, validity and GDAL fallback rules. Both compared
+executables use native defaults, with no experimental enable setting.
+
+The eligible-input comparison passes three alternating trials, **108 services
+and 13,608 responses**, including all **6,804 ordered response pairs**. Both
+variants perform **3,690 TIFF pixel reads and zero GDAL pixel reads**. The remote
+RGB gain is real:
+
+| Remote RGB workload     | Serial first / pan / zoom (ms) | Concurrent first / pan / zoom (ms) |
+| ----------------------- | -----------------------------: | ---------------------------------: |
+| One user                |                 175 / 53 / 119 |                      135 / 23 / 65 |
+| Three overlapping users |                 179 / 54 / 121 |                      122 / 39 / 50 |
+| Three independent users |                 258 / 54 / 234 |                      156 / 25 / 98 |
+
+These are medians of three trial medians with four serving CPUs/workers, a warm
+OS page cache and a versioned loopback origin adding 15 ms per request with
+Nagle disabled. The inputs retain the deliberately eligible derivative recipe
+above. Median paired peak RSS falls about 3% locally and 2% remotely; median
+remote CPU rises about 3%. No paired eligible run exceeds its control's peak
+RSS by more than 1%. These measurements describe this artifact and workload.
+
+The ordinary-input comparison also passes **108 services and 13,608 responses**
+with all **6,804 ordered pairs** matching. It uses unmodified checksum-pinned
+Sentinel UTM bands and geographic elevation sources from the navigation corpus.
+**Neither variant performs any TIFF pixel reads.** Candidate pixels use GDAL
+3,573 times and control pixels use it 3,578 times; small job-count differences
+reflect cache reuse and request coalescing. Requests require projection or
+resampling beyond the exact stored-grid boundary, so overlapping TIFF windows
+cannot improve raster I/O for these workloads. This establishes ineligibility
+for this corpus, not for every ordinary GeoTIFF.
+
+A conventional 10 m Mercator derivative also enters the candidate through the
+native layer HTTP API without affine rounding adjustments. Rasterio independently
+reprojects real pinned corpus pixels, and NumPy supplies expected display values.
+Both binaries pass **313 independent image comparisons** in the correctness
+case. The candidate reaches four concurrent windows/network reads with one
+worker; the serial control reaches one. Both pass seven service lifecycle cases:
+correctness and retention, queue overload, deadlines, source-version changes,
+origin failure, client disconnect and shutdown. Queued/admitted accounting drains
+and descriptors remain stable. This establishes a supported exact-grid use case,
+but it does not measure its prevalence or a representative layer throughput gain.
+
+The adoption gates required a useful remote completion gain, exact output,
+preserved lifecycle behavior, bounded resource cost and no repeatable common
+regression above 5%. Eligible gains, pixel equality and the tested lifecycle
+checks pass. The ordinary navigation corpus has no new pixel-path coverage, and
+the no-regression gate is unresolved. Its initial comparison includes local RGB
+regressions. Five additional alternating imagery trials and three trials on a
+separate CPU set produce substantial timing variation while other CPU-heavy
+checks run on the host. Their **12,096 ordered pairs** still match exactly and
+all pixel reads still use GDAL. Their timings are excluded from adoption evidence;
+they establish neither a scheduler regression nor its absence.
+
+The decision is to retain the current production reader and queue. A future
+scheduler proposal needs representative remote workloads that actually enter
+TIFF pixel access, clean paired performance evidence and qualification of the
+exact integrated artifact. Broadening TIFF selection to admit projected or
+resampled map requests would require separate sampling and mask qualification.
+
+`build/async-tiff-decision/decision.json` records hashes, backend counts, resource
+ratios, lifecycle reports, failures and exclusions. The initial smoke exposed
+overwritten deferred jobs and was fixed before the reported navigation trials.
+Two lifecycle setup attempts failed before pressure was limited to raster
+admission; they remain separate from the completed checks. Candidate concurrent
+array unit assertions were prepared but not executed. Earlier pipeline fixture,
+unit and Clippy passes belong to its earlier artifact. WAN/S3, authenticated
+sources, other platforms and larger decode workloads remain unqualified. The
+frozen source predates other current working-tree changes and does not qualify
+that changing tree.
+
 ## Production boundary
 
 `src/raster/tiff.rs` reads eligible local TIFFs and anonymous HTTP range sources.

@@ -169,7 +169,7 @@ impl Application {
         spec: &crate::layers::RenderSpec,
         trace: bool,
     ) -> Result<crate::layers::mosaic::Samples> {
-        let _permit = self.layer_permit()?;
+        let _permit = self.render_permit()?;
         crate::settings::scope(self.settings.clone(), || {
             let (layer, spec) = self
                 .layers
@@ -191,7 +191,7 @@ impl Application {
         })
     }
 
-    fn layer_permit(&self) -> Result<RenderPermit<'_>> {
+    fn render_permit(&self) -> Result<RenderPermit<'_>> {
         self.render_in_flight
             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 (current < self.render_capacity).then_some(current + 1)
@@ -441,20 +441,16 @@ impl Application {
         .iter()
         .any(|prefix| decoded_path.starts_with(prefix))
         {
-            if self
-                .render_in_flight
-                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
-                    (current < self.render_capacity).then_some(current + 1)
-                })
-                .is_err()
-            {
-                self.executor
-                    .cost()
-                    .render_overloaded
-                    .fetch_add(1, Ordering::Relaxed);
-                return json_error(503, "render capacity is full");
+            match self.render_permit() {
+                Ok(permit) => Some(permit),
+                Err(_) => {
+                    self.executor
+                        .cost()
+                        .render_overloaded
+                        .fetch_add(1, Ordering::Relaxed);
+                    return json_error(503, "render capacity is full");
+                }
             }
-            Some(RenderPermit(&self.render_in_flight))
         } else {
             None
         };

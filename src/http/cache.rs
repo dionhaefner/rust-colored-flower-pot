@@ -301,18 +301,8 @@ impl RenderKey {
                 policy: String::new(),
             })
             .collect();
-        let mut definition = serde_json::to_value(layer).expect("layer identity");
-        for (observation, value) in layer.observations.iter().zip(
-            definition["observations"]
-                .as_array_mut()
-                .expect("observations"),
-        ) {
-            for (name, asset) in &observation.assets {
-                value["assets"][name] = asset.identity();
-            }
-        }
         key.semantics
-            .push_str(&serde_json::to_string(&(definition, spec)).expect("layer identity"));
+            .push_str(&serde_json::to_string(&(layer.identity(), spec)).expect("layer identity"));
         key
     }
 
@@ -357,13 +347,13 @@ impl RenderKey {
         parameters: &BTreeMap<String, String>,
         sources: impl IntoIterator<Item = (&'a Path, &'a Metadata)>,
     ) -> Self {
+        let defaults = crate::settings::defaults();
         Self {
             route: route.into(),
             semantics: serde_json::json!({
                 "contract": "rcfp-render-1",
                 "version": crate::IMPLEMENTATION_VERSION,
                 "settings": (["TC_REPROJECTION_METHOD", "TC_RESAMPLING_METHOD", "TC_NATIVE_DIRECT_READ", "TC_RUST_UTM_FAST", "TC_RUST_MERCATOR_FAST", "TC_PNG_COMPRESS_LEVEL", "TC_DEFAULT_TILE_SIZE"].map(|k| {
-                    let defaults = crate::settings::defaults();
                     let default = defaults.get(k.trim_start_matches("TC_"));
                     let value = crate::settings::var(k).ok().or_else(|| default.map(|v| v.as_str().map(str::to_owned).unwrap_or_else(|| v.to_string())));
                     let value = if let Some(value) = default.and_then(serde_json::Value::as_bool) {

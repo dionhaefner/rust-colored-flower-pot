@@ -87,6 +87,11 @@ installed to check Linux build failure diagnostics through wheel and editable
 metadata hooks. A deliberately failing Cargo executable checks that the original
 error and exit status remain visible without an unrelated backend traceback.
 
+`python tests/license_contracts.py` checks shared runtime notices and platform
+Cargo notice collection without compiling or downloading dependencies. Wheel
+qualification also requires the native and embedded-asset inventories in the
+final repaired artifact.
+
 The correctness services job publishes Rust source line coverage from its unit,
 SQL/remote integration, and instrumented native catalog operations. The Linux
 x86_64 / CPython 3.12 installed-wheel job publishes separate Python adapter line
@@ -119,7 +124,7 @@ covers catalog creation, insertion and Lambda event rendering.
 
 `lambda_runtime_smoke.py` uses the SQLite catalog created by the native smoke
 and verifies the packaged Lambda runtime in the official local image. It
-requires Docker and a built bundle and zip; a Python syntax pass is not a
+requires Docker and a built Lambda zip; a Python syntax pass is not a
 runtime-image pass. The Rust expression vectors in `fixtures/` are retained
 contract examples used by the unit suite. Rust storage tests create disposable
 SQLite databases rather than depending on a preexisting database.
@@ -493,7 +498,7 @@ on later documents, origin restrictions and document/Item/byte limits. Synthetic
 JSON whitespace exercises byte budgets without changing raster reference samples.
 
 Run `python tests/stac_contracts.py --wheel WHEEL --out OUT` in the installed
-wheel environment with NumPy, Pillow and Rasterio available. Its 25 required
+wheel environment with NumPy, Pillow and Rasterio available. Its required
 cases exercise a live local POST/GET STAC API provider, pagination/limits/errors,
 credential/signature refresh and privacy, revision isolation and independent
 real-raster display/coverage checks. The real Sentinel red/green packed-band

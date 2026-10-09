@@ -280,7 +280,7 @@ def main():
         state["mode"] = mode
         error_contains(lambda: search(**kwargs), message)
 
-    def credential_refresh(mode):
+    def credential_refresh(mode, *, assets=("red",)):
         state["mode"] = mode
         calls = []
 
@@ -292,7 +292,7 @@ def main():
             }
 
         with SearchClient(base + "/search", credentials=credentials).search(
-            assets=["red"]
+            assets=assets
         ) as s:
             assert len(calls) == 2
             assert len(s.metadata["assets"]) == 2
@@ -620,6 +620,10 @@ def main():
         )
         run("page-limit", lambda: provider_error("normal", "page limit", max_pages=1))
         run("credential-refresh", lambda: credential_refresh("auth"))
+        run(
+            "credential-refresh-preserves-generated-assets",
+            lambda: credential_refresh("auth", assets=iter(("red",))),
+        )
         run("credential-refresh-on-later-page", lambda: credential_refresh("auth-page"))
         run("signed-url-refresh-verified-render-and-reuse", render_and_refresh)
         run("mutable-source-revision-isolation", changed_revision)

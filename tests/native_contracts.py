@@ -164,6 +164,37 @@ def main():
             op("insert", keys=["lagoon", band], raster=str(CORPUS / f"{band}.tif"))
         metadata = op("metadata", keys=["lagoon", "red"])
 
+        def temporary_catalog_cleanup():
+            temporary = folder / "temporary-catalog"
+            temporary.mkdir()
+            result = subprocess.run(
+                [
+                    str(binary),
+                    "--compat-profile",
+                    profile,
+                    "serve",
+                    "-r",
+                    str(CORPUS / "{band}.tif"),
+                    "--bind",
+                    "127.0.0.1:invalid",
+                ],
+                env=dict(
+                    env,
+                    TMPDIR=str(temporary),
+                    TEMP=str(temporary),
+                    TMP=str(temporary),
+                ),
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=30,
+            )
+            check(result.returncode != 0, "invalid bind address succeeded")
+            check("GDAL " in result.stderr, "temporary catalog did not open")
+            check(not list(temporary.iterdir()), "temporary catalog was retained")
+
+        run(profile, "serve-pattern-temporary-cleanup", temporary_catalog_cleanup)
+
         def replacement():
             op("insert", keys=["replace", "red"], raster=str(CORPUS / "red.tif"))
             previous = op("metadata_stored", keys=["replace", "red"])

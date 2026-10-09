@@ -14,7 +14,6 @@ typedef struct {
     char *headers_json;
 } TcResponse;
 
-extern TcResponse *tc_http_request(const char *, const char *, const char *);
 extern TcResponse *tc_http_request_full(const char *, const char *, const char *, const char *,
                                         const unsigned char *, size_t);
 extern void tc_response_free(TcResponse *);
@@ -76,8 +75,7 @@ static PyObject *request_common(PyObject *self, PyObject *args, int full) {
     Py_BEGIN_ALLOW_THREADS response =
         tc_http_request_full(database, method, url, headers, (const unsigned char *)request_body,
                              (size_t)request_body_len);
-    Py_END_ALLOW_THREADS if (response == NULL) { return PyErr_NoMemory(); }
-    return response_to_python(response, full);
+    Py_END_ALLOW_THREADS return response_to_python(response, full);
 }
 
 static PyObject *native_request(PyObject *self, PyObject *args) {

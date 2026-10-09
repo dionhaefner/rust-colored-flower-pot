@@ -1,7 +1,6 @@
 # Rust-colored flower pot (RCFP)
 
 <img src="docs/static/rcfp-logo-256.png" alt="RCFP flower-pot logo" width="128" height="128">
-<img src="docs/static/rcfp-logo-crab-256.png" alt="RCFP crab flower-pot logo" width="128" height="128">
 
 RCFP serves raster imagery from existing GeoTIFFs and catalogs through a shared
 Rust core. It includes a native server, Python/WSGI interfaces, CLI, and browser

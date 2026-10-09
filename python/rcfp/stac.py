@@ -181,6 +181,13 @@ class SearchClient:
         ):
             if value is not None:
                 query[key] = value
+        options = {
+            "assets": list(assets),
+            "revisions": revisions or {},
+            "max_items": max_items,
+            "max_pages": max_pages,
+            "max_staged_bytes": max_staged_bytes,
+        }
         for attempt in (0, 1):
             try:
                 return Selection(
@@ -188,13 +195,7 @@ class SearchClient:
                         "endpoint": self._endpoint,
                         "query": query,
                         "headers": _credentials(self._credentials),
-                        "options": {
-                            "assets": list(assets),
-                            "revisions": revisions or {},
-                            "max_items": max_items,
-                            "max_pages": max_pages,
-                            "max_staged_bytes": max_staged_bytes,
-                        },
+                        "options": options,
                     },
                     signer=self._signer,
                 )

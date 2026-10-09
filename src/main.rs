@@ -272,19 +272,14 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
     if stac.has_options() && !is_stac {
         return Err("STAC options require --stac-item, --stac-catalog or --stac-search".into());
     }
-    let temporary = pattern.as_ref().map(|_| {
-        std::env::temp_dir().join(format!(
-            "rcfp-serve-{}-{}.sqlite",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ))
-    });
-    if let (Some(pattern), Some(path)) = (pattern, temporary.as_ref()) {
-        rcfp_core::ingest::ingest(&pattern, path, rgb.as_deref(), true, false)?;
-        database = Some(path.clone());
+    let temporary = pattern
+        .as_ref()
+        .map(|_| tempfile::tempdir().map_err(|e| e.to_string()))
+        .transpose()?;
+    if let (Some(pattern), Some(directory)) = (pattern, temporary.as_ref()) {
+        let path = directory.path().join("catalog.sqlite");
+        rcfp_core::ingest::ingest(&pattern, &path, rgb.as_deref(), true, false)?;
+        database = Some(path);
     }
     if !explicit_bind {
         let host = if allow_all { "0.0.0.0" } else { "127.0.0.1" };
@@ -303,11 +298,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
         }
     })?;
     eprintln!("GDAL {}", application.gdal_version());
-    let result = application.serve_with_signals(&bind);
-    if let Some(path) = temporary {
-        let _ = std::fs::remove_file(path);
-    }
-    result
+    application.serve_with_signals(&bind)
 }
 
 fn print_help() {

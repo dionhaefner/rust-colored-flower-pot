@@ -1,27 +1,8 @@
 //! Scoped UTM interior path: GDAL coordinates and COG decoding, Rust bilinear sampling.
 
 use super::fast::{GDT_UINT16, GF_WRITE};
+use super::warped::{Transformer, TransformerGuard};
 use super::*;
-
-struct TransformGuard {
-    handle: *mut c_void,
-    destroy: unsafe extern "C" fn(*mut c_void),
-}
-impl Drop for TransformGuard {
-    fn drop(&mut self) {
-        unsafe { (self.destroy)(self.handle) }
-    }
-}
-
-type Transform = unsafe extern "C" fn(
-    *mut c_void,
-    c_int,
-    c_int,
-    *mut f64,
-    *mut f64,
-    *mut f64,
-    *mut c_int,
-) -> c_int;
 
 impl Gdal {
     pub(super) fn read_utm_fast(
@@ -62,7 +43,7 @@ impl Gdal {
             if utm_srs.is_null() {
                 return Err("GDAL could not allocate UTM SRS".into());
             }
-            let utm_srs = TransformGuard {
+            let utm_srs = SpatialReference {
                 handle: utm_srs,
                 destroy: destroy_srs,
             };
@@ -75,7 +56,7 @@ impl Gdal {
             if target_srs.is_null() {
                 return Err("GDAL could not allocate Mercator SRS".into());
             }
-            let target_srs = TransformGuard {
+            let target_srs = SpatialReference {
                 handle: target_srs,
                 destroy: destroy_srs,
             };
@@ -105,7 +86,7 @@ impl Gdal {
             {
                 return Ok(None);
             }
-            let geometry = self.cached_suggested_geometry(source, 1, path, stamp, 0)?;
+            let geometry = self.cached_suggested_geometry(source, 1, stamp, 0)?;
             let requested_x_res = (bounds[2] - bounds[0]) / request.size[0] as f64;
             let requested_y_res = (bounds[3] - bounds[1]) / request.size[1] as f64;
             // Leave magnification and overview selection to the general GDAL path.
@@ -146,12 +127,12 @@ impl Gdal {
             ) -> *mut c_void = self.symbol(b"GDALCreateGenImgProjTransformer4\0")?;
             let destroy_transform: unsafe extern "C" fn(*mut c_void) =
                 self.symbol(b"GDALDestroyGenImgProjTransformer\0")?;
-            let transform_fn: Transform = self.symbol(b"GDALGenImgProjTransform\0")?;
-            let create_approx: unsafe extern "C" fn(Transform, *mut c_void, f64) -> *mut c_void =
+            let transform_fn: Transformer = self.symbol(b"GDALGenImgProjTransform\0")?;
+            let create_approx: unsafe extern "C" fn(Transformer, *mut c_void, f64) -> *mut c_void =
                 self.symbol(b"GDALCreateApproxTransformer\0")?;
             let destroy_approx: unsafe extern "C" fn(*mut c_void) =
                 self.symbol(b"GDALDestroyApproxTransformer\0")?;
-            let approx_fn: Transform = self.symbol(b"GDALApproxTransform\0")?;
+            let approx_fn: Transformer = self.symbol(b"GDALApproxTransform\0")?;
             let base = create_transform(
                 source_srs,
                 src_t.as_ptr(),
@@ -162,7 +143,7 @@ impl Gdal {
             if base.is_null() {
                 return Ok(None);
             }
-            let base = TransformGuard {
+            let base = TransformerGuard {
                 handle: base,
                 destroy: destroy_transform,
             };
@@ -170,7 +151,7 @@ impl Gdal {
             if approx.is_null() {
                 return Ok(None);
             }
-            let approx = TransformGuard {
+            let approx = TransformerGuard {
                 handle: approx,
                 destroy: destroy_approx,
             };
@@ -220,8 +201,8 @@ impl Gdal {
             }
             let sw = (rx1 - rx0) as usize;
             let sh = (ry1 - ry0) as usize;
-            let cached = if let Some(stamp) = stamp {
-                self.cached_native_window(path, stamp, source, band, [rx0, ry0, rx1, ry1])?
+            let cached = if stamp.is_some() {
+                self.cached_native_window(path, source, band, [rx0, ry0, rx1, ry1])?
             } else {
                 None
             };

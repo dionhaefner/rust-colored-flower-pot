@@ -4,19 +4,8 @@ use crate::layers::{
     self, Asset, BandSelector, Binding, Channel, Coverage, Encoding, Grid, Layer, Observation,
     Overlap, RenderSpec, Values,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Digest;
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BandInfo {
-    pub band: usize,
-    pub name: Option<String>,
-    pub common_name: Option<String>,
-    pub scale: f64,
-    pub offset: f64,
-    pub nodata: serde_json::Value,
-}
 
 #[derive(Clone)]
 pub(crate) enum Plan {
@@ -138,7 +127,7 @@ impl Source {
     pub fn mapped(&self) -> bool {
         self.plan.is_some()
     }
-    pub fn planned_read(
+    pub(super) fn planned_read(
         &self,
         executor: &RasterExecutor,
         mut request: ReadRequest,
@@ -146,11 +135,6 @@ impl Source {
         let Some(plan) = &self.plan else {
             return executor.read(&self.path, request);
         };
-        if request.band != 1 {
-            return Err(
-                "logical datasets select their stored band; omit physical band parameters".into(),
-            );
-        }
         let bounds = request.bounds_mercator.unwrap_or(self.preview_bounds()?);
         request.bounds_mercator = Some(bounds);
         match plan {

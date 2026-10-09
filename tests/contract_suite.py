@@ -394,9 +394,9 @@ def main():
                 check(b"Internal Server Error" in body, "internal error page missing")
             else:
                 equal(kind, "application/json", path)
+                error = json.loads(body)
                 check(
-                    isinstance(json.loads(body).get("message"), str)
-                    and bool(json.loads(body)["message"]),
+                    isinstance(error.get("message"), str) and bool(error["message"]),
                     "missing error meaning",
                 )
 

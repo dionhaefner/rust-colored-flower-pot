@@ -134,16 +134,13 @@ fn handle(mut socket: TcpStream, application: &Application) {
     let _ = socket.set_write_timeout(Some(Duration::from_secs(5)));
     let response = match read_request(&mut socket) {
         Ok(request) => {
-            let tile = request.url.starts_with("/singleband/") || request.url.starts_with("/rgb/");
             let response = application.request_full(
                 &request.method,
                 &request.url,
                 &request.headers,
                 &request.body,
             );
-            if tile && response.status == 200 {
-                application.executor.wake_prefetch();
-            }
+            application.response_ready(&request.url, response.status);
             response
         }
         Err(status) => json_error(

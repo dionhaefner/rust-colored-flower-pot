@@ -375,7 +375,6 @@ export class Client {
       fail("TileJSON requires the native profile", "profile");
     if (!Array.isArray(keys) || !keys.length)
       fail("TileJSON requires dataset keys");
-    keys.forEach(encode);
     return this.request(
       this.url(["tilejson", tilesetId(keys) + ".json"], params),
       options,

@@ -46,7 +46,9 @@ jobs:
           rustup toolchain install 1.88.0 --profile minimal
 
       - name: Check build failure diagnostics
-        run: python tests/build_errors.py
+        run: |
+          python tests/build_errors.py
+          python tests/license_contracts.py
 
       - name: Build native bundle and repaired abi3 wheel
         run: |
@@ -149,6 +151,9 @@ jobs:
           else
             python -m pip install delvewheel==1.13.1
           fi
+
+      - name: Check native notice staging
+        run: python tests/license_contracts.py
 
       - name: Install Rust and build the core
         run: |

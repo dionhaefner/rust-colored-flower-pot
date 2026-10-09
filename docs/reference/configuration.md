@@ -24,7 +24,7 @@ Extracted from the installed native core:
 `DRIVER_PATH` identifies a catalog location or local source configuration, while
 stored raster paths identify imagery. Native hosting accepts SQL and
 [STAC sources](../how-to/stac.md) through the same application entry points.
-`DEFAULT_TILE_SIZE` is a width/height pair. `RESAMPLING_METHOD` applies to the general reader's intermediate source
+`DEFAULT_TILE_SIZE` is a `[height, width]` pair. `RESAMPLING_METHOD` applies to the general reader's intermediate source
 resampling. Direct native tiles use `REPROJECTION_METHOD` for their single final
 sampling step, including aligned RasterIO windows; the general reader also uses
 it for warping. Supported names are `nearest`,

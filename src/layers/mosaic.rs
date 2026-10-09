@@ -67,7 +67,6 @@ impl Budget {
     }
     pub fn check(&self, layer: &Layer, spec: &RenderSpec) -> Result<Plan> {
         self.validate()?;
-        spec.grid.epsg()?;
         if spec.grid.epsg()? != 3857 {
             return Err("indexed mosaics require an EPSG:3857 output grid".into());
         }

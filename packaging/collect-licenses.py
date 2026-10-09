@@ -9,7 +9,7 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 output = Path(sys.argv[1])
-cargo = str(root / "packaging/cargo.sh")
+cargo = "cargo" if sys.platform == "win32" else str(root / "packaging/cargo.sh")
 host = next(
     line.removeprefix("host: ")
     for line in subprocess.check_output(
@@ -37,7 +37,7 @@ for package in metadata["packages"]:
     source = Path(package["manifest_path"]).parent
     candidates = [
         p
-        for p in source.iterdir()
+        for p in sorted(source.iterdir())
         if p.is_file() and p.name.upper().startswith(("LICENSE", "COPYING", "NOTICE"))
     ]
     if package["name"] == "openssl-src":

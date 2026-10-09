@@ -14,10 +14,11 @@ not establish an actual account deployment.
 From the repository root, with a prepared Lambda bundle:
 
 ```sh
-packaging/build-lambda.sh dist/lambda-bundle dist/rcfp-lambda.zip
+packaging/build-lambda.sh dist/lambda-bundle dist/lambda
 ```
 
-The ZIP contains executable `bootstrap` and `runtime/`. The bootstrap configures
+The output directory contains `rcfp-lambda.zip` and its SHA-256 file. The ZIP
+contains executable `bootstrap` and `runtime/`. The bootstrap configures
 native libraries/data and starts `rcfp lambda-runtime`, which communicates with
 the Lambda Runtime API. For an AWS deployment, select the provided Amazon Linux
 2023 runtime and matching architecture, then configure `TC_DRIVER_PATH` and any

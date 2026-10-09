@@ -122,6 +122,14 @@ function specification() {
     params,
   };
 }
+function metadataKeys(render) {
+  return render.mode === "singleband"
+    ? render.keys
+    : [
+        ...render.keys,
+        render.mode === "rgb" ? render.params.r : render.params.v1,
+      ];
+}
 function showLegend(result) {
   $("legend").replaceChildren(
     ...result.colormap.map(({ value, rgba }) => {
@@ -139,15 +147,8 @@ async function apply(fit = false, restored) {
   try {
     const render = restored ?? specification();
     const data = await rendering.run(async (signal) => {
-      const metadataKeys =
-        render.mode === "singleband"
-          ? render.keys
-          : [
-              ...render.keys,
-              render.mode === "rgb" ? render.params.r : render.params.v1,
-            ];
       const [metadata, legend] = await Promise.all([
-        client.metadata(metadataKeys, { signal }),
+        client.metadata(metadataKeys(render), { signal }),
         render.mode === "rgb"
           ? Promise.resolve({ colormap: [] })
           : client.legend(
@@ -323,15 +324,7 @@ async function restore(fragment) {
         sourceRevision: $("source-revision").value,
       }),
     );
-    const keys =
-      state.render.mode === "singleband"
-        ? state.render.keys
-        : [
-            ...state.render.keys,
-            state.render.mode === "rgb"
-              ? state.render.params.r
-              : state.render.params.v1,
-          ];
+    const keys = metadataKeys(state.render);
     selected = discovery.layers.find(
       (layer) => JSON.stringify(layer.keys) === JSON.stringify(keys),
     );

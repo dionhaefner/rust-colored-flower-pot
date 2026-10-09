@@ -124,42 +124,11 @@ impl Session {
                 Kind::Raster(_) => request["path"].as_str().ok_or("path required")?.into(),
                 _ => return Err("session does not support raster reads".into()),
             };
-            let read = ReadRequest {
-                grid: None,
-                band: 1,
-                bounds_mercator: serde_json::from_value(
-                    request.get("tile_bounds").cloned().unwrap_or(Value::Null),
-                )
-                .map_err(|e| e.to_string())?,
-                size: serde_json::from_value(
-                    request
-                        .get("tile_size")
-                        .cloned()
-                        .unwrap_or(json!([256, 256])),
-                )
-                .map_err(|e| e.to_string())?,
-                preserve_values: request["preserve_values"].as_bool().unwrap_or(false),
-            };
-            if read.size.contains(&0)
-                || read.size.iter().any(|size| *size > 4096)
-                || read.size[0]
-                    .checked_mul(read.size[1])
-                    .is_none_or(|pixels| pixels > 1024 * 1024)
-            {
-                return Err("invalid tile dimensions".into());
-            }
+            let read = raster_request(request)?;
             if let Kind::Raster(executor) = &self.kind {
                 return executor.read(&path, read);
             }
-            let executor = {
-                let mut raster = self.raster.lock().map_err(|_| "raster lock poisoned")?;
-                if raster.is_none() {
-                    *raster = Some(Arc::new(RasterExecutor::start(
-                        ExecutionConfig::from_env()?
-                    )?));
-                }
-                Arc::clone(raster.as_ref().unwrap())
-            };
+            let executor = self.raster_executor()?;
             if let Some(source) = logical_source {
                 source.read(&executor, read)
             } else {
@@ -167,6 +136,18 @@ impl Session {
             }
         })
     }
+    fn raster_executor(&self) -> Result<Arc<RasterExecutor>> {
+        let mut raster = self.raster.lock().map_err(|_| "raster lock poisoned")?;
+        if raster.is_none() {
+            *raster = Some(Arc::new(RasterExecutor::start(
+                ExecutionConfig::from_env()?
+            )?));
+        }
+        Ok(Arc::clone(
+            raster.as_ref().expect("initialized raster executor"),
+        ))
+    }
+
     pub fn http_request(
         &self,
         method: &str,
@@ -278,27 +259,7 @@ impl Session {
                 if r["operation"] == "metrics" {
                     return Ok(json!(executor.metrics()));
                 }
-                let request = ReadRequest {
-                    grid: None,
-                    band: 1,
-                    bounds_mercator: serde_json::from_value(
-                        r.get("tile_bounds").cloned().unwrap_or(Value::Null),
-                    )
-                    .map_err(|e| e.to_string())?,
-                    size: serde_json::from_value(
-                        r.get("tile_size").cloned().unwrap_or(json!([256, 256])),
-                    )
-                    .map_err(|e| e.to_string())?,
-                    preserve_values: r["preserve_values"].as_bool().unwrap_or(false),
-                };
-                if request.size.contains(&0)
-                    || request.size.iter().any(|s| *s > 4096)
-                    || request.size[0]
-                        .checked_mul(request.size[1])
-                        .is_none_or(|pixels| pixels > 1024 * 1024)
-                {
-                    return Err("invalid tile dimensions".into());
-                }
+                let request = raster_request(r)?;
                 let raster = executor.read(
                     Path::new(r["path"].as_str().ok_or("path required")?),
                     request,
@@ -310,19 +271,39 @@ impl Session {
             Kind::Stac(selection) => match r["operation"].as_str() {
                 Some("describe") => Ok(selection.describe()),
                 Some("render") => {
-                    let executor = {
-                        let mut raster = self.raster.lock().map_err(|_| "raster lock poisoned")?;
-                        if raster.is_none() {
-                            *raster = Some(Arc::new(RasterExecutor::start(
-                                ExecutionConfig::from_env()?,
-                            )?));
-                        }
-                        Arc::clone(raster.as_ref().unwrap())
-                    };
+                    let executor = self.raster_executor()?;
                     Ok(json!(selection.render(&executor, r)?))
                 }
                 _ => Err("unknown STAC operation".into()),
             },
         })
     }
+}
+
+fn raster_request(request: &Value) -> Result<ReadRequest> {
+    let read = ReadRequest {
+        grid: None,
+        band: 1,
+        bounds_mercator: serde_json::from_value(
+            request.get("tile_bounds").cloned().unwrap_or(Value::Null),
+        )
+        .map_err(|e| e.to_string())?,
+        size: serde_json::from_value(
+            request
+                .get("tile_size")
+                .cloned()
+                .unwrap_or(json!([256, 256])),
+        )
+        .map_err(|e| e.to_string())?,
+        preserve_values: request["preserve_values"].as_bool().unwrap_or(false),
+    };
+    if read.size.contains(&0)
+        || read.size.iter().any(|size| *size > 4096)
+        || read.size[0]
+            .checked_mul(read.size[1])
+            .is_none_or(|pixels| pixels > 1024 * 1024)
+    {
+        return Err("invalid tile dimensions".into());
+    }
+    Ok(read)
 }

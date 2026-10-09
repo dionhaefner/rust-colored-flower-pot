@@ -123,6 +123,14 @@ def data_operation(request):
     return response["ok"]
 
 
+def _metadata(value):
+    if value is not None:
+        value.pop("keys", None)
+        value["bounds"] = tuple(value["bounds"])
+        value["range"] = tuple(value["range"])
+    return value
+
+
 def compute_metadata(path, *, extra_metadata=None, use_chunks=None, max_shape=None):
     """Compute native full, sampled or chunked metadata."""
     result = data_operation(
@@ -136,10 +144,7 @@ def compute_metadata(path, *, extra_metadata=None, use_chunks=None, max_shape=No
             },
         }
     )
-    result.pop("keys", None)
-    result["bounds"] = tuple(result["bounds"])
-    result["range"] = tuple(result["range"])
-    return result
+    return _metadata(result)
 
 
 class DataStore:
@@ -279,10 +284,7 @@ class DataStore:
         )
         if value is None:
             raise RcfpError("No dataset found")
-        value.pop("keys", None)
-        value["bounds"] = tuple(value["bounds"])
-        value["range"] = tuple(value["range"])
-        return value
+        return _metadata(value)
 
     def get_raster_tile(
         self,

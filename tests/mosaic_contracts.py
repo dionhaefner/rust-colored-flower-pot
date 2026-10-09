@@ -278,6 +278,58 @@ def main():
 
     case("temporal-narrowing-empty-and-canonical-attributes", temporal)
 
+    def cli_selection():
+        layer = copy.deepcopy(definition)
+        layer["mosaic"]["max_sources"] = 1
+        for observation in layer["observations"]:
+            observation["attributes"]["scene"] = observation["id"]
+        layer["default_render"]["selection"] = {"scene": "right"}
+        cli("layer_put", path=str(database), id="cli-selected", layer=layer)
+
+        def render(request=None):
+            image = out / "cli-selected.png"
+            command = [
+                str(binary),
+                "--compat-profile",
+                "native",
+                "layers",
+                "render",
+                str(database),
+                "cli-selected",
+                "-o",
+                str(image),
+            ]
+            if request is not None:
+                request_path = out / "cli-selected-spec.json"
+                request_path.write_text(json.dumps(request))
+                command.extend(["--spec", str(request_path)])
+            subprocess.run(command, check=True, capture_output=True, timeout=60)
+            return np.array(Image.open(image).convert("RGBA"))
+
+        def check(actual, expected):
+            values = np.where(
+                expected.mask,
+                0,
+                np.rint(1 + np.clip(expected.filled(0) / 3000, 0, 1) * 254),
+            ).astype("uint8")
+            wanted = np.stack(
+                [values, values, values, np.where(expected.mask, 0, 255)], axis=-1
+            ).astype("uint8")
+            assert np.array_equal(actual, wanted)
+
+        check(render(), expected_right)
+        request = copy.deepcopy(spec)
+        request["selection"] = {"scene": "left"}
+        check(render(request), expected_left)
+        try:
+            render(spec)
+        except subprocess.CalledProcessError as error:
+            assert b"mosaic budget exceeded" in error.stderr
+        else:
+            raise AssertionError("unselected CLI mosaic exceeded its source budget")
+
+    case("cli-default-and-explicit-selection-before-source-budget", cli_selection)
+
     category_definition = copy.deepcopy(definition)
     for o, n in zip(
         category_definition["observations"], ("category-left", "category-right")

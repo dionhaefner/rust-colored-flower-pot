@@ -57,6 +57,15 @@ if os.environ.get("RCFP_GDAL_PREFIX"):
         ],
         check=True,
     )
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "packaging/stage-conda-licenses.py"),
+            os.environ["RCFP_GDAL_PREFIX"],
+            str(runtime / "licenses/conda"),
+        ],
+        check=True,
+    )
 else:
     with tempfile.TemporaryDirectory(prefix="rcfp-gdal-cache-") as temporary:
         cache = os.environ.get("RCFP_GDAL_CACHE", temporary)
@@ -79,10 +88,14 @@ if sys.platform == "darwin":
     subprocess.run(
         ["install_name_tool", "-id", "@rpath/" + core, str(lib / core)], check=True
     )
-license_dir = output / "rcfp/runtime/licenses"
-license_dir.mkdir(exist_ok=True)
-for name in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
-    shutil.copy2(ROOT / name, license_dir / name)
+subprocess.run(
+    [
+        sys.executable,
+        str(ROOT / "packaging/stage-licenses.py"),
+        str(runtime / "licenses"),
+    ],
+    check=True,
+)
 # Compile against the active CPython and the staged Rust import library.
 include = sysconfig.get_paths()["include"]
 suffix = ".abi3.pyd" if sys.platform == "win32" else ".abi3.so"

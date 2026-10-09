@@ -95,38 +95,46 @@ def cases():
 def capture(mode, database, out, binary=None):
     out.mkdir(parents=True, exist_ok=False)
     server = None
-    if mode == "reference":
-        import terracotta as tc
-        from terracotta.server import create_app
-
-        tc.update_settings(DRIVER_PATH=str(database))
-        app = create_app()
-        app.logger.disabled = True
-        client = app.test_client()
-    else:
-        with socket.socket() as listener:
-            listener.bind(("127.0.0.1", 0))
-            port = listener.getsockname()[1]
-        server = subprocess.Popen(
-            [str(binary), "serve", "-d", str(database), "--bind", f"127.0.0.1:{port}"],
-            stdout=subprocess.DEVNULL,
-            stderr=(out / "server.log").open("w"),
-        )
-        deadline = time.monotonic() + 20
-        while time.monotonic() < deadline:
-            try:
-                urllib.request.urlopen(
-                    f"http://127.0.0.1:{port}/keys", timeout=1
-                ).close()
-                break
-            except (urllib.error.URLError, TimeoutError):
-                if server.poll() is not None:
-                    raise RuntimeError("candidate server exited early")
-                time.sleep(0.1)
-        else:
-            raise RuntimeError("candidate server did not become ready")
     rows = []
     try:
+        if mode == "reference":
+            import terracotta as tc
+            from terracotta.server import create_app
+
+            tc.update_settings(DRIVER_PATH=str(database))
+            app = create_app()
+            app.logger.disabled = True
+            client = app.test_client()
+        else:
+            with socket.socket() as listener:
+                listener.bind(("127.0.0.1", 0))
+                port = listener.getsockname()[1]
+            with (out / "server.log").open("w") as logfile:
+                server = subprocess.Popen(
+                    [
+                        str(binary),
+                        "serve",
+                        "-d",
+                        str(database),
+                        "--bind",
+                        f"127.0.0.1:{port}",
+                    ],
+                    stdout=subprocess.DEVNULL,
+                    stderr=logfile,
+                )
+            deadline = time.monotonic() + 20
+            while time.monotonic() < deadline:
+                try:
+                    urllib.request.urlopen(
+                        f"http://127.0.0.1:{port}/keys", timeout=1
+                    ).close()
+                    break
+                except (urllib.error.URLError, TimeoutError):
+                    if server.poll() is not None:
+                        raise RuntimeError("candidate server exited early")
+                    time.sleep(0.1)
+            else:
+                raise RuntimeError("candidate server did not become ready")
         for index, case in enumerate(cases()):
             data = None if case["body"] is None else json.dumps(case["body"]).encode()
             if mode == "reference":
@@ -148,7 +156,8 @@ def capture(mode, database, out, binary=None):
                     result = urllib.request.urlopen(request, timeout=60)
                 except urllib.error.HTTPError as error:
                     result = error
-                status, headers, body = result.status, result.headers, result.read()
+                with result:
+                    status, headers, body = result.status, result.headers, result.read()
             kind = headers.get("Content-Type", "")
             row = {
                 "id": case["id"],
@@ -170,7 +179,11 @@ def capture(mode, database, out, binary=None):
     finally:
         if server is not None:
             server.terminate()
-            server.wait(timeout=10)
+            try:
+                server.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                server.kill()
+                server.wait(timeout=10)
     (out / "capture.json").write_text(json.dumps(rows, indent=2) + "\n")
 
 
@@ -313,22 +326,27 @@ def main():
             elif left["id"] == "swagger":
                 original = json.loads(json.dumps(left["json"]))
                 original["info"]["title"] = "RCFP"
-                candidate = json.loads(json.dumps(right["json"]))
+                candidate_spec = json.loads(json.dumps(right["json"]))
                 native = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "native"
                 if native:
-                    if candidate["info"]["description"] != "RCFP raster tile service.":
+                    if (
+                        candidate_spec["info"]["description"]
+                        != "RCFP raster tile service."
+                    ):
                         errors.append("native service description differs")
-                    candidate["info"]["description"] = original["info"]["description"]
+                    candidate_spec["info"]["description"] = original["info"][
+                        "description"
+                    ]
                     for route in (
                         "/layers",
                         "/layers/{id}",
                         "/layers/{id}/render",
                         "/layers/{id}/render.png",
                     ):
-                        if route not in candidate["paths"]:
+                        if route not in candidate_spec["paths"]:
                             errors.append(f"native route missing: {route}")
-                        candidate["paths"].pop(route, None)
-                    candidate.get("components", {}).get("schemas", {}).pop(
+                        candidate_spec["paths"].pop(route, None)
+                    candidate_spec.get("components", {}).get("schemas", {}).pop(
                         "NativeRenderSpec", None
                     )
                     for route in (
@@ -340,7 +358,7 @@ def main():
                         "/tiles/{id}/{tileMatrixSet}/{z}/{x}/{y}.png",
                         "/point/{id}",
                     ):
-                        candidate["paths"].pop(route, None)
+                        candidate_spec["paths"].pop(route, None)
                     for schema in (
                         "Tilesets",
                         "TileMatrixSets",
@@ -348,13 +366,13 @@ def main():
                         "TileJSON",
                         "PointInspection",
                     ):
-                        candidate.get("components", {}).get("schemas", {}).pop(
+                        candidate_spec.get("components", {}).get("schemas", {}).pop(
                             schema, None
                         )
-                    batch = candidate["paths"].pop("/metadata", {})
+                    batch = candidate_spec["paths"].pop("/metadata", {})
                     if "post" not in batch:
                         errors.append("native batch metadata route missing")
-                    for path, entry in candidate["paths"].items():
+                    for path, entry in candidate_spec["paths"].items():
                         if not path.startswith(("/rgb/", "/singleband/", "/compute/")):
                             continue
                         names = {"revision"}
@@ -381,7 +399,7 @@ def main():
                             for p in entry["get"]["parameters"]
                             if p["name"] not in names
                         ]
-                if original == candidate:
+                if original == candidate_spec:
                     comparison = "package-title"
                 else:
                     errors.append("swagger differs beyond title")

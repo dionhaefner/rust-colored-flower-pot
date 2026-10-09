@@ -878,6 +878,7 @@ def main():
     def source_invalidation():
         before = len(calls)
         first = application.request("GET", preview)
+        prior = retained[0].copy()
         with rasterio.open(packed, "r+") as dst:
             data = dst.read(2)
             data = np.minimum(data.astype("uint32") + 1000, 65535).astype("uint16")
@@ -892,7 +893,6 @@ def main():
         np.testing.assert_array_equal(
             decoded(response), expected_gray(data, mask, [-1, 3])
         )
-        prior = retained[0].copy()
         assert np.array_equal(prior, retained[0])
 
     case(

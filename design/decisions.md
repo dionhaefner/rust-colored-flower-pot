@@ -53,6 +53,12 @@ sidecars, unsupported layouts/codecs and configured GDAL access use GDAL. The
 Terracotta profile always uses GDAL. `TC_ASYNC_TIFF=false` restores GDAL format
 access in native mode. See [TIFF qualification](async-tiff-evaluation.md).
 
+Queued TIFF windows remain serial within each worker. The evaluated concurrent
+remote scheduler improves deliberately eligible inputs but does not enter the
+pixel path on the ordinary navigation corpus, and its no-regression gate is
+unresolved. It is rejected; no inactive implementation or new production switch
+is retained. See the [scheduling decision](async-tiff-evaluation.md#scheduling-decision-on-2026-10-09).
+
 An application owns a bounded raster queue, worker threads, caches, and remote
 snapshot leases. Destruction drains and joins workers, including partial startup
 failure paths. Response deadlines and client disconnects do not cancel GDAL;

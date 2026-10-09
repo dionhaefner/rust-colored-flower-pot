@@ -12,7 +12,7 @@ pub(super) const GF_WRITE: c_int = 1;
 #[derive(Clone, Hash, PartialEq, Eq)]
 struct BlockKey {
     path: PathBuf,
-    stamp: (u64, SystemTime),
+    generation: Vec<(u64, u128)>,
     block_x: i32,
     block_y: i32,
 }
@@ -78,7 +78,7 @@ impl SharedBlocks {
     fn schedule_ring(
         &mut self,
         path: &Path,
-        stamp: (u64, SystemTime),
+        generation: &[(u64, u128)],
         touched: [i32; 4],
         maximum: [i32; 2],
     ) {
@@ -93,7 +93,7 @@ impl SharedBlocks {
                 }
                 let key = BlockKey {
                     path: path.to_path_buf(),
-                    stamp,
+                    generation: generation.to_vec(),
                     block_x: bx,
                     block_y: by,
                 };
@@ -132,7 +132,6 @@ impl Gdal {
     pub(super) fn cached_native_window(
         &self,
         path: &Path,
-        stamp: (u64, SystemTime),
         source: DatasetHandle,
         band: BandHandle,
         window: [i32; 4],
@@ -152,6 +151,18 @@ impl Gdal {
                 return Ok(None);
             }
             let [rx0, ry0, rx1, ry1] = window;
+            let Some(generation) = self
+                .sources
+                .borrow()
+                .iter()
+                .find(|entry| entry.path == path && entry.dataset.handle == source)
+                .map(|entry| entry.generation.clone())
+            else {
+                return Ok(None);
+            };
+            if crate::execution::source_generation(path) != generation {
+                return Ok(None);
+            }
             let sw = (rx1 - rx0) as usize;
             let sh = (ry1 - ry0) as usize;
             let mut output = vec![0u16; sw * sh];
@@ -159,7 +170,7 @@ impl Gdal {
                 for block_x in rx0 / bw..=(rx1 - 1) / bw {
                     let key = BlockKey {
                         path: path.to_path_buf(),
-                        stamp,
+                        generation: generation.clone(),
                         block_x,
                         block_y,
                     };
@@ -208,7 +219,7 @@ impl Gdal {
             let source_height = (self.raster_y_size)(source);
             cache.lock().expect("source blocks").schedule_ring(
                 path,
-                stamp,
+                &generation,
                 [rx0 / bw, ry0 / bh, (rx1 - 1) / bw, (ry1 - 1) / bh],
                 [(source_width - 1) / bw, (source_height - 1) / bh],
             );
@@ -222,19 +233,14 @@ impl Gdal {
         let _timer = crate::telemetry::timer(crate::telemetry::Stage::Prefetch);
         let started = Instant::now();
         let result: Result<()> = (|| {
-            let metadata = std::fs::metadata(&key.path).map_err(|e| e.to_string())?;
-            if (
-                metadata.len(),
-                metadata.modified().map_err(|e| e.to_string())?,
-            ) != key.stamp
-            {
+            if crate::execution::source_generation(&key.path) != key.generation {
                 return Ok(());
             }
             let cached_source = self
                 .sources
                 .borrow()
                 .iter()
-                .find(|entry| entry.path == key.path && entry.stamp == key.stamp)
+                .find(|entry| entry.path == key.path && entry.generation == key.generation)
                 .map(|entry| entry.dataset.handle);
             let opened = if cached_source.is_none() {
                 Some(self.open_dataset(&key.path)?)
@@ -243,6 +249,9 @@ impl Gdal {
             };
             let source =
                 cached_source.unwrap_or_else(|| opened.as_ref().expect("source opened").handle);
+            if crate::execution::source_generation(&key.path) != key.generation {
+                return Ok(());
+            }
             unsafe {
                 let band = (self.raster_band)(source, 1);
                 let get_size: unsafe extern "C" fn(BandHandle, *mut c_int, *mut c_int) =
@@ -274,7 +283,9 @@ impl Gdal {
                     height,
                     pixels,
                 });
-                cache.lock().expect("source blocks").insert(key, block);
+                if crate::execution::source_generation(&key.path) == key.generation {
+                    cache.lock().expect("source blocks").insert(key, block);
+                }
             }
             Ok(())
         })();
@@ -309,26 +320,13 @@ impl Gdal {
         unsafe {
             let get_spatial_ref: unsafe extern "C" fn(DatasetHandle) -> *mut c_void =
                 self.symbol(b"GDALGetSpatialRef\0")?;
-            let new_spatial_ref: unsafe extern "C" fn(*const c_char) -> *mut c_void =
-                self.symbol(b"OSRNewSpatialReference\0")?;
-            let set_from_user_input: unsafe extern "C" fn(*mut c_void, *const c_char) -> c_int =
-                self.symbol(b"OSRSetFromUserInput\0")?;
             let is_same: unsafe extern "C" fn(*mut c_void, *mut c_void) -> c_int =
                 self.symbol(b"OSRIsSame\0")?;
-            let destroy: unsafe extern "C" fn(*mut c_void) =
-                self.symbol(b"OSRDestroySpatialReference\0")?;
             let source_ref = get_spatial_ref(source);
             if source_ref.is_null() {
                 return Ok(None);
             }
-            let target_ref = new_spatial_ref(ptr::null());
-            if target_ref.is_null() {
-                return Err("GDAL could not allocate target CRS".into());
-            }
-            let target_valid = set_from_user_input(target_ref, c"EPSG:3857".as_ptr()) == 0;
-            let matches = target_valid && is_same(source_ref, target_ref) == 1;
-            destroy(target_ref);
-            if !matches {
+            if is_same(source_ref, self.native_target.handle) != 1 {
                 return Ok(None);
             }
             let band = (self.raster_band)(source, 1);
@@ -388,8 +386,8 @@ impl Gdal {
             let sw = (rx1 - rx0) as usize;
             let sh = (ry1 - ry0) as usize;
             let started = Instant::now();
-            let cached = if let Some(stamp) = stamp {
-                self.cached_native_window(path, stamp, source, band, [rx0, ry0, rx1, ry1])?
+            let cached = if stamp.is_some() {
+                self.cached_native_window(path, source, band, [rx0, ry0, rx1, ry1])?
             } else {
                 None
             };
@@ -527,5 +525,71 @@ impl Gdal {
                 mask: vec![false; width * height],
             }))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_block_cache_rejects_changed_sidecar_generations() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("source.tif");
+        let mut sidecar = path.as_os_str().to_owned();
+        sidecar.push(".msk");
+        let sidecar = PathBuf::from(sidecar);
+        std::fs::copy(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/corpus/red.tif"),
+            &path,
+        )
+        .unwrap();
+        let old = BlockKey {
+            path: path.clone(),
+            generation: crate::execution::source_generation(&path),
+            block_x: 0,
+            block_y: 0,
+        };
+        let mut cache = SharedBlocks::new(2);
+        cache.insert(
+            old.clone(),
+            Arc::new(DecodedBlock {
+                width: 1,
+                height: 1,
+                pixels: vec![123],
+            }),
+        );
+        // Only the sidecar's filesystem identity matters to generation tracking.
+        std::fs::write(&sidecar, b"mask generation").unwrap();
+        let current = BlockKey {
+            generation: crate::execution::source_generation(&path),
+            ..old.clone()
+        };
+        assert_ne!(old.generation, current.generation);
+        assert!(cache.get(&current).is_none());
+        assert_eq!(cache.get(&old).unwrap().pixels, [123]);
+    }
+
+    #[test]
+    #[ignore = "requires a GDAL runtime with PROJ data"]
+    fn source_block_cache_bypasses_changed_open_dataset() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("source.tif");
+        std::fs::copy(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/corpus/red.tif"),
+            &path,
+        )
+        .unwrap();
+        let blocks = Arc::new(Mutex::new(SharedBlocks::new(1024 * 1024)));
+        let gdal = Gdal::load_with_shared_blocks(blocks.clone()).unwrap();
+        let lease = gdal.source(&path, None).unwrap();
+        let band = unsafe { (gdal.raster_band)(lease.handle, 1) };
+        std::fs::write(path.with_extension("tif.aux.xml"), b"changed generation").unwrap();
+        assert!(
+            gdal.cached_native_window(&path, lease.handle, band, [0, 0, 1, 1])
+                .unwrap()
+                .is_none()
+        );
+        assert!(blocks.lock().unwrap().entries.is_empty());
     }
 }

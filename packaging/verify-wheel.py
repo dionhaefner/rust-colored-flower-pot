@@ -71,6 +71,20 @@ def verify(path: Path, version: str | None = None) -> dict[str, object]:
         assert any(name.startswith(runtime + "share/gdal/") for name in files), (
             "GDAL data missing"
         )
+        required_notices = {
+            "TERRACOTTA-LICENSE.txt",
+            "THIRD_PARTY_NOTICES.md",
+            "COLOR_OPERATIONS_LICENSE.txt",
+            "CRICK_LICENSE.txt",
+            "TDIGEST_LICENSE.txt",
+            "REDOC-LICENSE.txt",
+            "CLIENT-LICENSE.txt",
+            "cargo/manifest.json",
+            "conda/packages.json",
+        }
+        assert {runtime + "licenses/" + name for name in required_notices} <= files, (
+            "native runtime notices missing"
+        )
         assert any(name.startswith("rcfp/_native") for name in files), (
             "Python extension missing"
         )

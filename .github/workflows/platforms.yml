@@ -129,7 +129,6 @@ jobs:
         run: |
           python tests/lambda_runtime_smoke.py \
             --database build/ci/ci-native-smoke/platform.sqlite \
-            --bundle build/ci/ci-lambda-bundle \
             --lambda-zip build/ci/ci-lambda/rcfp-lambda.zip \
             --image public.ecr.aws/lambda/provided:al2023 \
             --out build/ci/ci-lambda-smoke

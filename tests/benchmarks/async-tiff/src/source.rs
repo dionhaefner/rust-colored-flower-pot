@@ -270,7 +270,7 @@ impl Source {
                 .into_iter()
                 .map(|p| pixel(gt, p[0], p[1]))
                 .collect::<Vec<_>>();
-            let center = (size[0] / 2) * size[1] + size[1] / 2;
+            let center = (size[0] / 2).min(size[0] - 2) * size[1] + (size[1] / 2).min(size[1] - 2);
             let p = positions[center];
             let right = positions[center + 1];
             let down = positions[center + size[1]];

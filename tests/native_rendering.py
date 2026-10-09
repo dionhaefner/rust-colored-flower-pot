@@ -600,9 +600,8 @@ def main():
                                 ).max()
                                 <= 1
                             ), (key, position, level, size, "RGB samples")
-                            with urlopen(
-                                url + "&format=webp&quality=85", timeout=60
-                            ) as response:
+                            webp_url = url + "&format=webp&quality=85"
+                            with urlopen(webp_url, timeout=60) as response:
                                 assert response.headers["Content-Type"] == "image/webp"
                                 payload = response.read()
                                 display = np.asarray(
@@ -643,7 +642,7 @@ def main():
                                     "mask": "exact",
                                 }
                             )
-    event_url = urlsplit(url + "&format=webp&quality=85")
+    event_url = urlsplit(webp_url)
     event = args.out / "lambda-event.json"
     event.write_text(
         json.dumps(
