@@ -20,7 +20,7 @@ manifest for `WebMercatorQuad`. It contains absolute XYZ tile URLs, WGS84
 bounds, zooms 0–22, the dataset title and its stored attribution, or an empty
 attribution when none is declared. The `tileSize` extension is always 256.
 Zoom availability describes the renderer's supported range, rather than native
-source resolution. Bounds are limited to Mercator latitude coverage; dateline
+source resolution. Bounds are limited to Mercator latitude coverage. Dateline
 bounds are represented by a nonwrapping enclosing interval.
 
 Supported style parameters are `stretch_range`, `colormap`,
@@ -56,7 +56,7 @@ const tilejson = await client.tileJSON(tilesets[0].keys, {
 leafletTileJSON(L, tilejson).addTo(map);
 ```
 
-`mapLibreTileJSONSource(tilejson)` supplies a raster source for MapLibre;
+`mapLibreTileJSONSource(tilejson)` supplies a raster source for MapLibre.
 `openLayersTileJSONSource(ol, tilejson)` constructs OpenLayers' native TileJSON
 source. Each uses the same manifest. The SDK continues to support the ordinary
 keyed rendering adapters in both profiles.
@@ -71,8 +71,7 @@ keyed rendering adapters in both profiles.
 The coordinate transforms into each source CRS and selects its containing
 native affine cell. Pixel coordinates include the top/left boundary and exclude
 the bottom/right boundary. No overview, display stretch, palette or interpolated
-tile sample participates. Longitude is not wrapped. Invalid coordinates return
-400; missing datasets return 404. A valid coordinate outside a source returns
+tile sample participates. Longitude is not wrapped. Invalid coordinates return 400. Missing datasets return 404. A valid coordinate outside a source returns
 200 with `valid=false` and null values, as do nodata, nonfinite samples, masks
 and nonpositive or nonfinite alpha. Positive fractional alpha remains valid.
 
@@ -80,7 +79,7 @@ For a physical band, `raw` is the stored sample, `scaled` is
 `raw * scale + offset`, and `value` follows that logical dataset's declared
 `raw` or `scaled` mode. Calibration is applied after sampling. `scale`, `offset`
 and descriptive `units` are returned without implicit unit conversion. Samples
-cross the core as f64; integers beyond its exact range can lose precision.
+cross the core as f64. Integers beyond its exact range can lose precision.
 Provenance includes the selected band, its name, source CRS and opaque revision,
 with no file locations or credentials.
 
@@ -88,7 +87,7 @@ Persisted expressions evaluate each operand's nearest cell using its declared
 value mode and existing dtype/mask rules. They return a computed `value`, null
 `raw`/`scaled` and null units. Their provenance records the expression and operand
 values/calibration. Advanced layer channels retain their declared expression,
-selection and overlap behavior; their provenance lists observation IDs.
+selection and overlap behavior. Their provenance lists observation IDs.
 
 ```js
 const sample = await client.point(tilesets[0].keys, {
@@ -107,7 +106,7 @@ displayed RGBA pixels.
 `GET /tileMatrixSets/{id}` returns output CRS, ordered axes, bounding extent and
 23 matrices. Each matrix identifies its resolution (`cellSize`), scale
 denominator, top-left origin, tile dimensions and matrix dimensions. Tile row
-increases downward and column increases rightward. Coordinates use x/y order;
+increases downward and column increases rightward. Coordinates use x/y order.
 `WorldCRS84Quad` uses longitude/latitude even when the reader represents its CRS
 as EPSG:4326. Resolution units are degrees for that grid and meters for the
 projected grids. Scale denominators use the 0.28 mm reference pixel and the
@@ -125,7 +124,7 @@ The polar grids are RCFP definitions with exact power-of-two extents, rather tha
 the OGC UPS grids. Request `GET /tiles/{id}/{tileMatrixSet}/{z}/{x}/{y}.png` for a
 fixed 256×256 tile. Integers must be within the selected matrix's dimensions.
 Out-of-range rows/columns return 400. Dateline wrapping is client-owned, with
-separate first/last columns. Source coverage outside the grid is clipped; cells
+separate first/last columns. Source coverage outside the grid is clipped. Cells
 without valid source coverage are transparent. Continuous bands use
 `REPROJECTION_METHOD`, categorical bands use nearest, and advanced channels
 retain their declared sampling. Grid identity, CRS, geometry and sampling
@@ -138,7 +137,7 @@ do not pin a rendered revision.
 TileJSON discovery applies to Web Mercator. Geographic and polar clients must
 use the explicit matrix descriptor and matching map projection. OpenLayers can
 construct a `tilegrid.TileGrid` from `pointOfOrigin`, `cellSize`, tile dimensions
-and matrix dimensions. Use a view in the descriptor's CRS; transforming other
+and matrix dimensions. Use a view in the descriptor's CRS. Transforming other
 browser layers into a polar CRS requires a separately configured projection
 library.
 

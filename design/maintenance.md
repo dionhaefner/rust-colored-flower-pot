@@ -1,8 +1,8 @@
 # Maintenance practices
 
 The [application validation plan](adoption.md) assigns ownership and review
-cadence. Public expectations are in the [support policy](../docs/support-policy.md);
-application evidence uses the [evaluation record](../docs/examples/application-evaluation.md).
+cadence. Public expectations are in the [support policy](../docs/support-policy.md).
+Application evidence uses the [evaluation record](../docs/examples/application-evaluation.md).
 
 ## Source and supported commands
 
@@ -18,8 +18,8 @@ application evidence uses the [evaluation record](../docs/examples/application-e
 
 Use `packaging/cargo.sh` for the local cached toolchain when needed. Ordinary
 `cargo test --locked` is offline-capable and needs no SQL services. The explicit
-`storage-integration` feature requires configured disposable engines and sockets;
-see the test guide. Rust fmt/Clippy and applicable pre-commit hooks are maintained
+`storage-integration` feature requires configured disposable engines and sockets.
+See the test guide. Rust fmt/Clippy and applicable pre-commit hooks are maintained
 repository checks. Standalone Python runners are scripts, not pytest collections.
 
 ## Reference and evidence discipline
@@ -36,7 +36,7 @@ OS/architecture, settings with credentials redacted, commands, return codes,
 inputs, and exclusions. Use fresh output directories. Missing/skipped checks do
 not pass, and a reference baseline pass does not prove candidate behavior.
 
-Store generated reports and logs in ignored `build/` or `.cache/` directories;
+Store generated reports and logs in ignored `build/` or `.cache/` directories.
 CI uploads its run outputs as artifacts. Retain release qualification alongside
 the exact release artifacts. Keep repeatable assertions and pinned oracle
 expectations in maintained tests, and record rationale and unresolved validation
@@ -68,7 +68,7 @@ changing documented interfaces. Examples, actual browser behavior, and migration
 rehearsals complement source/unit checks.
 
 Keep current installation, backup, migration, deployment and recovery instructions
-in `docs/`; do not maintain duplicate historical candidate/rollback procedures.
+in `docs/`. Do not maintain duplicate historical candidate/rollback procedures.
 Update both the Terracotta trial and native-difference guides with contract changes.
 Artifact tests must install the exact repaired wheel, check contents/RECORD,
 metadata and entry points, and record its hash. A source-archive wheel must work
@@ -76,7 +76,7 @@ without developer context. Identical archive hashes from identical inputs prove
 packaging repeatability, not compiler reproducibility.
 
 Tag releases require the native, wheel, correctness, documentation, and sdist
-gates; publishing uses the protected PyPI environment and trusted publisher. A
+gates. Publishing uses the protected PyPI environment and trusted publisher. A
 tag must be on main with matching package metadata. Hosted workflow configuration,
 local Lambda events/runtime images, socket emulators, and offline basemaps each
 have limited scope. They do not substitute for the current platform matrix or

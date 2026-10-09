@@ -443,7 +443,7 @@ impl Gdal {
             if approximate.handle.is_null() {
                 return Err("cannot create native approximation".into());
             }
-            // This tile owns the approximation; the source owns the base plan.
+            // The tile owns the approximation, and the source owns the base plan.
             o.transformer = Some(self.symbol(b"GDALApproxTransform\0")?);
             o.transformer_data = approximate.handle;
             let create: unsafe extern "C" fn(
@@ -470,7 +470,7 @@ impl Gdal {
             };
             let delete: unsafe extern "C" fn(BandHandle) -> c_int =
                 self.symbol(b"GDALDeleteRasterNoDataValue\0")?;
-            // Coverage comes from alpha; the GDAL utility does not install dst nodata.
+            // Coverage comes from alpha because the GDAL utility does not install destination nodata.
             for band in 1..=(self.raster_count)(handle) {
                 delete((self.raster_band)(handle, band));
             }

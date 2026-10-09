@@ -1,4 +1,4 @@
-"""Pinned real-raster correctness matrix; no timing or performance assertions."""
+"""Check raster correctness against independent expectations on pinned real inputs."""
 
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ def fixtures(out, cache, download):
             if mask or alpha:
                 profile["nodata"] = None
             if alpha:
-                # Byte alpha preserves real source coverage; its grayscale
+                # Byte alpha preserves real source coverage. Its grayscale
                 # conversion is declared in the fixture recipe.
                 values = np.minimum(values // 16, 255).astype("uint8")
                 profile["dtype"] = "uint8"
@@ -240,8 +240,7 @@ def fixtures(out, cache, download):
                 h,
             )
         derivative(source["id"], path, window=window)
-    # Adjacent real publisher tiles: unwrap the western longitude, never relocate
-    # unrelated pixels to manufacture geographic evidence.
+    # Unwrap the western longitude of adjacent publisher tiles.
     mosaic = out / "dateline-mosaic.tif"
     with (
         rasterio.open(cache / sources[1]["file"]) as east,

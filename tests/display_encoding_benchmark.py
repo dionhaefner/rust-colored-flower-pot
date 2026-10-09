@@ -1,8 +1,7 @@
 """Explore display-codec tradeoffs using real rendered navigation tiles.
 
-Pillow codec results are feasibility evidence, not native encoder timings.
-Sample paths and SHA-256 values identify every input; no reference goldens are
-created. Alpha loss and decoded error are reported alongside CPU and size.
+Pillow timings measure codec feasibility. Input paths and hashes identify the
+captured tiles. Reports include alpha loss, decoded error, CPU time and size.
 """
 
 from __future__ import annotations

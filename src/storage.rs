@@ -281,7 +281,7 @@ impl SqliteStore {
         Self::open_writable(path)
     }
 
-    /// A nested operation is a savepoint; the outer operation controls commit.
+    /// Nested operations use savepoints, and the outer operation controls commit.
     pub fn transaction<T>(&self, operation: impl FnOnce(&Self) -> Result<T>) -> Result<T> {
         if self.connection.is_autocommit() {
             let transaction = rusqlite::Transaction::new_unchecked(

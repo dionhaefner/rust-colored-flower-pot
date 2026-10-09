@@ -20,13 +20,13 @@ before posting. A public issue is unsuitable for confidential material.
 For deployment or performance questions, record request patterns, concurrency,
 worker/cache budgets, storage/network conditions, error counts, and artifact
 hashes. The [application evaluation guide](how-to/evaluate.md) provides a reusable
-record. Missing capabilities should describe the application and the obstacle;
-that evidence helps prioritize work.
+record. Missing capabilities should describe the application and the obstacle.
+That evidence helps prioritize work.
 
 ## Releases and compatibility
 
 The current maintenance target is the latest published release and the main
-branch. Fixes for older releases are considered individually; there is no promise
+branch. Fixes for older releases are considered individually. There is no promise
 of backports. Development builds are for evaluation. Before upgrading, read the
 release notes and matching documentation, retain the old artifact/configuration,
 back up the catalog, and rehearse an upgrade and rollback in staging.
@@ -35,13 +35,13 @@ Release notes identify user-visible changes, supported catalog markers, delibera
 compatibility differences, dependency/runtime changes, and known qualification
 limits. Breaking API or catalog changes require explicit migration and recovery
 instructions. A profile switch does not perform a schema migration. The named
-Terracotta profile stays pinned to its documented 0.10.1 contract; changing that
+Terracotta profile stays pinned to its documented 0.10.1 contract. Changing that
 contract requires a separately named profile or an explicit compatibility decision.
 
 A release requires passing native/platform, installed-wheel, reference
 correctness, documentation, and source-archive checks for the exact tag and
-artifacts. Unavailable checks remain unavailable. There is no fixed release date;
-releases follow verified fixes and maintainer capacity. See
+artifacts. Unavailable checks remain unavailable. There is no fixed release date.
+Releases follow verified fixes and maintainer capacity. See
 [release notes](releases.md) and [upgrade procedures](how-to/upgrade-terracotta.md).
 
 ## Dependency maintenance
@@ -57,7 +57,7 @@ preserve checksum-pinned runtime acquisition and rerun geography, masks, categor
 numerical inspection, remote reads, and wheel repair checks. Python, JavaScript,
 documentation, and benchmark environments keep their own dependency constraints
 or locks. Update the independent reference environment only through an explicit
-reference decision; do not silently move the oracle with the candidate.
+reference decision. Keep its versions pinned during candidate validation.
 
 ## Contributing and continuity
 

@@ -412,7 +412,7 @@ impl NeighborQueue {
         if crate::raster::mercator_tile_bounds(x, y, zoom) != bounds {
             return;
         }
-        // All directions are treated equally; the browser may pan in any direction.
+        // The browser may pan in any direction.
         for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
             let nx = x + dx as f64;
             let ny = y + dy as f64;

@@ -148,7 +148,7 @@ def main() -> None:
             "initial raster tile failed",
         )
         expected_hash = hashlib.sha256(image).hexdigest()
-        # Distinct grids exercise several workers; duplicate grids also share active work.
+        # Distinct grids exercise several workers, and duplicate grids share active work.
         tiles = [
             tile + f"&tile_size=%5B{size}%2C{size}%5D" for size in (128, 192, 256, 320)
         ]

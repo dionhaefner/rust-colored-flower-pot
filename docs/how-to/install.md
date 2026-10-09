@@ -1,14 +1,14 @@
 # Install RCFP
 
 Use CPython 3.12–3.14. Select a wheel for the operating system and architecture
-where it will run; an `abi3` wheel supports all three Python versions on that
+where it will run. An `abi3` wheel supports all three Python versions on that
 matching platform. See [artifact requirements](../reference/artifacts.md) and
 [platform support](../reference/support.md).
 
 ## Install a wheel
 
 Create an isolated environment, then install the wheel you obtained for your
-release. Replace the path below with the exact file; this guide does not depend
+release. Replace the path below with the exact file. This guide does not depend
 on a package being available from PyPI.
 
 ```sh
@@ -48,7 +48,7 @@ helper obtains the Rust toolchain in `rust-toolchain.toml`. The first build also
 downloads Python/Cargo dependencies and checksum-locked conda-forge native
 runtime archives. It does not create a conda environment. The current toolchain
 is Rust 1.88.0. A source-built wheel inherits the native requirements of its build
-host; release wheel repair determines the advertised platform tag.
+host. Release wheel repair determines the advertised platform tag.
 
 For a reusable artifact:
 
@@ -60,7 +60,7 @@ Install the exact resulting wheel file, as above. Use `RCFP_GDAL_CACHE` to reuse
 verified native archives, `RCFP_GDAL_PREFIX` for an existing GDAL/PROJ prefix, and
 `RCFP_CARGO_OFFLINE=1` when the Cargo registry is already cached. Fully offline
 builds also require the Python build dependencies and native archives to be
-available; `--no-build-isolation` alone does not supply them.
+available. `--no-build-isolation` alone does not supply them.
 
 For contributor-only editable installation use `python -m pip install -e .`.
 Reinstall after changing Rust/C code or the native runtime. Start

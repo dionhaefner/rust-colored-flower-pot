@@ -3,7 +3,7 @@
 Native layer catalogs keep assets, band metadata, observations, selection,
 overlap policy and default rendering specifications together in one SQLite
 database. Raster files remain external, as in Terracotta. The format marker is
-`rcfp-native-1`; this format is available
+`rcfp-native-1`. This format is available
 in the native profile and currently supports local SQLite databases.
 
 ## Register and render an existing RGB file
@@ -18,10 +18,10 @@ rcfp serve -d imagery.sqlite --bind 127.0.0.1:5000
 Registration uses the file's red/green/blue color interpretations when present,
 otherwise bands 1/2/3 for files with at least three bands and band 1 for smaller
 files. `--bands 3,2,1` overrides this order. Byte imagery defaults to the numeric
-stretch `[0,255]`; other dtypes require `--stretch MIN,MAX`. The stored default
+stretch `[0,255]`. Other dtypes require `--stretch MIN,MAX`. The stored default
 render uses the complete source extent on a 256×256 EPSG:3857 grid, bilinear
 sampling, raw values, PNG and any-valid coverage. It can be replaced through
-`LayerStore.put`. Existing files are read directly; registration never splits
+`LayerStore.put`. Existing files are read directly. Registration never splits
 or rewrites their bands.
 
 ```python
@@ -69,7 +69,7 @@ Nonfinite nodata is represented as a string. Band names resolve first through
 explicit aliases and then through unique nonempty GDAL descriptions. Unknown,
 ambiguous, zero, negative and out-of-range selections fail. Complex bands are
 unsupported. Re-register after changing band declarations. Remote revisions
-must use immutable URLs; revision changes invalidate application caches and
+must use immutable URLs. Revision changes invalidate application caches and
 handles but do not clear GDAL's downloaded-byte cache.
 
 For separate-file RGB, register an observation with assets named `red`, `green`
@@ -81,7 +81,7 @@ to the position or meaning of Terracotta catalog keys.
 
 The same specification is accepted by `LayerApplication.render(name, spec)`,
 `samples(name, spec)`, the native HTTP route and CLI `layers render --spec`.
-The CLI file is optional request input; the service's configuration and default
+The CLI file is optional request input. The service's configuration and default
 render are stored in the database.
 
 ```python
@@ -109,15 +109,15 @@ spec = {
 `bindings` maps 1–16 expression identifiers to asset/band pairs. Every selected
 observation must supply those bindings. `channels` contains one scalar channel
 or three channels in red/green/blue order. Expressions use the shared restricted
-[expression grammar](../explanation/rendering.md); they cannot execute arbitrary
+[expression grammar](../explanation/rendering.md). They cannot execute arbitrary
 code. Every continuous channel requires a finite increasing numeric `stretch`.
-The output maps valid stretched values to 1–255, using ties-to-even rounding;
-masked channels are zero.
+The output maps valid stretched values to 1–255, using ties-to-even rounding.
+Masked channels are zero.
 
 `values="raw"` retains source dtype arithmetic, including integer wrap/promotion.
-Use `scaled` for physical-value arithmetic: alignment precedes
+Use `scaled` for physical-value arithmetic. Alignment precedes
 `raw * scale + offset` in f64, with defaults 1 and 0. Unit conversion and
-vertical value shifts are never implicit; units are metadata and scale/offset
+vertical value shifts are never implicit. Units are metadata and scale/offset
 are the declared numeric transformation. Public sample arrays are
 f64 and carry one mask per output channel. Integer values beyond f64's exact
 integer range cannot be represented exactly in these arrays.
@@ -131,18 +131,18 @@ CRSs and resolutions are supported. Geographic bounds crossing the antimeridian
 must be split into separate increasing grids.
 
 Each input's mask combines its band's nodata, nonfinite samples, mask and
-positive source alpha. Alpha is binary coverage: any positive finite alpha,
+positive source alpha. Alpha is binary coverage. Any positive finite alpha,
 including a fractional value below one, is valid. Per-band validity remains
 independent during warping and expressions. `first_valid` takes the first valid
-computed sample in observation order; `last_valid` takes the last. This happens
+computed sample in observation order. `last_valid` takes the last. This happens
 per output channel. `coverage="any_valid"` makes a pixel opaque if any output
-channel is valid; `all_valid` requires every channel. PNG uses explicit alpha.
+channel is valid. `all_valid` requires every channel. PNG uses explicit alpha.
 
 Categorical bands use nearest sampling even if another resampler is requested,
 and require raw values. Set `categorical_bands` for rasters that lack embedded
 category declarations. A single categorical output channel uses
 `categories=[{"value": 10, "color": [0,128,0,255]}, ...]` and `stretch=None`.
-At most 255 distinct finite values are supported; unmatched classes are
+At most 255 distinct finite values are supported. Unmatched classes are
 transparent. Palette entries match exact computed values, never a continuous
 stretch. PNG compression bytes are not a numerical or category contract.
 
@@ -154,15 +154,15 @@ Run `rcfp serve -d imagery.sqlite`. The service exposes:
 | -------------------------- | ------------------------------------------------------------------ |
 | `GET /layers`              | Format marker and ordered layer IDs                                |
 | `GET /layers/{id}`         | Stored layer, observations, assets and band metadata               |
-| `POST /layers/{id}/render` | PNG from a JSON render specification; `{}` uses the stored default |
+| `POST /layers/{id}/render` | PNG from a JSON render specification. `{}` uses the stored default |
 
 Discovery also supports HEAD. OPTIONS advertises allowed methods. Render
-requests require `Content-Type: application/json`; query parameters and unknown
+requests require `Content-Type: application/json`. Query parameters and unknown
 fields are rejected. File locations cannot be supplied by HTTP render requests.
 Invalid specifications return 400, missing layers 404, unsupported methods 405,
 overload 503 and raster deadlines 504. Active GDAL jobs continue after a deadline.
 Body, admission and worker bounds apply as for the other native interfaces.
-`/swagger.json` documents the native routes; compatibility-mode specifications
+`/swagger.json` documents the native routes. Compatibility-mode specifications
 retain their existing contract. Stored default channels also appear through regular keyed discovery as
 `layer,observation,channel` datasets. The explicit layer routes retain arbitrary
 grids, overlap and coverage settings.
@@ -170,7 +170,7 @@ grids, overlap and coverage settings.
 CLI administration includes `layers create|list DATABASE`,
 `layers describe|delete DATABASE ID`, and `layers put DATABASE ID`, which reads
 one complete layer definition from standard input. `layers render DATABASE ID
--o IMAGE` uses the stored default; `--spec REQUEST.json` overrides it for that
+-o IMAGE` uses the stored default. `--spec REQUEST.json` overrides it for that
 render. No render file is required for a stored default.
 
 ## Import and rollback
@@ -191,12 +191,12 @@ The CLI equivalent is `rcfp layers import SOURCE DESTINATION ID BINDINGS_JSON`.
 Import copies paths into one observation and inspects the rasters. Add a default
 render with `get`/`put` or supply a rendering specification per call. Import never
 modifies the source catalog and never assumes that its final key denotes a band.
-Legacy SQL providers supported by the catalog facade can serve as import sources;
-remote snapshots must already contain their normal metadata.
+Legacy SQL providers supported by the catalog facade can serve as import sources.
+Remote snapshots must already contain their normal metadata.
 
 The native marker is rejected by legacy catalog APIs and the Terracotta profile.
 Existing databases are never upgraded to the native marker in place. Rollback
 means restarting with the original Terracotta catalog. Native definitions cannot
-be losslessly exported to that older schema: selected bands, expressions and
+be losslessly exported to that older schema because selected bands, expressions and
 observation policies exceed its model. Back up the native SQLite database with
 SQLite's backup API, together with the external rasters it references.

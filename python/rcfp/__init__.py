@@ -48,14 +48,14 @@ from . import _native
 
 
 class RcfpError(RuntimeError):
-    """An error returned by the native Terracotta adapter."""
+    """An error returned by the native Rust core."""
 
 
 def request(database: os.PathLike[str] | str, method: str, url: str):
-    """Execute one HTTP-contract request without opening a socket.
+    """Return ``(status, content_type, body, cacheable)`` without opening a socket.
 
     ``database`` accepts a catalog location or local source configuration.
-    Returns ``(status, content_type, body, cacheable)`` where body is bytes.
+    ``body`` is bytes.
     """
 
     return NativeApplication(database).request(method, url)[:4]
@@ -328,10 +328,9 @@ __all__ += ["DataStore", "compute_metadata", "data_operation"]
 
 
 class NativeApplication:
-    """Serve a catalog with persistent workers, source leases and caches.
+    """Serve SQL catalogs, STAC documents and local source configurations.
 
-    ``database`` accepts SQL catalogs, STAC documents and local source
-    configuration files. All use the same request interface.
+    Persistent workers retain source leases and caches across requests.
     """
 
     def __init__(self, database, settings=None):

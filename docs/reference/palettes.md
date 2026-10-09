@@ -7,7 +7,7 @@ Bundled continuous palette names are extracted from the installed core:
 ```
 
 A continuous palette maps stretched intensities to RGBA. `colormap=explicit`
-uses a category-to-color map and requires `explicit_color_map`; it selects nearest
+uses a category-to-color map and requires `explicit_color_map`. It selects nearest
 sampling and suppresses continuous stretching. Hexadecimal RGB strings or RGBA
 colors define category appearance. Encode mappings as JSON query values.
 

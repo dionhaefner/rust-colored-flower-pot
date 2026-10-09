@@ -1,8 +1,8 @@
 """Installed STAC provider, revision, credential and real-raster rendering checks.
 
 The local provider implements the supported STAC API wire contract. Its indexed
-SQLite size experiment measures selection separately; it does not qualify a
-hosted PgSTAC service. Raster bytes are checksum-pinned Sentinel/WorldCover crops.
+SQLite experiment measures selection only and does not qualify hosted PgSTAC.
+Raster bytes are checksum-pinned Sentinel/WorldCover crops.
 """
 
 from __future__ import annotations

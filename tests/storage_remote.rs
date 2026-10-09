@@ -1,4 +1,4 @@
-//! Socket-based integration executable: run separately with local socket permission.
+//! Run socket integration tests separately with local socket permission.
 use rcfp_core::storage::{Dataset, KeyDefinition, Store};
 use std::{
     io::{Read, Write},
@@ -20,7 +20,7 @@ fn leases_failed_refresh_and_signing() {
     std::fs::write(&credentials,"[lease]\naws_access_key_id=lease-key\naws_secret_access_key=lease-secret\naws_session_token=lease-token\n").unwrap();
     let config = root.join("config");
     std::fs::write(&config, "[profile lease]\nregion=eu-west-1\n").unwrap();
-    // Isolated integration executable; configure before spawning threads.
+    // Configure the isolated test executable before spawning threads.
     unsafe {
         for key in [
             "AWS_ACCESS_KEY_ID",

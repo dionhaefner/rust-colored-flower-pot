@@ -37,7 +37,7 @@ pub struct Plan {
 pub struct Samples {
     pub rasters: Vec<Raster>,
     pub contributors: Vec<String>,
-    /// Observation indexes per channel and pixel; None denotes invalid output.
+    /// Observation indexes per channel and pixel, with None for invalid output.
     pub provenance: Vec<Vec<Option<usize>>>,
 }
 impl Samples {

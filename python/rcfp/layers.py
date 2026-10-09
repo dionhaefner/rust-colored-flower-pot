@@ -48,7 +48,7 @@ class LayerStore:
         return self._call("layer_delete", id=name)
 
     def import_catalog(self, name, source, bindings):
-        """Copy full-key dataset bindings into this database; preserve the source."""
+        """Copy full-key dataset bindings into this database, preserving the source."""
         return self._call(
             "layer_import", id=name, source=os.fspath(source), bindings=bindings
         )

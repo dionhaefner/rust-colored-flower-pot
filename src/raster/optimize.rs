@@ -171,7 +171,7 @@ impl Gdal {
                     return Err("cannot allocate warp options".into());
                 }
                 // GDALWarpOptions' first public C ABI field is char **papszWarpOptions.
-                // GDAL owns allocation/destruction; AutoCreateWarpedVRT clones it.
+                // GDAL owns allocation and destruction. AutoCreateWarpedVRT clones it.
                 let list = warp_options.cast::<*mut *mut c_char>();
                 *list = set(*list, c"UNIFIED_SRC_NODATA".as_ptr(), c"YES".as_ptr());
                 *list = set(*list, c"INIT_DEST".as_ptr(), c"NO_DATA".as_ptr());

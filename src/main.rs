@@ -214,7 +214,7 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
                 index += 2;
             }
             "--database-provider" if index + 1 < args.len() => {
-                // CLI startup is single-threaded; workers start below.
+                // CLI startup is single-threaded until workers start below.
                 settings.insert("DRIVER_PROVIDER".into(), args[index + 1].clone().into());
                 index += 2;
             }

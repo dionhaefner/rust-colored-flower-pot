@@ -1,7 +1,7 @@
 """Stage metrics, queued expiry, coalescing, disconnects and owned shutdown.
 
-Uses checksum-pinned real Sentinel pixels. A controlled range server delays HEAD
-responses to make contention reproducible; it never fabricates raster samples.
+A controlled range server delays HEAD responses for pinned Sentinel pixels
+to reproduce contention.
 """
 
 from __future__ import annotations

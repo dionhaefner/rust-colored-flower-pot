@@ -3,8 +3,8 @@
 The demo serves the bundled raster viewer alongside this documentation on GitHub
 Pages. A public Lambda Function URL supplies the API, and a private S3 bucket
 holds four checksum-pinned Sentinel-2 crops. The catalog is precomputed and
-packaged with the function. Tile requests use database-backed S3 raster paths;
-they do not discover STAC Items or stage whole STAC assets.
+packaged with the function. Tile requests use database-backed S3 raster paths.
+They do not discover STAC Items or stage whole STAC assets.
 
 Infrastructure and deployment helpers live in `packaging/demo/`. Two CloudFormation
 stacks separate S3/ECR storage from the function, permissions, logs and optional
@@ -67,7 +67,7 @@ configured credential storage.
 
 The output gives `ApiUrl` and `FunctionName`. The output directory retains the
 image digest, stack outputs and deployment parameters. Keep it for rollback and
-qualification. Use a fresh output directory for each update; the default stack
+qualification. Use a fresh output directory for each update. The default stack
 names are `rcfp-demo` and `rcfp-demo-storage`. Stack names are limited to 50 characters.
 
 Both invocation permissions required by public Function URLs are in the template.
@@ -77,7 +77,7 @@ CORS does not authenticate callers or restrict command-line access.
 
 Some new AWS accounts have concurrency quotas too small to reserve the default
 eight invocations while leaving AWS's required unreserved capacity. Check the
-regional quota and request an increase if necessary; account eligibility and
+regional quota and request an increase if necessary. Account eligibility and
 quotas need actual credentials.
 
 ## Publish the viewer alongside the docs
@@ -118,14 +118,14 @@ The defaults use on-demand Lambda with 2 GiB memory, a 30-second invocation
 timeout, one raster worker per environment, eight concurrent environments and
 seven-day log retention. No provisioned concurrency, VPC, NAT gateway or API
 Gateway is provisioned. AWS supplies temporary execution-role credentials for S3.
-Each environment has its own source handles and caches; scale-out does not share
+Each environment has its own source handles and caches. Scale-out does not share
 those caches. The supplied imagery covers a small lagoon near Venice and carries
 Copernicus attribution in the viewer and metadata.
 
 The [Lambda free tier](https://aws.amazon.com/lambda/pricing/) is shared with other
 account usage. S3 storage/requests, ECR image storage, logs and transfer can incur
 separate charges. Concurrency bounds simultaneous work, not monthly spend.
-Optional alerts track **all account spending** at USD 5 and USD 10; they can arrive
+Optional alerts track **all account spending** at USD 5 and USD 10. They can arrive
 after charges accrue and do not stop execution. This configuration is not a hard
 USD 10 spending cap. Retained images and raster revisions also consume storage.
 
@@ -141,7 +141,7 @@ with the CloudFormation `Concurrency` parameter before the next deployment.
 
 Check initial and warm map views, RGB, expressions and errors on the deployed
 site, and retain timings with the image digest and source checksums. The small
-demo crops validate deployment behavior; they do not represent full-scene
+demo crops validate deployment behavior. They do not represent full-scene
 remote performance. Keep separate benchmark results for larger representative
 rasters and avoid treating warm invocation caches as shared across environments.
 

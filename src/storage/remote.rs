@@ -1,5 +1,5 @@
-//! Immutable S3 SQLite generations. Readers hold leases; refresh never overwrites
-//! an open file. Failed downloads/validation retain the old generation and TTL.
+//! Immutable S3 SQLite generations protected by reader leases.
+//! Failed downloads or validation retain the old generation and TTL.
 use super::SqliteStore;
 use crate::Result;
 use std::{

@@ -10,7 +10,7 @@ excluded from source archives, wheels, and container build contexts.
 | [Compatibility notes](compatibility-notes.md)     | Preserved quirks, narrow accepted differences, and native safety constraints                                           |
 | [Maintenance](maintenance.md)                     | Source map, reference discipline, documentation, build and release practices                                           |
 | [Validation handoff](human-validation.md)         | Completed local evidence, raster correctness results, retained scope decisions, and remaining qualification procedures |
-| [Performance knobs](performance.md)               | Implemented/discarded native optimizations and measured single-VM SQLite navigation from local storage and S3          |
+| [Performance options](performance.md)             | Implemented/discarded native optimizations and measured single-VM SQLite navigation from local storage and S3          |
 | [Async-TIFF evaluation](async-tiff-evaluation.md) | Exact TIFF access, GDAL fallback boundaries, qualification and the independent raster probe                            |
 | [STAC adapter](stac.md)                           | Bounded provider discovery, immutable checksum selections and credential refresh boundaries                            |
 
@@ -35,8 +35,8 @@ Maintain current-design documents as explanations of the implementation that exi
 Keep proposed directions explicitly identified and distinguish measurements from expectations.
 Replace superseded choices rather than accumulating an implementation diary.
 Keep experiments and generated check reports in ignored storage or CI/release
-artifacts. Put repeatable assertions and pinned reference expectations in `tests/`;
-keep consequential design rationale and validation limits here. Establish support
+artifacts. Put repeatable assertions and pinned reference expectations in `tests/`.
+Keep consequential design rationale and validation limits here. Establish support
 claims with fresh results for the exact source and artifacts being qualified.
 
 The [Python compute boundary](python-compute.md) describes trusted host callbacks,

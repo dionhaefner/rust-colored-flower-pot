@@ -1,4 +1,4 @@
-"""Typed Python representation boundary over the shared Rust core."""
+"""Convert native results to Python values and exceptions."""
 
 import json
 from concurrent.futures import ThreadPoolExecutor

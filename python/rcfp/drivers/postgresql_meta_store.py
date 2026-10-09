@@ -1,4 +1,4 @@
-"""Documented postgresql catalog type over the shared native store."""
+"""PostgreSQL catalog access through the native store."""
 
 from ._store import Catalog
 

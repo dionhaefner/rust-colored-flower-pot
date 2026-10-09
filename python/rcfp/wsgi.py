@@ -1,4 +1,4 @@
-"""Small WSGI boundary backed by the RCFP native application."""
+"""WSGI adapter for the RCFP native application."""
 
 from __future__ import annotations
 

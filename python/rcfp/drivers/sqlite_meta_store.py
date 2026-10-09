@@ -1,4 +1,4 @@
-"""Documented sqlite catalog type over the shared native store."""
+"""SQLite catalog access through the native store."""
 
 from ._store import Catalog
 

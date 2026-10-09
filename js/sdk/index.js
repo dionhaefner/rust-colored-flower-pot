@@ -607,7 +607,6 @@ export function encodeState(state) {
   const json = canonical(state);
   if (json.length > 12000)
     fail("Shared state exceeds 12000 characters", "state");
-  // URI encoding works with Unicode and keeps credentials out of a service query.
   return "#rcfp=" + encodeURIComponent(json);
 }
 export async function restoreState(fragment, expected) {

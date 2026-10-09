@@ -66,7 +66,7 @@ pub struct AssetMetadata {
     pub crs: String,
     pub size: [usize; 2],
     pub transform: [f64; 6],
-    /// Four affine corners in the source CRS; the footprint is not a validity hull.
+    /// Four affine corners in the source CRS, independent of pixel validity.
     pub footprint: [[f64; 2]; 4],
     pub bands: Vec<BandMetadata>,
 }

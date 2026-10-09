@@ -15,10 +15,10 @@ and sample hashes, pixel window, CRS, transform, decoded values/masks, and attri
 Tutorial preview images are rendered from those samples by the included scripts.
 
 - Lagoon bands: contains modified Copernicus Sentinel data 2021.
-- Category layer: ESA WorldCover 2021; see its source/attribution in the manifest.
+- Category layer: ESA WorldCover 2021. See its source/attribution in the manifest.
 
 Original imagery remains governed by its provider's terms. The application and
-native bundle include their own third-party notices; retain those with artifacts.
+native bundle include their own third-party notices. Retain those with artifacts.
 
 ## Terracotta MIT notice
 

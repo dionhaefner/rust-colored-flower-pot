@@ -2,7 +2,7 @@
 
 Both arms serve checksum-pinned real raster pixels with identical budgets.
 Control binaries differ only by disabling the named mechanism. Pixel comparisons
-check invariance between arms; independent rendering gates remain separate.
+check invariance between arms. Independent rendering gates remain separate.
 """
 
 from __future__ import annotations

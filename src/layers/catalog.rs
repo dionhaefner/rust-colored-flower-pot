@@ -1,4 +1,4 @@
-//! Versioned SQLite persistence for native layers; legacy catalogs are never rewritten.
+//! Versioned SQLite persistence for native layers. Legacy catalogs remain unchanged.
 use super::*;
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
 

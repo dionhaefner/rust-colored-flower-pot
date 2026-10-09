@@ -1,4 +1,4 @@
-"""Documented Terracotta driver methods backed by the shared native core."""
+"""Terracotta-compatible catalog operations backed by the native core."""
 
 from .._bridge import metadata, operation, submit
 

@@ -85,7 +85,7 @@ pub(super) fn compress(input: &[u8], level: u32) -> Option<Vec<u8>> {
         }
     }
     unsafe {
-        // Each call owns its compressor; there is no shared mutable codec state.
+        // Each call owns its compressor, avoiding shared mutable codec state.
         let pointer = (codec.allocate)(level as i32);
         if pointer.is_null() {
             return None;

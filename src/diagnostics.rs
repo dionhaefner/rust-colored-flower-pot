@@ -754,7 +754,7 @@ fn local_probe(path: &Path, bands: &[usize], render: bool) -> Result<Value> {
     }
 }
 
-/// Isolated native worker; the parent owns its deadline and suppresses raw GDAL errors.
+/// Isolated native worker with a parent-enforced deadline and suppressed raw GDAL errors.
 pub fn raster_worker() -> Result<()> {
     let request: Value = serde_json::from_reader(std::io::stdin().take(1024 * 1024))
         .map_err(|_| "invalid probe input")?;

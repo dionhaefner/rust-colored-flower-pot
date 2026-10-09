@@ -20,7 +20,7 @@ rcfp inspect --raster sample/data/red.tif --render-probe
 
 Inspection lists the selected band, CRS, masks, block sizes, overview coverage
 and effective configuration with its origin. These small samples have no
-overviews; the warning explains the possible cost for larger sources and does
+overviews. The warning explains the possible cost for larger sources and does
 not prevent the tutorial. Inspection does not create a catalog. Keep `sample/data`
 at its current location while using the catalog, whose records contain absolute
 raster paths.
@@ -33,7 +33,7 @@ rcfp inspect -d map.sqlite
 The script writes `map.sqlite` and `map.png` and prints red-band metadata. The
 catalog has ordered keys `scene` and `band` and five datasets. Open `map.png`:
 you should see a grayscale image of the lagoon. Its explicit range is 0–3000.
-This operation creates a catalog; it does not copy the rasters into SQLite.
+This operation creates a catalog. It does not copy the rasters into SQLite.
 
 ```{image} ../_static/red.png
 :alt: Grayscale Sentinel-2 red-band preview of the Venice lagoon sample.
@@ -48,7 +48,7 @@ rcfp serve -d map.sqlite
 
 Leave that terminal running. In another terminal, visit
 `http://127.0.0.1:5000/keys`. It returns the `scene` and `band` key definitions.
-The server prints its selected port; substitute it below if 5000 is occupied.
+The server prints its selected port. Substitute it below if 5000 is occupied.
 Visit `http://127.0.0.1:5000/datasets` to see the registered datasets, then open
 `http://127.0.0.1:5000/singleband/lagoon/red/preview.png?stretch_range=[0,3000]`.
 The image should match `map.png`. Open `http://127.0.0.1:5000/apidoc` to explore
@@ -68,7 +68,7 @@ for display pixels, and **Create share link** to save the current view. See the
 and supplying immutable source revisions. The imagery is centered around longitude 12.36°, latitude 45.46°.
 
 Stop both processes with Ctrl+C when finished. Remove `map.sqlite` and `map.png`
-only if you no longer want this tutorial catalog; keep the supplied raster files.
+only if you no longer want this tutorial catalog. Keep the supplied raster files.
 Continue with [building a catalog](catalog.md), or read
 [rasters, keys, and metadata](../explanation/concepts.md).
 

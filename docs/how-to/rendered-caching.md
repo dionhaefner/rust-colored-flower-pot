@@ -6,7 +6,7 @@ Successful GET and HEAD responses have a strong `ETag`. Mutable URLs use
 validate it before reuse. Send `If-None-Match` with the previous ETag to receive
 a bodyless 304 when the current representation matches. Weak validators and
 lists are accepted for this comparison. `If-Match` uses strong comparison and
-returns 412 on a mismatch. HEAD returns the GET representation's length; 304
+returns 412 on a mismatch. HEAD returns the GET representation's length. 304
 responses omit `Content-Length`.
 
 Errors, POST responses, OPTIONS responses, metrics, and requests carrying
@@ -37,12 +37,12 @@ published_url = url + "?" + urlencode({"revision": revision})
 
 A matching revision gets `private, max-age=31536000, immutable`. The origin
 resolves the current selection and checks the revision before evaluating
-conditions. A changed revision returns 409 with `no-store`; a deleted dataset
+conditions. A changed revision returns 409 with `no-store`. A deleted dataset
 returns 404. An immutable URL cannot return a different encoded representation.
-This is a guard, not an archive: preserve the source/catalog snapshot when old
+The guard does not archive sources, so preserve the source/catalog snapshot when old
 URLs must remain available. A browser or proxy can continue serving an already
 cached immutable representation after the origin's selection changes. Publish a
-new URL to show the new selection; invalidating an old URL requires the cache
+new URL to show the new selection. Invalidating an old URL requires the cache
 operator's purge mechanism.
 
 Registered layers have an equivalent GET route,
@@ -71,13 +71,13 @@ modifying source files during reads. Detected mid-render stamp changes return
 
 Catalog descriptors are refreshed before an encoded-image lookup. Stored
 logical plans include the generations of their input files. STAC staging
-verifies pinned asset checksums; expiring signed access locations are separate
+verifies pinned asset checksums. Expiring signed access locations are separate
 from an explicitly revisioned asset identity. Private transport locations remain
 part of the application cache key, while public identifiers expose only digests.
 
 Unversioned remote URLs retain the configured source, array and image TTLs.
-A conditional request validates the representation visible to the application;
-it does not force an upstream ETag check or clear GDAL's downloaded ranges.
+A conditional request validates the representation visible to the application.
+It does not force an upstream ETag check or clear GDAL's downloaded ranges.
 Immutable remote objects, explicit asset revisions and checksum-pinned STAC
 selections are the publication inputs. Credential rotation and immediate remote
 mutation detection need provider-specific verification. See
@@ -97,7 +97,7 @@ rcfp serve -d catalog.sqlite --bind 127.0.0.1:5000
 It changes eligible GET/HEAD policies to `public, no-cache` or
 `public, max-age=31536000, immutable`. Authorization/cookie requests still use
 `no-store`. The application has one captured source/credential scope and its own
-caches; construct separate applications for distinct source access scopes.
+caches. Construct separate applications for distinct source access scopes.
 RCFP does not authenticate incoming requests. Apply access control at your
 deployment boundary and keep private catalogs private.
 
@@ -115,7 +115,7 @@ nginx -p /absolute/work/ -c /absolute/work/nginx.conf
 
 Open `/example`, enter a render URL and select **Load snapshot**. The example
 resolves a revision with HEAD and displays the pinned image. Cross-origin use
-requires an allowed tile origin; RCFP exposes ETag and revision headers to
+requires an allowed tile origin. RCFP exposes ETag and revision headers to
 allowed origins and sends `Vary: Origin, Authorization, Cookie`, including for
 denied origins. Keep the full URL, query and Vary fields in CDN cache identity.
 Preserve origin `Cache-Control`, ETag and error status. Disable forced caching
@@ -129,7 +129,7 @@ The bounded encoded cache covers singleband, RGB, compute and registered layer
 renders. `TC_RENDER_CACHE_BYTES` defaults to zero and allows up to 512 MiB and
 4096 entries. `TC_REMOTE_RENDER_CACHE_TTL_SECONDS=0` disables finished remote
 image retention. Identical active renders coalesce at every budget. Successful
-cache hits avoid raster execution and encoding; conditional hits also avoid
+cache hits avoid raster execution and encoding. Conditional hits also avoid
 response payload transfer. A cache miss can still require rendering before its
 validator is known.
 

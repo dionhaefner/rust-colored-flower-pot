@@ -128,7 +128,7 @@ def main():
     alpha_path = out / "rgba.tif"
     with rasterio.open(CORPUS / "edge.tif") as src:
         alpha = src.read_masks(1)
-    # A real edge mask supplies binary alpha; a fractional patch explicitly tests
+    # A real edge mask supplies binary alpha. A fractional patch tests
     # positive Float32 alpha below one, unavailable in retained integer fixtures.
     fraction_path = out / "fractional-alpha.tif"
     for path, dtype, fractional in (
@@ -499,8 +499,8 @@ def main():
             epsg=epsg,
             grid_bounds=list(transform_bounds(crs, epsg, *bounds)),
         )
-        # The public GDAL warper uses its 0.125-pixel approximation; select a
-        # small interior grid to avoid unstable nearest ties on geographic edges.
+        # Use a small interior grid to avoid nearest ties at geographic edges
+        # under the public GDAL warper's 0.125-pixel approximation.
         case(
             "explicit-grid-" + epsg,
             lambda rendering=rendering: same(

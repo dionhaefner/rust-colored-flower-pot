@@ -56,7 +56,7 @@ pub struct Raster {
 pub struct ReadRequest {
     /// Explicit native grid, per-band validity and asset revision identity.
     pub grid: Option<crate::layers::GridRead>,
-    /// One-based source band; catalog metadata remains associated with band one.
+    /// One-based source band. Catalog metadata remains associated with band one.
     pub band: usize,
     pub bounds_mercator: Option<[f64; 4]>,
     /// Terracotta's public tuple is `(height, width)`.
@@ -839,7 +839,7 @@ impl Gdal {
 
     unsafe fn read_typed_window(&self, band: BandHandle, mut spec: ReadSpec) -> Result<Vec<f64>> {
         // GDAL resampling must write the source dtype before widening the
-        // transfer buffer: Float64 output changes integer and Float32 rounding.
+        // transfer buffer because Float64 output changes integer and Float32 rounding.
         let dtype = unsafe { (self.band_data_type)(band) };
         macro_rules! read {
             ($ty:ty) => {{
@@ -968,8 +968,8 @@ impl Gdal {
     }
 
     fn open_dataset_options(&self, path: &Path, overview: Option<i32>) -> Result<DatasetGuard> {
-        // Local auxiliary files have known names; probe them without listing
-        // directories. Remote COGs keep the no-sibling-probes default.
+        // Probe known local auxiliary filenames without listing directories.
+        // Remote COGs keep the no-sibling-probes default.
         let explicit_directory_policy = crate::settings::var("TC_GDAL_OPTIONS")
             .ok()
             .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())

@@ -95,11 +95,10 @@ class _Cache:
 
 
 class ComputeApplication(NativeApplication):
-    """Register scalar callbacks and serve them through tilesets, tiles and previews.
+    """Serve scalar callbacks over persisted LayerStore observations.
 
-    Inputs come from one persisted native LayerStore observation. Callbacks run
-    on Python host threads after native workers resample each band to the grid.
-    Use as a context manager or call close() to drain admitted work.
+    Host threads run callbacks after native resampling. Use a context manager
+    or call close() to drain admitted work.
     """
 
     def __init__(
@@ -165,8 +164,8 @@ class ComputeApplication(NativeApplication):
 
         Each input declares asset, one-based band/name, and values='raw'/'scaled'.
         Parameters declare type, default and optional minimum/maximum or enum.
-        dependency_revisions={} explicitly declares no external dependencies;
-        None disables compute and image retention. Change version when code changes.
+        dependency_revisions={} declares no external dependencies, while None
+        disables compute and image retention. Change version when code changes.
         """
         with self._lock:
             if self._closed:
@@ -231,7 +230,7 @@ class ComputeApplication(NativeApplication):
                 raise ValueError("parameters require a type and default")
             self._parameter(schema, schema["default"])
         prepared = self._prepare(definition, preview_grid)
-        # Validate defaults with the shared renderer before exposing the layer.
+        # Validate display defaults before publishing the layer.
         self._operation(operation="compute_style", style=self._style(definition, {}))
         if prepared["context"]["grid"] != preview_grid:
             raise ValueError("invalid preview grid")
@@ -839,8 +838,7 @@ class ComputeApplication(NativeApplication):
                     409, {"error": "source changed during computation; retry"}
                 )
             return response(500, {"error": "compute layer failed"})
-        except Exception:  # noqa: BLE001 - sanitize arbitrary callback/native failures
-            # Callback exceptions may contain credentials or private model inputs.
+        except Exception:  # noqa: BLE001 - exceptions may contain credentials or private inputs
             return response(500, {"error": "compute layer failed"})
 
     def _finished(self, _future):

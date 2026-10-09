@@ -20,9 +20,8 @@ pub struct TcResponse {
 ///
 /// # Safety
 ///
-/// Every argument must be a live NUL-terminated C string for the duration of
-/// the call. The returned pointer must be released exactly once with
-/// [`tc_response_free`].
+/// Arguments must remain valid NUL-terminated C strings until the call returns.
+/// Free the returned pointer exactly once with [`tc_response_free`].
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_http_request(
     database: *const c_char,
@@ -141,18 +140,17 @@ fn response_pointer(result: crate::Result<crate::http::AppResponse>) -> *mut TcR
     }
 }
 
-/// Release a response allocated by [`tc_http_request`].
+/// Release a response returned by this module.
 ///
 /// # Safety
 ///
-/// `response` must be null or a pointer returned by `tc_http_request` that has
-/// not previously been freed.
+/// `response` must be null or an unfreed response returned by this module.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_response_free(response: *mut TcResponse) {
     if response.is_null() {
         return;
     }
-    // SAFETY: the pointer is returned by tc_http_request and consumed once.
+    // SAFETY: the pointer was returned by this module and is consumed once.
     let response = unsafe { Box::from_raw(response) };
     if !response.content_type.is_null() {
         // SAFETY: allocated by CString::into_raw above.
@@ -226,7 +224,7 @@ pub unsafe extern "C" fn tc_data_operation(request: *const c_char) -> *mut c_cha
     owned_c_string(&response.to_string())
 }
 
-/// Open a Python-owned session; errors are returned separately.
+/// Open a Python-owned session and return errors separately.
 /// # Safety
 /// `request` is a live C string and `error` a writable pointer. Free the session once.
 #[unsafe(no_mangle)]
@@ -254,7 +252,7 @@ pub unsafe extern "C" fn tc_session_open(
 }
 /// Execute on an owned session.
 /// # Safety
-/// Session remains live until this call returns; request is a live C string.
+/// `session` and the C string `request` must remain live until this call returns.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_session_operation(
     session: *const crate::python::Session,
@@ -275,9 +273,9 @@ pub unsafe extern "C" fn tc_session_operation(
     };
     owned_c_string(&value.to_string())
 }
-/// Release session; worker queues drain independently.
+/// Release a session.
 /// # Safety
-/// Pointer must have been returned here and must not have been freed; no concurrent calls.
+/// The pointer must be an unfreed session from this module, with no concurrent calls.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn tc_session_free(session: *mut crate::python::Session) {
     if !session.is_null() {

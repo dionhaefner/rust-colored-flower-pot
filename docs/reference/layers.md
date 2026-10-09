@@ -6,8 +6,8 @@ band in a packed TIFF, a separate file, or a persisted STAC selection. Clients
 use the same keys, metadata and rendering APIs for each layout. Raster files
 remain external, as with Terracotta.
 
-Create these catalogs with `format="native"`. Their marker is `rcfp-native-2`;
-existing Terracotta catalogs retain their format and behavior. Native keyed
+Create these catalogs with `format="native"`. Their marker is `rcfp-native-2`.
+Existing Terracotta catalogs retain their format and behavior. Native keyed
 catalog writes currently require local SQLite. Read-only remote SQLite snapshots
 use the regular catalog provider.
 
@@ -49,7 +49,7 @@ samples = store.get_raster_tile(["scene1", "red"], tile_size=(256, 256))
 ```
 
 A separate-file registration uses the same `insert`, with band 1. Default values
-are `raw`; use `scaled` to apply the selected band's scale and offset. Optional
+are `raw`. Use `scaled` to apply the selected band's scale and offset. Optional
 `stretch` and `colormap` become database defaults. Explicit request settings
 override them. Without a stored stretch, rendering uses the measured range.
 Metadata passed to `insert` must describe that logical dataset's values.
@@ -93,7 +93,7 @@ For a `scene,band` catalog, clients use:
 
 XYZ routes, request-time `/compute`, the viewer and JavaScript SDK use the same
 contracts. RGB and compute retain the existing convention that the final key
-selects a channel. Physical band selectors belong to ingestion; native logical
+selects a channel. Physical band selectors belong to ingestion. Native logical
 datasets reject tile selectors other than band 1. Python `get_raster_tile`
 accepts Web Mercator `tile_bounds`, `[height,width]` dimensions, and optional
 `asynchronous=True` for a Future. Reuse a `DataStore` for array reads and a
@@ -102,16 +102,16 @@ accepts Web Mercator `tile_bounds`, `[height,width]` dimensions, and optional
 ## Values, grids and validity
 
 Inputs align on a common north-up Web Mercator grid before expressions. XYZ
-requests supply that grid; RGB and compute previews use the union of input
-extents. Continuous data uses `TC_REPROJECTION_METHOD`; embedded categorical
+requests supply that grid. RGB and compute previews use the union of input
+extents. Continuous data uses `TC_REPROJECTION_METHOD`. Embedded categorical
 bands use nearest sampling and require raw values. Raw expressions retain
 source dtype arithmetic. Samples cross the core as f64, so integers beyond its
 exact integer range can lose precision. Scaled values use `raw * scale + offset` in f64 after
-alignment. Units are descriptive; no implicit unit or vertical conversion occurs.
+alignment. Units are descriptive. No implicit unit or vertical conversion occurs.
 
 Each selected band's validity combines nodata, nonfinite values, masks and
 positive source alpha. Other bands' nodata does not erase its valid pixels.
-Expressions retain operand masks; masked RGB channels are zero and valid
+Expressions retain operand masks. Masked RGB channels are zero and valid
 channels remain visible. Selected bands, declarations, revisions, output grids
 and local source generations participate in raster caching. Database defaults
 and the resolved plan also participate in encoded-image caching.

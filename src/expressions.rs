@@ -450,7 +450,7 @@ fn binary(op: &str, a: Cell, b: Cell) -> Result<Cell> {
     };
     c.value = cast(c.value, c.kind);
     // MaskedArray arithmetic keeps the left operand's hidden data. Comparisons
-    // and NumPy ufuncs still compute data; setmask can make it observable.
+    // and NumPy ufuncs still compute data that setmask can expose.
     if c.mask && ["+", "-", "*", "/", "%"].contains(&op) {
         c.value = a.value;
     }

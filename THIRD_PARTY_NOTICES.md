@@ -2,11 +2,10 @@
 
 Linux bundles extract their GDAL/PROJ/codec runtime and data from hash-locked
 conda-forge archives downloaded directly. Package versions, source URLs,
-license identifiers, and
-available license texts are retained under `licenses/conda/`. The bundle also
-retains this project's upstream MIT notice as
+license identifiers, and available license texts are retained under
+`licenses/conda/`. The bundle also retains this project's upstream MIT notice as
 `licenses/TERRACOTTA-LICENSE.txt`. Platform repair may add further native
-libraries; audit their notices in each final artifact.
+libraries. Audit their notices in each final artifact.
 
 The copied runtime contains GDAL, PROJ, GEOS, libcurl, OpenSSL and raster codec
 libraries. Their upstream projects and license families include:
@@ -28,11 +27,11 @@ projection, metadata and format fallbacks.
 
 RCFP embeds Terracotta 0.10.1 palette NPY files, generated API specification,
 rendered documentation template, favicon and ReDoc JavaScript. The project's
-upstream MIT license covers Terracotta assets; ReDoc's bundled notices are
+upstream MIT license covers Terracotta assets. ReDoc's bundled notices are
 retained verbatim in `src/assets/static/redoc.standalone.js.LICENSE.txt` and in
-packaged licenses. The ReDoc footer uses a text label in place of its remote
-logo image so the API documentation works offline. The Rust color transforms implement the mathematical formulas
-from color-operations 0.4.0 (Copyright 2015 Mapbox, MIT); its complete notice is
+packaged licenses. The ReDoc footer uses a text label so the API documentation
+works offline. The Rust color transforms implement the mathematical formulas
+from color-operations 0.4.0 (Copyright 2015 Mapbox, MIT). Its complete notice is
 retained in `src/assets/COLOR_OPERATIONS_LICENSE.txt` and packaged licenses.
 
 ## Crick statistics and merging t-digest
@@ -40,16 +39,16 @@ retained in `src/assets/COLOR_OPERATIONS_LICENSE.txt` and packaged licenses.
 `src/statistics.rs` is a Rust adaptation of Crick 0.0.8's merging t-digest and
 second-moment recurrence. It retains compression 100, the 42-value input buffer,
 stable sorting/merge order, and quantile interpolation. Crick is BSD-3-Clause,
-copyright Jim Crist-Harif (2016) and Dask Developers (2023); the originating
+copyright Jim Crist-Harif (2016) and Dask Developers (2023). The originating
 t-digest algorithm implementation is Apache-2.0. See `src/assets/CRICK_LICENSE.txt`
 and `src/assets/TDIGEST_LICENSE.txt`, also copied into distributions.
-Upstream source: https://github.com/dask/crick/tree/0.0.8 .
+See the [Crick source](https://github.com/dask/crick/tree/0.0.8).
 
 SQL and S3 support uses the Rust mysql/postgres clients, native-tls with
 vendored OpenSSL, the AWS Rust credential provider chain and rust-s3. Distributed
 bundles include `licenses/cargo/manifest.json` and dependency license/notice files,
 including `openssl-src-*/OPENSSL-LICENSE.txt`. Versions and checksums are pinned
-in Cargo.lock; no Python dependency is required by the native metadata engines.
+in Cargo.lock. No Python dependency is required by the native metadata engines.
 
 ## Browser client
 

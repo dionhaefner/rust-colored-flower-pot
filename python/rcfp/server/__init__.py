@@ -1,1 +1,1 @@
-"""The documented server.app WSGI entry point uses the native application."""
+"""WSGI hosting through server.app."""

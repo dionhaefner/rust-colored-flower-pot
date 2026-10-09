@@ -4,7 +4,7 @@ Documented artifact: **{{ version }}**. Use the docs matching your installed rel
 
 RCFP serves raster imagery from your existing GeoTIFFs and catalogs. It offers a
 native tile server, a browser client, Python and WSGI interfaces, and a named
-Terracotta 0.10.1 compatibility profile. Catalogs describe your data; the original
+Terracotta 0.10.1 compatibility profile. Catalogs describe your data. The original
 raster files stay where you put them.
 
 - **[Get started](tutorials/first-map.md)**: create a map from supplied real imagery.

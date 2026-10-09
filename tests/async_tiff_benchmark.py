@@ -1,4 +1,4 @@
-"""Compare native raster engines on pinned inputs; keep performance and fidelity separate."""
+"""Compare native raster engines on pinned inputs with separate fidelity checks."""
 
 from __future__ import annotations
 

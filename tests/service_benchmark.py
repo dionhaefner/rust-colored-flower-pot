@@ -265,8 +265,8 @@ def server(args, engine, database, folder, categorical):
                     time.sleep(0.05)
             else:
                 raise TimeoutError(f"{engine} startup timeout")
-            # A readiness response can precede other workers' imports. Wait for
-            # all four workers without reading any raster; include in startup.
+            # A readiness response can precede other workers' imports. Include
+            # the wait for all four workers in startup without reading rasters.
             if engine == "terracotta":
                 while time.monotonic() < deadline:
                     children = psutil.Process(process.pid).children()

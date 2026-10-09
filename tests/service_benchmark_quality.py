@@ -1,7 +1,7 @@
 """Inspect saved benchmark images against independent GDAL output-grid reads.
 
-This reports differences between sampling contracts; Terracotta's intermediate
-grid is not assumed to equal a direct output-grid warp. No render is a golden.
+Report sampling differences between Terracotta's intermediate grid and a direct
+output-grid warp.
 """
 
 from __future__ import annotations

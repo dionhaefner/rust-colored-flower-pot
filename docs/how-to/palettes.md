@@ -21,8 +21,8 @@ rcfp serve -d catalog.sqlite
 PowerShell: `$env:TC_EXTRA_CMAP_FOLDER = (Resolve-Path palettes).Path`.
 Request `/singleband/lagoon/red/preview.png?colormap=graycustom&stretch_range=[0,3000]`.
 A 200 PNG response verifies the palette loaded. An unknown palette returns an
-error; check the suffix, dtype, shape, and startup environment.
+error. Check the suffix, dtype, shape, and startup environment.
 
 Use [explicit category maps](categorical.md) for labels. Custom continuous
-palettes color stretched values; they do not define category semantics. The
+palettes color stretched values. They do not define category semantics. The
 [palette reference](../reference/palettes.md) lists bundled names.

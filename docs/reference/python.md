@@ -2,7 +2,7 @@
 
 Select native mode before import, or leave `RCFP_COMPAT_PROFILE` unset. Native
 operations raise `rcfp.RcfpError` on core failures. Direct HTTP operations return
-a status/body even when the HTTP response represents an error; check that status.
+a status/body even when the HTTP response represents an error. Check that status.
 
 ## Results and ownership
 
@@ -10,7 +10,7 @@ a status/body even when the HTTP response represents an error; check that status
 - `request_full` and `NativeApplication.request` add a response-header dictionary
   as a fifth item. Requests accept method, URL, request headers, and byte bodies.
 - `render_preview` returns PNG bytes and raises on a non-success response.
-- `compute_metadata` and `DataStore.get_metadata` return dictionaries; bounds and
+- `compute_metadata` and `DataStore.get_metadata` return dictionaries. Bounds and
   range are tuples. `DataStore` registration accepts ordered key-value sequences.
 - `NativeApplication(database, settings=None)` owns persistent workers and caches.
   The location can be a SQL catalog, STAC document or local source configuration.
@@ -19,7 +19,7 @@ a status/body even when the HTTP response represents an error; check that status
   operations and rolls back the group on failure.
 - `rcfp.stac.SearchClient.search` and `rcfp.stac.Selection.from_items` return
   immutable asset selections with credential-free `metadata` and a content `id`.
-  `Selection.render` returns PNG bytes; use a context manager or `close` to drain
+  `Selection.render` returns PNG bytes. Use a context manager or `close` to drain
   workers and remove staged assets. See [STAC selection](../how-to/stac.md) for
   field mappings, provider limits, revision digests and refresh callbacks.
 
@@ -38,7 +38,7 @@ store.batch(
 The structured `data_operation` interface accepts a dictionary with `operation`,
 `path`, optional `provider`, and operation-specific fields. Common catalog
 operations are `keys`, `datasets`, `metadata`, `create`, `insert`, `delete`, and
-`batch`. Dataset query fields include `where`, `limit`, and `page`; where values
+`batch`. Dataset query fields include `where`, `limit`, and `page`. Where values
 are lists. Raster metadata computation uses `operation="compute_metadata"`.
 Prefer the typed convenience methods when they cover the task.
 
@@ -48,7 +48,7 @@ Prefer the typed convenience methods when they cover the task.
 
 ```
 
-WSGI application destruction drains and joins workers; submitted GDAL work can
+WSGI application destruction drains and joins workers. Submitted GDAL work can
 outlast its response deadline. See [WSGI hosting](../how-to/wsgi.md) and
 [compatibility Python](compatibility-python.md) for the legacy facade.
 

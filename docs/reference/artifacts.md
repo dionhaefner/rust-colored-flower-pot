@@ -4,7 +4,7 @@
 
 The distribution contains `rcfp`, its limited-API CPython extension, native
 executable/shared core, browser assets, GDAL/PROJ runtime/data, and applicable
-licenses. It installs the `rcfp` console entry. Wheels are platform-specific;
+licenses. It installs the `rcfp` console entry. Wheels are platform-specific.
 `abi3` covers CPython 3.12–3.14 on that platform. Use the repaired wheel's tag for
 Linux glibc requirements. A local source wheel may require newer system libraries
 than a different release artifact.
@@ -17,9 +17,9 @@ Click, Pillow, Python SQL adapters and Rasterio are not runtime requirements. Se
 
 Keep `bin`, `lib`, `share`, and `licenses` together. Copying only `bin/rcfp` loses
 its native dependencies and GDAL/PROJ data. The Linux standalone baseline is
-bundle-specific; the established AL2023 bundle targets glibc 2.34 or newer.
+bundle-specific. The established AL2023 bundle targets glibc 2.34 or newer.
 Desktop/wheel artifacts and Lambda-targeted bundles may have different baselines.
-`TERRACOTTA_RUNTIME_ROOT` can select a bundle; an external GDAL library needs its
+`TERRACOTTA_RUNTIME_ROOT` can select a bundle. An external GDAL library needs its
 own correctly installed dependencies/data.
 
 ## Container and Lambda

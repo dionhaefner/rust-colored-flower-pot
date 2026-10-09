@@ -32,7 +32,7 @@ use an EPSG:3857 grid. The spatial index conservatively selects observations
 whose asset extents intersect that grid. It loads at most `max_sources` candidates
 plus one overflow row, in declared observation order. `selection` in a request
 matches exact JSON attributes and narrows any stored layer selection. Use an
-explicit date or interval label; the service does not infer a preferred date,
+explicit date or interval label. The service does not infer a preferred date,
 interpolate time, or interpret date strings as ranges.
 
 ```python
@@ -54,7 +54,7 @@ arrays, contributors, owners = app.samples("terrain", spec, provenance=True)
 
 `plan` returns ordered observation IDs, `source_count`, `reads`, `buffer_bytes`
 and `source_bytes` without opening rasters. `owners` contains one integer array
-per output channel. A valid pixel indexes `contributors`; `-1` denotes invalid
+per output channel. A valid pixel indexes `contributors`. `-1` denotes invalid
 output. Contributors identify observations in the stored definition, including
 their assets and declared revisions. Selected observations can own no valid
 pixels. Each channel follows its own validity and
@@ -73,7 +73,7 @@ pixels. Ordinary sample calls retain their existing return shape.
 references. `max_reads` bounds band-read requests, including repeated bindings.
 Limits are checked before raster reads and before output buffers are allocated.
 No candidate subset is silently rendered when a view exceeds its budget. HTTP
-returns **422** with `mosaic budget exceeded`; Python and CLI raise an error.
+returns **422** with `mosaic budget exceeded`. Python and CLI raise an error.
 Worker/admission overload remains **503**, and raster deadlines remain **504**.
 
 `buffer_bytes` is a conservative reservation based on grid dimensions, bindings,
@@ -87,13 +87,13 @@ as a guarantee of bounded broad-view cost. Bounds are 1–64 sources, 1–1024 r
 
 These estimates are admission limits, not total process RSS or network-byte
 limits. Configure [GDAL, worker and application caches](resources.md) separately.
-The existing fixed worker queue and application admission bound concurrent work;
-active GDAL work drains after a response deadline. Read errors fail the complete
+The existing fixed worker queue and application admission bound concurrent work.
+Active GDAL work drains after a response deadline. Read errors fail the complete
 request. The index contains affine extent bounds, not exact valid-data hulls.
 Re-register after changing source georeferencing, band declarations or selection.
 Selected local files and sidecars must match their registered generation or the
-request fails before reads. Keep sources stable during registration and serving;
-the footprint index represents the registered extent. Remote sources require
+request fails before reads. Keep sources stable during registration and serving.
+The footprint index represents the registered extent. Remote sources require
 immutable revisioned URLs.
 
 ## Prepare an optional broad-view product
@@ -114,7 +114,7 @@ rcfp layers put terrain.sqlite terrain-broad < prepared-terrain/layer.json
 
 The specification fixes the full base grid and scientific channels. Base
 sampling must be nearest on an EPSG:3857 grid. The shape must be divisible by
-`factor`. Each base window must satisfy the original mosaic budgets; preparation
+`factor`. Each base window must satisfy the original mosaic budgets. Preparation
 fails if its candidate density is too high. Choose a smaller block or partition
 the collection deliberately. The default total preparation limit is 67,108,864
 base pixels, adjustable with `--max-pixels`. Factors are 1–32, and base blocks
@@ -131,7 +131,7 @@ Processing order is explicit:
 
 `average` takes the unweighted mean of valid base samples within each factor
 block. Empty blocks remain invalid. Thus an index is computed **before** spatial
-averaging; averaging its input bands first is a different product and is not
+averaging. Averaging its input bands first is a different product and is not
 supported by this helper. Categorical inputs or palettes reject `average`.
 `nearest` selects the base sample at `[factor//2, factor//2]` in each block,
 including that sample's validity. It preserves category IDs and does not choose
@@ -141,8 +141,8 @@ majority vote, unit conversion or temporal aggregation.
 `manifest.json` records the source definition digest, full SHA-256 checksums of
 parent TIFFs, specification, factor, aggregation, generation time, output checksum
 and block/channel contributor counts. `layer.json` contains a separate layer
-binding those computed channels. Counts trace blocks to source observations;
-original mosaics additionally support per-pixel ownership. Failed preparation
+binding those computed channels. Counts trace blocks to source observations.
+Original mosaics additionally support per-pixel ownership. Failed preparation
 publishes neither a manifest nor a usable layer definition. PNGs and service
 responses are never preparation references.
 
@@ -155,18 +155,18 @@ parent bytes or product bytes. Checks hash the parents and belong outside the
 latency-sensitive request path. Regenerate into a new directory, verify it, and
 atomically replace the broad layer with `LayerStore.put` or `layers put`. Preserve
 the old directory for rollback. The new asset checksum participates in raster
-and encoded-image identities; local file generations invalidate caches as usual.
+and encoded-image identities. Local file generations invalidate caches as usual.
 
 Choose the original or broad layer explicitly in the application. Use the
-original for detailed views; use the prepared product when output pixels are at
+original for detailed views. Use the prepared product when output pixels are at
 least as large as its stored pixels. The product is a distinct scientific
 sampling choice, so the service does not switch to it implicitly or substitute
 it after budget exhaustion. Its stored expressions operate on already computed
-channels; changing scientific expressions requires regeneration. Display
+channels. Changing scientific expressions requires regeneration. Display
 stretches and colors can still be changed at rendering time.
 
 Compatibility catalogs and Terracotta routes retain their existing single-dataset
 selection and rendering. Indexed mosaics and preparation are native layer
 features. The maintained correctness and measurement runner is
-`tests/mosaic_contracts.py`; its reports distinguish loopback/local evidence
+`tests/mosaic_contracts.py`. Its reports distinguish loopback/local evidence
 from cloud, WAN, browser-paint and other-platform qualification.

@@ -2,14 +2,14 @@
 
 You will build a second catalog and inspect it through Python. Use the same
 installed environment and sample data as [your first map](first-map.md). Choose a
-new filename: the example refuses to replace an existing catalog.
+new filename because the example refuses to replace an existing catalog.
 
 ```sh
 python sample/create_catalog.py catalog.sqlite
 ```
 
-Here is the script you just ran. The checksum check makes the sample reproducible;
-`DataStore.create` fixes the key order; `insert` registers one raster per dataset.
+The script verifies sample checksums, fixes the key order with `DataStore.create`,
+and registers one raster per dataset with `insert`.
 
 ```{literalinclude} ../examples/create_catalog.py
 :language: python
@@ -33,7 +33,7 @@ print(json.loads(body))
 
 The bounds are geographic coordinates even though the Sentinel sample is stored
 in UTM zone 32N. The discovery response lists the four lagoon bands and the
-WorldCover layer. Key values select records; they need not match filenames.
+WorldCover layer. Key values select records. They need not match filenames.
 
 If you also have a source checkout or archive, create a backup with its supplied
 [SQLite backup script](../how-to/backup-migrate.md). Run from that source root and

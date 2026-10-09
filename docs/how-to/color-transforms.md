@@ -20,7 +20,7 @@ assert status == 200
 Examples include `gamma rgb 1.8`, `saturation 0.5`, and `sigmoidal rgb 10 0.5`.
 Encode spaces and punctuation with a query builder. For singleband gamma use
 `gamma 1 2.2`. RCFP evaluates color-operation formulas in its native rendering
-pipeline; consult the request specification for accepted operations.
+pipeline. Consult the request specification for accepted operations.
 
 ```{image} ../_static/gamma.png
 :alt: Lagoon RGB preview with gamma rgb 1.8, shown for comparison with the uncorrected tutorial RGB image.

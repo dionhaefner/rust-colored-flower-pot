@@ -3,7 +3,7 @@
 RCFP targets Terracotta 0.10.1 through the named `terracotta-0.10.1` profile.
 Your supported raster files, URLs, and 0.10 catalogs can stay in place. Package,
 import, command, and deployment entry-point names need deliberate changes.
-Check [the support matrix](../reference/support.md) for your integration; private
+Check [the support matrix](../reference/support.md) for your integration. Private
 Terracotta internals are outside the public compatibility contract.
 
 ## Choose your path
@@ -32,7 +32,7 @@ python docs/examples/backup_catalog.py existing.sqlite trial.sqlite
 ```
 
 Use a restored copy for writes and initial exploration. Lazy metadata requests
-can write to a writable catalog; a filename that looks like a read-only task is
+can write to a writable catalog. A filename that looks like a read-only task is
 not a guarantee of pure inspection. Keep the original raster paths reachable
 from both applications, and back up raster data independently if needed.
 
@@ -90,7 +90,7 @@ public URL. Retain the previous service and configuration for rollback.
 
 Stop RCFP writers before restarting the old service. While the catalog still
 uses the supported 0.10 encoding, ordinary RCFP writes remain readable by
-Terracotta 0.10.1; switching servers needs no reverse migration. Restore the
+Terracotta 0.10.1. Switching servers needs no reverse migration. Restore the
 backup if a trial changed records you wanted to preserve, or if you explicitly
 upgraded an older schema. Stop writers before a restore and validate the restored
 catalog and imagery. Do not run writers with incompatible schema encodings.

@@ -8,7 +8,7 @@ require the native profile.
 The server discovers dataset keys and exposes the regular metadata, singleband,
 RGB and compute routes. Tile clients and the viewer use these contracts for every
 source. Logical channel names select datasets. Operators bind physical bands and
-calibration at discovery or ingestion; clients choose stretch and palettes through
+calibration at discovery or ingestion. Clients choose stretch and palettes through
 regular requests. Managed catalogs also store display defaults in the database.
 
 ## Serve an entire static catalog
@@ -32,14 +32,14 @@ of the same Sentinel acquisition. Switch between them in the Dataset menu.
 Your own catalog may contain nested Catalogs/Collections and many observations.
 RCFP traverses all reachable `child` and `item` links before listening, resolves
 relative links against each consumed document, and orders the selected assets
-by time and identity. Shared documents and cycles are visited once; `parent`,
+by time and identity. Shared documents and cycles are visited once. `parent`,
 `root`, `self` and unrelated links are not followed.
 
 Remote metadata links must stay on the entry point's origin. Local catalogs
 must link to local metadata documents. Asset files can be hosted separately.
 Each selected asset needs a content revision as described below, and raster
-downloads begin when metadata or rendering first needs an asset. Tiles use the resolved selection;
-they never walk the catalog again. Restart to pick up catalog changes.
+downloads begin when metadata or rendering first needs an asset. Tiles use the resolved selection.
+They never walk the catalog again. Restart to pick up catalog changes.
 
 This operates directly on the STAC metadata without importing a database.
 For large catalogs, an indexed STAC API can select relevant observations without
@@ -70,7 +70,7 @@ scale and offset.
 Replace the example with your own local Item or ItemCollection JSON file, or an
 HTTPS document URL. Relative asset links resolve against that document.
 Restart the server to update its resolved catalog. Each render selects one
-observation; observations are not mosaicked or blended.
+observation. Observations are not mosaicked or blended.
 
 ## Ingest a STAC selection
 
@@ -87,7 +87,7 @@ serving. The database contains the resolved Items, absolute asset locations,
 checksums, band declarations, source definition and metadata. Raster files remain
 external. After ingestion, serving uses this snapshot without rereading the
 source metadata documents. Reingest to publish a new selection. Ingestion
-computes selected-band metadata before atomic publication; `--skip-metadata`
+computes selected-band metadata before atomic publication. `--skip-metadata`
 defers raster staging and statistics until needed.
 
 Import an indexed POST Item Search with an inline query:
@@ -113,10 +113,10 @@ store.define(["lagoon", "ndvi"], "(nir-red)/(nir+red)",
 
 Key mappings refer to `collection`, `datetime`, `item` or `asset`. Duplicate
 mapped dataset keys fail. Keep enough observation keys to distinguish the
-selected Items. Packed TIFFs need unique logical band names in `eo:bands`;
-common names take precedence over names. An unnamed single band uses its asset
+selected Items. Packed TIFFs need unique logical band names in `eo:bands`.
+Common names take precedence over names. An unnamed single band uses its asset
 name. The regular tile requests use these logical names without physical band
-parameters. STAC calibration supplies scaled values; local raster registrations
+parameters. STAC calibration supplies scaled values. Local raster registrations
 can declare the same semantics with `values="scaled"`.
 
 ## Search an existing STAC API
@@ -147,9 +147,9 @@ way to share direct discovery settings across CLI, Python, WSGI and Lambda.
 | `asset_urls`       | Path to a signed-asset URL mapping refreshed by the deployment.                             |
 | `revisions`        | Path to SHA-256 revisions when Items omit checksums. Ingestion persists resolved checksums. |
 | `assets`           | Optional array of physical asset names to discover.                                         |
-| `max_items`        | Maximum returned Items; default 1000, maximum 10,000.                                       |
-| `max_documents`    | Maximum static catalog documents; default 10,000, maximum 20,000.                           |
-| `max_staged_bytes` | Verified TIFF staging budget per selection; default 512 MiB, maximum 16 GiB.                |
+| `max_items`        | Maximum returned Items. Default 1000, maximum 10,000.                                       |
+| `max_documents`    | Maximum static catalog documents. Default 10,000, maximum 20,000.                           |
+| `max_staged_bytes` | Verified TIFF staging budget per selection. Default 512 MiB, maximum 16 GiB.                |
 
 Unknown options fail. Credentials and refreshed signed locations remain operational
 inputs. Public metadata excludes asset URLs and credential headers.
@@ -219,33 +219,33 @@ the bytes associated with a verified revision.
 On an asset's first metadata or render request, RCFP copies or downloads the
 **whole self-contained TIFF**, verifies it, and stages it privately. It computes
 first-band statistics for metadata and the default stretch. Subsequent requests
-reuse the verified file and cached metadata; rendering uses the bounded raster
+reuse the verified file and cached metadata. Rendering uses the bounded raster
 executor. Embedded georeferencing, masks, alpha and
 nodata remain authoritative. External sidecars and VRT source graphs are not
-supported. Remote reads require HTTPS; literal loopback HTTP is allowed for
+supported. Remote reads require HTTPS. Literal loopback HTTP is allowed for
 local adapters and tests. An `s3:` reference needs a signed HTTPS URL mapping.
 
 The default cumulative staging budget is 512 MiB. Set
 `options.max_staged_bytes` to change it, up to 16 GiB. This budget covers all
 assets used during the server's lifetime.
 First-use download latency can therefore be substantial for large assets.
-First-band statistics use `TC_LAZY_LOADING_MAX_SHAPE` (default `[1024,1024]`);
-the in-memory metadata cache retains up to 256 asset descriptors.
+First-band statistics use `TC_LAZY_LOADING_MAX_SHAPE` (default `[1024,1024]`).
+The in-memory metadata cache retains up to 256 asset descriptors.
 
 API discovery defaults to 100 Items per page, 100 pages and 1000 returned Items.
 `options.max_items` changes the result limit up to 10,000. Each page or Item
-JSON document is bounded to 8 MiB and a search to 32 MiB. Limits fail explicitly;
-results are never silently truncated. Requests have a 30-second transport timeout.
+JSON document is bounded to 8 MiB and a search to 32 MiB. Limits fail explicitly.
+Results are never silently truncated. Requests have a 30-second transport timeout.
 All pages must succeed before startup. Redirects, cross-origin pagination,
 malformed responses and conflicting duplicate Items fail the selection.
 
 Static discovery shares the 1000-Item default, `options.max_items` setting, and
-32 MiB total metadata budget. Its document limit defaults to 10,000;
+32 MiB total metadata budget. Its document limit defaults to 10,000.
 `options.max_documents` changes it up to 20,000, counting Catalogs, Collections
 and Items. Each document is limited to 8 MiB. Missing or invalid linked documents
 fail startup without exposing a partial selection. Catalog links must use GET
 without link-supplied headers. Discovery metadata reports the document count
-in `metrics.pages`; an API source reports its response page count there.
+in `metrics.pages`. An API source reports its response page count there.
 
 Assets are ordered by UTC start time, then collection, Item ID and asset key.
 Identical duplicate observations collapse, but duplicate Item occurrences still
@@ -260,7 +260,7 @@ SDK and viewer use the same discovery and rendering code. Dataset keys are
 `collection`, `datetime`, `item`, and `asset`, with asset last so RGB and compute
 can select multiple assets from one observation. URL-encode each key separately.
 The datetime key is the UTC start time, including for interval observations.
-Items without a collection use `~`; collection names starting with `~` gain one
+Items without a collection use `~`. Collection names starting with `~` gain one
 leading `~` so the mapping stays unique.
 
 For the included red Item, request a preview with:
@@ -288,7 +288,7 @@ By default, discovery includes assets declaring TIFF media types. When media
 type is absent, `.tif`/`.tiff` hrefs or `raster:bands` identify raster candidates.
 Non-TIFF media types such as PNG thumbnails are skipped. An Item may expose at
 most 16 raster assets. Optional `"assets": ["red", "green"]` in source options restricts the catalog
-to named assets; absent names are skipped. It does not select a rendering.
+to named assets. Absent names are skipped. It does not select a rendering.
 
 `/metadata/{collection}/{datetime}/{item}/{asset}` returns the standard raster
 statistics in scaled units and a `metadata.stac` descriptor containing observation,
@@ -306,25 +306,25 @@ use the common methods, CORS policies, validation and cache behavior.
 
 | STAC field                                                        | RCFP mapping                                                                                                                                                    |
 | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`, `stac_version`, `id`, `collection`                        | Feature Items from STAC 1.0.0/1.1.0; collection plus Item ID identifies an observation.                                                                         |
+| `type`, `stac_version`, `id`, `collection`                        | Feature Items from STAC 1.0.0/1.1.0. Collection plus Item ID identifies an observation.                                                                         |
 | `properties.datetime`                                             | UTC-normalized observation instant.                                                                                                                             |
-| `start_datetime`, `end_datetime` when datetime is null            | UTC-normalized closed observation interval; ordering uses its start.                                                                                            |
+| `start_datetime`, `end_datetime` when datetime is null            | UTC-normalized closed observation interval. Ordering uses its start.                                                                                            |
 | `bbox`, `geometry`                                                | Two-dimensional WGS84 bbox and Polygon/MultiPolygon discovery footprint, retained in public metadata. Dateline-crossing bboxes are accepted.                    |
 | Asset key, `href`                                                 | Private native source location. Requested keys absent from an Item are skipped. Default TIFF discovery or an optional asset allowlist.                          |
 | `file:checksum` or explicit `revisions`                           | Verified SHA-256 content revision.                                                                                                                              |
-| `raster:bands`                                                    | Array position becomes one-based band; `scale` defaults to 1 and `offset` to 0, applied after alignment in f64. Nonfinite results are invalid.                  |
-| `raster:bands[].nodata`                                           | Numeric or `nan`/`inf`/`-inf` declaration; if present it must match embedded GDAL nodata before interpolation. Embedded masks/alpha/nodata govern coverage.     |
+| `raster:bands`                                                    | Array position becomes one-based band. `scale` defaults to 1 and `offset` to 0, applied after alignment in f64. Nonfinite results are invalid.                  |
+| `raster:bands[].nodata`                                           | Numeric or `nan`/`inf`/`-inf` declaration. If present it must match embedded GDAL nodata before interpolation. Embedded masks/alpha/nodata govern coverage.     |
 | `eo:bands`                                                        | Band `name` and `common_name` aliases in metadata. Select rendering bands by index. If both EO/raster arrays exist their lengths must match.                    |
-| Projection `proj:code`, `proj:epsg`, `proj:wkt2`, `proj:projjson` | Discovery CRS descriptor, asset values taking precedence over Item values. Actual raster georeferencing remains authoritative; declarations do not override it. |
-| Search `bbox`, `datetime`, `collections`, `ids`, `limit`          | Sent to the provider's search/index; `datetime` accepts an RFC3339 instant or interval with one open `..` endpoint.                                             |
+| Projection `proj:code`, `proj:epsg`, `proj:wkt2`, `proj:projjson` | Discovery CRS descriptor, asset values taking precedence over Item values. Actual raster georeferencing remains authoritative. Declarations do not override it. |
+| Search `bbox`, `datetime`, `collections`, `ids`, `limit`          | Sent to the provider's search/index. `datetime` accepts an RFC3339 instant or interval with one open `..` endpoint.                                             |
 | Search response `links[rel=next]`                                 | GET or POST pagination, including POST `body` and `merge`. Relative asset links use each Item's self URL, otherwise the page URL.                               |
 
 No full STAC schema validation is performed. Other descriptive fields/extensions
-are ignored; query/filter/sort extensions, 3D bboxes, null footprints, collection
+are ignored. Query/filter/sort extensions, 3D bboxes, null footprints, collection
 asset inheritance, cloud-native S3 reads, and core STAC 1.1 unified `bands` are
-outside the initial field contract. An `s3:` asset reference can be consumed
+outside the documented field contract. An `s3:` asset reference can be consumed
 with a signer that resolves it to a private HTTPS URL. Supply `raster:bands` or
-`eo:bands` for multiband assets; an asset without either declares band 1 only.
+`eo:bands` for multiband assets. An asset without either declares band 1 only.
 STAC footprints describe discovery, not a pixel clipping mask.
 
 ## Python applications

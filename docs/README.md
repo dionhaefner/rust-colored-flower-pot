@@ -20,4 +20,4 @@ Open http://127.0.0.1:8000. The site provides [tutorials](tutorials/index.md),
 
 [Contributor instructions](contributing.md) describe snapshots, example checks,
 CI, versioned hosting, and authoring. HTML rendering uses local extracted
-snapshots; it does not need native libraries or external data/services.
+snapshots. It does not need native libraries or external data/services.

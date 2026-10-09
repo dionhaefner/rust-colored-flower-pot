@@ -13,7 +13,7 @@ python -m pip install gunicorn
 python -m gunicorn --bind 127.0.0.1:5000 --workers 1 rcfp.wsgi:app
 ```
 
-Gunicorn runs on Unix; choose a supported WSGI host on Windows. With
+Gunicorn runs on Unix. Choose a supported WSGI host on Windows. With
 [Waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/), for example,
 `waitress-serve --listen=127.0.0.1:5000 rcfp.wsgi:app` uses the same application.
 Install your chosen host separately. `TC_DRIVER_PATH` must be set before module
@@ -22,7 +22,7 @@ routing traffic to it.
 
 To configure an explicit module, use `docs/examples/native_wsgi.py` as a starting
 point, or construct `Application(path, settings=...)`. Each host process has its
-own native worker pool and cache budget; multiplying host workers multiplies
+own native worker pool and cache budget. Multiplying host workers multiplies
 those resources. A single persistent process can already use several raster
 workers. See [resource tuning](resources.md).
 
@@ -39,8 +39,8 @@ python -m gunicorn --bind 127.0.0.1:5000 --workers 1 rcfp.server.app:app
 application or extension hooks. Native `rcfp.wsgi.create_app(database)` creates
 the same kind of adapter with an explicit catalog. Follow
 [native migration](../native-migration.md) when changing entry points. Shutdown
-waits for outstanding native work and can outlast an HTTP response deadline;
-configure your host's graceful timeout.
+waits for outstanding native work and can outlast an HTTP response deadline.
+Configure your host's graceful timeout.
 
 Run [read-only diagnostics](diagnostics.md) from this installed environment with
 the same catalog, TOML and environment settings before starting WSGI. Use

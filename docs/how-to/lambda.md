@@ -6,7 +6,7 @@ CloudFormation templates and GitHub Pages publication.
 
 RCFP supplies a custom-runtime bootstrap and API Gateway v1/v2 event adapters.
 Build a Lambda-targeted native bundle for the intended architecture and Amazon
-Linux baseline; a desktop wheel or arbitrary host-built bundle is not a Lambda
+Linux baseline. A desktop wheel or arbitrary host-built bundle is not a Lambda
 artifact. See [AWS custom runtime requirements](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html)
 and [the support matrix](../reference/support.md). Local runtime-image tests do
 not establish an actual account deployment.
@@ -51,8 +51,8 @@ actual API Gateway integration and verify binary decoding at the client.
 Deploy through your existing infrastructure workflow. Check role credentials,
 S3 range access, catalog refresh, initial and repeated invocations, timeout/error
 replies, and binary image responses. Test your public frontend's CORS and basemap
-configuration. If using X-Ray, set `TC_XRAY_PROFILE=true` and configure the daemon;
-native subsegments require a sampled incoming trace ID. This uses native tracing
+configuration. If using X-Ray, set `TC_XRAY_PROFILE=true` and configure the daemon.
+Native subsegments require a sampled incoming trace ID. This uses native tracing
 rather than Terracotta's Python SDK decorators.
 
 Keep the previous function version and routing configuration for rollback.

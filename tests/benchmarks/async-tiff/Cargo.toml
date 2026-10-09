@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
-# Independent benchmark dependency graph; never linked into shipped RCFP.
+# Independent benchmark dependencies are excluded from shipped RCFP.
 [workspace]
 
 [dependencies]

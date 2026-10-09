@@ -34,13 +34,13 @@ rcfp migrate older-copy.sqlite --to 0.10.1 --yes
 ```
 
 The dry run prints the planned SQL without applying it. `--from VERSION` is an
-explicit source-version override when the stored version cannot be read; use it
+explicit source-version override when the stored version cannot be read. Use it
 only after inspecting the actual schema. The 0.7 MySQL chain is unsupported, and
 read-only S3 snapshots cannot be upgraded in place. Consult
 [catalog format reference](../reference/catalogs.md) for boundaries.
 
-SQLite and PostgreSQL upgrades are transactional. MySQL DDL may partially commit:
-after a failed upgrade restore the original backup before retrying. There is no
+SQLite and PostgreSQL upgrades are transactional. MySQL DDL may partially commit,
+so restore the original backup before retrying a failed upgrade. There is no
 promised reverse migration. To return to an older schema, restore the matching
 backup and old application after stopping writers. Profile selection alone
 never changes the format marker.

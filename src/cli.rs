@@ -279,8 +279,7 @@ pub fn optimize_command(args: &[String]) -> Result<()> {
     })
 }
 
-/// Structured core adapter used by Python ingestion and differential tooling.
-/// A batch is a single transaction; each operation also stands alone.
+/// Execute preparation operations individually or as a single-transaction batch.
 pub fn data_operation(request: &Value) -> Result<Value> {
     let op = request["operation"].as_str().ok_or("operation required")?;
     let path = || {

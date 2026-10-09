@@ -1,4 +1,4 @@
-"""TiTiler benchmark adapter: resolve the shared SQLite catalog as STAC assets.
+"""Resolve the shared SQLite benchmark catalog as TiTiler STAC assets.
 
 Raster reads, expressions, stretching and PNG encoding use TiTiler/rio-tiler.
 The adapter adds catalog lookup and the other servers' transparent-empty policy.
@@ -71,7 +71,7 @@ img_profiles["png"] = {"zlevel": 1}
 
 def render_catalog_image(image, rescale=None, **kwargs):
     # Terracotta reserves zero for masked values and maps valid values to 1..255.
-    # Keep rio-tiler's own stretch implementation; its integer truncation differs
+    # rio-tiler's integer truncation differs
     # by up to one display level from Terracotta's rounding.
     if rescale:
         image.rescale(rescale, out_range=((1, 255),))

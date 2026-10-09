@@ -14,6 +14,6 @@ these inputs with another implementation.
 
 `navigation.json`, `geography-sources.json`, and `stac-live.json` describe larger
 explicitly acquired sources. Demo manifests pin independently acquired reference
-imagery. Follow each maintained runner's acquisition command; keep downloads,
+imagery. Follow each maintained runner's acquisition command. Keep downloads,
 derived rasters, timing captures and reference reports in ignored storage.
 Never regenerate a reference image or expected array from RCFP output.

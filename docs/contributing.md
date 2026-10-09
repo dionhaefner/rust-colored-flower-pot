@@ -23,7 +23,7 @@ you change the documented artifact.
 signatures, palettes, HTTP specification, or package version differ from the
 installed artifact. Example checks exercise real images, HTTP, WSGI, catalog
 backup/restore, compatibility/native workflows, and a Lambda event. Optional
-`--reference-python` adds Terracotta read/write/migration rehearsal; it must point
+`--reference-python` adds Terracotta read/write/migration rehearsal. It must point
 to an environment with Terracotta 0.10.1 installed. Browser checks live in
 `docs/tools/browser_check.py` and require the pinned browser-test dependencies:
 
@@ -35,7 +35,7 @@ python docs/tools/browser_check.py --html docs/_build/html --out build/docs-brow
 
 Use fresh output directories for verification runs. The installed-wheel platform
 matrix also runs the example checks on its matching operating systems and Python
-versions; this covers the scripts behind the POSIX and PowerShell instructions.
+versions. This covers the scripts behind the POSIX and PowerShell instructions.
 
 Write each page for one reader need: guided learning in tutorials, task completion
 in how-to guides, exact interfaces in reference, understanding in explanation.
@@ -65,7 +65,7 @@ Install `pre-commit` and run `pre-commit install`, then
 `pre-commit run --all-files`. Hooks format Rust, Python, C, shell, maintained
 Markdown/YAML/JSON/HTML/CSS/JavaScript and lint applicable source. Rust hooks use
 `rust-toolchain.toml` with rustfmt/clippy components. See the repository's
-`tests/README.md` for product-test commands; docs smoke complements those suites.
+`tests/README.md` for product-test commands. Docs smoke complements those suites.
 
 ## CI and hosting
 

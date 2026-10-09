@@ -1,7 +1,7 @@
 # Command-line interface
 
 RCFP installs `rcfp`. Global options precede the subcommand. Native mode is the
-default; select `--compat-profile terracotta-0.10.1` for the pinned contract.
+default. Select `--compat-profile terracotta-0.10.1` for the pinned contract.
 Both profiles use the Rust parser and executable.
 The following help text is extracted from the installed distribution, not copied
 from Terracotta's Click definitions.
@@ -14,10 +14,10 @@ from Terracotta's Click definitions.
 
 ### Serve and connect
 
-`serve -d DATABASE` opens a catalog; `serve -r PATTERN` builds an exploration
+`serve -d DATABASE` opens a catalog. `serve -r PATTERN` builds an exploration
 catalog from matching rasters. `--rgb-key KEY` controls the final selection key.
-Native `--bind HOST:PORT` defaults to local serving; `--port PORT` uses a local
-address. `--debug` adds diagnostics; `--profile` emits request timing JSON.
+Native `--bind HOST:PORT` defaults to local serving. `--port PORT` uses a local
+address. `--debug` adds diagnostics. `--profile` emits request timing JSON.
 `connect HOSTNAME --no-browser --port PORT` starts the bundled client without
 launching a browser, useful for a remote shell or controlled deployment.
 
@@ -53,7 +53,7 @@ JSON/exit-status contract and explicit probe limits.
 
 `data-operation FILE.json` accepts a structured native operation and prints JSON.
 `lambda-event -d DATABASE --event FILE.json` adapts an API Gateway event locally.
-`lambda-runtime` runs inside the custom Lambda runtime; it expects the service
+`lambda-runtime` runs inside the custom Lambda runtime. It expects the service
 Runtime API environment. See [Lambda packaging](../how-to/lambda.md).
 Native parsing/operation errors exit with status 2. Successful commands exit 0.
 

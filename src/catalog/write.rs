@@ -224,7 +224,7 @@ impl Catalog {
             if !seen.insert(target.clone()) {
                 return Err("source key mapping creates duplicate datasets".into());
             }
-            // Resolve and compute metadata before the transaction: staging errors cannot leave a partial import.
+            // Resolve and compute metadata before the transaction so staging errors cannot leave a partial import.
             let metadata = if request["skip_metadata"] == true {
                 None
             } else {

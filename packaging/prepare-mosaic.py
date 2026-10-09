@@ -1,6 +1,6 @@
 """Prepare and verify immutable, reduced-resolution native mosaic snapshots.
 
-Requires NumPy and Rasterio in the preparation environment, plus the native CLI.
+Requires NumPy, Rasterio and the native CLI.
 """
 
 from __future__ import annotations

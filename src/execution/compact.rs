@@ -1,4 +1,4 @@
-//! Lossless private cache storage; public reads still return f64 samples.
+//! Lossless private cache storage with f64 samples for public reads.
 
 use crate::raster::Raster;
 use std::sync::{Arc, Mutex, Weak};

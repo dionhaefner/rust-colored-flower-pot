@@ -10,7 +10,7 @@ The native server uses four raster workers, with process affinity to one hardwar
 thread per core, with 64 MiB array, 64 MiB GDAL and 32 MiB curl cache budgets,
 and no finished-image retention. Run the
 request client on your laptop to include the real client network. The small
-bundled raster samples provide an installation check; use representative full
+bundled raster samples provide an installation check. Use representative full
 rasters for performance qualification.
 
 ## Check without credentials
@@ -53,12 +53,12 @@ runs these checks on Ubuntu. Cloud provisioning needs separate execution evidenc
 Install AWS CLI v2 and authenticate through your normal CLI credential workflow.
 The deployment identity needs CloudFormation, EC2 networking/instance, IAM
 role/profile, S3 and Systems Manager permissions, including `iam:PassRole`.
-Reading the default image needs `ssm:GetParameter`; estimating compute needs
+Reading the default image needs `ssm:GetParameter`. Estimating compute needs
 `pricing:GetProducts` against the pricing service in `us-east-1`. Interactive
 shell access additionally needs the Session Manager plugin.
 
 Choose a region and your current public IPv4 address. The security group permits
-port 5000 only from that address; administration uses SSM without an SSH key.
+port 5000 only from that address. Administration uses SSM without an SSH key.
 
 ```sh
 python packaging/cloud-test/host.py up \
@@ -106,7 +106,7 @@ python tests/cloud_deployment.py \
 Deployment uploads digest-addressed rasters and an archive, verifies the archive
 checksum on the host, installs a systemd service and checks discovery locally.
 The instance role reads only its test bucket's rasters/artifacts and writes only
-its host's report prefix. IMDSv2 supplies temporary role credentials; no keys are
+its host's report prefix. IMDSv2 supplies temporary role credentials. No keys are
 copied to the host. Real S3 reads and role permissions are exercised by the image
 requests in the second command.
 
@@ -114,8 +114,8 @@ The request check records stage completion times, request p95, failures, decoded
 image hashes and PNGs. Its default preview must match the independent pinned
 Terracotta reference. `--viewer-binary` starts the bundled viewer locally and
 uses Chromium to check first view, pan, zoom and revisit. Omitting it records the
-browser as unchecked. The API uses HTTP for this restricted temporary test;
-open the viewer locally with `rcfp connect API_URL`, rather than through the
+browser as unchecked. The API uses HTTP for this restricted temporary test.
+Open the viewer locally with `rcfp connect API_URL`, rather than through the
 HTTPS documentation site.
 
 ## Use representative inputs
@@ -146,7 +146,7 @@ Describe representative viewport requests in a JSON workload:
 }
 ```
 
-Each stage submits its PNG paths with bounded concurrency; stages run in order.
+Each stage submits its PNG paths with bounded concurrency. Stages run in order.
 Add viewport, pan, zoom and revisit paths appropriate to your catalog. An optional
 reference entry contains `path`, `file` and `sha256`, where `file` is an independent
 reference PNG relative to the workload file. Without references, the report
@@ -159,12 +159,12 @@ python tests/cloud_deployment.py \
   --viewer-binary dist/bundle/bin/rcfp --out build/cloud-workload
 ```
 
-The first pass and subsequent passes are identified separately; this does not
+The first pass and subsequent passes are identified separately. This does not
 claim cold S3 or disk caches. Requests use Python's HTTP client with fresh
 connections. Browser timing includes its own connection and image-loading
 behavior. Running the viewer changes server caches, so it follows the timed HTTP
-workload. Interpret timing differences within this deployment and workload;
-these checks do not repeat the controlled three-engine comparison.
+workload. Interpret timing differences within this deployment and workload.
+These checks do not repeat the controlled three-engine comparison.
 
 ## Collect and remove
 
@@ -182,10 +182,10 @@ and thread count. Keep the separate local client report alongside these files.
 Collection failure is reported separately and does not prevent host deletion.
 
 The expiry timer uses an absolute UTC deadline, so rebooting does not extend the
-session. It attempts collection with a 90-second limit and then powers off; the
+session. It attempts collection with a 90-second limit and then powers off. The
 instance is configured to terminate and delete its root disk on shutdown.
-This depends on successful timer installation and a functioning guest OS;
-it is not an account spending cap. After automatic termination, `collect` can
+This depends on successful timer installation and a functioning guest OS.
+It is not an account spending cap. After automatic termination, `collect` can
 download previously uploaded reports, and `down` removes the remaining network
 and IAM resources. If installation or collection failed, missing reports are
 reported as failures. Expiry never deletes retained S3 data.

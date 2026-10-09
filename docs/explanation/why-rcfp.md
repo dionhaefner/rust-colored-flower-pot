@@ -19,7 +19,7 @@ native bundles have their own native-runtime requirements.
 
 A matching wheel includes GDAL/PROJ libraries, data, and the executable. Operators
 do not need to create a conda environment or install Rasterio to load RCFP.
-The source build downloads locked native archives; prebuilt wheels avoid that
+The source build downloads locked native archives. Prebuilt wheels avoid that
 compiler/build step. The tradeoff is platform-specific artifacts and bundled
 library size. [Installation](../how-to/install.md) explains which requirements
 apply to a wheel versus a source build.
@@ -29,7 +29,7 @@ apply to a wheel versus a source build.
 RCFP exposes worker counts, queue limits, cache budgets, deadlines, and opt-in
 metrics. This makes saturation and capacity choices explicit. Application-owned
 workers/caches also give Python integrations a reusable lifetime. Response
-limits and deadlines have concrete behavior: a full queue can return 503 and
+limits and deadlines have concrete behavior. A full queue can return 503 and
 expired waits can return 504 while submitted native work continues. Review
 [the operational limits](../reference/errors.md) when choosing budgets.
 

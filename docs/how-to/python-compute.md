@@ -11,7 +11,7 @@ wheel with NumPy.
 Persist the input assets in a [native layer catalog](../reference/advanced-layers.md).
 An observation identifies one coherent acquisition. Inputs in a callback always
 come from that observation, even when another observation could supply a missing
-band. The example uses separate satellite COGs; packed multiband files use the
+band. The example uses separate satellite COGs. Packed multiband files use the
 same API with different one-based band selectors.
 
 ```python
@@ -64,7 +64,7 @@ app = Application(application=host)
 ```
 
 Serve `app` using your Python WSGI host. Construct the application separately in
-each host process after process creation; do not fork an application with live
+each host process after process creation. Do not fork an application with live
 native or Python worker threads. Call `host.close()` from your host's shutdown
 hook, or use `ComputeApplication` as a context manager. See
 [WSGI hosting](wsgi.md) for worker and graceful-shutdown configuration.
@@ -72,13 +72,13 @@ hook, or use `ComputeApplication` as a context manager. See
 The [runnable host example](../examples/python_compute_host.py) accepts local
 red/NIR paths, an explicit preview extent, a weather value and its revision. It
 uses only installed public APIs and a threaded local WSGI server. Its stress
-formula illustrates integration; it is not a qualified agronomic model.
+formula illustrates integration. It is not a qualified agronomic model.
 
 ## Discover and request the layer
 
 `/keys` retains the catalog's `layer`, `observation`, `channel` keys. The model's
 logical dataset has keys `["stress", "2021-06-29", "value"]`. Both `/datasets` and
-`/tilesets` include registered models. Python registrations appear first; native
+`/tilesets` include registered models. Python registrations appear first. Native
 catalog results follow with their existing filtering and ordering. Pagination
 applies to that combined sequence. Dataset filters and ordering apply within each
 group. Layer IDs cannot collide with persisted layer IDs.
@@ -101,16 +101,16 @@ the published origin. For example:
 /singleband/stress/2021-06-29/value/13/4406/2927.png?gain=2&colormap=viridis
 ```
 
-URL-encode query values. Numeric and boolean compute parameters are JSON scalars; string parameters use
+URL-encode query values. Numeric and boolean compute parameters are JSON scalars. String parameters use
 ordinary decoded query strings. Each declaration requires `type` and
-`default`; supported types are `number`, `integer`, `boolean` and `string`, with
+`default`. Supported types are `number`, `integer`, `boolean` and `string`, with
 optional numeric `minimum`/`maximum` and `enum`. Unknown or duplicate parameters
 are rejected. HTTP requests cannot select assets, observations, functions or
 executable code. To publish another date, register a layer bound to that explicit
 observation, or replace the registration in trusted host code.
 
 Tiles have a fixed 256 by 256 grid. Previews use the registered Web Mercator
-extent and resampling; `tile_size=[height,width]` can change preview dimensions.
+extent and resampling. `tile_size=[height,width]` can change preview dimensions.
 The preview extent also supplies TileJSON bounds, so choose it to cover the
 layer. Each dimension is at most 2048 and the total grid at most 1,048,576 pixels.
 
@@ -119,7 +119,7 @@ layer. Each dimension is at most 2048 and the total grid at most 1,048,576 pixel
 including normalization, transparency and PNG encoding. Percentile stretches
 are unavailable because a callback has no catalog-wide output statistics.
 Changing display parameters does not change the compute identity. Metadata
-reports the declared output range and defaults; it does not manufacture output
+reports the declared output range and defaults. It does not manufacture output
 percentiles or summary statistics. Source-cell inspection and RGB/expression
 composition of callback results are outside this scalar API.
 
@@ -129,13 +129,13 @@ The synchronous callback receives `(values, valid, context)` and returns
 `(output_values, output_valid)`. Both input mappings have the registered names.
 Arrays are C-contiguous, little-endian float64 values and boolean validity masks
 with shape `[height, width]`. `True` means valid. Inputs are read-only views over
-Python-owned binary buffers; keeping a view alive also keeps its buffer alive.
+Python-owned binary buffers. Keeping a view alive also keeps its buffer alive.
 Copy an input before modifying it. No pixel arrays cross the boundary as JSON.
 The boundary copies buffers and does not promise zero-copy transfer.
 
 RCFP reads each physical band onto the requested grid before Python executes.
 Nodata, masks, alpha and nonfinite samples contribute to each band's independent
-validity. Invalid numeric payloads have no defined value; consult the mask.
+validity. Invalid numeric payloads have no defined value. Consult the mask.
 `values="raw"` preserves raw band samples. `values="scaled"` applies the inspected
 `raw * scale + offset` after alignment. GDAL interpolation retains its existing
 source-band precision, so an integer source can be quantized before float64
@@ -146,7 +146,7 @@ Categorical inputs require raw values and nearest resampling.
 observation's ID and attributes, each input's physical band, calibration, units
 and declared revision, the combined `source_revision`, validated compute
 parameters and declared external dependency revisions. No implicit per-band
-compositing occurs. The callback chooses how to combine independent input masks;
+compositing occurs. The callback chooses how to combine independent input masks.
 RCFP does not force an intersection after the callback. Output values must be a
 real numeric two-dimensional array and output validity a boolean array of exactly
 the supplied shape. Valid output values must be finite. Complex/object arrays,
@@ -154,16 +154,16 @@ broadcast masks and other shapes are rejected. Masked nonfinite values are allow
 RCFP copies the output before retention and rendering, so later host mutations
 cannot alter the cached result.
 
-Computation is relative to the resampled request grid. The initial API supplies
+Computation is relative to the resampled request grid. The API supplies
 no halo or padding. Spatial neighborhoods needing pixels beyond the supplied grid
-are unsupported; a per-tile neighborhood may produce seams. Multiple-observation
+are unsupported. A per-tile neighborhood may produce seams. Multiple-observation
 compositing and computation before resampling are also outside this contract.
 
 ## Revisions and cache ownership
 
 The host keeps three separate resources: native raster workers/caches, a computed
 float64/validity cache, and an encoded-image cache. `compute_cache_bytes` defaults
-to 64 MiB and `image_cache_bytes` to 16 MiB; both are bounded LRU byte budgets and
+to 64 MiB and `image_cache_bytes` to 16 MiB. Both are bounded LRU byte budgets and
 accept zero to disable retention. Identical concurrent computations share a
 callback while declared dependencies permit caching. `compute_metrics()` reports
 admitted work, callback counts and separate cache hits, misses, bytes and evictions.
@@ -175,7 +175,7 @@ dependency revisions. Encoded identity additionally includes display settings.
 Change `version` when model code changes. Re-register with a new dependency
 revision whenever weather, crop data or another external snapshot changes. Python
 function identity does not determine correctness. `dependency_revisions={}`
-explicitly declares no external dependencies; leaving it as `None` disables
+explicitly declares no external dependencies. Leaving it as `None` disables
 computed/image retention and concurrent-result sharing. Raster caching still
 follows the native source freshness policy.
 
@@ -184,11 +184,11 @@ changes during a read or callback cannot publish a computed result. For remote
 inputs, immutable, revision-addressed raster locations and explicit asset
 revisions are the host's responsibility. Unrevisioned remote sources disable
 computed/image retention. An arbitrary revision string is not checksum verification
-or an HTTP freshness protocol; changing the contents behind an unchanged remote
+or an HTTP freshness protocol. Changing the contents behind an unchanged remote
 URL can also encounter GDAL's download cache. Use immutable locations for cached
 models and update the catalog when publishing a new source revision.
 
-Images return ETag and `X-RCFP-Revision`; matching `If-None-Match` returns 304.
+Images return ETag and `X-RCFP-Revision`. Matching `If-None-Match` returns 304.
 A stale `revision` guard returns 409. Host responses use `Cache-Control: no-store`,
 so model results do not become publicly cacheable through native rendered-cache
 settings. Application cache budgets and registrations are process-local.
@@ -199,7 +199,7 @@ settings. Application cache budgets and registrations are process-local.
 pipelines. The host uses a separate bounded admission permit while raster reads
 use the native executor's existing workers and queue. Python callbacks execute on
 host threads after native reads return, never from native raster worker threads.
-Threads do not guarantee parallel Python CPU execution; runtime GIL and model
+Threads do not guarantee parallel Python CPU execution. Runtime GIL and model
 library behavior still apply.
 
 Invalid requests return 400, callback/output failures return a sanitized 500,

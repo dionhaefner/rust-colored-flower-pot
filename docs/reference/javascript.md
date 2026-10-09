@@ -30,7 +30,7 @@ const metadata = await client.metadata(layers[0].keys);
 ```
 
 `connect()` verifies protocol `0.10.1` and the deployment's advertised profile.
-A resolved catalog may advertise `source_revision`; use it as the share state's
+A resolved catalog may advertise `source_revision`. Use it as the share state's
 `sourceRevision`. STAC sources use normal dataset discovery and render parameters.
 Select `native` or `terracotta-0.10.1` explicitly when creating the client. The server chooses its profile at startup and keeps it immutable.
 This SDK requires an RCFP server advertising `compatibility_profile` at
@@ -105,7 +105,7 @@ const openLayersTiles = openLayersSource(ol, client, render);
 `leafletLayer` shares a three-request limit across layers and discards pending
 tiles when removed. It uses the client's fetch transport and retries HTTP 503
 responses at most twice, after 150 and 300 ms. Permanent errors remain tile
-errors. This paces RGB views at the server's default raster capacity; unrelated
+errors. This paces RGB views at the server's default raster capacity. Unrelated
 clients or smaller deployment limits can still exhaust it.
 
 Three complete, independent applications are served at
@@ -168,7 +168,7 @@ const current = new LatestRequest();
 const metadata = await current.run((signal) =>
   client.metadata(keys, { signal }),
 );
-// Starting another run aborts this run; even a late non-abortable result is rejected.
+// Starting another run aborts this run. Even a late non-abortable result is rejected.
 ```
 
 Use one `LatestRequest` per replaceable workflow. The viewer cancels old metadata,
@@ -247,5 +247,5 @@ Chromium tests exercise keyboard controls and mobile layout. Formal WCAG and scr
 Python-hosted compute layers use the same native discovery and TileJSON methods.
 `tileJSON(keys, { gain: 2, crop: "wheat", colormap: "viridis" })` passes declared
 model parameters alongside display settings. Computed descriptors expose
-`rcfp.compute`; source inspection, output percentiles and source revision fields
+`rcfp.compute`. Source inspection, output percentiles and source revision fields
 can be absent for these layers. See [Python compute layers](../how-to/python-compute.md).

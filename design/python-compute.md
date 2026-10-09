@@ -13,7 +13,7 @@ through HTTP. The core and standalone adapters never invoke Python callbacks.
 aligned inputs through the application's persistent `RasterExecutor`, and renders
 scalar output through the same `Application::scalar_image` helper as ordinary
 singleband images. The C extension releases the GIL around these native calls.
-Metadata and plans use JSON; pixel values and independent validity masks use
+Metadata and plans use JSON. Pixel values and independent validity masks use
 little-endian f64 and boolean byte planes. Rust/Python own separate copies, and
 Python's immutable input buffers outlive any retained NumPy view.
 
@@ -39,13 +39,13 @@ buffers and encoded PNGs have independent bounded LRU byte budgets. Computation
 identity includes the layer namespace, inspected selected assets, local raster
 and sidecar generations, physical inputs/calibration, observation attributes,
 requested grid, model version, parameters and dependency revisions. Image identity
-adds style. The host rechecks source identity after callbacks before publication;
-input reads also check snapshot generations before and after native work.
+adds style. The host rechecks source identity after callbacks before publication.
+Input reads also check snapshot generations before and after native work.
 
 No function-pointer identity enters caching. Missing dependency declarations or
 unrevisioned remote inputs disable derived retention and concurrent callback
-sharing. Revision-addressed remote locations remain the host's responsibility;
-opaque revision labels do not certify immutable bytes or flush GDAL's URL caches.
+sharing. Revision-addressed remote locations remain the host's responsibility.
+Opaque revision labels do not certify immutable bytes or flush GDAL's URL caches.
 
 Registered scalar datasets use `[layer, observation, value]` keys and existing
 opaque tileset IDs. `/datasets` and `/tilesets` prepend registered entries while
@@ -54,11 +54,11 @@ retains its own requested ordering. Source-layer IDs cannot collide with host
 registrations. TileJSON, keyed previews/XYZ, Web Mercator matrix routes and the
 existing viewer/SDK integrations use the ordinary image contract. Declared
 preview bounds supply geographic discovery bounds. Responses use no-store and
-content-qualified ETags; native public rendered-caching settings do not publish
+content-qualified ETags. Native public rendered-caching settings do not publish
 Python model results to shared caches.
 
 Computed discovery and TileJSON reuse the native publication URL builder.
-`PUBLIC_URL` controls HTTPS and deployment prefixes; the unconfigured TileJSON
+`PUBLIC_URL` controls HTTPS and deployment prefixes. The unconfigured TileJSON
 origin comes from the validated Host header, without forwarded-header trust.
 
 The public contract and lifecycle limits are in

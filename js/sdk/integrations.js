@@ -6,7 +6,7 @@ function size(render) {
   return width;
 }
 
-// Share admission across replaced layers so old and new views cannot each burst.
+// Limit concurrent tile requests across old and replacement layers.
 let activeTiles = 0;
 const pendingTiles = [];
 function drainTiles() {

@@ -17,7 +17,7 @@ Bootstrap downloads the Terracotta 0.10.1 PyPI source archive, verifies SHA-256
 and extracts it into ignored `.cache/reference`. Its published source commit is
 `6db38d5873cde5ebabe47338a1f61ddc788eada6`. The isolated `.venv-reference`
 environment uses `requirements.lock`. Bootstrap refuses to replace either
-existing directory. Keep application source unchanged; do not vendor it into RCFP.
+existing directory. Keep application source unchanged. Do not vendor it into RCFP.
 
 For offline source acquisition, set `TERRACOTTA_SOURCE_ARCHIVE` to a cached copy
 of that exact sdist. Installing dependencies still requires package access or a
@@ -51,13 +51,16 @@ python tests/reference/compatibility.py --candidate-python /absolute/path/to/whe
 
 `differential.py` verifies the seven checksum-pinned `tests/fixtures/corpus`
 rasters, creates a catalog, and checks 26 HTTP/status/JSON/decoded-image cases.
-It accepts the RCFP specification title, native POST metadata/band/format specification additions, and classified error meaning differences;
-it requires exact decoded images. Run both native general-reader controls and compatibility profiles. Default native direct-grid sampling has its own independent quality gate in `tests/native_rendering.py`; its samples are not required to equal the intermediate Terracotta grid.
+It accepts the RCFP specification title, native POST metadata/band/format
+specification additions, and classified error meaning differences. It requires
+exact decoded images. Run both native general-reader controls and compatibility
+profiles. Default native direct-grid sampling has an independent quality gate in
+`tests/native_rendering.py` and can differ from Terracotta's intermediate grid.
 
 `compatibility.py` replays an explicit selection of documented driver workflows
 through the installed wheel: creation, discovery/filtering, lazy/precomputed
 metadata, writes/deletion, raster reads and meaningful errors. It adapts imports
-in an output copy; the reference snapshot remains untouched. SQL providers have
+in an output copy. The reference snapshot remains untouched. SQL providers have
 separate bidirectional live-engine checks. Internal helper, private backend-hook,
 Flask and Click tests are not public Python API gates. A missing, skipped or
 failed selected case fails the gate.
@@ -71,7 +74,7 @@ python tests/reference/upstream.py --reference-python .venv-reference/bin/python
 This expects 526 passes and two known ANSI logging capture failures out of 528
 cases, with six remote-SQLite mock cases explicitly excluded. Additional failures,
 errors, skips, or a changed case count fail the baseline. These checks establish
-the reference environment; their passes are not RCFP product passes. Native S3
+the reference environment. Their passes are not RCFP product passes. Native S3
 behavior is checked through socket/service tests rather than Python boto mocks.
 
 Installed-wheel replay and live engine round trips also run through
@@ -92,7 +95,7 @@ cargo build --locked --release
 Set `TERRACOTTA_GDAL_LIBRARY`, `GDAL_DATA`, and `PROJ_DATA` for the native runtime.
 Use `--reference-archive ARCHIVE` if the pinned sdist is outside the default
 `.cache/reference/source.tar.gz`. The runner verifies its checksum and application
-source; the generated reference version must report 0.10.1. Omit `--download` for
+source. The generated reference version must report 0.10.1. Omit `--download` for
 offline runs with verified sources in `.cache/raster-geography`.
 
 `fixtures/geography-sources.json` pins three Copernicus DEM publisher tiles: 78°N
@@ -107,7 +110,7 @@ Float32 elevation, and natural nodata edges. Rotated derivatives deliberately
 alter affine coefficients to isolate grid geometry while retaining real pixel
 values. Dataset masks copy natural source validity. The RGBA derivative uses the
 declared grayscale conversion `min(source // 16, 255)` and copies natural validity
-to alpha; it isolates image mask semantics rather than acquiring another scene.
+to alpha. It isolates image mask semantics rather than acquiring another scene.
 Average and nearest overviews are explicitly built at factors 2/4/8. Reopening
 must preserve the declared masks, alpha interpretation, and overview levels.
 
@@ -115,7 +118,7 @@ Both profiles run all 16 nearest/linear/cubic/average warp/read pairs on preview
 overview-scale outputs, source edges, detail windows, and value-preserving reads.
 Geographic cases also read both sides of the meridian. Sparse coverage must raise
 the expected out-of-bounds error. Full/sample/chunk metadata are compared with
-the pinned oracle; deliberate native rotated hull changes use independent affine
+the pinned oracle. Deliberate native rotated hull changes use independent affine
 pixel-square geometry. Existing narrow metadata acceptance bounds remain explicit.
 Raw array shape, dtype, mask, and valid values are checked separately, followed
 by exact decoded singleband/compute/RGB and partial-channel RGB images. Native
@@ -124,8 +127,8 @@ transparent-image dimensions use their own documented expectation.
 The runner copies the shared library before execution and records its hash,
 source identities, fixture recipes/hashes, oracle identity, per-case arrays,
 decoded images, and difference counts. It exits unsuccessfully for any mismatch,
-missing case, or unexpected oracle error. This is a shared-core correctness check;
-installed-wheel/platform qualification remains separate. Native direct reads and
+missing case, or unexpected oracle error. This is a shared-core correctness check.
+Installed-wheel/platform qualification remains separate. Native direct reads and
 opt-in samplers are explicitly disabled, no new numerical tolerance is inferred,
 and no benchmarks are run.
 The correctness workflow runs this same matrix and retains a separate report

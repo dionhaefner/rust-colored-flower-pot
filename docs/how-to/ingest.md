@@ -2,7 +2,7 @@
 
 Use CLI ingestion when filenames encode your keys. Use Python when metadata
 comes from a manifest, directory hierarchy, or external database. Ingestion
-registers paths and computes metadata; it does not upload or duplicate raster
+registers paths and computes metadata. It does not upload or duplicate raster
 files. Make those paths reachable by the serving process.
 
 ## Match filenames
@@ -19,18 +19,18 @@ configuration origins. See [diagnostics](diagnostics.md) for JSON output and
 explicit render/remote probes.
 
 Quote the pattern so the shell does not expand it. Named braces create ordered
-keys; `{}` ignores a field. `--rgb-key` places the band key last for RGB/compute
+keys. `{}` ignores a field. `--rgb-key` places the band key last for RGB/compute
 selection. Key matches are alphanumeric: a filename `S2_2021-06-29_red.tif` will
 not match `{scene}_{date}_{band}.tif`. Split the date into keys, normalize filenames,
 or use Python. Inspect `/keys` and `/datasets` before serving production traffic.
 
 `--skip-existing` preserves already registered key tuples. `--skip-metadata`
-defers metadata computation and can make the first render slower; writable
+defers metadata computation and can make the first render slower. Writable
 catalogs may fill missing metadata later. Precompute metadata before publishing
 a read-only remote snapshot. Use [CLI reference](../reference/cli.md) for all flags.
 
 In native mode, the ordered key names must match an existing catalog, and all
-matched inserts commit together. A failure rolls back the ingest; a new catalog
+matched inserts commit together. A failure rolls back the ingest. A new catalog
 can remain empty. Replacing a registration with `--skip-metadata` removes its old
 metadata, so lazy fill describes the new raster. The write transaction can remain
 open during metadata computation. The `terracotta-0.10.1` profile instead warns
@@ -50,7 +50,7 @@ metadata = store.get_metadata(["lagoon", "red"])
 ```
 
 Create only a new catalog. Individual calls commit separately. Use
-`DataStore.batch` for an atomic insert/delete batch; each operation has its own
+`DataStore.batch` for an atomic insert/delete batch. Each operation has its own
 `operation`, `keys`, and `raster` fields as described in
 [the native Python reference](../reference/python.md). A compatibility driver
 connection context does not make all of its operations one atomic transaction.

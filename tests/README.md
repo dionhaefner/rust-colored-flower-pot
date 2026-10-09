@@ -31,15 +31,15 @@ the [maintenance plan](../design/adoption.md) distinguish automated checks from
 independent adoption and retained production usage.
 
 Tests are organized by the interface they exercise. The Python end-to-end
-runners are standalone scripts that write JSON reports; the installed-wheel
+runners are standalone scripts that write JSON reports. The installed-wheel
 contract runner also writes JUnit XML. They are not collected by `pytest`.
 
 Keep assertions, required case manifests, fixture provenance, and pinned oracle
 expectations in this directory. Write generated outcomes to fresh ignored `build/`
-directories; CI retains them as run artifacts. A saved outcome does not establish
+directories. CI retains them as run artifacts. A saved outcome does not establish
 that the current source or artifact passes. The native, wheel, correctness, and
 documentation workflows are configured to rerun checks on pull requests and
-pushes to `main`; expensive and environment-specific qualification is described
+pushes to `main`. Expensive and environment-specific qualification is described
 in the [validation handoff](../design/human-validation.md).
 
 | Layer                         | Entry point                                                                                                                 | CI lane                                 | What it checks                                                                                                                                                                    |
@@ -48,7 +48,7 @@ in the [validation handoff](../design/human-validation.md).
 | Native profile corrections    | `python tests/native_contracts.py --binary BINARY --out OUT`                                                                | Native platforms                        | Both profiles: ingest validation/rollback, stale metadata, signed extrema, rotated validity hulls, percentile endpoints, empty dimensions, HTTP errors/specification, and modulo. |
 | Rust SQL/remote integration   | `cargo test --locked --features storage-integration --test storage_sql --test storage_remote`                               | Correctness services                    | Disposable MySQL/PostgreSQL databases and remote storage with real services.                                                                                                      |
 | Installed-wheel end-to-end    | `python tests/contract_suite.py --wheel WHEEL --out OUT`                                                                    | Wheels: 5 platforms × 3 Python versions | 53 required public Python, WSGI, CLI, HTTP, raster, metadata, and SQLite cases.                                                                                                   |
-| Terracotta compatibility      | `RCFP_COMPAT_PROFILE=terracotta-0.10.1 python tests/compatibility_contracts.py --wheel WHEEL --out OUT`                     | Wheels: 5 platforms × 3 Python versions | Required legacy Python/CLI/WSGI and catalog contracts; Linux also replays against pinned Terracotta using `--reference-python`.                                                   |
+| Terracotta compatibility      | `RCFP_COMPAT_PROFILE=terracotta-0.10.1 python tests/compatibility_contracts.py --wheel WHEEL --out OUT`                     | Wheels: 5 platforms × 3 Python versions | Required legacy Python/CLI/WSGI and catalog contracts. Linux also replays against pinned Terracotta using `--reference-python`.                                                   |
 | Other standalone end-to-end   | `tests/storage_contracts.py`, `remote_contracts.py`, `browser_contracts.py`, `platform_smoke.py`, `lambda_runtime_smoke.py` | Correctness, wheels, native platforms   | Live databases, HTTP ranges, Chromium UI, real raster, and official local Lambda runtime.                                                                                         |
 | Large-file and resource tests | `tests/large_raster_contracts.py`, `resource_contracts.py`                                                                  | Scheduled, manual, or tag correctness   | Physical BigTIFF reads above 4 GiB and concurrent server resource behavior.                                                                                                       |
 | Pinned reference comparison   | `tests/reference/differential.py`, `upstream.py`, `compatibility.py`                                                        | Correctness and wheels                  | 26 candidate comparisons, selected documented driver cases, and the pinned reference test baseline.                                                                               |
@@ -67,7 +67,7 @@ The demo's credentials-free runtime and Pages checks are in
 demo image, or `--binary dist/bundle/bin/rcfp` for the native Runtime API adapter.
 The [demo guide](../docs/how-to/demo.md) describes deployment and qualification.
 The independent preview in `fixtures/demo/` was acquired with Terracotta 0.10.1
-and GDAL 3.10.3 using `reference/acquire_demo.py`; its manifest pins the raster
+and GDAL 3.10.3 using `reference/acquire_demo.py`. Its manifest pins the raster
 and image checksums. Never replace it with output from RCFP.
 
 Reference setup, commands, and classified exclusions are documented in
@@ -77,8 +77,8 @@ The [broader raster matrix](reference/README.md#broader-raster-correctness)
 adds pinned polar/dateline DEMs, rotated grids, dataset masks/RGBA, unusual CRSs,
 overviews, source edges, and all 16 supported warp/read method pairs. It checks
 both profiles through the freshly built shared core and writes per-case failures
-without benchmarks. Its acquisition manifest is `fixtures/geography-sources.json`;
-generated derivatives and results stay in ignored storage. The correctness
+without benchmarks. Its acquisition manifest is `fixtures/geography-sources.json`.
+Generated derivatives and results stay in ignored storage. The correctness
 workflow runs the same general-reader matrix, with native direct reads explicitly
 disabled, and retains its report separately.
 
@@ -96,7 +96,7 @@ The correctness services job publishes Rust source line coverage from its unit,
 SQL/remote integration, and instrumented native catalog operations. The Linux
 x86_64 / CPython 3.12 installed-wheel job publishes separate Python adapter line
 and branch coverage from the in-process contract suite. GitHub job summaries show
-the totals and lowest-covered files; downloadable artifacts contain Rust LCOV and
+the totals and lowest-covered files. Downloadable artifacts contain Rust LCOV and
 Python JSON/XML. These numbers exclude wheel native extension, browser, Lambda, and other
 platform runs. Terminated HTTP server subprocesses may not flush Rust counters.
 Coverage is reported as a baseline, with no percentage gate until hosted
@@ -124,24 +124,24 @@ covers catalog creation, insertion and Lambda event rendering.
 
 `lambda_runtime_smoke.py` uses the SQLite catalog created by the native smoke
 and verifies the packaged Lambda runtime in the official local image. It
-requires Docker and a built Lambda zip; a Python syntax pass is not a
+requires Docker and a built Lambda zip. A Python syntax pass is not a
 runtime-image pass. The Rust expression vectors in `fixtures/` are retained
 contract examples used by the unit suite. Rust storage tests create disposable
 SQLite databases rather than depending on a preexisting database.
 
 The optional `storage-integration` Cargo feature runs disposable engine tests.
 Set `RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` to database server
-URLs before enabling it; the tests create their own database names.
+URLs before enabling it. The tests create their own database names.
 
 ## Installed-wheel contract suite
 
 `contract_suite.py` runs the public Python, WSGI, CLI, HTTP, raster, metadata,
 and SQLite workflows against the installed wheel. It accepts the tested wheel
 path with `--wheel` and writes JSON and JUnit reports with the wheel SHA-256.
-The checked-in `fixtures/contract-cases.json` lists every required case ID;
-removing or skipping a case fails the suite. NumPy supplies the compatibility
+The checked-in `fixtures/contract-cases.json` lists every required case ID.
+Removing or skipping a case fails the suite. NumPy supplies the compatibility
 API’s masked-array return type. Pillow is a
-test-only image decoder; Flask and Click are not runtime dependencies. The native
+test-only image decoder. Flask and Click are not runtime dependencies. The native
 API can run without importing NumPy.
 
 `compatibility_contracts.py` has its own required case manifest and artifact hash.
@@ -151,35 +151,35 @@ CLI workflow, migration dry runs, and rejection of unsupported catalog formats.
 Reference replay compares decoded images, metadata, types, and discovery in
 both directions using catalogs created by each implementation. The existing
 HTTP differential and live provider suites also run with the compatibility
-profile selected. Only confirmed answer-changing optimizations are disabled;
+profile selected. Only confirmed answer-changing optimizations are disabled.
 Rust policy tests keep exact fast reads and prefetch available.
 
 The live `compatibility_sql.py` test additionally needs SQLAlchemy, PyMySQL and
 psycopg2-binary to administer disposable reference databases. Install those in
-the test environment; they are not RCFP runtime dependencies.
+the test environment. They are not RCFP runtime dependencies.
 
 `fixtures/corpus/` contains seven 512-pixel native windows of Sentinel-2,
 Copernicus DEM, and ESA WorldCover source rasters. Their manifest records exact
 parent URLs and hashes, pixel windows, TIFF hashes, pixel/mask hashes,
 coordinate transforms, geographic bounds, and attribution. The crops retain
-source values and masks; they were written as DEFLATE GeoTIFFs without warping,
+source values and masks. They were written as DEFLATE GeoTIFFs without warping,
 resampling, or stretching. The suite verifies every fixture before it builds a
 catalog. Keep the manifest and files together when changing the corpus.
 
 `storage_contracts.py` drives the native executable through catalog operations
 and live HTTP on disposable SQLite, MySQL, and PostgreSQL databases. It checks
 transaction rollback and compares decoded images across backends. Set
-`RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` for the SQL run; use
+`RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` for the SQL run. Use
 `--sqlite-only` for local feedback without server containers. Disposable
-plaintext loopback servers need `?sslmode=disable` in each URL; remote servers
+plaintext loopback servers need `?sslmode=disable` in each URL. Remote servers
 use verified TLS by default.
 
 `native_contracts.py` checks deliberate native corrections against separate legacy
 expectations, using the same binary and fresh per-profile catalogs. It verifies
 the pinned corpus hashes, derives rotated opaque/masked windows from real red-band
 pixels without resampling, and checks affine corners independently. Tiny generated
-signed/constant rasters isolate extrema unavailable in the retained real corpus;
-they are edge inputs, not replacement reference goldens. Reports identify the
+signed/constant rasters isolate extrema unavailable in the retained real corpus.
+They are edge inputs, not replacement reference goldens. Reports identify the
 tested binary hash and every profile/case result. The SQL suite additionally checks
 native default MySQL singleband/RGB stretches, compatibility failures, and metadata
 invalidation/lazy fill on every engine.
@@ -187,7 +187,7 @@ invalidation/lazy fill on every engine.
 Both profiles also run a short eight-client render admission check with three
 raster workers and a 64-job queue. The full 180-second resource suite remains a
 separate scheduled/manual gate. Compatibility wheel contracts verify that SQL
-credential/TLS URL changes obtain different drivers; live provider round trips
+credential/TLS URL changes obtain different drivers. Live provider round trips
 warm a connection, reject an incompatible TLS mode through another driver, and
 check that the original connection still works.
 
@@ -232,15 +232,15 @@ derivative, and a byte-range HTTP server. It requires an actual range request
 above 4 GiB. `resource_contracts.py` repeatedly requests a real tile with
 concurrent clients, checks image stability and error recovery, and bounds RSS
 and file descriptor growth. These larger checks run on scheduled, manual, and
-tag qualification; their reports are retained without uploading the multi-GB
+tag qualification. Their reports are retained without uploading the multi-GB
 fixture.
 
 ## Real map-navigation performance
 
 `service_benchmark.py` compares native RCFP, Terracotta and TiTiler/rio-tiler on
 the full checksum-pinned navigation inputs. Create separate CPython 3.12
-environments with `benchmarks/terracotta.lock` and `benchmarks/titiler.lock`;
-the latter includes the test-only image decoder. Configure the native GDAL
+environments with `benchmarks/terracotta.lock` and `benchmarks/titiler.lock`.
+The latter includes the test-only image decoder. Configure the native GDAL
 runtime and acquire originals with `navigation_sources.py` first:
 
 ```sh
@@ -256,22 +256,22 @@ Three rotating-order, fresh-process trials cover singleband imagery, elevation,
 categories and three-source RGB, local/range storage, one/three overlapping or
 independent users, first views, pans, zooms, revisits, stretch changes and a
 two-source ratio expression. HTTP completion is recorded before client image
-decode; requests are never retried out of the results. Service process-tree
+decode. Requests are never retried out of the results. Service process-tree
 PSS/USS samples include the Python masters/workers. Total logical cache budgets
-include each worker's GDAL, array and curl caches; encoded-image retention is
+include each worker's GDAL, array and curl caches. Encoded-image retention is
 off. Reports preserve every request, setting, source hash, latency and source
 traffic count. Generated evidence stays in ignored `build/`.
-Native source leases now default to 60 seconds in this runner; pass
-`--rcfp-source-ttl 0` to reproduce the earlier published configuration. Active
+Native source leases default to 60 seconds in this runner. Pass
+`--rcfp-source-ttl 0` to reproduce published trials with zero retention. Active
 identical RCFP renders coalesce even with zero finished-image retention.
 The environment recorder hashes the actual installed application/raster code and
 native Rasterio dependencies, including an editable Terracotta reference.
 
 `benchmark_titiler_app.py` is a test-only SQLite-to-STAC adapter around TiTiler's
 normal multi-asset factory/reader. It selects the same assets, 256-pixel PNGs,
-compression level, numeric stretches and category palette; outside-source tiles
+compression level, numeric stretches and category palette. Outside-source tiles
 follow the common transparent-image policy. It uses rio-tiler's stretch to the
-1–255 valid-value range; integer truncation remains rio-tiler's own behavior.
+1–255 valid-value range. Integer truncation remains rio-tiler's own behavior.
 The saved-image quality runner checks independent GDAL output grids, dimensions,
 coverage and category colors and reports sampling/rounding differences. It does
 not treat any service output as a golden or relabel differences as passes.
@@ -296,9 +296,9 @@ metadata outside timings, verifies full source hashes, and drives fixed 3×3
 viewports, incremental pans, zooms and revisits. It records each response,
 receipt/completion times, decoded images, native metrics, CPU/RSS and source
 range counts/bytes. One/three users exercise overlap and separate views. Defaults
-use four cores/workers and four parallel requests, GDAL 64 MiB and array 64 MiB;
+use four cores/workers and four parallel requests, GDAL 64 MiB and array 64 MiB.
 `--setting NAME=VALUE` overrides controls explicitly. `--storage s3-public` uses
-actual public URLs; range mode injects 15 ms per source request and is a surrogate.
+actual public URLs. Range mode injects 15 ms per source request and is a surrogate.
 A timeout/non-200 fails the run and remains in its report. Physically cold disk,
 WAN/browser paint and private credential refresh require separate environments.
 The controlled range origin supplies a checksum-based strong ETag and enforces
@@ -313,7 +313,7 @@ fails if any pixel read invokes GDAL. Per-viewport metrics record explicit
 reader invocations, including unsuccessful attempts, rather than pixels or
 cache hits. The shared `raster_read` timer cannot identify the backend. Paired
 comparisons accept `--require-candidate-tiff-pixels` to apply this gate only to
-the candidate; choose eligible inputs and sampling settings explicitly.
+the candidate. Choose eligible inputs and sampling settings explicitly.
 
 For three sequential alternating paired trials against a frozen baseline:
 
@@ -323,7 +323,7 @@ python tests/navigation_compare.py --baseline build/baseline-rcfp --candidate ta
 
 This divides the same 128 MiB aggregate logical GDAL/application budget between
 arrays/images. Do not run other timing experiments on its pinned cores. Preserve
-individual cells and failures; `--allow-image-change` requires independent native
+individual cells and failures. `--allow-image-change` requires independent native
 quality qualification and does not turn the candidate into its own oracle.
 Image hashes establish equality across exact optimizations, not geographic truth.
 
@@ -333,8 +333,8 @@ original navigation bounds and build-time/storage costs. Feed its
 `manifest.json`/`multiband-manifest.json` to paired comparisons with
 `--candidate-manifest`. Fixture preparation never writes reference goldens.
 Smaller blocks and bundled RGB can regress remote/singleband workloads.
-`--candidate-rgb-format webp --allow-image-change` compares RGB display codecs;
-paired checks additionally require exact alpha and dimensions. Native PNG versus
+`--candidate-rgb-format webp --allow-image-change` compares RGB display codecs.
+Paired checks additionally require exact alpha and dimensions. Native PNG versus
 WebP timing/bytes are separate from `display_encoding_benchmark.py`, a Pillow
 feasibility probe on real captured tile inputs.
 
@@ -342,7 +342,7 @@ feasibility probe on real captured tile inputs.
 independent public GDAL warp/Rasterio reads. It requires navigation originals
 plus the pinned sources in `fixtures/geography-sources.json`, stored under
 `.cache/raster-geography/`. Reproduce nearest, cubic and average with
-`--resampling`; default is bilinear. The full matrix checks exact affine grids,
+`--resampling`. The default is bilinear. The full matrix checks exact affine grids,
 coverage, category colors, continuous channels within one byte, polar/dateline,
 rotated real source pixels, unaligned Mercator, southern UTM, overviews, rectangular dimensions,
 multiband RGB, shared external masks, external overviews, nodata-free four-band
@@ -355,7 +355,7 @@ cache hits bypass raster execution, dimension keys, external SQLite
 metadata/deletion, raster writes, and external mask creation/replacement. Unit
 checks cover TTL/eviction/coalescing/failure cleanup and queued cancellation.
 Run `resource_contracts.py` with `TC_NATIVE_DIRECT_READ=true` to exercise sustained
-new-path reads; image retention stays off in that execution-accounting test.
+direct-grid reads. Image retention stays off in that execution-accounting test.
 The resource runner uses four output grids and eight clients to exercise both
 concurrent native work and identical active-request sharing. Its execution
 accounting includes coalesced followers.
@@ -364,7 +364,7 @@ The ignored Rust `image_benchmark` test isolates lossless PNG compression. Set
 `RCFP_IMAGE_BENCHMARK_INPUTS` to a JSON array of captured navigation PNG paths and
 run `cargo test --release --test image_benchmark -- --ignored --nocapture`. Retain
 the originating navigation report with fixture/binary hashes and SHA-256 hashes
-of the captured files; the probe additionally records input CRCs. Captures are
+of the captured files. The probe additionally records input CRCs. Captures are
 timing inputs, never reference goldens. It checks decoded channels/transparency
 before timing, reports level 1 once and level 6 with the optional compressor
 on/off. Library availability and native runtime identity must accompany timings.
@@ -389,8 +389,8 @@ It exercises local and loopback HTTP ranges, base/overview selection, the public
 reader, sidecar/revision invalidation, transport fallbacks and allocation limits.
 It requires the reference Python environment and supported GDAL runtime. The
 runner executes fixture-dependent Rust tests that ordinary `cargo test` skips.
-Format derivatives use an explicit Mercator grid to isolate pixel selection;
-three nonfinite pixels and malformed directories are narrowly synthetic edges.
+Format derivatives use an explicit Mercator grid to isolate pixel selection.
+Three nonfinite pixels and malformed directories are narrowly synthetic edges.
 The broader native-rendering and raster-boundary suites cover sampling/fallback
 behavior. Prepared CI entries are not evidence of execution.
 
@@ -422,7 +422,7 @@ socket disconnect drain, and capsule destruction while GDAL is executing. The
 Unix signal gate closes native HTTP admission on SIGTERM/SIGINT/SIGHUP, waits for
 the blocked native read and rejects obsolete queued work, including a wildcard
 listener. Windows console shutdown remains a separate platform check. The
-Python extension must come from the candidate build; the test releases actual
+Python extension must come from the candidate build. The test releases actual
 capsules rather than simulating shutdown. It also runs three alternating paired
 foreground/prefetch trials with equal worker/cache budgets and unchanged pixels,
 recording p95 separately from correctness and accounting passes.
@@ -433,9 +433,9 @@ python tests/request_cost.py --binary /path/to/rcfp/runtime/bin/rcfp \
 ```
 
 Run with the candidate's installed Python environment. The range server delays
-real fixture HEAD requests; no synthetic raster or generated oracle is used.
+real fixture HEAD requests. No synthetic raster or generated oracle is used.
 Origin request/byte counts are reliable for that controlled server only. The
-native subprocess uses SIGTERM cleanup; graceful native joining is tested through
+native subprocess uses SIGTERM cleanup. Graceful native joining is tested through
 both Unix signals and persistent Python capsule destruction. OS/release, actual S3/WAN and browser
 qualification remain separate. Reports record artifact/input hashes and those
 exclusions. The maintained resource soak complements this short contention gate:
@@ -450,7 +450,7 @@ duplicate or expired work contends for one raster worker. It runs three alternat
 pairs per workload, checks admitted/completed/cancelled job counts, compares image
 bytes and records foreground p95, median viewport time, sampled RSS and descriptors.
 Both arms use zero array/image retention and the same queue and response deadlines.
-The source serves pinned real pixels; obsolete-source HEAD requests have a controlled
+The source serves pinned real pixels. Obsolete-source HEAD requests have a controlled
 75 ms delay. Loopback measurements do not establish production or WAN latency.
 
 Supply candidate and control executables built from one frozen source tree. The
@@ -458,7 +458,7 @@ coalescing control calls the render closure directly at zero image-cache capacit
 in `RenderCache::render`. The queued-expiry control removes the two worker checks
 that discard jobs with uninterested waiters. Keep these copies and their source
 hashes in ignored storage. The runner verifies each control's job counts and
-retains artifact hashes; it requires loopback sockets and Linux `/proc` sampling.
+retains artifact hashes. It requires loopback sockets and Linux `/proc` sampling.
 
 ```sh
 python tests/request_priority.py --candidate /path/to/candidate/rcfp \
@@ -474,7 +474,7 @@ SQLite layer definitions, source band metadata, packed/separate RGB, multispectr
 raw/scaled arithmetic, per-band nodata/masks and fractional alpha, mixed resolutions, EPSG grids,
 category colors, overlap/selection, invalid inputs, import/rollback, CLI and real
 HTTP decoded images against independent Rasterio/NumPy references. Inputs derive
-from the checksum-pinned corpus; declaration/alpha edge cases are documented in
+from the checksum-pinned corpus. Declaration/alpha edge cases are documented in
 the runner. No service output becomes a reference golden. Add `--wheel WHEEL`
 with that exact wheel installed to check Python masked samples, cache identity
 and WSGI. Native-only runs record those unavailable checks separately.
@@ -504,7 +504,7 @@ credential/signature refresh and privacy, revision isolation and independent
 real-raster display/coverage checks. The real Sentinel red/green packed-band
 fixture is derived without sample/grid changes, with its hash/recipe retained
 in the report. Synthetic inputs are limited to protocol responses, malformed
-metadata and a nested-VRT rejection edge; no synthetic pixel golden is used.
+metadata and a nested-VRT rejection edge. No synthetic pixel golden is used.
 
 The runner separately measures indexed provider selection at 1000, 100,000 and
 1,000,000 rows, using five trials and retained query plans, then records first
@@ -512,7 +512,7 @@ asset verification/render and repeated render. It does not crawl the catalog or
 read rasters during selection. Reports include the tested wheel hash, every case,
 measurements, explicit exclusions and skips. Hosted PgSTAC, cloud SDKs and WAN
 transfer performance remain separate qualification. The wheel workflow executes
-this runner on its CPython 3.12 platform cells; prepared CI is not executed evidence.
+this runner on its CPython 3.12 platform cells. Prepared CI is not executed evidence.
 
 Live provider qualification is opt-in and requires HTTPS access. Run
 `python tests/stac_live.py --binary BINARY --wheel WHEEL --out OUT --browser`
@@ -521,14 +521,14 @@ Search and Microsoft Planetary Computer by bbox/time, exercises pagination,
 empty results and limits, verifies pinned Sentinel TIFFs, compares Python/HTTP
 XYZ samples against independent GDAL reads, and switches dates in the regular
 viewer. Planetary Computer checks an invalid-signature 403 followed by a fresh
-signing callback. `tests/fixtures/stac-live.json` pins four original small TIFFs;
+signing callback. `tests/fixtures/stac-live.json` pins four original small TIFFs.
 `--cache DIR` controls their ignored download cache. Signed URL mappings stay in
 private report files and are excluded from public metadata and logs. These live
 checks are separate from deterministic CI and do not establish provider uptime
 or WAN throughput guarantees.
 
-The field and operator contract is in [STAC guidance](../docs/how-to/stac.md);
-maintainer boundaries are in [STAC rationale](../design/stac.md).
+The field and operator contract is in [STAC guidance](../docs/how-to/stac.md).
+Maintainer boundaries are in [STAC rationale](../design/stac.md).
 
 `catalog_contracts.py` checks common keyed discovery, selected metadata, masked
 arrays/Futures and decoded tiles across separate TIFFs, packed TIFFs, direct
@@ -551,7 +551,7 @@ PyYAML, Pillow and Playwright/Chromium. Infrastructure schema validation uses
 `cloud_deployment.py --session SESSION --out OUT` runs against an existing cloud
 host from an external client. `--url URL` also accepts another deployed endpoint.
 Use `--workload JSON` for representative PNG viewport/pan/zoom/revisit requests
-and optional checksum-pinned independent references; the default bundled crops
+and optional checksum-pinned independent references. The default bundled crops
 provide a smoke check. Add `--viewer-binary BINARY` to include Chromium navigation.
 Reports distinguish decoding from independent image acceptance and omitted
 browser checks. Operator procedures and spending/expiry behavior are in
@@ -563,13 +563,13 @@ browser checks. Operator procedures and spending/expiry behavior are in
 configuration origins/redaction, pattern/destination failures, read-only catalogs,
 physical band selection, local layout/masks/overviews, bounded render and HTTP
 range probes, and supplied sample integrity. It requires installed RCFP, NumPy,
-Pillow and Rasterio; `--browser` also requires Playwright/Chromium. Real raster
+Pillow and Rasterio. `--browser` also requires Playwright/Chromium. Real raster
 derivatives retain pinned source pixels, changing tiling and band count. An explicit Mercator affine isolates physical
-band selection from projection differences; it does not qualify acquisition
+band selection from projection differences. It does not qualify acquisition
 geography.
 The VRT text is a narrowly synthetic edge to verify external dependencies are
 rejected before GDAL opens them. A tiny C library with a blocked initializer
-checks the native child deadline on POSIX systems with a C compiler; other
+checks the native child deadline on POSIX systems with a C compiler. Other
 platforms record that case as skipped.
 
 The runner exports imagery and executes the published first-map steps from a
@@ -579,7 +579,7 @@ the offline map, RGB share restoration and repeated zoom at default server limit
 and the API-docs page. Each zoom waits for animation and successful decoding of
 every tile. `first-use.json` records completion time, warnings/obstacles and
 artifact identity. This automated trial does not claim a human usability study.
-CPython 3.12 wheel cells run the contracts; configured
+CPython 3.12 wheel cells run the contracts. Configured
 CI is separate from completed local qualification.
 
 ## Indexed virtual mosaics
@@ -588,7 +588,7 @@ CI is separate from completed local qualification.
 selection, seams, first/last-valid ownership, mixed CRS/resolution, masks,
 categories, dated selection and empty coverage with checksum-pinned real pixels.
 Mercator/crop/decimation derivatives and repeated date labels isolate geometry
-and selection; they do not establish acquisition history. Independent
+and selection. They do not establish acquisition history. Independent
 Rasterio/NumPy calculations verify expressions before overlap and valid-mean or
 center-nearest snapshot reduction. Preparation reproducibility, freshness,
 category-average rejection, incomplete-product cleanup, RTree query plans and
@@ -601,7 +601,7 @@ and actual reader invocations, source GET/HEAD/range counts and bytes, response
 bytes, sampled service RSS, viewport completion and failures. Exhausted views
 must submit no raster jobs or source requests. `--wheel WHEEL` also checks the
 installed Python ownership/plan APIs. Linux native CI runs this suite and retains
-its report; prepared CI is not execution evidence. Cloud/WAN, physically cold
+its report. Prepared CI is not execution evidence. Cloud/WAN, physically cold
 disk, browser paint and additional platforms remain separate qualification.
 
 ## Native map services
@@ -613,7 +613,7 @@ named grids, dateline edges, cache reuse, schemas and Python/WSGI/Lambda. Run wi
 the exact wheel installed and NumPy, Pillow, Rasterio, jsonschema and optional
 Playwright/Chromium. `fixtures/tile-grids/manifest.json` pins small native DEM
 windows, original hashes/URLs and crop recipes. Arctic and southern stereographic
-views use real source samples; the southern window is near 34°S. Browser grid
+views use real source samples. The southern window is near 34°S. Browser grid
 checks construct independent OpenLayers geographic/polar views from descriptors.
 `browser_contracts.py` additionally checks the Leaflet/MapLibre/OpenLayers
 TileJSON examples in native mode and unchanged keyed examples in compatibility
@@ -632,8 +632,8 @@ and the existing Leaflet, MapLibre and OpenLayers SDK examples.
 
 Rasterio independently aligns the checksum-pinned Sentinel inputs. Calibration,
 nodata declarations, decimation and value-preserving Float64 casts isolate numeric
-and validity contracts; callback algorithms are test model declarations. No RCFP
+and validity contracts. Callback algorithms are test model declarations. No RCFP
 output becomes an oracle. The report records the exact wheel hash, Python runtime,
 every case, metrics and separate skips/exclusions. Python 3.12 wheel CI cells run
-the suite; Linux additionally prepares browser execution. Prepared CI is separate
+the suite. Linux additionally prepares browser execution. Prepared CI is separate
 from completed local platform qualification.

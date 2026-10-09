@@ -323,7 +323,7 @@ impl Gdal {
             if error != 0 {
                 return Err("cannot select source band".into());
             }
-            // A selected alpha band is data here; only the extra alpha remains coverage.
+            // A selected alpha band supplies data while the extra alpha supplies coverage.
             if set_color((self.raster_band)(selected.handle, 1), 0) != 0 {
                 return Err("cannot set selected band interpretation".into());
             }
@@ -455,7 +455,7 @@ impl Gdal {
                 0,
                 true,
             )?;
-            // Warping may promote working samples; raw arithmetic uses source dtype.
+            // Raw arithmetic uses the source dtype even when warping promotes working samples.
             raster.data_type =
                 (self.band_data_type)((self.raster_band)(source, request.band as c_int));
             Ok(raster)
@@ -485,7 +485,7 @@ type ValidityFunction = unsafe extern "C" fn(
 
 // GDAL supplies contiguous source buffers in SourceTransferType Float64 and a
 // destination buffer with its requested dtype and byte strides. The first
-// source holds data; subsequent sources hold channel masks and explicit alpha.
+// source holds data, and subsequent sources hold channel masks and explicit alpha.
 unsafe extern "C" fn validity_pixels(
     sources: *mut *mut c_void,
     count: c_int,

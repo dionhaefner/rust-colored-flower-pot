@@ -12,9 +12,8 @@ storage. GDAL/PROJ remain required runtime dependencies.
 **No-go for the additional cross-window scheduler.** The existing exact TIFF
 reader remains on the default native production path. Remote window batching,
 a separate decode pool and cross-window range coalescing are not integrated.
-The candidate source trees and integration draft have been removed. Frozen
-binaries, source archives and reports remain in ignored storage as measurement
-provenance; no new production setting or dormant scheduler is retained.
+Frozen binaries, source archives and reports remain in ignored storage as
+measurement provenance. Production retains no scheduler setting or dormant code.
 
 The reduced candidate overlaps only immediately queued, eligible remote reads.
 It caps each worker at four windows, one million batch pixels and four network
@@ -25,7 +24,7 @@ executables use native defaults, with no experimental enable setting.
 The eligible-input comparison passes three alternating trials, **108 services
 and 13,608 responses**, including all **6,804 ordered response pairs**. Both
 variants perform **3,690 TIFF pixel reads and zero GDAL pixel reads**. The remote
-RGB gain is real:
+RGB completion improves in these trials:
 
 | Remote RGB workload     | Serial first / pan / zoom (ms) | Concurrent first / pan / zoom (ms) |
 | ----------------------- | -----------------------------: | ---------------------------------: |
@@ -36,7 +35,7 @@ RGB gain is real:
 These are medians of three trial medians with four serving CPUs/workers, a warm
 OS page cache and a versioned loopback origin adding 15 ms per request with
 Nagle disabled. The inputs retain the deliberately eligible derivative recipe
-above. Median paired peak RSS falls about 3% locally and 2% remotely; median
+above. Median paired peak RSS falls about 3% locally and 2% remotely. Median
 remote CPU rises about 3%. No paired eligible run exceeds its control's peak
 RSS by more than 1%. These measurements describe this artifact and workload.
 
@@ -44,7 +43,7 @@ The ordinary-input comparison also passes **108 services and 13,608 responses**
 with all **6,804 ordered pairs** matching. It uses unmodified checksum-pinned
 Sentinel UTM bands and geographic elevation sources from the navigation corpus.
 **Neither variant performs any TIFF pixel reads.** Candidate pixels use GDAL
-3,573 times and control pixels use it 3,578 times; small job-count differences
+3,573 times and control pixels use it 3,578 times. Small job-count differences
 reflect cache reuse and request coalescing. Requests require projection or
 resampling beyond the exact stored-grid boundary, so overlapping TIFF windows
 cannot improve raster I/O for these workloads. This establishes ineligibility
@@ -55,7 +54,7 @@ native layer HTTP API without affine rounding adjustments. Rasterio independentl
 reprojects real pinned corpus pixels, and NumPy supplies expected display values.
 Both binaries pass **313 independent image comparisons** in the correctness
 case. The candidate reaches four concurrent windows/network reads with one
-worker; the serial control reaches one. Both pass seven service lifecycle cases:
+worker. The serial control reaches one. Both pass seven service lifecycle cases:
 correctness and retention, queue overload, deadlines, source-version changes,
 origin failure, client disconnect and shutdown. Queued/admitted accounting drains
 and descriptors remain stable. This establishes a supported exact-grid use case,
@@ -69,8 +68,8 @@ the no-regression gate is unresolved. Its initial comparison includes local RGB
 regressions. Five additional alternating imagery trials and three trials on a
 separate CPU set produce substantial timing variation while other CPU-heavy
 checks run on the host. Their **12,096 ordered pairs** still match exactly and
-all pixel reads still use GDAL. Their timings are excluded from adoption evidence;
-they establish neither a scheduler regression nor its absence.
+all pixel reads still use GDAL. Their timings are excluded from adoption evidence.
+They establish neither a scheduler regression nor its absence.
 
 The decision is to retain the current production reader and queue. A future
 scheduler proposal needs representative remote workloads that actually enter
@@ -82,7 +81,7 @@ resampled map requests would require separate sampling and mask qualification.
 ratios, lifecycle reports, failures and exclusions. The initial smoke exposed
 overwritten deferred jobs and was fixed before the reported navigation trials.
 Two lifecycle setup attempts failed before pressure was limited to raster
-admission; they remain separate from the completed checks. Candidate concurrent
+admission. They remain separate from the completed checks. Candidate concurrent
 array unit assertions were prepared but not executed. Earlier pipeline fixture,
 unit and Clippy passes belong to its earlier artifact. WAN/S3, authenticated
 sources, other platforms and larger decode workloads remain unqualified. The
@@ -165,7 +164,7 @@ Both variants use the same frozen executable and inputs, changing only
 or separate views cover 3-by-3 viewports, three pans, zoom and revisit. Prepared
 Sentinel singleband/RGB uses zooms 12–13 and elevation uses zooms 11–12. These
 exercise stored base pixels and 2× overviews with nearest sampling. Every imagery
-response contains data; median valid coverage is 100% in every workload cell.
+response contains data. Median valid coverage is 100% in every workload cell.
 Elevation retains 252 transparent responses across both variants and all trials.
 
 The table reports TIFF-enabled changes relative to GDAL. Workload rows weight
@@ -173,7 +172,7 @@ the three user cells equally using geometric means of three-trial median ratios.
 Throughput divides responses by active viewport time and is not saturation
 throughput. Small differences remain subject to local timing variation.
 The HTTP rows include origin TCP packet delays identified in the transport
-diagnostic below; they do not isolate raster-reader overhead.
+diagnostic below. They do not isolate raster-reader overhead.
 
 | Workload           | Storage     |      First viewport |                 Pan |        Zoom | Throughput |
 | ------------------ | ----------- | ------------------: | ------------------: | ----------: | ---------: |
@@ -194,7 +193,7 @@ for further investigation. Cached revisits are approximately unchanged.
 These are deliberately eligible inputs. Copies of checksum-pinned real-scene
 derivatives remove descriptive TIFF metadata and adjust affine coefficients by
 less than **8 nanometers across each footprint** to avoid the strict floating-point
-overview guard. Compressed pixel payloads are unchanged; independent comparisons
+overview guard. Compressed pixel payloads are unchanged. Independent comparisons
 verify all **6,930 value/mask blocks** across every stored level. Imagery viewports
 are placed within visible coverage. A separate initial run with mostly nodata
 imagery is retained as a control and excluded from these results. This establishes
@@ -202,7 +201,7 @@ the benefit available inside the current eligibility boundary, not the fraction
 of ordinary sources that can enter it.
 
 The versioned HTTP origin injects 15 ms latency and enforces `If-Match`. GDAL and
-shared output-array caches each receive 64 MiB; encoded-render/source-block caches
+shared output-array caches each receive 64 MiB. Encoded-render/source-block caches
 are disabled and prefetch is unset. TIFF's additional retention is included in
 RSS. Processes are fresh and the OS page cache is warm. Cold disk, browser paint,
 WAN/S3, authenticated providers, native-layer/STAC-specific serving and other
@@ -256,11 +255,11 @@ medians of three trial medians:
 
 Disabling Nagle removes the observed approximately 40 ms stalls and most of the
 RGB latency gap. This is consistent with Nagle interacting with delayed
-acknowledgments; no packet capture was performed. Exact client packet behavior
+acknowledgments. No packet capture was performed. Exact client packet behavior
 and the remaining range-strategy contribution are not separately quantified.
 TIFF RGB pans remain about 12% slower in this narrow diagnostic. It does not
 repeat the full multi-user/elevation matrix or qualify WAN/S3. The maintained
-origin now disables Nagle; original timing reports retain the origin setting
+origin disables Nagle. Original timing reports retain the origin setting
 under which they were measured. Commands, source hashes, all trials and traffic
 are retained in ignored `build/async-tiff-mechanism/summary.md` and `report.json`.
 
@@ -272,7 +271,7 @@ windows. It retains the existing TIFF eligibility, validity and GDAL fallback
 rules. Each worker takes up to eight single-band jobs, subject to a batch pixel
 limit. A shared semaphore caps active decodes at four and network reads at 32.
 Optional 500-microsecond batching merges ranges sharing a worker-owned source.
-Metadata opens remain sequential within each worker; merging does not span
+Metadata opens remain sequential within each worker. Merging does not span
 workers or different files. Production scheduling and settings are unchanged.
 
 Three alternating paired trials against the current TIFF adapter pass **108
@@ -296,8 +295,8 @@ results are compared with the current synchronous TIFF scheduling:
 Three additional paired trials against GDAL pass **54 services and 6,804
 responses**, with all **3,402 ordered pairs** matching exactly. For three
 overlapping RGB users, GDAL first/pan/zoom completion is **190/50/131 ms** versus
-**116/31/54 ms** for the pipeline. The candidate's 1,845 pixel reads all use TIFF;
-the control's 1,845 reads all use GDAL.
+**116/31/54 ms** for the pipeline. The candidate's 1,845 pixel reads all use TIFF.
+The control's 1,845 reads all use GDAL.
 
 Three clean rotated ablation trials identify overlapping I/O as the main gain.
 For three overlapping RGB users, I/O alone changes first/pan/zoom completion
@@ -333,7 +332,7 @@ The integration regresses the tested navigation workloads. Across **324 fresh
 service runs and 61,236 successful tile responses**, enabling TIFF access
 produces identical decoded images. Backend usage was inferred incorrectly from
 the shared `raster_read` timer, which both TIFF and GDAL record. The claimed
-zero TIFF successes is unsupported; timing, traffic and image comparisons remain
+zero TIFF successes is unsupported. Timing, traffic and image comparisons remain
 valid. This run does not measure the performance of confirmed TIFF pixel reads.
 
 Three alternating paired trials use the frozen production executable, changing
@@ -344,13 +343,13 @@ sampling policy, one user and three users with overlapping or separate views,
 3-by-3 viewports, three incremental pans, three zoom levels and revisits. Local
 files and a strong-ETag HTTP origin with 15 ms request delay are measured
 sequentially with four serving CPUs/workers. GDAL and output-array caches each
-receive 64 MiB; encoded output and speculative prefetch are disabled. TIFF's
+receive 64 MiB. Encoded output and speculative prefetch are disabled. TIFF's
 additional worker retention is included in measured RSS.
 
 The table reports the change in viewport completion time with TIFF enabled.
 Each row weights workload/user cells equally using geometric means of ratios
 between three-trial median timings. Small differences remain subject to local
-timing variation; individual cells and raw timings are retained.
+timing variation. Individual cells and raw timings are retained.
 
 | Inputs                   | Storage     | First viewport |       Pan |      Zoom |             Revisit |
 | ------------------------ | ----------- | -------------: | --------: | --------: | ------------------: |
@@ -361,19 +360,19 @@ timing variation; individual cells and raw timings are retained.
 
 Across those default-sampling groups, aggregate active-request throughput is
 2–7% lower and peak service RSS is 4–5% higher. Original-scene HTTP sources use
-about 12% more GETs and 5% more bytes; prepared sources use about 3% more GETs
+about 12% more GETs and 5% more bytes. Prepared sources use about 3% more GETs
 with approximately unchanged bytes. These are successful raster transfers,
 excluding missing-sidecar responses. Throughput divides delivered requests by
-summed viewport execution time; it is not a saturation test.
+summed viewport execution time. It is not a saturation test.
 
 Separate nearest-sampling trials include a control that removes only descriptive
 `TILING_SCHEME` metadata from a copy of the prepared elevation scene.
 Independent Rasterio comparisons verify unchanged
 values, masks and geometry in all **513 blocks across six stored levels**.
 Its backend usage was not established. An arithmetic replay of the
-production selection rules identifies another barrier: the overview guard
+production selection rules shows that the overview guard
 rejects nominal scale 2 represented as `1.9999999999999454`. It rejects 54 of
-81 viewport requests in the one-user control; the other 27 require upsampling
+81 viewport requests in the one-user control. The other 27 require upsampling
 and cannot use stored pixels. Broad metadata rejection and floating-point
 selection limit practical use, independently of decoder performance.
 
@@ -395,10 +394,10 @@ The maintained range origin supplies a strong ETag and enforces `If-Match`.
 Commands, verified input recipes, per-request results, memory/CPU/traffic,
 read-count checks and selection diagnostics are retained in ignored
 `build/async-tiff-navigation/`. Its `report.json` and `summary.md` index the
-results. Every run uses the same frozen executable from the TIFF qualification;
-subsequent workspace changes are recorded separately. Warm filesystem
+results. Every run uses the same frozen executable from the TIFF qualification.
+Subsequent workspace changes are recorded separately. Warm filesystem
 cache, Linux x86_64, native singleband/RGB catalog routes and controlled HTTP
-latency define this evidence; browser paint, native-layer/STAC-specific serving,
+latency define this evidence. Browser paint, native-layer/STAC-specific serving,
 WAN/S3, authenticated providers and other platforms remain unmeasured.
 
 ## What the probe measures
@@ -406,8 +405,8 @@ WAN/S3, authenticated providers and other platforms remain unmeasured.
 | Engine         | TIFF access                                                                    | Projection and sampling                                                                                                    | Output                              |
 | -------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | `rcfp`         | Worker-owned GDAL datasets with Async-TIFF disabled                            | Native RCFP reader and reusable GDAL plans                                                                                 | Shared RCFP stretch and PNG encoder |
-| `async-native` | Async-TIFF with bounded concurrent range reads and a typed decoded-block cache | PROJ transforms the requested grid; a Rust nearest/bilinear sampler selects overviews and samples pixels                   | Same encoder                        |
-| `async-gdal`   | Same Async-TIFF reader                                                         | A selected source window becomes a GDAL MEM dataset with its source dtype, nodata or validity mask; GDAL warps that window | Same encoder                        |
+| `async-native` | Async-TIFF with bounded concurrent range reads and a typed decoded-block cache | PROJ transforms the requested grid. A Rust nearest/bilinear sampler selects overviews and samples pixels                   | Same encoder                        |
+| `async-gdal`   | Same Async-TIFF reader                                                         | A selected source window becomes a GDAL MEM dataset with its source dtype, nodata or validity mask. GDAL warps that window | Same encoder                        |
 
 The HTTP reader implements Async-TIFF's public `AsyncFileReader` trait. It merges
 nearby ranges within a request and bounds concurrent reads and decoding separately.
@@ -497,10 +496,10 @@ fixtures and does not establish those optional support claims.
 ## Interpreting evidence
 
 Each trial uses fresh child processes and rotates engine order. Serving runs on
-four physical cores by default; the client and range origin use other available
+four physical cores by default. The client and range origin use other available
 cores. Four CPU permits and sixteen in-flight reads are the default candidate
-limits. GDAL has a 64 MiB decoded cache plus a 16 MiB compressed curl cache;
-the candidate allocates the same 80 MiB logical total to decoded blocks. Source
+limits. GDAL has a 64 MiB decoded cache plus a 16 MiB compressed curl cache.
+The candidate allocates the same 80 MiB logical total to decoded blocks. Source
 metadata, active decoded blocks, projection state and output buffers still have
 physical costs. Reports retain PSS/USS/RSS, actual child CPU time, request/byte
 counts, decode counts, cache occupancy, stage timings and binary/runtime/source
@@ -510,7 +509,7 @@ hashes. Stage timers include waiting for permits and overlap between jobs.
 paired completion ratios and batch request p50/p95/p99. Ratios above one favor
 the candidate. A phase with an execution error is excluded from its completion
 ratio. Fidelity differences do not disappear from the report when a phase is
-faster. Request latency includes waiting for batch admission; it is an internal
+faster. Request latency includes waiting for batch admission. It is an internal
 raster-pipeline measurement rather than HTTP or browser latency. Startup is
 reported separately, and artifact writes occur after each timed batch.
 
@@ -533,7 +532,7 @@ Linux x86_64 results are retained in
 `build/async-tiff-spike/execution-20261006/`. All three engines use the same frozen
 executable, SHA-256
 `8f86b170dbe5fb6800748f54bb5b583226ba10713115e0d36cdf3b034a69e93c`.
-`build-inputs.json` retains the build snapshot; individual reports also record
+`build-inputs.json` retains the build snapshot. Individual reports also record
 source hashes at run start. `results.json` indexes the results and exclusions.
 
 The completed matrices contain **171 cells**:
@@ -559,7 +558,7 @@ respectively. Local window batches and several warm remote phases regress.
 Header inspection does not compute ingestion statistics or percentiles.
 
 On public S3, each candidate passes all **162 header/window checks**. Async-native
-cold headers improve 1.21× and cold windows 1.52×; the hybrid improves 1.20× and
+cold headers improve 1.21× and cold windows 1.52×. The hybrid improves 1.20× and
 1.56×. These smaller gains show why the controlled origin is insufficient for
 predicting actual storage performance.
 
@@ -588,7 +587,7 @@ is excluded, leaving five successful zoom groups per candidate. All RCFP tile
 requests pass their independent checks. Network variability and the retained
 transport failures limit confidence in generalizing these substantial warm
 navigation gains. The adapter still needs retry and credential qualification.
-Public baseline traffic is uninstrumented; zero external GET/byte counters in
+Public baseline traffic is uninstrumented. Zero external GET/byte counters in
 those report rows mean unavailable measurements.
 
 The original/range native candidate uses a median 414 MiB peak PSS versus
@@ -624,7 +623,7 @@ That attempt supplies no tile performance evidence.
 `no-native-runtime-result.json` records 45 prepared-grid requests completed by
 async-native with the GDAL/PROJ runtime environment removed. The corresponding
 `openat` trace contains no GDAL or PROJ library opens. This demonstrates that the
-aligned COG path can run without those libraries; it does not qualify its
+aligned COG path can run without those libraries. It does not qualify its
 fidelity or a distributable GDAL-free package.
 
 The independent crate passes a release build, Rust formatting and locked,

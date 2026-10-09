@@ -1,4 +1,4 @@
-//! Port of color-operations 0.4.0 (Mapbox MIT; see THIRD_PARTY_NOTICES).
+//! Port of color-operations 0.4.0 (Mapbox MIT). See THIRD_PARTY_NOTICES.
 use crate::{Result, raster::Raster};
 
 #[derive(Debug)]

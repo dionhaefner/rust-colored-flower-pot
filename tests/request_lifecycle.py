@@ -1,8 +1,7 @@
 """Correctness of HTTP deadlines, disconnects, bounded admission and recovery.
 
-The shared controlled origin serves checksum-pinned real raster bytes. Gates
-hold source reads until accounting assertions finish; elapsed times are not
-performance results.
+The controlled origin holds pinned raster reads until accounting assertions
+finish. Elapsed times establish correctness only.
 """
 
 from __future__ import annotations

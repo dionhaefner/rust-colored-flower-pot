@@ -12,7 +12,7 @@ dataset mappings, metadata tuples/lists, masked NumPy arrays, Futures and
 `rcfp.exceptions`. NumPy is the only Python runtime dependency.
 
 `driver.connect()` retains a native session and preserves legacy per-operation
-commits; it is not an atomic batch and does not yield a SQLAlchemy connection.
+commits. It is not an atomic batch and does not yield a SQLAlchemy connection.
 The WSGI entry point uses the same native application as HTTP. Flask factories,
 Click groups and internal image/expression/handler/backend helpers are unsupported.
 See the complete [contract and exclusions](../compatibility.md#compatibility-scope).

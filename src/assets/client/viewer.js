@@ -46,7 +46,7 @@ function clear() {
   restoring.cancel();
   nativeBlob = undefined;
   $("inspection").textContent =
-    "Inspection reports display RGBA; source values are unavailable.";
+    "Inspection reports display RGBA. Source values are unavailable.";
   if (tiles) {
     tiles.remove();
     tiles = undefined;
@@ -169,8 +169,8 @@ async function apply(fit = false, restored) {
       if (version === revision)
         status(
           error?.status === 503
-            ? "Tile service is busy; retry after requests finish or increase the server raster queue capacity."
-            : "Tile failed; check service availability and tile CORS.",
+            ? "Tile service is busy. Retry after requests finish or increase the server raster queue capacity."
+            : "Tile failed. Check service availability and tile CORS.",
         );
     });
     active = data.render;
@@ -306,7 +306,7 @@ $("share").onclick = async () => {
     $("share-link").value = location.href;
     status(
       state.sourceRevision === "unversioned"
-        ? "Link created. The service is mutable; identical future samples are not guaranteed."
+        ? "Link created. The service may change, so future samples may differ."
         : "Share link created for the configured public source revision.",
     );
   } catch (failure) {

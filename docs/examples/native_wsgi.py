@@ -1,4 +1,4 @@
-"""WSGI entry point; set TC_DRIVER_PATH before starting the host."""
+"""Set TC_DRIVER_PATH before starting this WSGI host."""
 
 from rcfp.wsgi import create_app
 

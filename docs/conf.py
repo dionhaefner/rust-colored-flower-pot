@@ -1,4 +1,4 @@
-"""Static documentation build; reference extraction is a separate command."""
+"""Build static documentation from extracted reference snapshots."""
 
 import json
 import os

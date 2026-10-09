@@ -3,7 +3,7 @@
 RCFP's native executable and Python adapters call the same Rust raster/storage
 core. The core performs catalog access, metadata computation, expressions,
 rendering, and HTTP-contract handling. GDAL/PROJ provide native raster access
-and coordinate transformations; the wheel or bundle carries their libraries
+and coordinate transformations. The wheel or bundle carries their libraries
 and data together.
 
 ```{image} ../_static/architecture.svg
@@ -12,8 +12,8 @@ and data together.
 
 A persistent native application owns workers, its queue, caches, and remote
 snapshot leases. Requests carry an immutable settings/profile snapshot into
-that ownership. Worker-local GDAL handles avoid sharing unsafe native state;
-bounded execution accounts for queued and outstanding operations. Python
+that ownership. Worker-local GDAL handles avoid sharing unsafe native state.
+Bounded execution accounts for queued and outstanding operations. Python
 `NativeApplication` and WSGI `Application` preserve this lifetime across requests.
 
 The Terracotta profile adds documented Python driver objects and result

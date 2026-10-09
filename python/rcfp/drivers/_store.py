@@ -1,4 +1,4 @@
-"""Python catalog representations over owned native sessions."""
+"""Catalog wrappers for native sessions."""
 
 import contextlib
 from collections import OrderedDict

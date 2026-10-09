@@ -1,4 +1,4 @@
-"""Documented driver entry points; provider parsing and identity use Rust."""
+"""Driver entry points with native provider parsing and catalog identity."""
 
 import os
 from hashlib import sha256

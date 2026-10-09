@@ -1,8 +1,8 @@
 # Try RCFP with a Terracotta application
 
 The `terracotta-0.10.1` compatibility profile targets Terracotta 0.10.1's public
-Python, CLI, and HTTP behavior. Switch the package/import and command names;
-keep your raster files, URLs, clients, and existing catalog. A valid catalog
+Python, CLI, and HTTP behavior. Switch the package/import and command names.
+Keep your raster files, URLs, clients, and existing catalog. A valid catalog
 that Terracotta 0.10.1 can open does not need migration or reingestion.
 
 Install RCFP in a separate environment for the trial:
@@ -22,7 +22,7 @@ rcfp serve -d C:\data\catalog.sqlite
 ```
 
 Replace `import terracotta as tc` with `import rcfp as tc`. An import alias covers
-top-level calls; change submodule imports to `rcfp.*` as well:
+top-level calls. Change submodule imports to `rcfp.*` as well:
 
 ```python
 import rcfp as terracotta
@@ -44,7 +44,7 @@ command-name substitution as Python code needs for imports.
 
 The environment selector is frozen when Python first imports `rcfp`. Set it
 before starting Python, your WSGI server, or your worker processes. Start a new
-process to switch profiles. `rcfp.compatibility_profile` reports the selection;
+process to switch profiles. `rcfp.compatibility_profile` reports the selection.
 `rcfp.__version__` remains the RCFP package version and
 `rcfp.__protocol_version__` is the Terracotta protocol identity.
 
@@ -80,14 +80,14 @@ WSGI deployment entry point. Only the following entry points are supported:
 | WSGI             | `rcfp.server.app:app`, backed by the native application through a small WSGI adapter                                                                                                   |
 | CLI              | Rust implements `serve`, `ingest`, `optimize-rasters`, `connect`, and historical `migrate`, including supported Terracotta flags and configuration                                     |
 | HTTP             | Discovery, metadata, singleband/RGB/compute tiles and previews, colormaps, CORS, API specification, and protocol version negotiation                                                   |
-| Catalogs         | Terracotta 0.10 SQLite, MySQL and PostgreSQL catalogs; supported S3-hosted SQLite snapshots remain read-only                                                                           |
+| Catalogs         | Terracotta 0.10 SQLite, MySQL and PostgreSQL catalogs. Supported S3-hosted SQLite snapshots remain read-only                                                                           |
 | Rasters          | Local and remote GeoTIFF/COG inputs supported by bundled GDAL, preserving paths, masks, nodata, values, CRS and overview behavior                                                      |
-| Packaging        | CPython 3.12–3.14 on a matching wheel platform; see the [support matrix](reference/support.md)                                                                                         |
+| Packaging        | CPython 3.12–3.14 on a matching wheel platform. See the [support matrix](reference/support.md)                                                                                         |
 
 Raster I/O, reprojection, statistics, lazy metadata, catalog operations, rendering,
 expressions, palettes, and CLI execution use shared Rust code. Python adapts
 settings, exceptions, containers, NumPy arrays, Futures, and the WSGI protocol.
-NumPy is the only Python runtime dependency; Flask and Click are unnecessary.
+NumPy is the only Python runtime dependency. Flask and Click are unnecessary.
 
 Importable Terracotta implementation modules are not a public API guarantee.
 RCFP does not expose its internal `image`, `expressions`, `xyz`, `raster`,
@@ -96,24 +96,24 @@ Use the driver for array/metadata workflows and HTTP for rendering, expressions
 and palettes. Custom backend hooks, raw SQLAlchemy connections, Flask app
 factories/extensions, process-pool identity, and Python X-Ray decorators are also
 outside this contract. The connection context pools native access and preserves
-per-operation commits; its yielded value is not a SQL connection. `verify=False`
-does not bypass catalog-format safety checks. CLI errors exit 2; `--profile`
+per-operation commits. Its yielded value is not a SQL connection. `verify=False`
+does not bypass catalog-format safety checks. CLI errors exit 2. `--profile`
 reports native request timing rather than Python call-level profiling. Debugging
 does not provide Flask's interactive debugger or automatic reload.
 
-PNG compression bytes and explained minor numerical rounding may differ;
-location, coverage, masks, categorical meaning and ordinary rendered appearance
+PNG compression bytes and explained minor numerical rounding may differ.
+Location, coverage, masks, categorical meaning and ordinary rendered appearance
 must agree. The API documentation title is RCFP.
 
 Both profiles enforce RCFP's [request and resource limits](reference/errors.md),
 including request, tile-size, colormap and dataset-page bounds. Requests beyond
 those bounds are outside the compatibility contract. SQL connections require
-certificate and hostname verification by default; configure a trusted CA or
+certificate and hostname verification by default. Configure a trusted CA or
 explicitly select plaintext only for a literal loopback address as described
 in the [connection settings](how-to/remote-data.md#connect-to-sql-metadata).
 
 Older catalog versions rejected by Terracotta 0.10.1 are also rejected here.
-Their historical migration remains an explicit operation; merely selecting a
+Their historical migration remains an explicit operation. Merely selecting a
 profile never upgrades a catalog. Unsupported/new format markers are rejected
 before a write.
 
@@ -130,7 +130,7 @@ rcfp --compat-profile terracotta-0.10.1 serve -d catalog.sqlite
 ```
 
 These paths preserve output and fall back for unsupported inputs. Prefetch uses
-idle workers and bounded caches; choose budgets for your deployment. The UTM
+idle workers and bounded caches. Choose budgets for your deployment. The UTM
 sampler controlled by `TC_RUST_UTM_FAST` has confirmed pixel differences and is
 disabled by compatibility mode, even when that variable is set. Native mode
 can opt into it. Benchmark representative first views and navigation on your
@@ -151,8 +151,8 @@ catalog remains in that format.
 
 The named profile is included in the ordinary RCFP installation and is maintained
 across future RCFP releases that ship it. Release CI checks its public contracts
-against a pinned Terracotta 0.10.1 reference. There is no planned removal date;
-any removal requires an announced support-policy change and major release.
+against a pinned Terracotta 0.10.1 reference. There is no planned removal date.
+Any removal requires an announced support-policy change and major release.
 
 See [adopt native mode](native-migration.md) when you are ready to change APIs or
 enable optimizations with different outputs.

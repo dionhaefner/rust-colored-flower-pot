@@ -1,7 +1,7 @@
 """Indexed mosaic contracts and bounded viewport measurements on pinned real pixels.
 
 Mercator/cropped/decimated copies isolate seams and mixed grids. Repeated date
-labels exercise selection, rather than the acquisition history of these pixels.
+labels test selection without establishing acquisition history.
 """
 
 from __future__ import annotations

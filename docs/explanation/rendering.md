@@ -8,7 +8,7 @@ coverage, transparency, and categorical meaning.
 Cloud-optimized GeoTIFFs organize blocks and overviews so small tile requests
 can read selected ranges instead of whole files. Overviews make zoomed-out
 rendering cheaper. Reprojection remains necessary when the source grid differs
-from the Web Mercator display grid; the presence of a COG alone does not remove
+from the Web Mercator display grid. The presence of a COG alone does not remove
 that work. Preparing new imagery and optimizing the serving algorithm are
 separate choices.
 
@@ -24,14 +24,14 @@ or lost transparency are material failures. Validate representative edge and
 mask cases as well as fully opaque interior tiles.
 
 Native tiles use a direct output grid through GDAL/PROJ by default. Contained
-north-up Web Mercator windows use RasterIO; other geometries use one output-grid
-warped VRT. Categorical rendering selects nearest; continuous rendering uses the
+north-up Web Mercator windows use RasterIO. Other geometries use one output-grid
+warped VRT. Categorical rendering selects nearest. Continuous rendering uses the
 configured reprojection resampler. Coverage uses explicit positive alpha or GDAL
 masks and excludes nodata/nonfinite samples. The general reader remains the
 fallback for previews and non-map requests. The Terracotta profile selects that
 reader. `TC_NATIVE_DIRECT_READ=false` restores it in native mode.
 The opt-in UTM sampler uses a different sampling footprint and can change pixel
-values; select native mode deliberately and review your imagery. Compatibility
+values. Select native mode deliberately and review your imagery. Compatibility
 mode disables that sampler. Web Mercator fast reads have their own applicability
 checks. See [rendering recipes](../tutorials/imagery.md) and
 [resource/performance guidance](performance.md).

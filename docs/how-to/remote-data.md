@@ -1,7 +1,7 @@
 # Use remote rasters and catalogs
 
 The metadata store and raster storage are separate choices. A local SQLite catalog
-can point to remote rasters; an S3-hosted catalog is a downloaded read-only SQLite
+can point to remote rasters. An S3-hosted catalog is a downloaded read-only SQLite
 snapshot. MySQL and PostgreSQL provide writable central metadata stores.
 
 ## Remote raster registration
@@ -16,9 +16,9 @@ store.insert(["lagoon", "red"], "https://example.com/imagery/red.tif")
 
 Replace the example URL with your accessible COG. Verify HTTP range requests and
 GDAL-supported paths, masks, and overviews. Standard AWS credentials govern S3
-catalog metadata access; legacy `TC_RASTER_AWS_*` settings govern raster access.
+catalog metadata access. Legacy `TC_RASTER_AWS_*` settings govern raster access.
 Do not embed secrets in public examples or catalog URLs. Custom metadata S3
-endpoints use `AWS_ENDPOINT_URL_S3`; the raster endpoint uses
+endpoints use `AWS_ENDPOINT_URL_S3`. The raster endpoint uses
 `TC_RASTER_AWS_S3_ENDPOINT`.
 
 ## Publish a read-only S3 snapshot
@@ -30,9 +30,9 @@ and imagery. Inserts, deletes, and schema upgrades are rejected on remote
 snapshots. Missing metadata cannot be lazily written there.
 
 `REMOTE_DB_CACHE_TTL` controls snapshot refresh. Native HTTP refreshes between
-requests; the compatibility connection context pins a generation and refreshes
-on reconnect. A failed refresh preserves the earlier file but reports an error;
-it is not a silent stale-success policy. See [catalog reference](../reference/catalogs.md).
+requests. The compatibility connection context pins a generation and refreshes
+on reconnect. A failed refresh preserves the earlier file but reports an error.
+It is not a silent stale-success policy. See [catalog reference](../reference/catalogs.md).
 
 ## Connect to SQL metadata
 
@@ -49,6 +49,6 @@ Use a verified TLS connection. PostgreSQL defaults to certificate/hostname
 verification and supports `sslmode=verify-full` and an optional `sslrootcert`.
 Plaintext `sslmode=disable` is permitted only with a literal loopback IP for local
 engines. Remote MySQL also uses verified TLS. Test server certificates, URL
-escaping, supported URL options, and credential rotation in your environment;
+escaping, supported URL options, and credential rotation in your environment.
 SQL provider tests are separate from SQLite checks. Obtain passwords through the
 supported settings/secret mechanism rather than putting them in documentation.

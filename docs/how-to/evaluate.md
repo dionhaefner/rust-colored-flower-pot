@@ -22,7 +22,7 @@ For a remote/private mosaic or time series, record real acquisitions, overlappin
 footprints, band layout, overview strategy, credentials, immutable revisions,
 selection/index costs, and concurrent viewport patterns. Use the
 [mosaic guide](mosaics.md) and [remote-data guide](remote-data.md). Repeated labels
-on one acquisition test selection only; they are not a real time-series trial.
+on one acquisition test selection only. They are not a real time-series trial.
 Qualify credentials and source traffic in the intended environment.
 
 For a scientific application, identify required class labels, numerical accuracy,
@@ -46,7 +46,7 @@ network, concurrency, cache/CPU budgets, p50/p95/p99, errors/timeouts, source
 requests/bytes, process memory, and infrastructure/egress costs with currency,
 measurement window, and billing basis. Measure browser delivery separately from
 HTTP completion. The [cloud test guide](cloud-test.md) describes a disposable
-deployment procedure; deploying it requires an authorized account and budget.
+deployment procedure. Deploying it requires an authorized account and budget.
 
 ## Rehearse upgrade and recovery
 
@@ -69,13 +69,13 @@ python tests/upgrade_contracts.py \
   --out build/application-upgrade
 ```
 
-Both environments need Pillow and the exact corresponding wheel installed;
+Both environments need Pillow and the exact corresponding wheel installed.
 CPython 3.12–3.14 is required. The rehearsal uses pinned real rasters, isolated
 processes, decoded image comparisons, a committed WAL write, and a SQLite backup.
 It checks the named compatibility profile. It does not qualify an application's
 schema migration, native keyed catalogs, remote SQL, credentials, or deployment.
 Terracotta-to-RCFP migration is a separate check in `docs/tools/verify.py` with
-`--reference-python`; see [contribution instructions](../contributing.md).
+`--reference-python`. See [contribution instructions](../contributing.md).
 
 ## Review outcomes and continued use
 

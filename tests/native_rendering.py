@@ -1,8 +1,7 @@
 """Check direct native tiles against independent GDAL/Rasterio grid reads.
 
-Real pinned imagery includes UInt8/UInt16, Float32, northern/southern data and
-different UTM zones. A reprojected southern derivative extends CRS coverage;
-its pixels come from the real DEM, not a generated performance signal.
+Pinned imagery covers UInt8/UInt16, Float32 and northern/southern UTM zones.
+A reprojected southern DEM extends CRS coverage.
 """
 
 from __future__ import annotations
@@ -45,9 +44,8 @@ def bounds_for_tile(x, y, zoom):
 def warp_reference(source, destination, bounds, size, method):
     """Invoke GDAL's public warp utility independently of RCFP orchestration.
 
-    GDALWarp AUTO selects source overviews; Rasterio's WarpedVRT constructor
-    alone does not. A VRT avoids the disk warper's different chunk-dependent
-    approximate-transform evaluation. Check its affine grid before reading.
+    GDALWarp AUTO selects source overviews that WarpedVRT alone would omit.
+    A VRT avoids disk-warp chunk-dependent approximation. Check its grid first.
     """
     lib = ctypes.CDLL(os.environ["TERRACOTTA_GDAL_LIBRARY"])
     pointer = ctypes.c_void_p
@@ -306,7 +304,7 @@ def main():
                 resampling=Resampling.bilinear,
             )
     sources["southern-utm"] = destination
-    # The preparation check uses a retained small real crop; performance uses full scenes.
+    # Use a retained real crop for preparation checks and full scenes for performance.
     env = dict(
         os.environ,
         TC_NATIVE_DIRECT_READ="true",

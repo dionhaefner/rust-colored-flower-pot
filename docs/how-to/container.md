@@ -12,7 +12,7 @@ cp packaging/container/Dockerfile container-context/Dockerfile
 
 Place a catalog and its data in `container-context/fixture`, or use a volume at
 runtime. Stored raster paths must use container locations, such as
-`/data/red.tif`; a host absolute path does not become a container path by itself.
+`/data/red.tif`. A host absolute path does not become a container path by itself.
 Prepare a deployment catalog deliberately rather than rewriting the only copy
 of your production catalog.
 
@@ -23,7 +23,7 @@ docker run --rm -p 127.0.0.1:5000:5000 -v "$PWD/deployment-data:/data" rcfp-loca
 
 Before startup, run [read-only diagnostics](diagnostics.md) inside the image
 with the same `/data` mount and environment. Its reported paths identify missing
-mounts; remote raster checks remain explicit.
+mounts. Remote raster checks remain explicit.
 
 The default command serves `/data/catalog.sqlite` and binds `0.0.0.0:5000`
 inside the container. The host port above accepts local connections only.

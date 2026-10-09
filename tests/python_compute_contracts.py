@@ -1,8 +1,7 @@
 """Qualify installed Python compute layers with pinned Sentinel samples.
 
-Rasterio independently aligns real pixels. Derivatives alter calibration, nodata
-and resolution; model and external weather inputs are explicit test declarations.
-No RCFP output is used as a raster or image oracle.
+Rasterio independently aligns real pixels. Derivatives test calibration, nodata
+and resolution. Model and external weather inputs are explicit test declarations.
 """
 
 from __future__ import annotations

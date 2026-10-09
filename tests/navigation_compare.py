@@ -150,7 +150,7 @@ def main():
                     raise AssertionError("paired request failed or changed dimensions")
                 changed += item["decoded_sha256"] != other["decoded_sha256"]
                 if args.candidate_rgb_format == "webp":
-                    # Lossy display colors may change; placement/alpha must not.
+                    # Lossy colors may change, but placement and alpha must match.
                     for name, record in (("baseline", item), ("candidate", other)):
                         case = baseline if name == "baseline" else candidate
                         folder = args.out / f"{name}-{trial}" / case["case"] / "images"

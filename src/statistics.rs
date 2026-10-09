@@ -1,4 +1,4 @@
-//! Crick 0.0.8 merging t-digest, compression=100; BSD notice in assets.
+//! Crick 0.0.8 merging t-digest with compression=100. BSD notice in assets.
 #[derive(Clone, Copy)]
 struct Centroid {
     mean: f64,

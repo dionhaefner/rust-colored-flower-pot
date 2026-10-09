@@ -11,8 +11,8 @@ pub(super) type Transformer = unsafe extern "C" fn(
     *mut c_int,
 ) -> c_int;
 
-// Prefix of GDALWarpOptions' public C ABI. GDAL allocates the complete struct;
-// only these documented fields are accessed here, never its unused tail.
+// Prefix of GDALWarpOptions' public C ABI. GDAL allocates the complete struct.
+// Access only these documented fields.
 #[repr(C)]
 pub(super) struct WarpOptionsPrefix {
     pub(super) options: *mut *mut c_char,

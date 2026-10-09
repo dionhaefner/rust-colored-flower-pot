@@ -170,7 +170,7 @@ impl Connection {
                     .collect()
             }
             Self::Postgres(c) => {
-                // SQL is generated here; question marks occur only as parameters, never literals.
+                // Generated SQL uses question marks only for parameters.
                 let mut n = 0;
                 let sql = sql
                     .chars()
@@ -740,7 +740,7 @@ impl RelationalStore {
         }
         self.transaction(|s| {
             let (p, v) = s.predicate(keys)?;
-            // Lock the dataset before rechecking: only one concurrent miss computes.
+            // Lock the dataset before rechecking so only one concurrent miss computes.
             s.connection.borrow_mut().query(
                 &format!("SELECT path FROM datasets WHERE {p} FOR UPDATE"),
                 &v,

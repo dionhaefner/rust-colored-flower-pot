@@ -2,7 +2,7 @@
 
 RCFP has two process profiles: default `native` and the pinned
 `terracotta-0.10.1` compatibility contract. The package and primary import are
-`rcfp`; HTTP protocol identity remains 0.10.1; Terracotta catalogs use format 0.10 and
+`rcfp`. HTTP protocol identity remains 0.10.1. Terracotta catalogs use format 0.10 and
 native layer catalogs use `rcfp-native-1`.
 The package version in this site's title is supplied by Hatch VCS metadata,
 not by either compatibility identity.
@@ -17,7 +17,7 @@ not by either compatibility identity.
 | CLI                                                   | Native core commands plus structured/Lambda commands  | Supported Terracotta commands and flags implemented in Rust             |
 | Catalogs                                              | Compatible SQLite/MySQL/PostgreSQL encoding           | Same supported legacy format and write fences                           |
 | Remote SQLite on S3                                   | Read-only snapshot                                    | Read-only snapshot with connection-generation semantics                 |
-| UTM sampler                                           | Explicit opt-in; pixels may differ                    | Disabled to preserve profile rendering semantics                        |
+| UTM sampler                                           | Explicit opt-in. Pixels may differ                    | Disabled to preserve profile rendering semantics                        |
 | Web Mercator fast reads/prefetch                      | Explicit opt-in                                       | Compatible opt-in paths with fallback                                   |
 
 Catalog format checks reject unsupported markers before writes. Older schemas
@@ -29,13 +29,13 @@ for exclusions, verification, and rollback.
 
 | Target                                            | Requirements and validation scope                                                                                                                            |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CPython                                           | 3.12–3.14 on the wheel's matching OS/architecture; limited-API `abi3` extension                                                                              |
-| Linux x86_64                                      | Local installed-wheel, real-raster, Python/WSGI, HTTP, and compatibility checks; release glibc requirements come from the repaired wheel tag                 |
-| Linux aarch64, macOS x86_64/arm64, Windows x86_64 | Configured wheel/build and artifact-test targets; a configured lane alone is not a recorded passing run for your release                                     |
-| Native container                                  | Linux bundle with compatible container libc/native libraries; catalog paths must refer to container-accessible rasters                                       |
-| Lambda                                            | Custom AL2023 runtime bundle, matching architecture, API Gateway v1/v2 adapters; event/local runtime-image checks are separate from an actual AWS deployment |
-| SQL providers                                     | Provider contract tests and verified TLS configuration; qualify the actual engine/certificates used by your deployment                                       |
-| S3, role/SSO/custom endpoint, X-Ray               | Require real-service/credential-path qualification in the intended account; local emulators do not establish that support                                    |
+| CPython                                           | 3.12–3.14 on the wheel's matching OS/architecture. Limited-API `abi3` extension                                                                              |
+| Linux x86_64                                      | Local installed-wheel, real-raster, Python/WSGI, HTTP, and compatibility checks. Release glibc requirements come from the repaired wheel tag                 |
+| Linux aarch64, macOS x86_64/arm64, Windows x86_64 | Configured wheel/build and artifact-test targets. A configured lane alone is not a recorded passing run for your release                                     |
+| Native container                                  | Linux bundle with compatible container libc/native libraries. Catalog paths must refer to container-accessible rasters                                       |
+| Lambda                                            | Custom AL2023 runtime bundle, matching architecture, API Gateway v1/v2 adapters. Event/local runtime-image checks are separate from an actual AWS deployment |
+| SQL providers                                     | Provider contract tests and verified TLS configuration. Qualify the actual engine/certificates used by your deployment                                       |
+| S3, role/SSO/custom endpoint, X-Ray               | Require real-service/credential-path qualification in the intended account. Local emulators do not establish that support                                    |
 | Browser                                           | Raster/client checks are separate from external basemap/token integration                                                                                    |
 
 Select artifacts using their release validation results. Do not infer a passing

@@ -1,7 +1,7 @@
 """Measure real-raster viewport, pan, zoom and revisit delivery on one VM.
 
-Inputs are checksum-pinned full scenes, not render goldens. The optional range
-server isolates latency and traffic; it does not qualify real S3 performance.
+Inputs are checksum-pinned full scenes. The optional range server measures
+controlled latency and traffic. Real S3 performance requires separate checks.
 """
 
 from __future__ import annotations

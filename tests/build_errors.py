@@ -1,8 +1,7 @@
 """Exercise build failure diagnostics through pip's wheel and editable hooks.
 
-Requires pip and the Hatch build dependencies. The synthetic Cargo executable
-fails before any compilation or downloads, so the original diagnostic and exit
-status can be checked deterministically.
+Requires pip and Hatch build dependencies. A synthetic Cargo executable fails
+before compilation or downloads to check the original diagnostic and exit status.
 """
 
 from __future__ import annotations

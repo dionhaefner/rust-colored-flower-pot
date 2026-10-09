@@ -1,5 +1,4 @@
 //! Shared application core for the RCFP service, CLI, Lambda, and Python APIs.
-//! Rendering, storage, metadata, and raster operations use the same native core.
 
 mod catalog;
 pub mod execution;

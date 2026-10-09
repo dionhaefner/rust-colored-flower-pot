@@ -1,7 +1,7 @@
 # Application evaluation record
 
-Copy this file for each application. Replace placeholders with observations;
-use `unavailable` for unmeasured fields. Keep reports and private data outside Git.
+Copy this file for each application. Replace placeholders with observations.
+Use `unavailable` for unmeasured fields. Keep reports and private data outside Git.
 
 ## Identity and evidence
 
@@ -28,7 +28,7 @@ use `unavailable` for unmeasured fields. Keep reports and private data outside G
 
 - Retained request sequence, measurement window, cold/warm state and cache budgets:
 - CPU/worker/queue budgets, source storage, client network, concurrent users:
-- HTTP and browser timing separately; p50/p95/p99 and successful/failed counts:
+- Separate HTTP and browser timing, p50/p95/p99, and successful/failed counts:
 - Source HEAD/GET/ranges/bytes, response bytes, startup, peak/resident memory:
 - Measured infrastructure/egress cost, currency, billing source and cost per workload:
 - Maintenance effort, incidents, credential renewal and recovery observations:

@@ -51,8 +51,8 @@ impl Gdal {
             .bounds(extent(&corners))
         }
     }
-    // SAFETY: all callers give the documented C signature for the named symbol;
-    // the process-lifetime library owns every returned function pointer.
+    // SAFETY: all callers use the named symbol's documented C signature.
+    // The process-lifetime library owns every returned function pointer.
     pub(super) unsafe fn symbol<T: Copy>(&self, name: &[u8]) -> Result<T> {
         unsafe {
             self._library
@@ -225,7 +225,7 @@ impl Gdal {
                     total += data.len();
                     let mut points = Vec::new();
                     let count_before = moments.count;
-                    // Row extremes suffice for the hull of pixel squares; avoid polygonizing every pixel.
+                    // Row extremes suffice for the hull of pixel squares.
                     for row in 0..oh {
                         let (mut first, mut last) = (None, None);
                         for col in 0..ow {
@@ -282,8 +282,8 @@ impl Gdal {
                         && chunked
                         && moments.count - count_before == (ow * oh) as u64
                     {
-                        // Rasterio windows.bounds uses these two corners; legacy
-                        // all-valid chunks use that rectangle even for rotated grids.
+                        // Legacy all-valid chunks use Rasterio windows.bounds
+                        // with these two corners even for rotated grids.
                         let [w, s] = affine(transform, [x as f64, (y + hh) as f64]);
                         let [e, n] = affine(transform, [(x + ww) as f64, y as f64]);
                         points = vec![[w, s], [e, s], [e, n], [w, n]];

@@ -13,7 +13,7 @@ ownership. Native HTTP and Python WSGI are adapters over the same Rust core.
 A catalog and its rasters must be reachable from the chosen runtime. A serverless
 host does not automatically make source I/O fast or authorize access, and a local
 container test does not validate a cloud deployment. WSGI process counts multiply
-native worker pools and caches; resource sizing should include the whole service.
+native worker pools and caches. Resource sizing should include the whole service.
 
 Use [native configuration](../how-to/configure.md), [WSGI](../how-to/wsgi.md),
 [container](../how-to/container.md), or [Lambda](../how-to/lambda.md) for concrete

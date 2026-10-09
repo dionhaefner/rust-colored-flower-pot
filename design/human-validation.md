@@ -11,10 +11,10 @@ This document records completed local checks, raster correctness results,
 and the remaining platform, service, release, and conditional support
 qualification. Earlier local evidence was collected on **2026-10-05**, with the additional
 optimization qualification below recorded on **2026-10-06**. Results establish
-only the recorded source and artifacts; rerun affected checks after changes.
+only the recorded source and artifacts. Rerun affected checks after changes.
 Configured CI, a completed execution, and a passing qualification are separate
 statuses. The corrected broader raster matrix passes **all 3,646 cases** on the
-recorded Linux x86_64 shared core; hosted platform qualification remains pending.
+recorded Linux x86_64 shared core. Hosted platform qualification remains pending.
 
 Run commands from the repository root against the reviewed revision and exact
 artifacts. Keep fixture/reference acquisition and reports in ignored `build/` or
@@ -31,9 +31,9 @@ checks. The wheel was installed on CPython 3.12, 3.13, and 3.14:
 - [x] Rust formatting, warnings-as-errors Clippy, release build, 28 unit tests,
       and all 18 native profile/admission cases.
 - [x] All 53 native and 15 compatibility installed-wheel cases on each Python
-      version; 26 exact decoded-image HTTP comparisons in each profile and 28
+      version, plus 26 exact decoded-image HTTP comparisons in each profile and 28
       selected public reference replay cases.
-- [x] Render admission corrected to configured worker-plus-queue capacity;
+- [x] Render admission corrected to configured worker-plus-queue capacity.
       180 seconds with eight clients completed 208,500 requests without overloads
       or timeouts. The admission regression detects the original failure.
 - [x] SQL driver caching separates changed credentials and TLS options. Both
@@ -58,12 +58,12 @@ artifacts and were not rerun on every later core.
 
 Rust and Python coverage were recorded separately, with no thresholds selected.
 The matched-cache warm-preview control completed three trials at concurrency
-one/two with exact imagery; it does not establish cold/WAN or production gains.
+one/two with exact imagery. It does not establish cold/WAN or production gains.
 
 The pinned oracle baseline had 526 passes and two classified ANSI failures out
 of 528 cases, with six remote-SQLite mock cases excluded. These are reference
 classifications, not RCFP product passes. The 28-case public replay selects
-supported workflows; live SQL checks have a separate scope.
+supported workflows. Live SQL checks have a separate scope.
 
 ## Raster correctness
 
@@ -93,10 +93,10 @@ images. Deliberate native hull and transparent-image size differences use
 independent expectations. Native direct reads, opt-in fast samplers and prefetch
 are explicitly disabled in this general-reader matrix.
 
-The general reader now suggests resolution from an axis-aligned proxy of the
+The general reader suggests resolution from an axis-aligned proxy of the
 source bounding rectangle, matching the reference's bounds-based calculation
 for rotated grids. Its padded VRT receives the affine directly through
-`GDALCreateWarpedVRT`; reconstructing resolution from padded bounds through the
+`GDALCreateWarpedVRT`. Reconstructing resolution from padded bounds through the
 warp utility introduced small sampling differences. Read resampling writes the
 source dtype before widening the transfer buffer, dimensions use ties-to-even
 rounding, and the output mask checks source nodata even when destination nodata
@@ -114,14 +114,14 @@ Fresh formatting, warnings-as-errors Clippy, all 35 Rust unit tests, all 18 nati
 profile/admission cases, and both 26-case decoded-image HTTP comparisons pass.
 The repaired Linux x86_64 wheel passes 53 native and 15 compatibility cases on
 each of CPython 3.12, 3.13 and 3.14, plus the 28-case selected public replay.
-Wheel contents/RECORD/metadata and strict repair checks pass; wheel SHA-256:
+Wheel contents/RECORD/metadata and strict repair checks pass. Wheel SHA-256:
 `260360f56a0a953c77349eb152290fd662b4c3661c19bca04bc1a08b8027e8d0`.
-Two socket tests were initially blocked by the sandbox; the complete unit suite
+Two socket tests were initially blocked by the sandbox. The complete unit suite
 passed with loopback access. Earlier platform/resource/service results above
 qualify their own artifacts and are not reruns of those scopes on this core.
 
 These checks need no human account access. Retain an existing verified
-`.cache/reference` and `.venv-reference`; otherwise prepare CPython 3.12 and the
+`.cache/reference` and `.venv-reference`. Otherwise prepare CPython 3.12 and the
 pinned oracle with `tests/reference/bootstrap.sh`. Configure
 `TERRACOTTA_GDAL_LIBRARY`, `GDAL_DATA`, and `PROJ_DATA` for the supported native
 runtime, then run:
@@ -135,48 +135,48 @@ packaging/cargo.sh build --locked --release
 ```
 
 This is the Linux shared-library example. `--download` acquires missing
-checksum-pinned sources; omit it when the cache is complete. The default oracle
-archive is `.cache/reference/source.tar.gz`; this local run used
+checksum-pinned sources. Omit it when the cache is complete. The default oracle
+archive is `.cache/reference/source.tar.gz`. This local run used
 `--reference-archive build/reference-acquisition/source.tar.gz`.
 [Reference procedures](../tests/reference/README.md#broader-raster-correctness)
-describe the comparison rules. The correctness workflow now includes this
-matrix and retains its reports; that configured lane has not been executed on
+describe the comparison rules. The correctness workflow includes this
+matrix and retains its reports. That configured lane has not been executed on
 the hosted reviewed revision. Other OS/architecture wheel cells and opt-in
 samplers still need their separate qualification.
 
 ## Other pending qualification
 
 The following scopes still need fresh evidence. Account/platform work requires
-the intended environment; repository test extensions can be performed locally.
+the intended environment. Repository test extensions can be performed locally.
 Performance measurements are needed before expanding performance claims, and
 cross-endian work is conditional on proposing that support extension.
 
-| Remaining scope                           | How to execute and what to retain                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hosted platforms and correctness          | Make the reviewed tree available on an authorized branch. Run `gh workflow run platforms.yml --ref BRANCH`, `wheels.yml`, `correctness.yml`, and `docs.yml` the same way. Inspect Linux x86_64/aarch64, macOS x86_64/arm64, and Windows x86_64 native targets and all 15 CPython 3.12–3.14 wheel cells. Verify Windows Cargo artifacts before installing the Python Rustup helper, strict Linux glibc/ISA repair tags, coverage, reference baseline, browser, physical BigTIFF ranges beyond 4 GiB and the full 180-second resource job. Review separate Rust/Python coverage before choosing thresholds. The correctness workflow now includes the full raster boundary matrix; inspect its execution and retained report alongside the other gates. Download artifacts with `gh run download RUN_ID --dir build/hosted-RUN_ID`; retain revision and artifact hashes. A dispatch of an older branch does not test this working tree. |
-| Intended SQL TLS                          | Configure disposable MySQL/PostgreSQL servers with the intended private/public CA and server identity. Set `RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` with `sslmode=verify-full` and `sslrootcert` where needed; run the Rust storage integration and native catalog suite. On both native and Python paths, repeat valid CA, missing/untrusted CA, wrong hostname, and literal-loopback `sslmode=disable`, in fresh processes and with warmed driver reuse. Confirm negotiated TLS server-side; drop the test databases. Local MariaDB is not a hosted MySQL result.                                                                                                                                                                                                                                                                                                                                                       |
-| Real S3 and credentials                   | In an authorized test prefix, use a pinned real COG and a consistent SQLite backup; follow [remote-data procedures](../docs/how-to/remote-data.md). Confirm raster range reads, read-only catalog writes failing, generation replacement with an old outer Python reader pinned, and failed-refresh recovery. Repeat with the intended custom endpoint, session token, role refresh and SSO renewal. Retain redacted request/signing/refresh evidence and delete test objects.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Lambda, both architectures                | Run the native platform workflow's x86_64/aarch64 AL2023 image/build/runtime lane. The local qualification environment had no Docker/Podman. Then deploy those exact bundles through the authorized infrastructure workflow, as described in [Lambda procedures](../docs/how-to/lambda.md). Invoke `/keys` and image events through the actual API Gateway integration; decode PNG/base64, repeat warm/cold/error invocations, check shutdown and credentials, and confirm a sampled trace arrives in X-Ray. Retain hashes, configuration and results, then remove disposable functions/roles/objects.                                                                                                                                                                                                                                                                                                                                |
-| External basemap/deployment               | Start the bundled client against the intended backend and real basemap/token. Select a dataset; exercise singleband, RGB, metadata, missing-data/error handling, navigation and CORS. Retain screenshots, decoded raster results and browser/network errors. The local Chromium run used an offline basemap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Read the Docs and human trial             | Connect the repository in the owner account, build the reviewed revision and release versions using `.readthedocs.yaml`, activate versions, and set the actual canonical URL. Retain hosted build logs and verify navigation/search/mobile pages. Have an independent user follow installation/first-map and Terracotta migration/backup/rollback instructions and record issues. Local Sphinx, examples, browser and external links have already run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Exact release and publication setup       | After the raster matrix and required gates pass, build at the intended `vMAJOR.MINOR.PATCH` tag. Check all five wheels and the sdist with `python packaging/verify-release.py DIST vMAJOR.MINOR.PATCH`, plus strict Twine checks. Configure protected main/tags, the `pypi` environment and PyPI trusted publisher. The tag-push workflow publishes: do not push a release tag until publication is authorized. Local development versions do not qualify the tag.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Opt-in sampler correctness                | Add explicit opt-in variants to `tests/reference/raster_boundaries.py`; its current matrix disables fast samplers and prefetch. Exercise `TC_RUST_MERCATOR_FAST`, native `TC_RUST_UTM_FAST`, decoded-block caching and prefetch on eligible inputs plus fallback edges. Compare exact-path values/masks/images and use independent coverage, category and seam checks for intentional native sampling differences. Apply the input-specific UTM bounds in [compatibility notes](compatibility-notes.md#narrow-accepted-numerical-differences) only to the recorded EPSG:32632 zoom-13 UInt16 corpus; broader inputs need fresh evidence. Verify that compatibility mode disables UTM sampling even when requested. Retain exact core/wheel identities and per-case results before expanding support claims.                                                                                                                           |
-| Cold/WAN/performance and longer resources | The local matched-cache warm benchmark and 180-second resource gate are complete. Before expanding claims, use disposable benchmark hosts with matched total cache budgets and CPU affinity to measure actual cold disk, WAN bytes, startup/first view, loaded p95/p99, production budgets, more cores and a longer soak. Run `python docs/tools/benchmark.py --reference-python .venv-reference/bin/python --out build/warm-review` for the maintained warm control. Preserve exact binaries, input hashes, workload and exclusions; do not reuse its warm ratios as WAN/production claims.                                                                                                                                                                                                                                                                                                                                          |
-| Cross-endian support extension            | Only if cross-endian support is proposed: use an actual big-endian target or emulator with native dependencies. The endian-tagged format proposal was discarded; existing cross-endian catalogs remain unqualified. Create/read legacy float32 percentile blobs in each byte order and compare known stored percentiles and rendering in both directions. Record unsupported combinations explicitly. Byte-swapping on this little-endian host alone does not qualify cross-endian operation; a format change requires a separate decision.                                                                                                                                                                                                                                                                                                                                                                                           |
+| Remaining scope                           | How to execute and what to retain                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hosted platforms and correctness          | Make the reviewed tree available on an authorized branch. Run `gh workflow run platforms.yml --ref BRANCH`, `wheels.yml`, `correctness.yml`, and `docs.yml` the same way. Inspect Linux x86_64/aarch64, macOS x86_64/arm64, and Windows x86_64 native targets and all 15 CPython 3.12–3.14 wheel cells. Verify Windows Cargo artifacts before installing the Python Rustup helper, strict Linux glibc/ISA repair tags, coverage, reference baseline, browser, physical BigTIFF ranges beyond 4 GiB and the full 180-second resource job. Review separate Rust/Python coverage before choosing thresholds. The correctness workflow includes the full raster boundary matrix. Inspect its execution and retained report alongside the other gates. Download artifacts with `gh run download RUN_ID --dir build/hosted-RUN_ID`. Retain revision and artifact hashes. A dispatch of an older branch does not test this working tree. |
+| Intended SQL TLS                          | Configure disposable MySQL/PostgreSQL servers with the intended private/public CA and server identity. Set `RCFP_TEST_MYSQL_URL` and `RCFP_TEST_POSTGRESQL_URL` with `sslmode=verify-full` and `sslrootcert` where needed. Run the Rust storage integration and native catalog suite. On both native and Python paths, repeat valid CA, missing/untrusted CA, wrong hostname, and literal-loopback `sslmode=disable`, in fresh processes and with warmed driver reuse. Confirm negotiated TLS server-side. Drop the test databases. Local MariaDB is not a hosted MySQL result.                                                                                                                                                                                                                                                                                                                                                   |
+| Real S3 and credentials                   | In an authorized test prefix, use a pinned real COG and a consistent SQLite backup. Follow [remote-data procedures](../docs/how-to/remote-data.md). Confirm raster range reads, read-only catalog writes failing, generation replacement with an old outer Python reader pinned, and failed-refresh recovery. Repeat with the intended custom endpoint, session token, role refresh and SSO renewal. Retain redacted request/signing/refresh evidence and delete test objects.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Lambda, both architectures                | Run the native platform workflow's x86_64/aarch64 AL2023 image/build/runtime lane. The local qualification environment had no Docker/Podman. Then deploy those exact bundles through the authorized infrastructure workflow, as described in [Lambda procedures](../docs/how-to/lambda.md). Invoke `/keys` and image events through the actual API Gateway integration. Decode PNG/base64, repeat warm/cold/error invocations, check shutdown and credentials, and confirm a sampled trace arrives in X-Ray. Retain hashes, configuration and results, then remove disposable functions/roles/objects.                                                                                                                                                                                                                                                                                                                            |
+| External basemap/deployment               | Start the bundled client against the intended backend and real basemap/token. Select a dataset. Exercise singleband, RGB, metadata, missing-data/error handling, navigation and CORS. Retain screenshots, decoded raster results and browser/network errors. The local Chromium run used an offline basemap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Read the Docs and human trial             | Connect the repository in the owner account, build the reviewed revision and release versions using `.readthedocs.yaml`, activate versions, and set the actual canonical URL. Retain hosted build logs and verify navigation/search/mobile pages. Have an independent user follow installation/first-map and Terracotta migration/backup/rollback instructions and record issues. Local Sphinx, examples, browser and external links have already run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Exact release and publication setup       | After the raster matrix and required gates pass, build at the intended `vMAJOR.MINOR.PATCH` tag. Check all five wheels and the sdist with `python packaging/verify-release.py DIST vMAJOR.MINOR.PATCH`, plus strict Twine checks. Configure protected main/tags, the `pypi` environment and PyPI trusted publisher. The tag-push workflow publishes, so do not push a release tag until publication is authorized. Local development versions do not qualify the tag.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Opt-in sampler correctness                | Add explicit opt-in variants to `tests/reference/raster_boundaries.py`. Its current matrix disables fast samplers and prefetch. Exercise `TC_RUST_MERCATOR_FAST`, native `TC_RUST_UTM_FAST`, decoded-block caching and prefetch on eligible inputs plus fallback edges. Compare exact-path values/masks/images and use independent coverage, category and seam checks for intentional native sampling differences. Apply the input-specific UTM bounds in [compatibility notes](compatibility-notes.md#narrow-accepted-numerical-differences) only to the recorded EPSG:32632 zoom-13 UInt16 corpus. Broader inputs need fresh evidence. Verify that compatibility mode disables UTM sampling even when requested. Retain exact core/wheel identities and per-case results before expanding support claims.                                                                                                                       |
+| Cold/WAN/performance and longer resources | The local matched-cache warm benchmark and 180-second resource gate are complete. Before expanding claims, use disposable benchmark hosts with matched total cache budgets and CPU affinity to measure actual cold disk, WAN bytes, startup/first view, loaded p95/p99, production budgets, more cores and a longer soak. Run `python docs/tools/benchmark.py --reference-python .venv-reference/bin/python --out build/warm-review` for the maintained warm control. Preserve exact binaries, input hashes, workload and exclusions. Do not reuse its warm ratios as WAN/production claims.                                                                                                                                                                                                                                                                                                                                      |
+| Cross-endian support extension            | If cross-endian support is proposed, use an actual big-endian target or emulator with native dependencies. The endian-tagged format proposal was discarded. Existing cross-endian catalogs remain unqualified. Create/read legacy float32 percentile blobs in each byte order and compare known stored percentiles and rendering in both directions. Record unsupported combinations explicitly. Byte-swapping on this little-endian host alone does not qualify cross-endian operation. A format change requires a separate decision.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ## Retained scope decisions
 
 Preserve the current catalog layout and image mask/transparency contracts.
 Endian-tagged percentile encoding and a broad transparency redesign were
-discarded; a future portable format needs an explicit marker and migration.
+discarded. A future portable format needs an explicit marker and migration.
 Legacy cross-endian catalogs remain unqualified. Native percentile label and
-rotated metadata-hull corrections change behavior within the existing format;
-public differences are described in [native migration](../docs/native-migration.md).
+rotated metadata-hull corrections change behavior within the existing format.
+Public differences are described in [native migration](../docs/native-migration.md).
 
 Speculative expression rewrites and cross-file transformer sharing are not
-outstanding implementation tasks. Worker-local affine plan reuse now has fresh
+outstanding implementation tasks. Worker-local affine plan reuse has fresh
 measurement and qualification below. Retain bounded caching/prefetch
-and the GDAL fallback; reconsider optimizations with fresh measurements and a
+and the GDAL fallback. Reconsider optimizations with fresh measurements and a
 concrete requirement. Broader hosted raster qualification and opt-in sampler qualification
 remain the explicit tasks above.
 
@@ -184,10 +184,10 @@ remain the explicit tasks above.
 
 | Retained local directory                     | Scope                                                                                                                                                                                                                                                                                             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `build/validation-20261005/`                 | Earlier Linux artifacts: SQL/storage, remote ranges, reference baseline, browser, physical BigTIFF, documentation, coverage and warm control; original failures and setup corrections remain separate.                                                                                            |
-| `build/blocker-fixes-20261005/`              | Fixed native bundle/repaired wheel: admission, SQL cache/TLS, metadata/build gates, contracts and reference replay. Native SHA-256 `7dd4e8c88e400471c6c14bcc7990599702e0acf63b3b932733abc655d672c805`; repaired-wheel SHA-256 `c56620feb6287a1399d72a0c5c81e96bb83f5638aaaa2e0c74be4104b6f395f4`. |
+| `build/validation-20261005/`                 | Earlier Linux artifacts: SQL/storage, remote ranges, reference baseline, browser, physical BigTIFF, documentation, coverage and warm control. Original failures and setup corrections remain separate.                                                                                            |
+| `build/blocker-fixes-20261005/`              | Fixed native bundle/repaired wheel: admission, SQL cache/TLS, metadata/build gates, contracts and reference replay. Native SHA-256 `7dd4e8c88e400471c6c14bcc7990599702e0acf63b3b932733abc655d672c805`. Repaired-wheel SHA-256 `c56620feb6287a1399d72a0c5c81e96bb83f5638aaaa2e0c74be4104b6f395f4`. |
 | `build/raster-correctness-20261005-current/` | Original frozen core and the full matrix with 358 failures, retained as negative evidence.                                                                                                                                                                                                        |
-| `build/raster-fixes-20261005/`               | Corrected frozen core, full passing matrix, original-vs-fixed reproductions, rebuilt wheel and fresh interface/unit checks; initial sandbox and wheel-tool setup failures are retained separately.                                                                                                |
+| `build/raster-fixes-20261005/`               | Corrected frozen core, full passing matrix, original-vs-fixed reproductions, rebuilt wheel and fresh interface/unit checks. Initial sandbox and wheel-tool setup failures are retained separately.                                                                                                |
 
 Each directory has a README and machine-readable reports with exact identities.
 Copy evidence before cache/build cleanup if it must survive. If it is unavailable,
@@ -206,7 +206,7 @@ masks, coverage, categories, seams and placement.
 `build/navigation-performance/` retains frozen baseline/staged/final executables,
 full checksum-pinned raster originals/derivatives, sequential paired reports,
 preparation costs, independent native quality checks and failed setup runs.
-See [performance](performance.md) for each ranked knob's implemented/discarded
+See [performance](performance.md) for each ranked optimization's implemented/discarded
 disposition, measured local/range gains, actual S3 status and defaults.
 
 Native direct tile sampling is enabled by default. The independent 193-check
@@ -216,20 +216,20 @@ outputs, categories, multiband RGB and explicit WebP coverage. Both profiles'
 standalone contracts and seven local cache-freshness checks passed. The new path
 completed the full 180-second eight-client/three-worker resource test with
 152815 successful HTTP requests and no failures/overloads/timeouts. This is
-uncached-render stress; it is not a production memory claim for a large resident
+uncached-render stress. It is not a production memory claim for a large resident
 cache. Unit and Clippy checks passed separately.
 
 These tile gates do not close the broader metadata/preview correctness matrix,
 fresh release/wheel/platform/browser/cold-storage gates, private provider TLS or
 credential/mutable-object qualification above. Earlier frozen failed matrix
 results describe their original artifact. Native exact Terracotta pixel controls
-must disable direct sampling; the direct path has a separate native quality
+must disable direct sampling. The direct path has a separate native quality
 contract. Keep failed S3 and contaminated/incomplete timing runs separate from
 successful paired measurements, as described in the performance document.
 
 The local installed wheel passed 14 adapter/CLI/WSGI contracts and a nonempty
 native RGB/defaults/format check. Sphinx and 4159 local links passed. Raw-wheel
-verification and portable manylinux_2_34 repair failed; this host requires
+verification and portable manylinux_2_34 repair failed. This host requires
 manylinux_2_39 symbols. This is a portability limitation, not a local API pass
 or a release-qualified artifact. That earlier wheel did not run a fresh Terracotta differential replay.
 
@@ -245,7 +245,7 @@ layers plus separate-source RGB, SQLite, local/range storage, one/three users,
 pan/zoom/revisit, stretch and ratio-expression changes. Response completion,
 decode, startup, source traffic, tails and process-tree PSS/USS are separate.
 Every native case ended with zero in-flight work and matched submitted/completed
-counts; this successful-request check does not test cancellation during GDAL.
+counts. This successful-request check does not test cancellation during GDAL.
 
 All 252 independent native saved-tile cases matched direct GDAL samples/masks
 exactly. Terracotta/TiTiler samples differ under their grid/overview/rounding
@@ -258,16 +258,16 @@ The earlier bounded-threadpool comparison, setup, smoke and interrupted
 preliminary timing runs are excluded from the root README headline figures.
 Methods, exclusions and pinned environment locks are maintained in `tests/`.
 
-Issue #8 retains the completed controlled comparison and now requires only a
+Issue #8 retains the completed controlled comparison and requires only a
 representative real deployment with the intended client network and S3 storage.
 Record actual viewport delivery, errors and resources with exact deployed
-artifact/input identities; retain the controlled comparison's applicability
+artifact/input identities. Retain the controlled comparison's applicability
 limits rather than inferring hosted speedups. Physically cold disk, detailed
 browser profiling, true time-series acquisitions and expanded packed multiband/
 mosaic matrices are outside this issue's completion scope. Release/platform and
 provider qualification above remain separate. Deadline/disconnect behavior belongs
-to `tests/request_lifecycle.py` as a correctness gate; it is not an additional
-comparative benchmark requirement. The measured RCFP profile is native; no fresh
+to `tests/request_lifecycle.py` as a correctness gate. It is not an additional
+comparative benchmark requirement. The measured RCFP profile is native. No fresh
 exact Terracotta-profile differential replay is implied by these timings.
 
 ## Request lifecycle correctness
@@ -277,10 +277,10 @@ across native and Terracotta profiles for executable SHA-256
 `db6c9a4cc4d53d31b8fe5a9ec90efd9f39dd07ca59b4343fec6baabf143276b6`.
 It verifies active accounting after deadlines/disconnects, queued expiry without
 source access, bounded counted rejections, drain and subsequent successful renders.
-Evidence is in `build/request-lifecycle-20261006/run-3/report.json`; earlier
+Evidence is in `build/request-lifecycle-20261006/run-3/report.json`. Earlier
 sandbox and harness setup failures remain separate. The controlled range origin
 serves checksum-pinned real raster bytes. This is a correctness pass for that
-artifact, with native SIGTERM cleanup; graceful capsule joining, hosted platforms
+artifact, with native SIGTERM cleanup. Graceful capsule joining, hosted platforms
 and real deployment evidence retain their separate qualification boundaries.
 
 ## Additional native optimization qualification
@@ -292,7 +292,7 @@ this development artifact, not a portable release:
 
 - Release build, formatting, all-target warnings-as-errors Clippy and 41 Rust
   unit tests pass. The explicit image timing test is ignored in the ordinary
-  test run; its separately executed encoder experiment is recorded in
+  test run. Its separately executed encoder experiment is recorded in
   [performance](performance.md).
 - Each of bilinear/nearest/cubic/average passes 241 independent native checks,
   **964 total**, adding real shared external masks, a nodata-free four-band
@@ -306,9 +306,9 @@ this development artifact, not a portable release:
   IEEE inputs.
 - The 180-second, eight-client/four-grid resource check completes **340,894 HTTP
   requests** without failures/overloads/timeouts. Three workers complete
-  173,906 admitted jobs and share 166,993 active renders; no array/finished-image
+  173,906 admitted jobs and share 166,993 active renders. No array/finished-image
   retention is enabled. Peak RSS is 81.4 MiB, descriptors 6 → peak 18 → 9.
-  Correctness/resource checks overlapped during part of the soak; this is a
+  Correctness/resource checks overlapped during part of the soak. This is a
   bounded-resource pass, not a sustained-throughput benchmark.
 - The locally built `cp312-abi3-linux_x86_64` wheel
   `0.1.1.dev10+g017bcf8f3.d20261005`, SHA-256
@@ -318,38 +318,38 @@ this development artifact, not a portable release:
   older 28-case gate or a fresh portable wheel qualification. Reference docs
   were regenerated from this installed wheel, preserving Hatch VCS versioning.
 
-The discarded Byte-mask experiment also passed its correctness gate; its mixed
+The discarded Byte-mask experiment also passed its correctness gate. Its mixed
 navigation regressions are negative performance evidence. Earlier sandbox socket
 failures, initial Clippy/style failures and wheel-tool invocation errors are
 retained separately from corrected passing executions. Kernel `perf` counters
-were unavailable under host policy; stage instrumentation was executed instead.
+were unavailable under host policy. Stage instrumentation was executed instead.
 Fresh hosted OS/ISA artifacts, non-AVX2 performance, actual S3/provider credential
 rotation, mutable-URL semantics, browser/WAN, cold disk, the full broader raster
 matrix and portable release qualification remain unexecuted for this artifact.
 
-The final source adds a conservative two-axis eligibility check; compound or
+The final source adds a conservative two-axis eligibility check. Compound or
 three-axis sources retain GDAL utility handling of vertical values/units. Final
 native SHA-256 `e62c7b6bc8a54c91e57c3674ae9da2099c064a77e1ea080515432cdc3cbf69a3`
 passes the release build, 41 unit tests, all-target Clippy, 18 profile contracts,
 seven cache-freshness checks and **249 independent rendering checks per policy,
 996 total**. A real DEM derivative with EPSG:4979 and foot band units exercises
 this fallback. The full `guarded-pair` repeats all 36 navigation cells in three
-alternating trials against the original baseline, with exact decoded images;
-median pan gains are 1.49× local and 2.76× range, first views about 1.2×.
+alternating trials against the original baseline, with exact decoded images.
+Median pan gains are 1.49× local and 2.76× range, first views about 1.2×.
 
 The earlier cross-service artifact passes all **45,360 requests / 216 cases**
 against Terracotta/TiTiler, all 252 native independent GDAL saved-tile references,
 and separately recorded local/range image equality. Its hash is explicitly
 recorded in the public performance explanation and differs from the guarded
-artifact. All timed sources are two-axis; the additional guard is exercised by
+artifact. All timed sources are two-axis. The additional guard is exercised by
 the independent rendering matrix. Public S3/cold-disk/browser/WAN claims are not
 inferred from the controlled origin.
 
 The guarded local wheel, SHA-256 `b433fdabe233c0bbc3e002f148c9b1939fbad962d15a63b78ed8c46ac474343a`, passes all
 15 installed Python/CLI/WSGI and focused pinned-reference cases. Its reference
 snapshots were regenerated from the installed guarded core. Strict Sphinx HTML
-and all 4,162 local links pass. Both local wheels retain their raw Linux tag;
-portable OS/ISA/release artifacts remain unqualified. The resource soak above
+and all 4,162 local links pass. Both local wheels retain their raw Linux tag.
+Portable OS/ISA/release artifacts remain unqualified. The resource soak above
 applies to its explicitly recorded pre-guard binary, not a repeated final soak.
 
 ## STAC selection and shared catalog serving qualification
@@ -367,7 +367,7 @@ This is a raw local Linux wheel, not a portable or release-qualified artifact.
   Catalog/Collection, remote documents and SQL catalogs, including SQLite files
   named with a JSON extension. Local source configurations resolve relative
   source, credential, revision and signing files. Empty and filtered POST
-  searches paginate completely; source limits and malformed/cyclic configurations
+  searches paginate completely. Source limits and malformed/cyclic configurations
   fail explicitly. The regular Python application, one-off helpers, WSGI and
   Lambda-event render the same pinned observation through the shared routes.
 - Shared discovery/filtering/paging, metadata and batch metadata, automatic TIFF
@@ -402,11 +402,11 @@ This is a raw local Linux wheel, not a portable or release-qualified artifact.
   **1000, 100,000 and 1,000,000 provider rows**, returning the same three
   observations in one page without raster reads. Query plans use the covering
   time index. Selection timings and real-raster first/repeated render timings
-  remain separate in its report; they do not establish hosted PgSTAC/WAN or
+  remain separate in its report. They do not establish hosted PgSTAC/WAN or
   shared HTTP metadata-first rendering performance.
 
 Maintained CI runs installed STAC serving/contracts on CPython 3.12 platform
-cells and the CLI/browser workflow in Chromium; configuration is not execution
+cells and the CLI/browser workflow in Chromium. Configuration is not execution
 evidence. Additional providers, authenticated search services, cloud credential
 SDKs, WAN/large-file download performance and other platforms remain separate
 qualification. This native adapter operates on a bounded startup selection and
@@ -435,7 +435,7 @@ Four original coastal-band TIFFs total **14,149,161 bytes**, pinned in
 256 × 256 Venice tile has **65,536 valid pixels** and **zero display-index
 differences** from independent GDAL reads after STAC calibration. Python and the
 regular HTTP tile route return identical PNGs. The shipped
-`docs/examples/data/earth-search-source.json` serves the live source directly;
+`docs/examples/data/earth-search-source.json` serves the live source directly.
 Chromium switches dates, restores revision-checked public SDK share links and
 inspects display pixels for both providers without browser-side upstream calls.
 
@@ -453,8 +453,8 @@ boundaries also pass for the expanded guide and pinned example.
 The Linux x86_64 / CPython 3.12 development wheel has SHA-256
 `b544b03aa4857087cbc2ebe5746da2ddcd73474e6ccf5c98cafc346c1d2c04b8`.
 Its executable has SHA-256
-`92fa3471c50ccab74ce7bd677aa285d758e4af64fc803f0c2028375a053545b4`;
-the shared core is
+`92fa3471c50ccab74ce7bd677aa285d758e4af64fc803f0c2028375a053545b4`.
+The shared core is
 `1dc771e6b12c45b21601d61c3924725d2e3851c9a749687d0fb370d9e3254322`.
 Ignored `build/request-cost/scheduling/` retains reports, source identities, logs,
 commands and earlier failed checks separately. These results qualify the recorded
@@ -473,36 +473,36 @@ local artifacts. The raw Linux wheel remains outside portable release qualificat
 - The same artifacts pass **53 installed contracts** and **249 independent
   bilinear rendering checks** in `signal-installed/` and `signal-rendering/`.
   Earlier artifacts separately passed 18 HTTP profile and seven cache-freshness
-  cases. Their reports remain in the parent directory; these are not counted as
+  cases. Their reports remain in the parent directory. These are not counted as
   repeated checks on the final artifact.
 - The **180-second resource soak** completes **419,834 requests** without
   failures, overloads or timeouts. All **210,214** admitted jobs complete and
   active render sharing serves **209,625** followers. Accounting drains, with
-  array and finished-image retention disabled. Peak observed RSS is **81.9 MiB**;
-  descriptors start at six, peak at 18 and end at nine. See `signal-resources/`.
+  array and finished-image retention disabled. Peak observed RSS is **81.9 MiB**.
+  Descriptors start at six, peak at 18 and end at nine. See `signal-resources/`.
   Correctness/build checks overlapped the soak, so it establishes resource bounds
   rather than throughput.
 - Three alternating paired foreground/prefetch trials use two workers, zero
   array/image retention and 160 foreground requests per arm/trial. Pixels and
   accounting remain unchanged. Median p95 is **4.56 ms disabled / 5.81 ms enabled**,
   with viewport time **441 ms / 488 ms**. Prefetch does real neighboring reads
-  but shows no foreground benefit in this workload; retain opt-in background reads.
+  but shows no foreground benefit in this workload. Retain opt-in background reads.
 - Release build, formatting, all-target warnings-as-errors Clippy and **50 Rust
   unit tests** pass. The live histogram test covers concurrent observations and
   durations beyond the largest finite bucket. The ordinary suite separately
   ignores one encoder timing experiment requiring captured images. No existing
-  dependency version was removed or changed when adding the pinned signal bridge;
-  its MIT/Apache notices are included in the staged bundle and wheel.
+  dependency version was removed or changed when adding the pinned signal bridge.
+  Its MIT/Apache notices are included in the staged bundle and wheel.
 - Installed documentation extraction/check, strict Sphinx HTML and local links
   are checked separately. The maintained wheel workflow includes the contention
-  gate on Linux x86_64 / CPython 3.12; configured CI is not execution evidence.
+  gate on Linux x86_64 / CPython 3.12. Configured CI is not execution evidence.
 
 The final source also passes **12 controlled scheduling runs**, comprising three
 alternating candidate/control pairs for each workload. Its frozen candidate
 executable is
 `9dc285809b9012b4e2d49b9ccb11f0a4f5226b58f5a2d825145474181351bcfa`.
 Each control differs in one source file and disables only the measured mechanism.
-`signals-source-identities.json` pins the trees; `signals-paired/report.json`
+`signals-source-identities.json` pins the trees. `signals-paired/report.json`
 retains every result from `tests/request_priority.py`.
 
 | Mechanism                      | Control median viewport | Candidate median viewport | Control foreground p95 | Candidate foreground p95 |
@@ -514,7 +514,7 @@ All four foreground requests per viewport succeed with identical image bytes
 between arms. Budgets are one raster worker, 16 queue slots and zero array/image
 retention. Response deadlines are identical within each pair. Accounting drains
 without failures or overloads. Peak observed RSS across all arms is **102.4 MiB**
-and descriptors peak at **20**. Controls admit the expected extra work; discarded
+and descriptors peak at **20**. Controls admit the expected extra work. Discarded
 jobs never access their obsolete sources. The origin serves checksum-pinned real
 Sentinel pixels and delays obsolete-source HEAD requests by 75 ms. These small
 loopback samples establish benefit for those contention patterns, with independent
@@ -523,7 +523,7 @@ rendering correctness qualified separately.
 Earlier sandbox failures, missing runner dependencies, observer contention,
 build/lockfile setup, a control retaining unexpected active sharing and the
 corrected 150 ms cold-read test deadline remain separate negative evidence.
-The correctness runner uses 500 ms; paired latency measurement remains separate.
+The correctness runner uses 500 ms. Paired latency measurement remains separate.
 Hosted OS/ISA and additional Python cells, repaired-wheel portability, actual
 S3/WAN traffic and browser viewport completion were not executed here. Windows
 console draining and forceful OS termination are outside the Unix signal gate.
@@ -534,7 +534,7 @@ are documented in [monitoring](../docs/reference/monitoring.md).
 
 Local Linux x86_64 / CPython 3.12 checks use GDAL 3.10.3 and the
 `rcfp-native-1` SQLite catalog. Reports, commands and retained failure logs are
-in ignored `build/multiband-assets/`; inputs derive from the checksum-pinned
+in ignored `build/multiband-assets/`. Inputs derive from the checksum-pinned
 real raster corpus with narrowly documented mask/alpha/declaration edges.
 
 The tested wheel is
@@ -567,11 +567,11 @@ and shared-core SHA-256 is
 
 Initial mask/alpha failures, sandbox socket failures and the corrected independent
 reference calculation remain retained separately from successful runs. Native-only
-layer runs explicitly exclude installed Python/WSGI/cache checks; the final
+layer runs explicitly exclude installed Python/WSGI/cache checks. The final
 installed run executes them. These results do not qualify hosted OS/architecture
 or additional Python cells, repaired-wheel portability, remote native catalog
 storage or cloud deployment. The maintained native and wheel workflows include
-the layer runner; that configuration is not execution evidence.
+the layer runner. That configuration is not execution evidence.
 
 ## JavaScript SDK and viewer qualification on 2026-10-06
 
@@ -612,8 +612,8 @@ in ignored `build/sdk-validation/`, with final evidence indexed by its
 
 Earlier setup failures and regression failures remain separate from these passes.
 Final artifacts come from an isolated Cargo directory because concurrent work
-replaced shared build outputs. Inspection reports display RGBA, rather than raw
-source values, for which no current point-query contract exists. Time labels reuse
+replaced shared build outputs. Inspection reports in this qualification display RGBA rather than raw
+source values. Time labels reuse
 real pixels and do not establish acquisition correctness. External basemaps,
 Firefox/Safari, formal screen-reader/WCAG assessment, repaired-wheel portability,
 additional platform cells and cloud deployment remain unqualified. npm registry
@@ -650,8 +650,8 @@ The GitHub `npm` environment exists and permits deployments only from `sdk-v*`
 tags. npm scope ownership, initial package publication and trusted-publisher
 account configuration remain unverified. No registry write or hosted Actions run
 was performed. Dry-run publication does not verify OIDC. Failed setup/fixture
-checks are retained separately. A repository-wide Rust formatting check found
-concurrent TIFF edits outside this contribution, which were left untouched.
+checks are retained separately. A repository-wide Rust formatting check reported TIFF formatting failures
+outside the SDK release changes. Those files were left unchanged.
 
 ## Exact TIFF access qualification on 2026-10-06
 
@@ -664,7 +664,7 @@ resource boundaries are documented in [the evaluation](async-tiff-evaluation.md)
 Local qualification uses Linux x86_64, CPython **3.12.11**, runtime GDAL
 **3.10.3**/PROJ **9.7.1**, and independent Rasterio **1.4.4** expectations from
 checksum-pinned real rasters. Casts and format derivatives preserve source
-pixels; explicit Mercator coordinates isolate grid selection. Three nonfinite
+pixels. Explicit Mercator coordinates isolate grid selection. Three nonfinite
 pixels and malformed TIFF declarations provide narrowly synthetic edges.
 
 The frozen executable SHA-256 is
@@ -690,13 +690,13 @@ Commands, identities, raw timings and reports are retained in ignored
   compatibility contracts**, **25 STAC contracts**, **29 serving contracts**,
   **51 layer contracts** and **14 request-cost contracts**.
 - **54 ordinary Rust unit tests** pass. Two fixture-dependent TIFF tests are
-  separately executed by the qualification runner; all six focused TIFF tests
+  separately executed by the qualification runner. All six focused TIFF tests
   pass. One explicit PNG timing test remains ignored. Locked offline all-target
   Clippy with warnings as errors, Rust formatting and TIFF runner lint pass.
 - Wheel repair, wheel/archive boundaries, license inventory, Hatch VCS retention
   and installed reference extraction pass. Strict Sphinx and **4,924 local links
   across 52 pages** pass for the operator documentation. The product-tree scan finds no stale
-  development labels or workspace paths; repository URLs remain intentional.
+  development labels or workspace paths. Repository URLs remain intentional.
 
 The three-trial aligned-read microcheck measures faster first access and slower
 warm access, as recorded in the evaluation. It does not qualify general
@@ -741,8 +741,8 @@ default-on use as a navigation performance improvement.
 ## Confirmed TIFF pixel navigation qualification on 2026-10-06
 
 The frozen executable with explicit pixel-reader counters has SHA-256
-`c81be35999667b290db901bcb8a53e23bc4cfcf4419ddfd7b98bfd6cf2b4bccf`;
-its core library has SHA-256
+`c81be35999667b290db901bcb8a53e23bc4cfcf4419ddfd7b98bfd6cf2b4bccf`.
+Its core library has SHA-256
 `fc7b5118dd90088d820b60e8feb00a43e2e05e55fa4c8660fcedd32ed24f844f`.
 Its source snapshot includes workspace changes present at capture. Changes made
 after capture do not qualify under these artifact hashes.
@@ -754,7 +754,7 @@ invocations and zero TIFF invocations. Every **6,804 paired response** has equal
 routes, dimensions and decoded pixels. Independent Rasterio/NumPy checks pass
 **2,214 images across 153 unique reference tiles** with exact masks and colors.
 Independent source comparisons pass **6,930 value/mask blocks** at all stored
-levels. Imagery has no transparent responses; elevation contributes 252 across
+levels. Imagery has no transparent responses. Elevation contributes 252 across
 all variants/trials, and every cell's median tile is fully populated.
 
 Deliberately eligible real-scene derivatives have descriptive metadata removed
@@ -762,7 +762,7 @@ and affine adjustments below eight nanometers across each footprint. Both
 variants use these same inputs and nearest sampling of stored base/2× overview
 pixels. Local first viewports improve **43%** and active-request throughput
 **27%**, with **23% lower CPU** and **8% lower RSS**. HTTP elevation improves,
-but imagery pans/zooms and RGB regress; grouped HTTP throughput is **19% lower**.
+but imagery pans/zooms and RGB regress. Grouped HTTP throughput is **19% lower**.
 The [evaluation](async-tiff-evaluation.md) records workload-level results and
 qualification limits. These results establish eligible-path performance without
 qualifying source eligibility rates, WAN/S3, native-layer/STAC-specific serving,
@@ -775,7 +775,7 @@ setting are unchanged. Explicit JSON/Prometheus counters and benchmark usage
 gates are the production/test additions. Strict Sphinx and **5,240 local links
 across 55 pages** pass for the documentation. Reports, commands, input recipes, source
 identities and raw results are in ignored `build/async-tiff-active/`. The initial
-mostly-nodata imagery run and smoke timings are excluded; snapshot build/argument
+mostly-nodata imagery run and smoke timings are excluded. Snapshot build/argument
 setup failures and sandbox socket failures remain separate from successful reruns.
 
 The HTTP origin in this matrix had Nagle enabled. A transport diagnostic on
@@ -784,18 +784,18 @@ responses** over three balanced paired trials of one-user singleband/RGB imagery
 All **864 candidate reads use TIFF**, with zero GDAL fallback and identical decoded
 pixels across all four backend/origin variants. TIFF request counts and bytes
 remain identical. Disabling Nagle changes RGB first viewport from **501 to 177 ms**
-and median pan from **135 to 53 ms**; corresponding GDAL timings change from
+and median pan from **135 to 53 ms**. Corresponding GDAL timings change from
 293 to 190 ms and 79 to 47 ms. This identifies a substantial origin transport
-contribution to the matrix's HTTP regressions. The maintained origin now disables
+contribution to the matrix's HTTP regressions. The maintained origin disables
 Nagle. The diagnostic does not replace the full multi-user/elevation matrix or
-qualify WAN/S3; packet capture and the remaining request-strategy cost are not
+qualify WAN/S3. Packet capture and the remaining request-strategy cost are not
 established. Evidence is retained in ignored `build/async-tiff-mechanism/`.
 
 ## TIFF scheduling decision on 2026-10-09
 
 The additional remote-window scheduler is **no-go**. The existing default native
 TIFF reader remains in production. Candidate source trees and the integration
-draft are removed; frozen evidence is archived in ignored storage. No new
+draft are removed. Frozen evidence is archived in ignored storage. No new
 production switch or inactive scheduler is retained. The
 [evaluation](async-tiff-evaluation.md#scheduling-decision-on-2026-10-09) records
 the decision and workload limits.
@@ -806,18 +806,18 @@ views are 1.3–1.7 times faster and zooms 1.8–2.4 times faster. Both eligible
 variants perform 3,690 TIFF pixel reads and zero GDAL pixel reads. The ordinary
 map-navigation corpus performs **zero TIFF pixel reads** in either variant,
 so this candidate supplies no pixel I/O concurrency benefit for that corpus.
-Paired eligible peak RSS does not increase materially; median remote CPU rises
+Paired eligible peak RSS does not increase materially. Median remote CPU rises
 about 3%. Original ordinary-input timing includes regressions. Additional
 five-trial and three-trial repetitions have unstable timings under host
 contention and do not establish the no-regression gate. Their 12,096 ordered
-pairs match exactly, with all pixel reads using GDAL; their timings are excluded
+pairs match exactly, with all pixel reads using GDAL. Their timings are excluded
 from adoption evidence.
 
 Candidate and serial control each pass seven HTTP lifecycle cases on independently
 prepared, ordinary 10 m Mercator layer grids: exact rendering and retention,
 queue overload, deadlines, version changes, origin failure, client disconnect
 and shutdown. Each correctness case checks 313 independently expected PNGs.
-One candidate worker overlaps four windows/network reads; control concurrency
+One candidate worker overlaps four windows/network reads. Control concurrency
 is one. Both drain admitted accounting and retain stable descriptors. This
 qualifies those frozen executables, not the current working tree or a broader
 transport/resource envelope.
@@ -830,7 +830,7 @@ The compared executable SHA-256 values are:
 `build/async-tiff-decision/decision.json` indexes verification, source archives,
 resource ratios and lifecycle reports. The initial deferred-job smoke failure
 and two lifecycle setup failures remain excluded. New concurrent array unit
-assertions were not executed; prior pipeline fixture/unit/Clippy results belong
+assertions were not executed. Prior pipeline fixture/unit/Clippy results belong
 to that earlier artifact. WAN/S3, authenticated transport, additional platforms
 and larger decode workloads remain unqualified. No cloud upload or spending
 was required.
@@ -847,10 +847,10 @@ Three paired trials against the current TIFF adapter pass **108 services and
 13,608 responses**, with all **6,804 ordered pairs** matching exact pixels.
 Both sides perform **3,690 TIFF pixel reads and zero GDAL pixel reads**.
 Three paired trials against GDAL pass **54 services and 6,804 responses**, with
-all **3,402 ordered pairs** matching. The candidate uses TIFF for all 1,845 reads;
-the control uses GDAL for all 1,845 reads. Three clean rotated ablation trials
+all **3,402 ordered pairs** matching. The candidate uses TIFF for all 1,845 reads.
+The control uses GDAL for all 1,845 reads. Three clean rotated ablation trials
 pass **5,832 ordered candidate/control comparisons**. Overlapping remote I/O
-supplies most of the RGB navigation improvement; extra decode scheduling and
+supplies most of the RGB navigation improvement. Extra decode scheduling and
 range merging supply little additional benefit on these aligned inputs.
 
 Independent Rasterio/NumPy checks pass **2,214 images across 153 unique reference
@@ -876,7 +876,7 @@ trial is excluded and replaced with a clean trial.
 `packaging/demo/` supplies CloudFormation storage/runtime stacks, an AL2023
 container recipe, checksum-pinned catalog preparation, CLI deployment/removal
 helpers and a static export of the bundled viewer. HTML documentation builds
-include the viewer under `demo/`; GitHub Pages publication is opt-in. The public
+include the viewer under `demo/`. GitHub Pages publication is opt-in. The public
 backend uses database-backed S3 paths with precomputed metadata. It does not use
 the STAC adapter's whole-file staging path.
 
@@ -890,8 +890,8 @@ bundle are in ignored `build/demo-validation/`.
 
 The official standalone AWS Runtime Interface Emulator v1.37 also passes
 discovery and initial/repeated exact previews with CORS on the native host.
-Its SHA-256 is `6b1e686e62ab2baf5759c412c4864276ef2a88b094fca53ec070637ccba9b9a5`;
-the tested executable SHA-256 is
+Its SHA-256 is `6b1e686e62ab2baf5759c412c4864276ef2a88b094fca53ec070637ccba9b9a5`.
+The tested executable SHA-256 is
 `0f85422c336ad55b90920566071a892a17aded384ddf5556d090e7310cafade0`.
 Its provenance and report are in the same ignored validation directory.
 
@@ -909,11 +909,11 @@ defaults and resolved STAC selections in SQLite. Separate files, packed TIFFs,
 direct STAC and database snapshots share keyed discovery, metadata, array and
 tile APIs. The advanced `rcfp-native-1` layer interface remains supported and
 also projects its channels into keyed discovery. Native keyed writes require
-local SQLite; original Terracotta catalogs retain their format.
+local SQLite. Original Terracotta catalogs retain their format.
 
 The frozen executable SHA-256 is
-`11b0994278452b9ba71273f4fb62da513bb44312eb4a78a48db674e91ed292aa`;
-the core library SHA-256 is
+`11b0994278452b9ba71273f4fb62da513bb44312eb4a78a48db674e91ed292aa`.
+The core library SHA-256 is
 `b041f1d15f1e0ca3236c0b3a197edc5823c6e5c11ba1e849b38e60237ea0195e`.
 The installed CPython 3.12 Linux x86_64 wheel contains these exact binaries.
 Its SHA-256 is
@@ -937,7 +937,7 @@ formatting and Ruff pass. Strict Sphinx builds **55 pages** and checks **5,240
 local links**. Executable documentation examples pass, including native HTTP,
 WSGI, Lambda and the upstream catalog read/write and migration roundtrip.
 Source archive/wheel boundaries and Hatch VCS versioning pass. The wheel
-workflow includes the keyed suite in its CPython 3.12 platform cells; this is
+workflow includes the keyed suite in its CPython 3.12 platform cells. This is
 prepared CI, rather than evidence of execution on additional platforms.
 
 Earlier debug wheels and superseded runs are excluded from this qualification.
@@ -952,10 +952,10 @@ preview statistics, and their extent polygon is not an exact valid-data hull.
 with Ubuntu 24.04, an on-demand C7i instance, restricted HTTP ingress, SSM access
 and instance-role S3 permissions. The CLI prepares complete native bundles and
 copies precomputed Terracotta-format SQLite catalogs into deployment artifacts.
-Self-contained local TIFFs become digest-addressed S3 objects; original catalogs
+Self-contained local TIFFs become digest-addressed S3 objects. Original catalogs
 are preserved. Stored native bindings and STAC source catalogs need separate
 staging. A guest timer uses an absolute deadline, attempts report collection and
-terminates the host; retained storage has explicit removal commands.
+terminates the host. Retained storage has explicit removal commands.
 
 All **12 credential-free checks** pass against the native executable with SHA-256
 `11b0994278452b9ba71273f4fb62da513bb44312eb4a78a48db674e91ed292aa`.
@@ -970,7 +970,7 @@ cfn-lint 1.40.4 validates both templates. Bootstrap shell syntax, the UTC calend
 expression, Ruff and formatting pass. Strict Sphinx builds **56 HTML pages** and
 checks **5,396 local links**. Source archive/wheel boundaries and Hatch VCS
 requirements pass. The qualification workflow builds and retains a native
-bundle without AWS credentials; prepared CI is not evidence of execution.
+bundle without AWS credentials. Prepared CI is not evidence of execution.
 
 AWS pricing/image lookups, stack provisioning/removal, SSM connectivity, private
 S3 reads through instance credentials and scheduled termination remain
@@ -985,8 +985,8 @@ were provisioned. The operator procedure is in
 Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
 wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
 Its SHA-256 is
-`4c722efb6a2b6c7e6083f289b88e5ec0e764995d937068afa04dc4cd55bf4196`;
-the bundled executable is
+`4c722efb6a2b6c7e6083f289b88e5ec0e764995d937068afa04dc4cd55bf4196`.
+The bundled executable is
 `319e64822bc93daef6a0708f90bdd0dfc4cef21e8fc08ddaa001cf2c03c5eabd`
 and shared core is
 `a6cd21165b47950f126379e14870d50ddc22abb5072ef9c9fb5f615c53149903`.
@@ -1011,7 +1011,7 @@ the native TileJSON manifests and the existing named-profile examples.
 
 The same frozen artifacts pass **23 keyed catalog cases**, **51 advanced-layer
 cases**, **53 public contract cases** and the **26-case pinned Terracotta HTTP
-differential** in the named profile. Rust passes **61 tests**; two fixture-dependent
+differential** in the named profile. Rust passes **61 tests**. Two fixture-dependent
 TIFF tests and one image timing benchmark remain explicitly ignored. Clippy with
 warnings denied, Rust formatting, Ruff, SDK contracts and TypeScript checks pass.
 Strict Sphinx builds **61 pages**, checks **6,058 local links**, and executable
@@ -1023,7 +1023,7 @@ Qualification covers the pinned windows and declared sampling policies. The
 southern polar view uses a source near 34°S, rather than an Antarctic acquisition.
 Hosted deployments, remote providers, WAN behavior and other platforms remain
 unexecuted. Prepared wheel CI is not execution evidence. TileJSON 3.0 and OGC
-matrix descriptors are the supported interfaces; WMTS and OGC API service
+matrix descriptors are the supported interfaces. WMTS and OGC API service
 conformance are not claimed.
 
 ## Rendered publication and reuse
@@ -1031,8 +1031,8 @@ conformance are not claimed.
 Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
 wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
 Its SHA-256 is
-`85f74eeaae63c265b5a34798c0c67c393679570f0e11d79670ebc2649fd61d72`;
-the executable is
+`85f74eeaae63c265b5a34798c0c67c393679570f0e11d79670ebc2649fd61d72`.
+The executable is
 `f8be8738fda624cbdeec960ec857e050bd69f9047136da7de9d149af99ef7322`
 and shared core is
 `8c725d19e8a63e61a5dd07849497b974a4de01e6efa6d89ce0fba75f0ee3e8b1`.
@@ -1055,7 +1055,7 @@ Sentinel pixels with explicit Mercator geometry. With zero encoded retention,
 median first/revisit/conditional times are 37.81/7.36/6.36 ms, with nine raster
 jobs at each stage. With 4 MiB retention they are 37.06/5.13/3.05 ms, with
 nine/zero/zero jobs and 521,324 accounted retained bytes. Each image viewport
-transfers 245,731 payload bytes; conditional responses transfer zero. End-stage
+transfers 245,731 payload bytes. Conditional responses transfer zero. End-stage
 origin RSS spans approximately 71–76 MB and is not a peak-memory measurement.
 Eight simultaneous identical requests produce one raster job and seven
 coalesced followers at both budgets in every trial. Pinned nginx revisits hit
@@ -1065,7 +1065,7 @@ bypass it. These loopback measurements qualify this workload only.
 The same frozen artifacts pass **53 public contracts**, **14 compatibility
 contracts**, **51 advanced-layer cases**, **25 STAC cases** and **seven cache
 freshness cases**. Both HTTP profiles pass the **26-case pinned Terracotta
-differential**. Rust passes **61 tests**; the ordinary run separately ignores
+differential**. Rust passes **61 tests**. The ordinary run separately ignores
 two fixture-dependent TIFF tests and one image timing benchmark. The dedicated
 TIFF runner passes 328 windows, 19 grids and eight fallback cases. Clippy with
 warnings denied, Rust formatting, Ruff, workflow lint and archive checks pass.
@@ -1074,7 +1074,7 @@ preserve Hatch VCS requirements and exclude developer context.
 
 Reports, artifact/source hashes, superseded runs and initial failed setup or
 regression checks are retained separately in ignored `build/rendered-caching/`.
-The Linux wheel workflow now includes nginx/Chromium delivery checks; prepared
+The Linux wheel workflow includes nginx/Chromium delivery checks. Prepared
 CI is not evidence of hosted execution. Other platforms, hosted Lambda runtime,
 cloud/CDN/WAN behavior and authenticated remote providers remain unexecuted.
 Unversioned remote freshness retains the documented TTL boundary. The origin
@@ -1095,8 +1095,8 @@ checksum-pinned real imagery, creates a catalog, serves a preview and displays
 the map in Chromium with **zero external requests**. Decoded preview pixels
 equal the pinned independent Terracotta reference. The recorded trial takes
 **1.473 seconds** and reports the sample's missing overviews and full-width
-strips as nonblocking warnings. This is automated independent-reference evidence;
-no human-participant usability trial has been performed. A separate environment
+strips as nonblocking warnings. This is automated independent-reference evidence.
+No human-participant usability trial has been performed. A separate environment
 containing only the installed wheel and NumPy also creates the catalog and exact
 reference preview, without Rasterio, Pillow or browser-test dependencies.
 
@@ -1106,18 +1106,18 @@ one image timing benchmark separately ignored. Clippy with warnings denied,
 changed-file formatting, Ruff, workflow lint, installed reference extraction and
 archive checks pass. Strict Sphinx builds **61 pages** and checks **6,061 local
 links**. Source/wheel checks preserve Hatch VCS requirements and exclude developer
-context. Diagnostic/browser checks are prepared in the docs and wheel workflows;
-this is not evidence of hosted CI execution.
+context. Diagnostic/browser checks are prepared in the docs and wheel workflows.
+This is not evidence of hosted CI execution.
 
 Artifact hashes, reports, the browser screenshot, minimal-dependency checks and
 superseded failures are retained separately in ignored `build/first-use/`.
 Additional platforms/Python versions, private-provider IAM access, hosted CI and
-Docker/Lambda image execution remain unexecuted; Docker is unavailable locally.
+Docker/Lambda image execution remain unexecuted. Docker is unavailable locally.
 
 An additional independent AI-user trial uses a subagent with no conversation
 history, an empty working/home directory, a fresh Python environment, the same
 repaired wheel and only public HTML documentation. The application is installed
-offline with NumPy as its only dependency; browser tooling is isolated separately.
+offline with NumPy as its only dependency. Browser tooling is isolated separately.
 The participant does not consult source, maintained tests, prior reports or
 design context. Installation finishes at **27.7 seconds**, a useful image is
 produced at **40.2 seconds**, and a useful selected browser map is visually
@@ -1132,7 +1132,7 @@ viewer makes zero external request attempts, but the separate API-docs page
 attempts two blocked decorative assets from Google Fonts and the Redoc CDN.
 One RGB zoom after share restoration returns six HTTP 503 tile responses and
 leaves visible gaps. The trial preserves this failure without server tuning or
-root-cause investigation; it does not qualify zoom reliability. Independent
+root-cause investigation. It does not qualify zoom reliability. Independent
 reports, commands, request logs and success/failure screenshots are retained in
 ignored `build/first-use/independent-agent/`.
 
@@ -1142,7 +1142,7 @@ The current Leaflet adapter shares three tile requests across view changes,
 drops removed queued tiles and bounds retries for busy responses. This keeps
 RGB viewport bursts within the default raster capacity without increasing
 server limits. The API-docs renderer uses local system fonts and a text footer
-label. Its native service description is corrected; the named compatibility
+label. Its native service description is corrected. The named compatibility
 profile retains its reference specification.
 
 The repaired Linux x86_64 wheel SHA-256 is
@@ -1183,8 +1183,8 @@ remain unqualified by these checks.
 Local Linux x86_64 qualification on 2026-10-07 uses the installed CPython 3.12
 wheel `rcfp-0.1.1.dev11+gc61190725.d20261007-cp312-abi3-linux_x86_64.whl`.
 Its SHA-256 is
-`90029b5a53fd8b38edb80723553c8dbfcfbf73ab0604565258d50dc9897e2d57`;
-the executable is
+`90029b5a53fd8b38edb80723553c8dbfcfbf73ab0604565258d50dc9897e2d57`.
+The executable is
 `b88bceaf68d11329f44f07cc1913bf8c98cbaf9213d104c7d909ae96d7ce4e87`
 and shared Rust core is
 `b6e44780aa6853e9300ab58d2eb72ef20da8d7e8fee7b52948619985f758f8da`.
@@ -1211,14 +1211,14 @@ loopback range origin with 2 ms request delay records **33.33/17.84 ms**,
 All 16 responses are HTTP 200. Reports retain HEAD/GET/range counts, response
 bytes, source-byte estimates and backend counters. These are observations from
 one workload with two workers, disabled sample/render retention, a shared
-service and warm filesystem; they are not comparative performance claims or
+service and warm filesystem. They are not comparative performance claims or
 hard RSS/network bounds. Broad products remain explicitly selected immutable
 layers with operator freshness checks and regeneration.
 
 The same artifacts pass **205 contract cases** in total: 20 mosaics, 51 advanced
 layers, 23 catalogs, 53 public contracts, 14 compatibility contracts, 26 pinned
-Terracotta differential cases and 18 profile cases. Rust passes **61 tests**;
-two fixture-dependent TIFF tests and one image timing benchmark are separately
+Terracotta differential cases and 18 profile cases. Rust passes **61 tests**.
+Two fixture-dependent TIFF tests and one image timing benchmark are separately
 ignored. Clippy with warnings denied, changed-file Rust formatting, Ruff,
 archive checks and strict Sphinx pass. Sphinx builds **61 pages** and checks
 **6,061 local links**. The product scan only matches the intentional obsolete
@@ -1227,7 +1227,7 @@ package exclusion assertion in the archive checker.
 Artifact and frozen-source hashes, report hashes, measurements, logs and
 superseded failures are recorded in ignored
 `build/mosaic-validation/verification.json`. The snapshot includes concurrent
-workspace changes present at capture; later unrelated changes are outside this
+workspace changes present at capture. Later unrelated changes are outside this
 artifact qualification, with a separate current-workspace all-target Cargo
 check passing. Input derivatives retain checksum-pinned real pixels with
 declared Mercator crops, decimation, masks and shifted placement. Reused date
@@ -1269,8 +1269,7 @@ The final wheel also passes **53 native public contracts**, **15 compatibility
 contracts**, **51 advanced-layer**, **54 native-service** and **26 pinned
 differential cases per profile**. Its byte-image API passes in a separate
 installation without NumPy, Rasterio or Pillow. Rust passes **61 tests**, with two
-fixture-dependent TIFF
-tests and one image timing benchmark separately ignored. Clippy with warnings
+fixture-dependent TIFF tests and one image timing benchmark separately ignored. Clippy with warnings
 denied, Rust formatting, Ruff, **13 SDK tests**, strict TypeScript compilation,
 installed reference extraction, wheel/archive checks and strict Sphinx pass.
 Sphinx builds **65 pages** and checks **6,759 local links**. The source archive

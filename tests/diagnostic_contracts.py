@@ -84,8 +84,8 @@ def main():
             "dtype": "UInt16",
             "block_size": list(src.block_shapes[0]),
         }
-    # Real pixels with their original georeferencing; only storage/band count
-    # changes to isolate layout and physical-band diagnostics.
+    # Retain real pixels and georeferencing while changing storage and band count
+    # to isolate layout and physical-band diagnostics.
     with rasterio.open(sample / "data/green.tif") as src:
         green = src.read(1)
     # An explicit Mercator affine isolates one-based band selection from

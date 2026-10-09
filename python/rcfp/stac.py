@@ -87,12 +87,9 @@ class Selection:
         return self._description["id"]
 
     def render(self, asset_index, *, bounds_mercator, range, band=1, size=(256, 256)):
-        """Render one selected asset/band as viridis PNG on an explicit map grid.
+        """Render a selected asset/band as viridis PNG without a new search.
 
-        ``range`` is in physical units after STAC scale/offset. ``size`` is
-        (height, width). No search runs during rendering. Verified local assets
-        are reused within this selection; a new revision owns separate workers
-        and staging files. Closing releases those resources.
+        ``range`` uses calibrated physical units, and ``size`` is (height, width).
         """
         if not isinstance(asset_index, int) or not 0 <= asset_index < len(
             self._description["assets"]
@@ -166,11 +163,10 @@ class SearchClient:
         max_staged_bytes=512 * 1024 * 1024,
         revisions=None,
     ):
-        """Resolve all pages; limit/error failures never return a partial selection.
+        """Return a complete selection or raise, accepting empty results.
 
-        Ordering is ascending UTC start time, collection, Item ID, asset key.
-        Empty search results are valid. Spatial/time matching belongs to the
-        provider's index; no catalog crawl or client-side spatial scan is used.
+        Sort by ascending UTC start time, collection, Item ID and asset key.
+        The provider's index handles spatial/time matching.
         """
         query = {"limit": page_size}
         for key, value in (

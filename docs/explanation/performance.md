@@ -11,7 +11,7 @@ GDAL behavior, requests, CPU allocation, and total cache budgets. Account for
 all Python worker caches and native decoded-source/GDAL caches, not just one
 application setting. Compare multiple fresh-process paired trials, report p50
 and p95 plus failures, and verify decoded imagery. Do not sum process RSS and
-call it private memory savings: shared pages can be counted multiple times.
+call it private memory savings because shared pages can be counted multiple times.
 
 ## Reproduce the local example workload
 
@@ -44,13 +44,13 @@ A 2026-10-05 Linux x86_64 run used the development wheel
 `0.1.1.dev9+g9de64ebdd.d20261005`, GDAL 3.10.3 in both services,
 three pinned CPU cores, three native raster workers, and three Gunicorn 23.0.0
 workers. Both services had 96 MiB aggregate logical cache budgets: native
-48 MiB GDAL plus 48 MiB arrays; Python three times 16 MiB GDAL plus 16 MiB
+48 MiB GDAL plus 48 MiB arrays. Python three times 16 MiB GDAL plus 16 MiB
 compressed application cache. Equal logical budgets do not prove equal physical
 memory use. Fast paths, decoded-source cache, and prefetch were disabled.
 
 The table reports medians of three per-trial p50 and p95 values, using 30 timed
-requests per cell after nine warmup requests. All 720 timed requests succeeded;
-all decoded images matched exactly. Singleband and RGB used the supplied
+requests per cell after nine warmup requests. All 720 timed requests succeeded.
+All decoded images matched exactly. Singleband and RGB used the supplied
 512×512 UTM source windows and produced 256×256 previews over loopback HTTP.
 
 | Preview    | Clients | RCFP p50 / p95 (ms) | Terracotta p50 / p95 (ms) | p50 ratio |
@@ -63,7 +63,7 @@ all decoded images matched exactly. Singleband and RGB used the supplied
 These measurements show faster warm local preview delivery for this artifact
 and workload. They do not measure navigation, cold disk, WAN, browser paint,
 cloud starts, or private memory savings. The native socket adapter admits two
-simultaneous renders; overload studies must include rejected requests instead
+simultaneous renders. Overload studies must include rejected requests instead
 of silently retrying them. Download the [full result and methodology](../_static/benchmark.json),
 including per-request timings, input hashes, CPU affinity, and the measured
 native executable hash. This is an example comparison, not a release-wide
@@ -74,23 +74,23 @@ speed guarantee.
 `TC_RUST_MERCATOR_FAST=1` enables compatible affine Web Mercator reads where the
 input satisfies the fast path's conditions. Other inputs fall back to GDAL.
 `TC_PREFETCH_TILE_RING=1` uses idle workers to prepare neighbors within bounded
-caches; measure its foreground effects and budget. `TC_SOURCE_BLOCK_CACHE_BYTES`
+caches. Measure its foreground effects and budget. `TC_SOURCE_BLOCK_CACHE_BYTES`
 sets a separate decoded-source block cache, disabled by default.
 
 `TC_RUST_UTM_FAST=1` is native-only and can change sampling values. Compatibility
 mode disables it. Interior high-detail pans, overview-scale/edge cases, first
 views, and loaded RGB p95 are different workloads. A speedup for one is not a
-claim about the others. Enable flags only after your own image and load checks;
-see [resource tuning](../how-to/resources.md).
+claim about the others. Enable flags only after your own image and load checks.
+See [resource tuning](../how-to/resources.md).
 
 ## Native map navigation
 
-Native mode now uses a general direct output-grid tile reader through GDAL/PROJ,
+Native mode uses a general direct output-grid tile reader through GDAL/PROJ,
 with fused stretch/packing when no color transform is requested. It applies
-across source CRSs and scalar dtypes; it is not restricted to one UTM zone.
+across source CRSs and scalar dtypes.
 `TC_NATIVE_DIRECT_READ=false` restores the intermediate reader. The Terracotta
 profile disables direct-grid sampling. Native samples can differ from that
-intermediate grid; geographic coverage/categories and image quality are checked
+intermediate grid. Geographic coverage/categories and image quality are checked
 independently. Previews retain the general reader.
 
 A local Linux/GDAL 3.10.3 navigation experiment used checksum-pinned complete
@@ -106,11 +106,11 @@ Across workload-group medians, local first viewports improved 1.7–2.7× and pa
 1.0–1.7×. With a controlled 15 ms source range-server latency, first views
 improved 1.2–1.5× and pans 1.6–3.1×. All 216 case runs succeeded. These are
 existing-asset comparisons against earlier RCFP, not Terracotta, physically cold
-disk, browser paint or production S3. Loaded tails and cache reuse differ by cell;
-ratios must not be multiplied with individual optimization gains.
+disk, browser paint or production S3. Loaded tails and cache reuse differ by cell.
+Ratios must not be multiplied with individual optimization gains.
 
 Actual public S3 elevation trials completed 3402 requests without failures.
-Pans improved 2.1–3.8× across the concurrency cells; first views were nearly
+Pans improved 2.1–3.8× across the concurrency cells. First views were nearly
 neutral and loaded p95 was mixed. The broader S3 imagery control recorded three
 RGB deadline failures and is excluded from speed ratios. Keep failed requests in
 your own reports rather than retrying them out of the results.
@@ -133,7 +133,7 @@ development executable with SHA-256
 All 216 fresh-service cases and 45,360 tile requests succeeded. Each service
 completed the same 15,120 requests. The table reports medians across nine
 singleband cells (three raster families × three user arrangements) or three RGB
-cells. Each cell first takes the median of its three trials; pan/zoom timings
+cells. Each cell first takes the median of its three trials. Pan/zoom timings
 also take the median of that case's navigation steps. Ratios summarize the
 cell-by-cell ratios, so they need not equal a ratio of the aggregate time columns.
 
@@ -168,24 +168,24 @@ RCFP, 7,462 / 5,275 for Terracotta and 10,890 / 8,942 for TiTiler. Median
 service startup-to-readiness was 51 / 459 / 1,155 ms respectively and is reported
 separately from the first image. TiTiler readiness requires all four worker PIDs.
 Startup prepares no raster. Timed-batch throughput, excluding startup and client
-decode, was 436 / 69 / 72 requests/s for this request mix; this is not maximum
+decode, was 436 / 69 / 72 requests/s for this request mix. This is not maximum
 sustained capacity. Of each service's
-15,120 requests, 1,260 were transparent and 12,210 entirely valid; the rest
+15,120 requests, 1,260 were transparent and 12,210 entirely valid. The rest
 intersected source/nodata edges. Local and remote decoded images matched exactly
 within every service/trial/user cell.
 
 Independent saved-image checks covered 252 distinct scene/style/tile cases per
 service. RCFP matched the direct GDAL output-grid samples and masks exactly,
 including all 54 category tiles. Terracotta differed by 1,595 coverage pixels
-across those checks; TiTiler's masks matched exactly. For continuous images,
+across those checks. TiTiler's masks matched exactly. For continuous images,
 mean per-tile channel differences were 0.18 and 0.46 display levels for
 Terracotta/TiTiler, with worst individual differences 70 and 6. Category boundary
 samples differed too: 24/54 Terracotta and 42/54 TiTiler category tiles matched
-exactly; category labels differed at 2.51% and 0.91% of compared valid pixels,
+exactly. Category labels differed at 2.51% and 0.91% of compared valid pixels,
 respectively, while all colors remained in the requested palette. These differences
-are recorded rather than counted as exact-fidelity passes; the named Terracotta
+are recorded rather than counted as exact-fidelity passes. The named Terracotta
 profile is not the RCFP profile timed here. Adjacent output grids were checked
-against their independent affine bounds; this does not qualify every seam or
+against their independent affine bounds. This does not qualify every seam or
 mosaic workflow.
 
 The maintained `tests/service_benchmark.py` runner compares native RCFP,
@@ -195,22 +195,22 @@ Sentinel-2 (10980² UInt16), Copernicus DEM (3600² Float32) and WorldCover
 layer. Acquisition URLs, attribution and full SHA-256 hashes are pinned in
 `tests/fixtures/navigation.json`. Sources are not reprojected or repacked for
 these comparisons. SQLite catalogs contain the same rows and precomputed
-metadata; numeric stretches avoid differences in metadata percentile estimates.
+metadata. Numeric stretches avoid differences in metadata percentile estimates.
 
 Each case starts a fresh service. Three trials rotate service order across
 RCFP, Terracotta and TiTiler. A 3×3 viewport visits three zooms, pans by one tile
 at a time, revisits the original view, then changes the stretch. Sentinel
 singleband also evaluates a NIR/red ratio expression. One user and three users
 with overlapping or independently displaced views issue four requests per user.
-HTTP response completion precedes a separately timed client decode/record stage;
-there is no browser or client WAN in the measured path. Failed requests remain
+HTTP response completion precedes a separately timed client decode/record stage.
+There is no browser or client WAN in the measured path. Failed requests remain
 in the report and are not retried.
 
 All services use the same four physical serving cores and GDAL 3.10.3. Remaining
 physical cores run clients and the source origin. Terracotta uses four Gunicorn
-23.0.0 sync workers with its internal multiprocessing disabled; TiTiler uses four
+23.0.0 sync workers with its internal multiprocessing disabled. TiTiler uses four
 Uvicorn 0.54.0 workers with the default FastAPI threadpool and normal parallel
-rio-tiler asset reads; RCFP uses four raster workers. TiTiler timing starts only
+rio-tiler asset reads. RCFP uses four raster workers. TiTiler timing starts only
 after health responses confirm that all four worker PIDs are ready. Each service has a 160 MiB
 aggregate logical cache budget, including curl's downloaded-range cache:
 
@@ -223,10 +223,10 @@ aggregate logical cache budget, including curl's downloaded-range cache:
 Finished-image caches and prefetch are off. Native RCFP uses its default
 60-second remote source leases and shares identical active renders even with
 zero finished-image retention. Source/overview handles add memory outside the
-logical block/array/range budgets; the memory table includes that cost. Cache
+logical block/array/range budgets. The memory table includes that cost. Cache
 equality does not imply equal physical memory. Process-tree memory samples every
 100 ms sum PSS (which apportions shared pages) and USS (private resident pages),
-including Python masters/workers; summed RSS is diagnostic only. Reports retain
+including Python masters/workers. Summed RSS is diagnostic only. Reports retain
 request p50/p95/p99, throughput, CPU, memory and source GET/HEAD/range bytes.
 
 The TiTiler test application resolves the shared SQLite catalog into STAC
@@ -234,7 +234,7 @@ assets and uses the normal multi-asset factory/reader. It selects 256-pixel PNGs
 compression level 1 and the same source bands, stretches and category palette.
 Its renderer uses rio-tiler's own stretch with output range 1–255 to match
 Terracotta's reserved masked zero. Out-of-source tiles become transparent PNGs.
-This adapter adds catalog resolution; there is no remote STAC discovery or
+This adapter adds catalog resolution. There is no remote STAC discovery or
 custom raster decoder. Continuous tiles request bilinear warp/read and category
 tiles nearest. Intermediate grids, overview selection and integer rounding
 still differ. These are comparable display workloads, not bit-identical output
@@ -254,19 +254,19 @@ python tests/service_benchmark_quality.py --results build/service-comparison --o
 ```
 
 Generated reports and captured tiles belong in ignored `build/`. Reports record
-executable, manifest and adapter hashes plus package/native versions; installed
+executable, manifest and adapter hashes plus package/native versions. Installed
 code fingerprints can be captured with `tests/service_benchmark_environment.py`
 in each Python environment. Logical cache controls, CPU allocation and individual
 request outcomes accompany each case.
 
 Local sources have a warm OS page cache and fresh service/GDAL state. Remote
 sources use a self-hosted byte-range origin with 15 ms delay per source request,
-giving exact request/byte accounting; this is a controlled remote surrogate,
+giving exact request/byte accounting. This is a controlled remote surrogate,
 not an actual S3 comparison. Physically cold disk, browser paint/WAN, private
 credentials, true time-series acquisitions, packed multiband TIFF comparisons
 and dynamic mosaics are explicit applicability limits. A representative real
 deployment using the intended client network and S3 storage is the next validation
-step; the deployment must retain its own artifact identities and results.
+step. The deployment must retain its own artifact identities and results.
 Deadline, disconnect, bounded rejection and recovery behavior have a separate
 request-lifecycle correctness gate, without cross-service timing comparisons.
 No public tile service is load-tested and this benchmark does not qualify a

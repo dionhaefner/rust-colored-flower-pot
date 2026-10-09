@@ -85,7 +85,7 @@ def main() -> None:
             ],
         },
     )
-    # Time labels exercise explicit key selection; both use the same pinned scene.
+    # Both time labels use the same pinned scene to exercise explicit key selection.
     for scene in ("lagoon", ENCODED_SCENE):
         for date in ("2024-01-01", "2024-01-02"):
             for band in ("red", "green", "blue", "nir"):

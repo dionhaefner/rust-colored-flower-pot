@@ -48,7 +48,7 @@ name = "rcfp"
 path = "src/main.rs"
 
 [features]
-# Explicit local services; ordinary offline unit tests do not require sockets/engines.
+# Service integration tests require explicitly configured local engines.
 storage-integration = []
 
 [[test]]

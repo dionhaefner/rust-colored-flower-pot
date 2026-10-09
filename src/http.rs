@@ -333,8 +333,7 @@ impl Application {
         self.executor.version().to_owned()
     }
 
-    /// Execute a request without binding a socket. Deployment adapters use
-    /// this entry point so they cannot drift onto a second rendering path.
+    /// Execute a request through the shared application without binding a socket.
     pub fn request(&self, method: &str, url: &str) -> AppResponse {
         self.request_full(method, url, &BTreeMap::new(), &[])
     }
@@ -400,7 +399,7 @@ impl Application {
         let debug = crate::settings::var("TC_DEBUG").is_ok_and(|s| s == "true");
         let level = crate::settings::var("TC_LOGLEVEL").unwrap_or_else(|_| "warning".into());
         if profile || debug || ["debug", "info"].contains(&level.as_str()) {
-            // Query strings may contain user data; log route and timing only.
+            // Log only the route and timing because query strings may contain user data.
             eprintln!(
                 "{}",
                 json!({"event":"http_request", "method":safe_method(method), "path":route_label(path), "status":response.status, "elapsed_ms":started.elapsed().as_secs_f64()*1000.0, "profile":profile,"stages_seconds":stages})

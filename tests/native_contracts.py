@@ -62,8 +62,7 @@ def main():
             "fixture checksum",
         )
 
-    # Sign/constant edge cases have no suitable retained real fixture. These tiny
-    # inputs isolate extrema; rotated derivatives below retain pinned real pixels.
+    # Tiny synthetic inputs isolate sign and constant extrema absent from the corpus.
     with rasterio.open(CORPUS / "red.tif") as src:
         template = src.profile.copy()
         real = src.read(1)
