@@ -281,7 +281,7 @@ def main():
         def test_config_origins_and_redaction(self):
             config = out / "settings.toml"
             config.write_text(
-                'RESAMPLING_METHOD = "nearest"\nSQL_PASSWORD = "toml-secret"\nCOMPAT_PROFILE = "terracotta-0.10.1"\n'
+                'RESAMPLING_METHOD = "nearest"\nSQL_PASSWORD = "toml-secret"\nCOMPAT_PROFILE = "terracotta"\n'
             )
             environment = dict(
                 env,
@@ -320,7 +320,7 @@ def main():
             environment = dict(
                 env,
                 TC_DRIVER_PATH=str(database),
-                RCFP_COMPAT_PROFILE="terracotta-0.10.1",
+                RCFP_COMPAT_PROFILE="terracotta",
             )
             report = self.inspect(environment=environment)
             self.assertEqual(report["source"]["location"], str(database))
@@ -541,7 +541,7 @@ def trial(binary, out, env, browser, command):
         assert result.returncode == 0, result.stderr + result.stdout
         return result
 
-    step("export supplied imagery", lambda: run("sample", "-o", "sample"))
+    step("create sample catalog and preview", lambda: run("sample", "-o", "sample"))
     report = json.loads(
         run(
             "inspect", "--raster", "sample/data/red.tif", "--render-probe", "--json"
@@ -549,26 +549,13 @@ def trial(binary, out, env, browser, command):
     )
     steps.append({"step": "inspect imagery", "issues": report["issues"]})
 
-    def create():
-        result = subprocess.run(
-            [sys.executable, "sample/create_catalog.py", "map.sqlite"],
-            cwd=folder,
-            env=env,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        assert result.returncode == 0, result.stderr
-
-    step("create catalog and preview", create)
-    step("inspect catalog", lambda: run("inspect", "-d", "map.sqlite", "--json"))
+    step("inspect catalog", lambda: run("inspect", "-d", "sample/map.sqlite", "--json"))
     golden = ROOT / "tests/fixtures/demo/preview.png"
     manifest = json.loads((ROOT / "tests/fixtures/demo/manifest.json").read_text())
     assert digest(golden) == manifest["preview_sha256"]
     expected = np.asarray(Image.open(golden).convert("RGBA"))
     assert np.array_equal(
-        np.asarray(Image.open(folder / "map.png").convert("RGBA")), expected
+        np.asarray(Image.open(folder / "sample/map.png").convert("RGBA")), expected
     )
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -576,7 +563,7 @@ def trial(binary, out, env, browser, command):
     url = f"http://127.0.0.1:{port}"
     log = (folder / "server.log").open("w")
     server = subprocess.Popen(
-        [str(binary), "serve", "-d", "map.sqlite", "--port", str(port)],
+        [str(binary), "serve", "-d", "sample/map.sqlite", "--port", str(port)],
         cwd=folder,
         env=env,
         stdout=log,

@@ -24,6 +24,16 @@ def main() -> None:
     if any("rasterio" in requirement.lower() for requirement in requirements):
         raise RuntimeError(f"RCFP still declares Rasterio: {requirements}")
 
+    for imports in (
+        "import hashlib; import rcfp; import ssl",
+        "import ssl; import hashlib; import rcfp",
+        "import rcfp; import ssl; import hashlib",
+    ):
+        subprocess.run(
+            [sys.executable, "-c", imports + "; assert ssl.RAND_status()"],
+            check=True,
+        )
+
     import rcfp
 
     if not Path(rcfp.__file__).resolve().is_relative_to(Path(sys.prefix).resolve()):

@@ -29,9 +29,8 @@ py -3.12 -m venv .venv
 ```
 
 Wheels bundle the native executable, shared core, and GDAL/PROJ libraries and data.
-You do not need a conda executable or Rasterio to run RCFP. The ordinary package
-declares only NumPy for the compatibility API’s array return type. CLI, WSGI,
-rendering and storage use the Rust core. Flask and Click are unnecessary.
+Installation also supplies NumPy for array workflows. Open the bundled viewer
+with a local web browser.
 
 ## Install from source
 

@@ -224,6 +224,30 @@ class Contracts(unittest.TestCase):
             any(row[:2] == ("cloudformation", "delete-stack") for row in client.calls)
         )
 
+    def test_shared_bucket_does_not_create_storage(self):
+        args = self.arguments(self.folder())
+        args.data_bucket = "shared-demo-bucket"
+        args.image_repository_arn = (
+            "arn:aws:ecr:eu-north-1:123456789012:repository/demo"
+        )
+        client = RecordingAWS()
+        with patch.object(host, "AWS", return_value=client):
+            host.up(args)
+        self.assertFalse(
+            any(row[:2] == ("cloudformation", "deploy") for row in client.calls)
+        )
+        creation = next(
+            row for row in client.calls if row[:2] == ("cloudformation", "create-stack")
+        )
+        parameters = {
+            row["ParameterKey"]: row["ParameterValue"]
+            for row in json.loads(creation[creation.index("--parameters") + 1])
+        }
+        self.assertEqual(parameters["DataBucket"], "shared-demo-bucket")
+        self.assertEqual(parameters["ImageRepositoryArn"], args.image_repository_arn)
+        session = json.loads((args.out / "session.json").read_text())
+        self.assertIsNone(session["storage_stack"])
+
     def test_collection_failure_still_removes_host(self):
         args = SimpleNamespace(out=self.folder())
         session = {
@@ -245,6 +269,33 @@ class Contracts(unittest.TestCase):
         report = json.loads((args.out / "teardown.json").read_text())
         self.assertTrue(report["host_removed"])
         self.assertEqual(report["collection_error"], "S3 unavailable")
+
+    def test_browser_client_receives_only_selected_server_parameters(self):
+        args = self.arguments(self.folder())
+        args.data_bucket = "shared-demo-bucket"
+        args.command_target_arn = (
+            "arn:aws:ec2:eu-north-1:123456789012:instance/i-0123456789abcdef0"
+        )
+        args.command_reports_prefix = "runs/test-server/comparison/"
+        client = RecordingAWS()
+        with patch.object(host, "AWS", return_value=client):
+            host.up(args)
+        creation = next(
+            row for row in client.calls if row[:2] == ("cloudformation", "create-stack")
+        )
+        parameters = {
+            row["ParameterKey"]: row["ParameterValue"]
+            for row in json.loads(creation[creation.index("--parameters") + 1])
+        }
+        self.assertEqual(
+            parameters["CommandTargetInstanceArn"], args.command_target_arn
+        )
+        self.assertEqual(
+            parameters["CommandReportsPrefix"], args.command_reports_prefix
+        )
+        self.assertFalse(
+            any(row[:2] == ("cloudformation", "deploy") for row in client.calls)
+        )
 
     def test_expired_host_reports_can_be_collected(self):
         out = self.folder()

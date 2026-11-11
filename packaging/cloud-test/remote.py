@@ -205,9 +205,7 @@ def main():
     for name in ("bucket", "key", "sha256", "prefix", "region"):
         deploy.add_argument(f"--{name}", required=True)
     deploy.add_argument("--workers", type=int, required=True)
-    deploy.add_argument(
-        "--profile", choices=("native", "terracotta-0.10.1"), required=True
-    )
+    deploy.add_argument("--profile", choices=("native", "terracotta"), required=True)
     gather = commands.add_parser("collect")
     gather.add_argument("--stop", action="store_true")
     commands.add_parser("sample")

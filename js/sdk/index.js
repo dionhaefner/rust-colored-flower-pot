@@ -1,6 +1,6 @@
 /** Public, dependency-free RCFP browser SDK. */
 export const VERSION = "0.1.0";
-const profiles = ["native", "terracotta-0.10.1"];
+const profiles = ["native", "terracotta"];
 const parameters = {
   singleband: [
     "stretch_range",
@@ -125,7 +125,7 @@ function validateRender(render, selectedProfile) {
   exact(render.params, parameters[render.mode]);
   canonical(render.params);
   if (
-    selectedProfile === "terracotta-0.10.1" &&
+    selectedProfile === "terracotta" &&
     ["band", "r_band", "g_band", "b_band", "format", "quality"].some(
       (k) => k in render.params,
     )

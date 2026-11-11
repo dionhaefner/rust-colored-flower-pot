@@ -33,7 +33,7 @@ In native mode, the ordered key names must match an existing catalog, and all
 matched inserts commit together. A failure rolls back the ingest. A new catalog
 can remain empty. Replacing a registration with `--skip-metadata` removes its old
 metadata, so lazy fill describes the new raster. The write transaction can remain
-open during metadata computation. The `terracotta-0.10.1` profile instead warns
+open during metadata computation. The `terracotta` profile instead warns
 on key-name mismatches, writes positionally, commits each successful insert, and
 can retain previous metadata when replacing without new metadata.
 

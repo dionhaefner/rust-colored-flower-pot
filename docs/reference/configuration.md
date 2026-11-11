@@ -9,7 +9,7 @@ use JSON. Settings snapshots belong to an application/driver lifetime.
 ## Profile selection
 
 `--compat-profile` > TOML `COMPAT_PROFILE` > `RCFP_COMPAT_PROFILE` > `native`.
-The accepted names are `native` and `terracotta-0.10.1`. Python freezes its
+The accepted names are `native` and `terracotta`. Python freezes its
 selection on first import. Construct a new process to change it. `COMPAT_PROFILE`
 is a selector, not a field in the legacy `TerracottaSettings` named tuple.
 

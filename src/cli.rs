@@ -65,6 +65,9 @@ pub fn ingest_command(args: &[String]) -> Result<()> {
         i += 1;
     }
     let output = output.ok_or("ingest requires -o/--output-file")?;
+    if !quiet {
+        eprintln!("Registering datasets in {output}...");
+    }
     let n = if let Some(source) = source {
         if pattern.is_some() || bands.is_some() || rgb.is_some() || existing {
             return Err(

@@ -348,9 +348,7 @@ def main():
 
     def outside():
         expected_size = (
-            (256, 256)
-            if rcfp.compatibility_profile == "terracotta-0.10.1"
-            else (64, 96)
+            (256, 256) if rcfp.compatibility_profile == "terracotta" else (64, 96)
         )
         image = png(
             "/singleband/lagoon/red/0/0/0.png?tile_size=%5B96%2C64%5D", expected_size
@@ -365,7 +363,7 @@ def main():
         (
             "metadata.invalid-columns",
             "/metadata/lagoon/red?columns=%5B%22missing%22%5D",
-            500 if rcfp.compatibility_profile == "terracotta-0.10.1" else 400,
+            500 if rcfp.compatibility_profile == "terracotta" else 400,
         ),
         ("singleband.invalid-size", "/singleband/lagoon/red/preview.png?tile_size=bad"),
         (

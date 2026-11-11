@@ -14,7 +14,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import sqlalchemy as sa
 
-PROFILE = "terracotta-0.10.1"
+PROFILE = "terracotta"
 SCRIPT = Path(__file__).with_name("compatibility_contracts.py").resolve()
 
 

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Raster map session measurement</title>
+  <link rel="stylesheet" href="leaflet.css" />
+  <style>
+    html,
+    body,
+    #map {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #eee;
+    }
+  </style>
+  <div id="map"></div>
+  <script src="leaflet.js"></script>
+  <script>
+    let map,
+      layer,
+      options,
+      decoded = new WeakSet();
+    let actions = [],
+      samples = [],
+      active = null,
+      running = false,
+      lastSample = 0;
+    let pendingTarget = null;
+    const sleep = (ms) =>
+      new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+    const moving = () =>
+      map._animatingZoom || (map._panAnim && map._panAnim._inProgress);
+    function coverage() {
+      const view = map.getContainer().getBoundingClientRect();
+      const zoom = active ? active.zoom : map.getZoom();
+      if (map.getZoom() !== zoom) return 0;
+      let area = 0;
+      for (const tile of Object.values(layer._tiles)) {
+        const el = tile.el;
+        if (
+          tile.coords.z !== zoom ||
+          !tile.loaded ||
+          !decoded.has(el) ||
+          !el.complete ||
+          el.naturalWidth !== 256 ||
+          Number(getComputedStyle(el).opacity) < 0.999
+        )
+          continue;
+        const r = el.getBoundingClientRect();
+        area +=
+          Math.max(
+            0,
+            Math.min(r.right, view.right) - Math.max(r.left, view.left),
+          ) *
+          Math.max(
+            0,
+            Math.min(r.bottom, view.bottom) - Math.max(r.top, view.top),
+          );
+      }
+      return Math.min(1, area / (view.width * view.height));
+    }
+    function sample(now) {
+      if (!running) return;
+      if (now - lastSample >= 50) {
+        const fraction = coverage();
+        samples.push({
+          at_ms: now,
+          coverage: fraction,
+          action: active ? active.id : null,
+        });
+        lastSample = now;
+        if (active && active.completion_ms === null && !active.closed) {
+          const actual = map.project(map.getCenter(), active.zoom);
+          const wanted = map.project(active.center, active.zoom);
+          if (
+            fraction >= 0.99999 &&
+            !moving() &&
+            !pendingTarget &&
+            actual.distanceTo(wanted) <= 0.75
+          ) {
+            active.stable_samples += 1;
+            if (active.stable_samples >= 2)
+              active.completion_ms = now - active.started_ms;
+          } else active.stable_samples = 0;
+        }
+      }
+      requestAnimationFrame(sample);
+    }
+    function drive(next) {
+      if (map._animatingZoom) {
+        pendingTarget = next;
+        return;
+      }
+      pendingTarget = null;
+      map.stop();
+      map.setView(next.center, next.zoom, { animate: true, duration: 0.25 });
+    }
+    function userOffset() {
+      if (options.arrangement !== "disjoint") {
+        return [
+          ((options.user % 4) - 1.5) * 192,
+          (Math.floor(options.user / 4) - 0.5) * 128,
+        ];
+      }
+      const cols = options.users === 1 ? 1 : 2;
+      const rows = Math.ceil(options.users / cols);
+      return [
+        ((options.user % cols) - (cols - 1) / 2) * 2048,
+        (Math.floor(options.user / cols) - (rows - 1) / 2) * 1280,
+      ];
+    }
+    function target(index, zoom = options.zoom) {
+      const row = Math.floor(index / 5) % 4;
+      const col = row % 2 ? 4 - (index % 5) : index % 5;
+      const origin = map.project(options.center, options.zoom);
+      const offset = userOffset();
+      const dx = (col - 2) * 512 + offset[0];
+      const dy = (row - 1.5) * 256 + offset[1];
+      return {
+        center: map.unproject(origin.add([dx, dy]), options.zoom),
+        zoom,
+      };
+    }
+    function apply(protocol, index, zoom, deadline_ms) {
+      if (active) active.closed = true;
+      const next = target(index, zoom);
+      active = {
+        id: actions.length,
+        protocol,
+        index,
+        zoom,
+        center: next.center,
+        started_ms: performance.now(),
+        deadline_ms,
+        completion_ms: null,
+        stable_samples: 0,
+        closed: false,
+      };
+      actions.push(active);
+      drive(next);
+    }
+    window.setup = async (opts) => {
+      options = opts;
+      map = L.map("map", {
+        zoomControl: false,
+        attributionControl: false,
+        zoomAnimation: true,
+        fadeAnimation: true,
+      });
+      const initial =
+        opts.arrangement === "disjoint"
+          ? map.unproject(
+              map.project(opts.center, opts.zoom).add(userOffset()),
+              opts.zoom,
+            )
+          : opts.center;
+      map.setView(initial, opts.zoom);
+      map.on("zoomend", () => {
+        if (pendingTarget) drive(pendingTarget);
+      });
+      layer = L.tileLayer(opts.url, { maxZoom: 16, keepBuffer: 2 });
+      layer.on("tileload", (event) =>
+        event.tile
+          .decode()
+          .then(() => decoded.add(event.tile))
+          .catch(() => {}),
+      );
+      layer.addTo(map);
+      const deadline = performance.now() + 120000;
+      while (coverage() < 0.99999 || moving()) {
+        if (performance.now() >= deadline)
+          throw new Error("Initial map did not become ready");
+        await sleep(50);
+      }
+      return {
+        ready_epoch_ms: Date.now(),
+        zoom: map.getZoom(),
+        center: map.getCenter(),
+      };
+    };
+    window.runSession = async (spec) => {
+      actions = [];
+      samples = [];
+      active = null;
+      lastSample = 0;
+      running = true;
+      requestAnimationFrame(sample);
+      const epoch = spec.start_epoch_ms;
+      const phase = spec.user_phase_ms || 0;
+      await sleep(epoch + phase - Date.now());
+      const started = performance.now();
+      for (let i = 0; i < spec.actions; ++i) {
+        await sleep(epoch + phase + i * spec.interval_ms - Date.now());
+        const planned_epoch = epoch + phase + i * spec.interval_ms;
+        apply("paced", i, options.zoom, spec.interval_ms);
+        active.dispatch_lateness_ms = Date.now() - planned_epoch;
+      }
+      await sleep(epoch + phase + spec.actions * spec.interval_ms - Date.now());
+      active.closed = true;
+      const rapidStart = epoch + phase + spec.actions * spec.interval_ms;
+      for (let episode = 0; episode < spec.episodes; ++episode) {
+        const beginning = rapidStart + episode * spec.episode_ms;
+        for (let gesture = 0; gesture < spec.gestures; ++gesture) {
+          await sleep(beginning + gesture * spec.gesture_ms - Date.now());
+          const zoom = options.zoom + [0, 1, 0, 2, 1, 0][gesture % 6];
+          apply(
+            "rapid",
+            episode * spec.gestures + gesture + spec.actions,
+            zoom,
+            gesture === spec.gestures - 1
+              ? spec.episode_ms - gesture * spec.gesture_ms
+              : spec.gesture_ms,
+          );
+          active.episode = episode;
+          active.final_gesture = gesture === spec.gestures - 1;
+          active.dispatch_lateness_ms =
+            Date.now() - (beginning + gesture * spec.gesture_ms);
+        }
+        await sleep(beginning + spec.episode_ms - Date.now());
+        active.closed = true;
+      }
+      const styleStart = rapidStart + spec.episodes * spec.episode_ms;
+      for (let index = 0; index < spec.style_urls.length; ++index) {
+        await sleep(styleStart + index * spec.style_interval_ms - Date.now());
+        apply("style", spec.actions, options.zoom, spec.style_interval_ms);
+        active.style_index = index;
+        active.dispatch_lateness_ms =
+          Date.now() - (styleStart + index * spec.style_interval_ms);
+        layer.setUrl(spec.style_urls[index]);
+      }
+      await sleep(
+        styleStart +
+          spec.style_urls.length * spec.style_interval_ms -
+          Date.now(),
+      );
+      if (active) active.closed = true;
+      running = false;
+      const ended = performance.now();
+      return {
+        actions,
+        samples,
+        started_ms: started,
+        ended_ms: ended,
+        time_origin_epoch_ms: performance.timeOrigin,
+        visible: Object.values(layer._tiles)
+          .filter((t) => t.current)
+          .map((t) => t.el.src),
+        viewport: [innerWidth, innerHeight],
+        center: map.getCenter(),
+        zoom: map.getZoom(),
+      };
+    };
+  </script>
+</html>

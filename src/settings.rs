@@ -262,7 +262,7 @@ mod tests {
             defaults_for(CompatibilityProfile::Terracotta0101)["REMOTE_SOURCE_CACHE_TTL_SECONDS"],
             0
         );
-        for profile in ["native", "terracotta-0.10.1"] {
+        for profile in ["native", "terracotta"] {
             let explicit =
                 serde_json::json!({"COMPAT_PROFILE":profile, "REMOTE_SOURCE_CACHE_TTL_SECONDS":0})
                     .as_object()

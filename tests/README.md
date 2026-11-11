@@ -27,12 +27,24 @@ python tests/upgrade_contracts.py \
 This rehearsal uses the Terracotta profile and legacy SQLite format. Native
 keyed schemas, explicit format migrations, remote providers and real deployment
 need their own checks. [Application evaluation](../docs/how-to/evaluate.md) and
-the [maintenance plan](../design/adoption.md) distinguish automated checks from
+the [maintenance plan](../docs/support-policy.md) distinguish automated checks from
 independent adoption and retained production usage.
 
 Tests are organized by the interface they exercise. The Python end-to-end
 runners are standalone scripts that write JSON reports. The installed-wheel
 contract runner also writes JUnit XML. They are not collected by `pytest`.
+
+The CLI and native feature examples have installed-artifact checks:
+
+```sh
+python tests/cli_contracts.py --binary /path/to/runtime/bin/rcfp --out build/cli-check
+python tests/native_demos.py --out build/native-demos
+```
+
+These verify command help, both profile identities, OpenSSL import coexistence,
+the ready-to-serve sample's independent reference pixels, and the Python snippets
+in the [native feature tutorial](../docs/tutorials/native-demos.md). The browser
+SDK examples and server operations are covered by the browser/diagnostic runners.
 
 Keep assertions, required case manifests, fixture provenance, and pinned oracle
 expectations in this directory. Write generated outcomes to fresh ignored `build/`
@@ -40,7 +52,7 @@ directories. CI retains them as run artifacts. A saved outcome does not establis
 that the current source or artifact passes. The native, wheel, correctness, and
 documentation workflows are configured to rerun checks on pull requests and
 pushes to `main`. Expensive and environment-specific qualification is described
-in the [validation handoff](../design/human-validation.md).
+in the [support matrix](../docs/reference/support.md).
 
 | Layer                         | Entry point                                                                                                                 | CI lane                                 | What it checks                                                                                                                                                                    |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -48,7 +60,7 @@ in the [validation handoff](../design/human-validation.md).
 | Native profile corrections    | `python tests/native_contracts.py --binary BINARY --out OUT`                                                                | Native platforms                        | Both profiles: ingest validation/rollback, stale metadata, signed extrema, rotated validity hulls, percentile endpoints, empty dimensions, HTTP errors/specification, and modulo. |
 | Rust SQL/remote integration   | `cargo test --locked --features storage-integration --test storage_sql --test storage_remote`                               | Correctness services                    | Disposable MySQL/PostgreSQL databases and remote storage with real services.                                                                                                      |
 | Installed-wheel end-to-end    | `python tests/contract_suite.py --wheel WHEEL --out OUT`                                                                    | Wheels: 5 platforms × 3 Python versions | 53 required public Python, WSGI, CLI, HTTP, raster, metadata, and SQLite cases.                                                                                                   |
-| Terracotta compatibility      | `RCFP_COMPAT_PROFILE=terracotta-0.10.1 python tests/compatibility_contracts.py --wheel WHEEL --out OUT`                     | Wheels: 5 platforms × 3 Python versions | Required legacy Python/CLI/WSGI and catalog contracts. Linux also replays against pinned Terracotta using `--reference-python`.                                                   |
+| Terracotta compatibility      | `RCFP_COMPAT_PROFILE=terracotta python tests/compatibility_contracts.py --wheel WHEEL --out OUT`                            | Wheels: 5 platforms × 3 Python versions | Required legacy Python/CLI/WSGI and catalog contracts. Linux also replays against pinned Terracotta using `--reference-python`.                                                   |
 | Other standalone end-to-end   | `tests/storage_contracts.py`, `remote_contracts.py`, `browser_contracts.py`, `platform_smoke.py`, `lambda_runtime_smoke.py` | Correctness, wheels, native platforms   | Live databases, HTTP ranges, Chromium UI, real raster, and official local Lambda runtime.                                                                                         |
 | Large-file and resource tests | `tests/large_raster_contracts.py`, `resource_contracts.py`                                                                  | Scheduled, manual, or tag correctness   | Physical BigTIFF reads above 4 GiB and concurrent server resource behavior.                                                                                                       |
 | Pinned reference comparison   | `tests/reference/differential.py`, `upstream.py`, `compatibility.py`                                                        | Correctness and wheels                  | 26 candidate comparisons, selected documented driver cases, and the pinned reference test baseline.                                                                               |
@@ -65,6 +77,8 @@ CPython 3.12 wheel job runs the complete suite.
 The demo's credentials-free runtime and Pages checks are in
 `tests/demo_contracts.py`. Run them with `--image rcfp-demo` after building the
 demo image, or `--binary dist/bundle/bin/rcfp` for the native Runtime API adapter.
+Run `python -m unittest discover -s tests -p test_demo_budget.py` for the global
+budget API configuration, repeated updates and subscriber-preservation checks.
 The [demo guide](../docs/how-to/demo.md) describes deployment and qualification.
 The independent preview in `fixtures/demo/` was acquired with Terracotta 0.10.1
 and GDAL 3.10.3 using `reference/acquire_demo.py`. Its manifest pins the raster
@@ -379,8 +393,8 @@ PNG output. Local and instrumented range trials record timing, traffic, memory,
 and independent GDAL/Rasterio fidelity checks. Generated Landsat derivatives add
 internal masks, RGBA and same-file RGB. The crate has its own pinned Async-TIFF
 dependency and lockfile. Its GDAL control disables production Async-TIFF access. See the
-[evaluation notes](../design/async-tiff-evaluation.md) for build commands, prepared
-COG comparisons, result interpretation, and remaining qualification limits.
+[implementation constraints](../docs/maintaining.md) for the production boundary.
+Use the runner's `--help` for its build and comparison options.
 
 `.venv-reference/bin/python tests/tiff_backend.py --out build/tiff-qualification`
 prepares casts/copies of the
@@ -528,7 +542,7 @@ checks are separate from deterministic CI and do not establish provider uptime
 or WAN throughput guarantees.
 
 The field and operator contract is in [STAC guidance](../docs/how-to/stac.md).
-Maintainer boundaries are in [STAC rationale](../design/stac.md).
+Maintainer boundaries are in [STAC rationale](../docs/maintaining.md).
 
 `catalog_contracts.py` checks common keyed discovery, selected metadata, masked
 arrays/Futures and decoded tiles across separate TIFFs, packed TIFFs, direct
@@ -556,6 +570,38 @@ provide a smoke check. Add `--viewer-binary BINARY` to include Chromium navigati
 Reports distinguish decoding from independent image acceptance and omitted
 browser checks. Operator procedures and spending/expiry behavior are in
 [cloud test guidance](../docs/how-to/cloud-test.md).
+
+`lambda_image_comparison.py` checks the paired container images through the
+official Lambda emulator with pinned rasters and independent preview pixels.
+`lambda_benchmark.py` measures deployed functions in paired order, separates
+HTTP completion from client decode, and joins CloudWatch initialization reports.
+`lambda_map_benchmark.py` drives a real 1600×1000 Leaflet map through first view,
+animated pans, zoom changes and revisits. Browser scheduling, HTTP connection
+reuse and retained map tiles determine parallelism. It records complete-action
+times after tile loading, fades, animation and decode, plus CDP wire concurrency,
+individual responses and screenshots. Both functions temporarily receive the
+same 64-invocation ceiling, restored afterward.
+`lambda_benchmark_quality.py` compares captured tiles with independent GDAL grid
+reads. `python -m unittest discover -s tests -p test_lambda_benchmark.py` checks
+the timing boundary and paired statistics without AWS access. See
+[Lambda comparison](../docs/how-to/lambda-comparison.md) for deployment and limits.
+
+`ec2_map_benchmark.py` uses the same Leaflet workload against two containerized
+servers taking turns on one EC2 host. Matched resources, nginx request timings,
+source/animation diagnostics and separate CPU/call profiling are described in
+[EC2 comparison](../docs/how-to/ec2-comparison.md). The two local
+`test_ec2_comparison.py` checks protect command detachment and shared-storage
+ownership without invoking AWS.
+
+`ec2_user_benchmark.py` drives independent Leaflet sessions on a fixed wall-clock
+schedule, including paced pans, interrupting zoom bursts and band/stretch or
+palette changes. It records requested-resolution tile coverage, target deadlines,
+client scheduling gaps, cancellations and HTTP errors. Completed-only latency
+percentiles do not replace missed targets. `test_map_sessions.py` protects that
+accounting. `map_session_contracts.py --out OUT` uses explicitly synthetic tiles
+and controlled delays to qualify the browser measurement independently of raster
+rendering. `map_session_quality.py --results OUT ... --runtime BUNDLE --out QUALITY`
+assesses captured tiles against independent GDAL grids and requested palettes.
 
 ## Diagnostics and first use
 

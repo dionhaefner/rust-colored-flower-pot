@@ -13,7 +13,7 @@ Errors, POST responses, OPTIONS responses, metrics, and requests carrying
 `Authorization` or `Cookie` use `no-store` without validators. Successful
 transparent tiles and empty discovery results follow the ordinary GET policy.
 Errors are not retained in the encoded-result cache. The
-`terracotta-0.10.1` profile keeps its existing `no-cache` headers and ignores
+`terracotta` profile keeps its existing `no-cache` headers and ignores
 conditional headers.
 
 ## Pin a rendered revision

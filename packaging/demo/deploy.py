@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import runpy
 import subprocess
 import sys
 import urllib.request
@@ -21,24 +22,35 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--region", required=True)
     parser.add_argument(
-        "--origin", required=True, help="Pages origin, without project path"
+        "--origin",
+        required=True,
+        action="append",
+        help="Viewer origin without a path; repeat for multiple origins",
     )
     parser.add_argument("--stack", default="rcfp-demo")
     parser.add_argument("--budget-email", default="")
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    origin = urlsplit(args.origin)
-    if (
-        origin.scheme != "https"
-        or not origin.hostname
-        or origin.path not in ("", "/")
-        or origin.query
-        or origin.fragment
-        or origin.username
-        or origin.password
-    ):
-        parser.error("origin must be an HTTPS origin without a project path")
+    for value in args.origin:
+        origin = urlsplit(value)
+        if (
+            not (
+                origin.scheme == "https"
+                or (
+                    origin.scheme == "http"
+                    and origin.hostname in ("localhost", "127.0.0.1", "::1")
+                )
+            )
+            or not origin.hostname
+            or origin.path not in ("", "/")
+            or origin.query
+            or origin.fragment
+            or origin.username
+            or origin.password
+        ):
+            parser.error("origin must be HTTPS or loopback HTTP without a path")
+    origins = [value.rstrip("/") for value in args.origin]
     if not re.fullmatch(r"[a-zA-Z][a-zA-Z0-9-]{0,49}", args.stack):
         parser.error(
             "stack must start with a letter and contain at most 50 letters, digits or hyphens"
@@ -81,6 +93,12 @@ def main():
         "--no-fail-on-empty-changeset",
     )
     resources = outputs(storage)
+    if args.budget_email:
+        account = json.loads(aws("sts", "get-caller-identity"))["Account"]
+        budget = runpy.run_path(str(HERE / "budget.py"))["configure"](
+            account, args.stack + "-account", args.budget_email
+        )
+        (out / "budget.json").write_text(json.dumps(budget, indent=2) + "\n")
     bucket, repository = resources["DataBucket"], resources["RepositoryUri"]
     for row in rows:
         key = f"rasters/{row['sha256']}/{row['file']}"
@@ -150,39 +168,40 @@ def main():
     parameters = {
         "ImageUri": repository + "@" + image["imageDigest"],
         "DataBucket": bucket,
-        "AllowedOrigins": json.dumps([re.escape(args.origin.rstrip("/")) + "$"]),
+        "AllowedOrigins": json.dumps([re.escape(origin) + "$" for origin in origins]),
         "Concurrency": str(args.concurrency),
-        "BudgetEmail": args.budget_email,
     }
-    overrides = [f"{key}={value}" for key, value in parameters.items()]
     (out / "parameters.json").write_text(json.dumps(parameters, indent=2) + "\n")
-    aws(
-        "cloudformation",
-        "deploy",
-        "--template-file",
-        str(HERE / "template.yaml"),
-        "--stack-name",
-        args.stack,
-        "--capabilities",
-        "CAPABILITY_IAM",
-        "--parameter-overrides",
-        *overrides,
-        "--no-fail-on-empty-changeset",
-    )
+
+    def deploy_runtime():
+        aws(
+            "cloudformation",
+            "deploy",
+            "--template-file",
+            str(HERE / "template.yaml"),
+            "--stack-name",
+            args.stack,
+            "--capabilities",
+            "CAPABILITY_IAM",
+            "--parameter-overrides",
+            *[f"{key}={value}" for key, value in parameters.items()],
+            "--no-fail-on-empty-changeset",
+        )
+
+    deploy_runtime()
     deployed = outputs(args.stack)
     base = deployed["ApiUrl"].rstrip("/")
+    parameters["PublicUrl"] = base
+    (out / "parameters.json").write_text(json.dumps(parameters, indent=2) + "\n")
+    deploy_runtime()
     for path in (
         "/keys",
         "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D",
     ):
-        request = urllib.request.Request(
-            base + path, headers={"Origin": args.origin.rstrip("/")}
-        )
+        request = urllib.request.Request(base + path, headers={"Origin": origins[0]})
         with urllib.request.urlopen(request, timeout=60) as response:
             body = response.read()
-            if response.headers.get(
-                "Access-Control-Allow-Origin"
-            ) != args.origin.rstrip("/"):
+            if response.headers.get("Access-Control-Allow-Origin") != origins[0]:
                 raise RuntimeError(
                     "public endpoint did not return the configured CORS origin"
                 )
@@ -190,6 +209,12 @@ def main():
                 b"\x89PNG\r\n\x1a\n"
             ):
                 raise RuntimeError("public endpoint did not decode the PNG response")
+    with urllib.request.urlopen(base + "/tilesets", timeout=60) as response:
+        tilejson_path = json.load(response)["tilesets"][0]["tilejson"]
+    with urllib.request.urlopen(base + tilejson_path, timeout=60) as response:
+        tiles = json.load(response)["tiles"]
+        if not tiles or any(not url.startswith(base + "/") for url in tiles):
+            raise RuntimeError("TileJSON did not publish the configured HTTPS origin")
     report = {**deployed, **resources, "parameters": parameters}
     (out / "deployment.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(deployed, indent=2))

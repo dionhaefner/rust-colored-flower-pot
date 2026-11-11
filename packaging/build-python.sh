@@ -28,6 +28,7 @@ cp "$root/README.md" "$output/README.md"
 find "$output/rcfp" -type d -name __pycache__ -prune -exec rm -rf {} +
 find "$output/rcfp" -type f -name '*.pyc' -delete
 cp -a "$bundle" "$output/rcfp/runtime"
+"$python" "$root/packaging/isolate-openssl.py" "$output/rcfp/runtime"
 # The runtime loader expands $ORIGIN in the rpath.
 # shellcheck disable=SC2016
 cc -shared -fPIC -DPy_LIMITED_API=0x030C0000 -I"$include" \

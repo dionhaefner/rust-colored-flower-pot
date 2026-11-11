@@ -359,7 +359,7 @@ class NativeApplication:
 
 __all__ += ["NativeApplication", "compatibility_profile", "request_full"]
 
-if compatibility_profile == "terracotta-0.10.1":
+if compatibility_profile == "terracotta":
     from .config import _parse_config
 
     _settings = _parse_config()

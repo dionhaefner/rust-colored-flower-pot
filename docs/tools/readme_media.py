@@ -9,7 +9,6 @@ import json
 import os
 import socket
 import subprocess
-import sys
 import time
 from pathlib import Path
 from urllib.request import urlopen
@@ -24,9 +23,8 @@ MUTED = "#a6bbc8"
 ACCENT = "#efaa7c"
 
 
-def font(folder, size, mono=False):
-    name = "DejaVuSansMono.ttf" if mono else "DejaVuSans.ttf"
-    return ImageFont.truetype(str(folder / name), size)
+def font(folder, size):
+    return ImageFont.truetype(str(folder / "DejaVuSans.ttf"), size)
 
 
 def port():
@@ -70,7 +68,6 @@ def save_gif(path, frames, durations):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, required=True)
-    parser.add_argument("--python", type=Path, default=Path(sys.executable))
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--assets", type=Path, required=True)
     parser.add_argument(
@@ -80,13 +77,11 @@ def main():
     )
     args = parser.parse_args()
     binary = args.binary.resolve()
-    python = args.python.absolute()
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
     args.assets.mkdir(parents=True, exist_ok=True)
     title_font = font(args.fonts, 22)
     small_font = font(args.fonts, 15)
-    mono_font = font(args.fonts, 20, mono=True)
     transcript = []
 
     def run(command, display):
@@ -99,10 +94,6 @@ def main():
         return result.stdout
 
     run([binary, "sample", "-o", "sample"], "rcfp sample -o sample")
-    run(
-        [python, "sample/create_catalog.py", "map.sqlite"],
-        "python sample/create_catalog.py map.sqlite",
-    )
     manifest = json.loads((work / "sample/data/manifest.json").read_text())
     for row in manifest["fixtures"]:
         actual = hashlib.sha256(
@@ -127,7 +118,7 @@ def main():
                     binary,
                     "serve",
                     "-d",
-                    "map.sqlite",
+                    "sample/map.sqlite",
                     "--bind",
                     f"127.0.0.1:{backend_port}",
                 ],
@@ -207,7 +198,7 @@ def main():
                     draw = ImageDraw.Draw(image)
                     draw.text(
                         (20, 14),
-                        "Venice lagoon · Sentinel-2",
+                        "Venice lagoon / Sentinel-2",
                         font=title_font,
                         fill=FOREGROUND,
                     )
@@ -226,7 +217,7 @@ def main():
                     )
                     draw.text(
                         (WIDTH - 20, 613),
-                        "RCFP · local imagery · offline viewer",
+                        "RCFP / local imagery / offline viewer",
                         font=small_font,
                         fill=MUTED,
                         anchor="ra",
@@ -270,7 +261,7 @@ def main():
                 page.get_by_label("Stretch minimum").fill("-1")
                 page.get_by_label("Stretch maximum").fill("1")
                 page.get_by_role("button", name="Apply rendering").click()
-                settled("04 / NDVI · (nir − red) / (nir + red)")
+                settled("04 / NDVI / (nir − red) / (nir + red)")
                 page.get_by_role("button", name="Zoom out", exact=True).click()
                 for _ in range(5):
                     capture("05 / Zoom out")
@@ -289,69 +280,6 @@ def main():
     assert any("/compute/" in row["url"] for row in responses)
     save_gif(args.assets / "navigation.gif", frames, durations)
 
-    commands = [
-        ("rcfp sample -o sample", ""),
-        ("python sample/create_catalog.py map.sqlite", ""),
-        ("rcfp serve -d map.sqlite", "Terminal 1 · leave the server running"),
-        ("rcfp connect localhost:5000", "Terminal 2 · open the bundled viewer"),
-    ]
-    terminal_frames, terminal_durations = [], []
-    completed = []
-
-    def terminal(command="", note=""):
-        image = Image.new("RGB", (WIDTH, 430), BACKGROUND)
-        draw = ImageDraw.Draw(image)
-        draw.text(
-            (28, 24),
-            "From installed RCFP to a raster map",
-            font=title_font,
-            fill=FOREGROUND,
-        )
-        draw.text(
-            (28, 67),
-            "Real samples. No data download or map token.",
-            font=small_font,
-            fill=MUTED,
-        )
-        for index, text in enumerate([*completed, command]):
-            draw.text((28, 127 + index * 51), "$", font=mono_font, fill=ACCENT)
-            draw.text((54, 127 + index * 51), text, font=mono_font, fill=FOREGROUND)
-        draw.text(
-            (28, 389),
-            note or "Command walkthrough · output omitted · edited playback",
-            font=small_font,
-            fill=MUTED,
-        )
-        return image
-
-    terminal_frames.append(terminal())
-    terminal_durations.append(700)
-    for command, note in commands:
-        for count in range(0, len(command), 4):
-            terminal_frames.append(terminal(command[: count + 4]))
-            terminal_durations.append(70)
-        terminal_frames.append(terminal(command, note))
-        terminal_durations.append(1000)
-        completed.append(command)
-    terminal_frames[-1].save(args.assets / "quickstart.png")
-    image = Image.new("RGB", (WIDTH, 430), BACKGROUND)
-    image.paste(frames[0].crop((0, 150, WIDTH, 500)), (0, 40))
-    draw = ImageDraw.Draw(image)
-    draw.text(
-        (20, 10),
-        "Your map is ready · Venice lagoon · RGB",
-        font=title_font,
-        fill=FOREGROUND,
-    )
-    draw.text(
-        (20, 405),
-        "Contains modified Copernicus Sentinel data 2021",
-        font=small_font,
-        fill=MUTED,
-    )
-    terminal_frames.append(image)
-    terminal_durations.append(2400)
-    save_gif(args.assets / "quickstart.gif", terminal_frames, terminal_durations)
     (work / "transcript.json").write_text(json.dumps(transcript, indent=2) + "\n")
     report = {
         "binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
@@ -361,7 +289,7 @@ def main():
         "http_errors": [],
         "javascript_errors": errors,
         "external_requests": external,
-        "playback": "Edited sequence; screenshot and typing durations do not measure serving performance.",
+        "playback": "Edited screenshot sequence; playback does not measure serving performance.",
         "assets": {
             path.name: {
                 "bytes": path.stat().st_size,

@@ -1,5 +1,5 @@
 export const VERSION: "0.1.0";
-export type Profile = "native" | "terracotta-0.10.1";
+export type Profile = "native" | "terracotta";
 export type Range = [
   number | `p${number}` | null,
   number | `p${number}` | null,

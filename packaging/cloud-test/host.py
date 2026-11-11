@@ -23,7 +23,14 @@ ROOT = HERE.parents[1]
 AMI_PARAMETER = (
     "/aws/service/canonical/ubuntu/server/noble/stable/current/amd64/hvm/ebs-gp3/ami-id"
 )
-INSTANCE_TYPES = ("c7i.large", "c7i.xlarge", "c7i.2xlarge", "c7i.4xlarge")
+INSTANCE_TYPES = (
+    "c7i.large",
+    "c7i.xlarge",
+    "c7i.2xlarge",
+    "c7i.4xlarge",
+    "c7i-flex.large",
+    "m7i-flex.large",
+)
 
 
 def digest(path):
@@ -158,7 +165,9 @@ def up(args):
     plan = {
         "region": args.region,
         "stack": args.stack,
-        "storage_stack": args.stack + "-storage",
+        "storage_stack": None
+        if getattr(args, "data_bucket", None)
+        else args.stack + "-storage",
         "instance_type": args.instance_type,
         "ami_id": image_id,
         "ami_name": image["Name"],
@@ -173,16 +182,18 @@ def up(args):
     print(json.dumps(plan, indent=2), flush=True)
     if args.dry_run:
         return
-    client.call(
-        "cloudformation",
-        "deploy",
-        "--template-file",
-        str(HERE / "storage.yaml"),
-        "--stack-name",
-        plan["storage_stack"],
-        "--no-fail-on-empty-changeset",
-    )
-    bucket = client.outputs(plan["storage_stack"])["DataBucket"]
+    bucket = getattr(args, "data_bucket", None)
+    if bucket is None:
+        client.call(
+            "cloudformation",
+            "deploy",
+            "--template-file",
+            str(HERE / "storage.yaml"),
+            "--stack-name",
+            plan["storage_stack"],
+            "--no-fail-on-empty-changeset",
+        )
+        bucket = client.outputs(plan["storage_stack"])["DataBucket"]
     parameters = {
         "ImageId": image_id,
         "RootDevice": image["RootDeviceName"],
@@ -191,6 +202,11 @@ def up(args):
         "DataBucket": bucket,
         "ExpiresAt": plan["expires_at"],
     }
+    if getattr(args, "image_repository_arn", None):
+        parameters["ImageRepositoryArn"] = args.image_repository_arn
+    if getattr(args, "command_target_arn", None):
+        parameters["CommandTargetInstanceArn"] = args.command_target_arn
+        parameters["CommandReportsPrefix"] = args.command_reports_prefix
     # Create a new stack so an expired host cannot silently reuse stale state.
     created = client.json(
         "cloudformation",
@@ -495,7 +511,7 @@ def down(args, session, client):
         {
             "host_removed": True,
             "collection_error": collection_error,
-            "storage_retained": session["storage_stack"],
+            "storage_retained": session["storage_stack"] or session["bucket"],
         },
     )
     if collection_error:
@@ -517,6 +533,19 @@ def main():
     create.add_argument("--ttl-hours", type=float, default=4)
     create.add_argument("--ami-id")
     create.add_argument(
+        "--data-bucket", help="reuse an existing bucket instead of creating storage"
+    )
+    create.add_argument(
+        "--image-repository-arn", help="allow read-only pulls from one ECR repository"
+    )
+    create.add_argument(
+        "--command-target-arn",
+        help="single benchmark EC2 instance this host may control through SSM",
+    )
+    create.add_argument(
+        "--command-reports-prefix", help="server report prefix this host may read"
+    )
+    create.add_argument(
         "--hourly-usd",
         type=float,
         help="override the compute estimate if pricing:GetProducts is unavailable",
@@ -530,13 +559,19 @@ def main():
             action.add_argument("--catalog", type=Path)
             action.add_argument("--workers", type=int, default=4)
             action.add_argument(
-                "--profile", choices=("native", "terracotta-0.10.1"), default="native"
+                "--profile", choices=("native", "terracotta"), default="native"
             )
         if name == "exec":
             action.add_argument("--command", dest="script", required=True)
     for name in ("up", "deploy", "collect", "down", "exec", "purge-storage"):
         commands.choices[name].add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    if args.command == "up" and bool(args.command_target_arn) != bool(
+        args.command_reports_prefix
+    ):
+        parser.error(
+            "--command-target-arn and --command-reports-prefix must be supplied together"
+        )
     if args.command == "up":
         if not re.fullmatch(r"[a-zA-Z][a-zA-Z0-9-]{0,49}", args.stack):
             parser.error(
@@ -592,6 +627,8 @@ def main():
             )
         )
     else:
+        if session["storage_stack"] is None:
+            raise ValueError("shared storage is not owned by this test session")
         # Refuse to remove retained data while its host stack still exists.
         stacks = client.json("cloudformation", "list-stacks")["StackSummaries"]
         if any(

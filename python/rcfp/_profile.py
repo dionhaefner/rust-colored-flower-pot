@@ -2,7 +2,7 @@
 
 import os
 
-PROFILES = ("native", "terracotta-0.10.1")
+PROFILES = ("native", "terracotta")
 PROFILE = os.environ.get("RCFP_COMPAT_PROFILE", "native")
 if PROFILE not in PROFILES:
     raise ValueError(
@@ -22,7 +22,7 @@ def settings(values=None):
 
 
 def require_compatibility():
-    if PROFILE != "terracotta-0.10.1":
+    if PROFILE != "terracotta":
         raise RuntimeError(
-            "This API requires RCFP_COMPAT_PROFILE=terracotta-0.10.1 before importing rcfp"
+            "This API requires RCFP_COMPAT_PROFILE=terracotta before importing rcfp"
         )

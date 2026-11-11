@@ -1,6 +1,6 @@
 # Terracotta compatibility Python API
 
-Set `RCFP_COMPAT_PROFILE=terracotta-0.10.1` before importing `rcfp` or starting
+Set `RCFP_COMPAT_PROFILE=terracotta` before importing `rcfp` or starting
 Python/WSGI workers. Change documented `terracotta.*` import prefixes to `rcfp.*`.
 The profile is frozen on import and cannot be changed with `update_settings`.
 
@@ -19,7 +19,7 @@ See the complete [contract and exclusions](../compatibility.md#compatibility-sco
 
 ## Extracted signatures
 
-```{include} ../_generated/python-terracotta-0.10.1.md
+```{include} ../_generated/python-terracotta.md
 
 ```
 

@@ -1,6 +1,6 @@
 # Try RCFP with a Terracotta application
 
-The `terracotta-0.10.1` compatibility profile targets Terracotta 0.10.1's public
+The `terracotta` compatibility profile targets Terracotta 0.10.1's public
 Python, CLI, and HTTP behavior. Switch the package/import and command names.
 Keep your raster files, URLs, clients, and existing catalog. A valid catalog
 that Terracotta 0.10.1 can open does not need migration or reingestion.
@@ -9,7 +9,7 @@ Install RCFP in a separate environment for the trial:
 
 ```sh
 python -m pip install /path/to/rcfp-wheel.whl
-export RCFP_COMPAT_PROFILE=terracotta-0.10.1
+export RCFP_COMPAT_PROFILE=terracotta
 rcfp serve -d /absolute/path/catalog.sqlite
 ```
 
@@ -17,7 +17,7 @@ On Windows PowerShell:
 
 ```powershell
 python -m pip install C:\downloads\rcfp-wheel.whl
-$env:RCFP_COMPAT_PROFILE = "terracotta-0.10.1"
+$env:RCFP_COMPAT_PROFILE = "terracotta"
 rcfp serve -d C:\data\catalog.sqlite
 ```
 
@@ -51,12 +51,12 @@ process to switch profiles. `rcfp.compatibility_profile` reports the selection.
 The CLI also accepts a global option or TOML setting:
 
 ```sh
-rcfp --compat-profile terracotta-0.10.1 serve -d catalog.sqlite
+rcfp --compat-profile terracotta serve -d catalog.sqlite
 rcfp -c settings.toml serve -d catalog.sqlite
 ```
 
 ```toml
-COMPAT_PROFILE = "terracotta-0.10.1"
+COMPAT_PROFILE = "terracotta"
 DEFAULT_TILE_SIZE = [256, 256]
 ```
 
@@ -126,7 +126,7 @@ Web Mercator fast path and neighbor prefetch can also be enabled:
 ```sh
 export TC_RUST_MERCATOR_FAST=1
 export TC_PREFETCH_TILE_RING=1
-rcfp --compat-profile terracotta-0.10.1 serve -d catalog.sqlite
+rcfp --compat-profile terracotta serve -d catalog.sqlite
 ```
 
 These paths preserve output and fall back for unsupported inputs. Prefetch uses

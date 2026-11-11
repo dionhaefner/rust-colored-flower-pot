@@ -109,7 +109,7 @@ def main() -> None:
                 "--enable-unsafe-swiftshader",
             ],
         )
-        for profile in ("native", "terracotta-0.10.1"):
+        for profile in ("native", "terracotta"):
             checks, responses, errors, external, expected_failures = [], [], [], [], []
             backend_port, client_port = ports()
             backend_url = f"http://127.0.0.1:{backend_port}"
@@ -323,7 +323,7 @@ def main() -> None:
                     let missing, mismatch;
                     try { await client.metadata(['missing','date','band']); }
                     catch (e) { missing = e.kind === 'http' && e.status === 404; }
-                    try { await new sdk.Client(service,{profile:profile === 'native' ? 'terracotta-0.10.1' : 'native'}).connect(); }
+                    try { await new sdk.Client(service,{profile:profile === 'native' ? 'terracotta' : 'native'}).connect(); }
                     catch (e) { mismatch = e.kind === 'profile'; }
                     if (!missing || !mismatch) throw Error('error/profile behavior');
                     const state = await sdk.createState({baseUrl:service, profile, render, sourceRevision:'v1', view:{center:[12,45],zoom:12}});

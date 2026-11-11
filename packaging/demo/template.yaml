@@ -10,19 +10,15 @@ Parameters:
   AllowedOrigins:
     Type: String
     Description: JSON array of anchored origin patterns for the static viewer.
+  PublicUrl:
+    Type: String
+    Default: ""
+    Description: HTTPS Function URL used in published TileJSON and point links.
   Concurrency:
     Type: Number
     Default: 8
     MinValue: 0
     MaxValue: 32
-  BudgetEmail:
-    Type: String
-    Default: ""
-    Description: Optional address for account-wide USD 10 monthly budget alerts.
-Conditions:
-  HasBudgetEmail:
-    Fn::Not:
-      - Fn::Equals: [{ Ref: BudgetEmail }, ""]
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -84,6 +80,8 @@ Resources:
           TC_RASTER_CACHE_BYTES: "67108864"
           TC_REMOTE_RASTER_CACHE_TTL_SECONDS: "60"
           TC_EXPOSE_METRICS: "false"
+          TC_PUBLIC_URL:
+            Ref: PublicUrl
           TC_ALLOWED_ORIGINS_METADATA:
             Ref: AllowedOrigins
           TC_ALLOWED_ORIGINS_TILES:
@@ -111,37 +109,6 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: "*"
       InvokedViaFunctionUrl: true
-  Budget:
-    Type: AWS::Budgets::Budget
-    Condition: HasBudgetEmail
-    Properties:
-      Budget:
-        BudgetName:
-          Fn::Sub: "${AWS::StackName}-account"
-        BudgetType: COST
-        TimeUnit: MONTHLY
-        BudgetLimit:
-          Amount: 10
-          Unit: USD
-      NotificationsWithSubscribers:
-        - Notification:
-            NotificationType: ACTUAL
-            ComparisonOperator: GREATER_THAN
-            Threshold: 50
-            ThresholdType: PERCENTAGE
-          Subscribers:
-            - SubscriptionType: EMAIL
-              Address:
-                Ref: BudgetEmail
-        - Notification:
-            NotificationType: ACTUAL
-            ComparisonOperator: GREATER_THAN
-            Threshold: 100
-            ThresholdType: PERCENTAGE
-          Subscribers:
-            - SubscriptionType: EMAIL
-              Address:
-                Ref: BudgetEmail
 Outputs:
   ApiUrl:
     Value:

@@ -90,7 +90,7 @@ def reference_roundtrip(python, folder):
         sys.executable,
         DOCS / "examples/compatibility_trial.py",
         catalog,
-        env=dict(os.environ, RCFP_COMPAT_PROFILE="terracotta-0.10.1"),
+        env=dict(os.environ, RCFP_COMPAT_PROFILE="terracotta"),
     )
     store = rcfp.DataStore(catalog)
     store.insert(["lagoon", "copy"], red)
@@ -353,7 +353,7 @@ def verify(args):
         sys.executable,
         DOCS / "examples/compatibility_trial.py",
         database,
-        env=dict(os.environ, RCFP_COMPAT_PROFILE="terracotta-0.10.1"),
+        env=dict(os.environ, RCFP_COMPAT_PROFILE="terracotta"),
     )
     checks["compatibility_driver_and_native_trial"] = True
     event = folder / "event.json"

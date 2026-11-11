@@ -9,16 +9,41 @@ Parameters:
   InstanceType:
     Type: String
     Default: c7i.2xlarge
-    AllowedValues: [c7i.large, c7i.xlarge, c7i.2xlarge, c7i.4xlarge]
+    AllowedValues:
+      - c7i.large
+      - c7i.xlarge
+      - c7i.2xlarge
+      - c7i.4xlarge
+      - c7i-flex.large
+      - m7i-flex.large
   ClientCidr:
     Type: String
     AllowedPattern: '(\d{1,3}\.){3}\d{1,3}/32'
     Description: Single public IPv4 client address allowed to reach port 5000.
   DataBucket:
     Type: String
+  ImageRepositoryArn:
+    Type: String
+    Default: ""
+    Description: Optional private ECR repository read by containerized test servers.
+  CommandTargetInstanceArn:
+    Type: String
+    Default: ""
+    Description: Optional single benchmark server controlled by this host.
+  CommandReportsPrefix:
+    Type: String
+    Default: "runs/unconfigured/comparison/"
+    AllowedPattern: "runs/[A-Za-z0-9-]+/comparison/"
   ExpiresAt:
     Type: String
     AllowedPattern: '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC'
+Conditions:
+  ControlHost:
+    Fn::Not:
+      - Fn::Equals: [{ Ref: CommandTargetInstanceArn }, ""]
+  PullImages:
+    Fn::Not:
+      - Fn::Equals: [{ Ref: ImageRepositoryArn }, ""]
 Resources:
   Network:
     Type: AWS::EC2::VPC
@@ -111,6 +136,72 @@ Resources:
                 Action: s3:PutObject
                 Resource:
                   Fn::Sub: "arn:${AWS::Partition}:s3:::${DataBucket}/runs/${AWS::StackName}/*"
+  ImageReads:
+    Type: AWS::IAM::Policy
+    Condition: PullImages
+    Properties:
+      PolicyName: TestImageReads
+      Roles:
+        - Ref: Role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: ecr:GetAuthorizationToken
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              [
+                ecr:BatchCheckLayerAvailability,
+                ecr:GetDownloadUrlForLayer,
+                ecr:BatchGetImage,
+              ]
+            Resource:
+              Ref: ImageRepositoryArn
+  BenchmarkControl:
+    Type: AWS::IAM::Policy
+    Condition: ControlHost
+    Properties:
+      PolicyName: BenchmarkServerControl
+      Roles:
+        - Ref: Role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: ssm:SendCommand
+            Resource:
+              - Ref: CommandTargetInstanceArn
+              - Fn::Sub:
+                  - "arn:${AWS::Partition}:ssm:${TargetRegion}::document/AWS-RunShellScript"
+                  - TargetRegion:
+                      Fn::Select:
+                        [
+                          3,
+                          {
+                            Fn::Split: [":", { Ref: CommandTargetInstanceArn }],
+                          },
+                        ]
+          - Effect: Allow
+            Action: ssm:GetCommandInvocation
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion:
+                  Fn::Select:
+                    [3, { Fn::Split: [":", { Ref: CommandTargetInstanceArn }] }]
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource:
+              Fn::Sub: "arn:${AWS::Partition}:s3:::${DataBucket}/${CommandReportsPrefix}*"
+          - Effect: Allow
+            Action: s3:ListBucket
+            Resource:
+              Fn::Sub: "arn:${AWS::Partition}:s3:::${DataBucket}"
+            Condition:
+              StringLike:
+                s3:prefix:
+                  Fn::Sub: "${CommandReportsPrefix}*"
   Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:

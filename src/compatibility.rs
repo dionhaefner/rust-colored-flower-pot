@@ -12,9 +12,9 @@ impl CompatibilityProfile {
     pub fn parse(value: &str) -> crate::Result<Self> {
         match value {
             "native" => Ok(Self::Native),
-            "terracotta-0.10.1" => Ok(Self::Terracotta0101),
+            "terracotta" => Ok(Self::Terracotta0101),
             _ => Err(format!(
-                "unknown compatibility profile {value:?}; expected native or terracotta-0.10.1"
+                "unknown compatibility profile {value:?}; expected native or terracotta"
             )),
         }
     }
@@ -22,7 +22,7 @@ impl CompatibilityProfile {
     pub fn name(self) -> &'static str {
         match self {
             Self::Native => "native",
-            Self::Terracotta0101 => "terracotta-0.10.1",
+            Self::Terracotta0101 => "terracotta",
         }
     }
 
@@ -61,12 +61,12 @@ mod tests {
     #[test]
     fn rejects_unknown_contracts() {
         assert!(CompatibilityProfile::parse("latest").is_err());
-        assert!(CompatibilityProfile::parse("terracotta-0.10.1").is_ok());
+        assert!(CompatibilityProfile::parse("terracotta").is_ok());
     }
 
     #[test]
     fn preserves_compatible_optimizations() {
-        let settings = serde_json::json!({"COMPAT_PROFILE": "terracotta-0.10.1",
+        let settings = serde_json::json!({"COMPAT_PROFILE": "terracotta",
             "RUST_UTM_FAST": "1", "RUST_MERCATOR_FAST": "1", "PREFETCH_TILE_RING": "1"})
         .as_object()
         .unwrap()

@@ -48,7 +48,7 @@ def python_reference(profile):
         )
     if profile == "native":
         modules += ["rcfp.stac"]
-    if profile == "terracotta-0.10.1":
+    if profile == "terracotta":
         objects.update(
             {
                 name: getattr(rcfp, name)
@@ -134,7 +134,7 @@ def snapshots():
         for key, value in os.environ.items()
         if not key.startswith(("TC_", "RCFP_COMPAT_"))
     }
-    for profile in ("native", "terracotta-0.10.1"):
+    for profile in ("native", "terracotta"):
         env = dict(clean_env, RCFP_COMPAT_PROFILE=profile)
         worker = subprocess.run(
             [sys.executable, str(Path(__file__).resolve()), "--python-worker", profile],
@@ -153,6 +153,9 @@ def snapshots():
             "optimize-rasters",
             "connect",
             "migrate",
+            "layers",
+            "lambda-event",
+            "lambda-runtime",
         ):
             args = [] if command == "main" else [command]
             result = subprocess.run(
@@ -169,14 +172,20 @@ def snapshots():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--python-worker", choices=("native", "terracotta-0.10.1"))
+    parser.add_argument("--python-worker", choices=("native", "terracotta"))
     args = parser.parse_args()
     if args.python_worker:
         print(python_reference(args.python_worker), end="")
         return
     DOCS.joinpath("_generated").mkdir(exist_ok=True)
     changed = []
-    for name, content in snapshots().items():
+    extracted = snapshots()
+    for path in (DOCS / "_generated").iterdir():
+        if path.is_file() and path.name not in extracted:
+            changed.append(path.name)
+            if not args.check:
+                path.unlink()
+    for name, content in extracted.items():
         path = DOCS / "_generated" / name
         if not path.exists() or path.read_text() != content:
             changed.append(name)

@@ -55,7 +55,7 @@ def export(out: Path, api_url: str = "", revision: str = "unversioned") -> None:
         )
         if path.name == "index.html":
             text = text.replace(
-                "Offline map · no basemap token required",
+                "Explore your rasters with the bundled offline map.",
                 "Contains modified Copernicus Sentinel data 2021",
             )
         path.write_text(text)

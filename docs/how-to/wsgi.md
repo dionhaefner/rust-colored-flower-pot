@@ -30,7 +30,7 @@ For the documented Terracotta WSGI entry point, select the named profile before
 the host imports anything:
 
 ```sh
-export RCFP_COMPAT_PROFILE=terracotta-0.10.1
+export RCFP_COMPAT_PROFILE=terracotta
 export TC_DRIVER_PATH=/absolute/path/catalog.sqlite
 python -m gunicorn --bind 127.0.0.1:5000 --workers 1 rcfp.server.app:app
 ```

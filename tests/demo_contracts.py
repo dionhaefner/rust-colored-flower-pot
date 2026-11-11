@@ -327,6 +327,9 @@ def main():
                     lambda response: responses.append((response.url, response.status)),
                 )
                 page.goto(origin + "/project/demo/", wait_until="networkidle")
+                expect(page.locator("header")).to_contain_text(
+                    "Contains modified Copernicus Sentinel data 2021"
+                )
                 expect(page.locator("#dataset option")).to_have_count(4)
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                 page.select_option("#mode", "rgb")

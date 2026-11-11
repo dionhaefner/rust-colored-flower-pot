@@ -1018,13 +1018,75 @@ pub fn sample_command(args: &[String]) -> Result<()> {
     std::fs::write(data.join("manifest.json"), manifest)
         .map_err(|_| "could not write sample attribution")?;
     std::fs::write(
+        data.join("lagoon-stac.json"),
+        include_bytes!("../docs/examples/data/lagoon-stac.json"),
+    )
+    .map_err(|e| e.to_string())?;
+    std::fs::write(
         path.join("create_catalog.py"),
         include_bytes!("../docs/examples/create_catalog.py"),
     )
     .map_err(|_| "could not write sample catalog helper")?;
+    let database = path.join("map.sqlite");
+    let gdal = crate::raster::Gdal::load()?;
+    let store = crate::storage::Store::create(
+        &database.to_string_lossy(),
+        None,
+        &["scene", "band"]
+            .into_iter()
+            .map(|key| crate::storage::KeyDefinition {
+                key: key.into(),
+                description: if key == "scene" {
+                    "Sample scene"
+                } else {
+                    "Raster band"
+                }
+                .into(),
+            })
+            .collect::<Vec<_>>(),
+    )?;
+    for band in ["red", "green", "blue", "nir", "classes"] {
+        let raster = data
+            .join(format!("{band}.tif"))
+            .canonicalize()
+            .map_err(|e| e.to_string())?;
+        let mut metadata = gdal.compute_metadata(&raster, &Default::default())?;
+        if band == "classes" {
+            metadata.metadata = serde_json::json!({"categories": {
+                "trees": 10, "grassland": 30, "cropland": 40, "built": 50, "water": 80
+            }});
+        }
+        store.insert(
+            &crate::storage::Dataset {
+                keys: vec![
+                    if band == "classes" {
+                        "worldcover"
+                    } else {
+                        "lagoon"
+                    }
+                    .into(),
+                    band.into(),
+                ],
+                path: raster,
+            },
+            Some(&metadata),
+        )?;
+    }
+    drop(store);
+    let app = crate::http::Application::open(&database)?;
+    let image = app.request(
+        "GET",
+        "/singleband/lagoon/red/preview.png?stretch_range=%5B0,3000%5D",
+    );
+    if image.status != 200 {
+        return Err("could not render sample preview".into());
+    }
+    std::fs::write(path.join("map.png"), image.body).map_err(|e| e.to_string())?;
     println!(
-        "Samples: {}\nAttribution and checksums: data/manifest.json\nInspect: rcfp inspect -r '{}/data/{{band}}.tif' -o bands.sqlite\nCreate first map: python {}/create_catalog.py map.sqlite\nServe: rcfp serve -d map.sqlite",
+        "Created five datasets and a preview in {}\n\nCatalog: {}/map.sqlite\nPreview: {}/map.png\nAttribution and checksums: {}/data/manifest.json\n\nStart the tile server:\n  rcfp serve -d {}/map.sqlite\n\nThen open the web viewer in a second terminal:\n  rcfp connect localhost:5000",
         absolute(&path.to_string_lossy()),
+        path.display(),
+        path.display(),
         path.display(),
         path.display()
     );

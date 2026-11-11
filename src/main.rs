@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+mod command_help;
 
 fn main() -> ExitCode {
     reexec_with_gdal_dependencies();
@@ -14,6 +15,7 @@ fn main() -> ExitCode {
                 rcfp_core::diagnostics::configuration_error(&args);
             } else {
                 eprintln!("error: {error}");
+                eprintln!("\nFor usage and examples, run rcfp --help or rcfp COMMAND --help.");
             }
             ExitCode::from(2)
         }
@@ -90,7 +92,9 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
     }
     let config = rcfp_core::settings::parse(config)?;
     rcfp_core::settings::scope(config, || match &args[index..] {
-        [command, rest @ ..] if command == "inspect" => {
+        [command, rest @ ..]
+            if command == "inspect" && !rest.iter().any(|a| a == "--help" || a == "-h") =>
+        {
             rcfp_core::diagnostics::command(rest, &origins)
         }
         _ => run(&args[index..]),
@@ -98,6 +102,9 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
 }
 
 fn run(args: &[String]) -> rcfp_core::Result<()> {
+    if command_help::show(args)? {
+        return Ok(());
+    }
     match args {
         [flag] if flag == "--version" => {
             println!(
@@ -297,14 +304,15 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
             rcfp_core::http::Application::open(&database.unwrap())
         }
     })?;
-    eprintln!("GDAL {}", application.gdal_version());
+    eprintln!("RCFP tile server (GDAL {})", application.gdal_version());
+    eprintln!(
+        "\nAPI: http://{bind}/apidoc\n\nOpen the web viewer in another terminal:\n  rcfp connect {bind}\n\nPress Ctrl+C to stop."
+    );
     application.serve_with_signals(&bind)
 }
 
 fn print_help() {
-    println!(
-        "Usage:\n  rcfp [-c CONFIG.toml] [--loglevel LEVEL] [--compat-profile PROFILE] COMMAND\n  rcfp connect HOSTNAME [--no-browser] [--port PORT]\n  rcfp --version[|-json]\n  rcfp serve (--source SOURCE | -d DATABASE | -r PATTERN | --stac-item ITEM | --stac-catalog CATALOG | --stac-search URL) [--rgb-key KEY] [--port PORT | --bind HOST:PORT]\n  rcfp serve --stac-item ITEM\n  rcfp serve --stac-catalog CATALOG\n  rcfp serve --stac-search URL [--stac-bbox W,S,E,N] [--stac-datetime RFC3339_INTERVAL] [--stac-collections IDS]\n  STAC options: --stac-assets KEY[,KEY...], --stac-revisions FILE, --stac-headers FILE, --stac-asset-urls FILE, --stac-max-items N, --stac-max-documents N, --stac-max-staged-bytes N\n  rcfp layers create|list DATABASE\n  rcfp layers register DATABASE ID RASTER [--bands 1,2,3] [--stretch MIN,MAX]\n  rcfp layers put|describe|delete DATABASE ID\n  rcfp layers render DATABASE ID -o IMAGE [--spec SPEC]\n  rcfp layers import SOURCE DESTINATION ID BINDINGS_JSON\n  rcfp inspect [--raster FILE | -r PATTERN | -d DATABASE] [-o DESTINATION] [--render-probe] [--probe-remote] [--json]\n  rcfp sample -o NEW_DIRECTORY\n  rcfp ingest PATTERN -o DATABASE [--skip-metadata] [--skip-existing] [-q]\n  rcfp migrate DATABASE [--from VERSION] [--to VERSION] [-y] [--dry-run]\n  rcfp optimize-rasters FILES... -o FOLDER [--help]\n  rcfp lambda-event -d DATABASE --event EVENT.json\n  rcfp lambda-runtime\n\nRCFP supports MySQL/PostgreSQL, read-only S3 SQLite snapshots and historical migrations. It supports discovery, metadata, singleband, RGB, compute, colormaps and API documentation through native HTTP, packaged container, Lambda-event, Python, and WSGI adapters.\nExecution limits are configured with TC_RASTER_WORKERS, TC_RASTER_QUEUE_CAPACITY, TC_RASTER_TIMEOUT_MS, TC_RASTER_CACHE_BYTES, and TC_REMOTE_RASTER_CACHE_TTL_SECONDS."
-    );
+    command_help::print_root();
 }
 
 fn configure_gdal_runtime() {

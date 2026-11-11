@@ -8,30 +8,21 @@ are needed after installation.
 
 ## Create a catalog and image
 
-The installed executable supplies five small raster samples with checksums and
-attribution, plus the catalog helper shown in the [catalog tutorial](catalog.md).
-They contain Sentinel-2 bands from the Venice lagoon and an ESA WorldCover class
-layer. Export them into a new directory and inspect one before creating a catalog:
+The installed executable supplies five small rasters with checksums and
+attribution. They contain Sentinel-2 bands from the Venice lagoon and an ESA
+WorldCover class layer. Create a ready-to-serve catalog and preview:
 
 ```sh
 rcfp sample -o sample
-rcfp inspect --raster sample/data/red.tif --render-probe
+rcfp inspect -d sample/map.sqlite
 ```
 
-Inspection lists the selected band, CRS, masks, block sizes, overview coverage
-and effective configuration with its origin. These small samples have no
-overviews. The warning explains the possible cost for larger sources and does
-not prevent the tutorial. Inspection does not create a catalog. Keep `sample/data`
-at its current location while using the catalog, whose records contain absolute
-raster paths.
+Inspection lists bands, CRS, masks, block sizes, overview coverage and effective
+configuration. These small samples have no overviews; that warning does not
+prevent the tutorial. Keep `sample/data` at its current location because the
+catalog contains absolute raster paths.
 
-```sh
-python sample/create_catalog.py map.sqlite
-rcfp inspect -d map.sqlite
-```
-
-The script writes `map.sqlite` and `map.png` and prints red-band metadata. The
-catalog has ordered keys `scene` and `band` and five datasets. Open `map.png`:
+The catalog has ordered keys `scene` and `band` and five datasets. Open `sample/map.png`:
 you should see a grayscale image of the lagoon. Its explicit range is 0–3000.
 This operation creates a catalog. It does not copy the rasters into SQLite.
 
@@ -43,7 +34,7 @@ This operation creates a catalog. It does not copy the rasters into SQLite.
 ## Serve it
 
 ```sh
-rcfp serve -d map.sqlite
+rcfp serve -d sample/map.sqlite
 ```
 
 Leave that terminal running. In another terminal, visit
@@ -51,7 +42,7 @@ Leave that terminal running. In another terminal, visit
 The server prints its selected port. Substitute it below if 5000 is occupied.
 Visit `http://127.0.0.1:5000/datasets` to see the registered datasets, then open
 `http://127.0.0.1:5000/singleband/lagoon/red/preview.png?stretch_range=[0,3000]`.
-The image should match `map.png`. Open `http://127.0.0.1:5000/apidoc` to explore
+The image should match `sample/map.png`. Open `http://127.0.0.1:5000/apidoc` to explore
 this server's HTTP contract.
 
 ## Explore in the client
@@ -67,7 +58,7 @@ for display pixels, and **Create share link** to save the current view. See the
 [JavaScript SDK reference](../reference/javascript.md) for embedding your own map
 and supplying immutable source revisions. The imagery is centered around longitude 12.36°, latitude 45.46°.
 
-Stop both processes with Ctrl+C when finished. Remove `map.sqlite` and `map.png`
+Stop both processes with Ctrl+C when finished. Remove `sample/map.sqlite` and `sample/map.png`
 only if you no longer want this tutorial catalog. Keep the supplied raster files.
 Continue with [building a catalog](catalog.md), or read
 [rasters, keys, and metadata](../explanation/concepts.md).

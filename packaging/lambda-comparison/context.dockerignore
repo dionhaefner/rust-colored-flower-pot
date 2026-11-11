@@ -1,0 +1,6 @@
+*
+!catalog.sqlite
+!manifest.json
+!handler.py
+!requirements.lock
+!terracotta.tar.gz

@@ -1,7 +1,7 @@
 # Command-line interface
 
 RCFP installs `rcfp`. Global options precede the subcommand. Native mode is the
-default. Select `--compat-profile terracotta-0.10.1` for the pinned contract.
+default. Select `--compat-profile terracotta` for the pinned contract.
 Both profiles use the Rust parser and executable.
 The following help text is extracted from the installed distribution, not copied
 from Terracotta's Click definitions.
@@ -14,6 +14,14 @@ from Terracotta's Click definitions.
 
 ### Serve and connect
 
+```{literalinclude} ../_generated/cli-native-serve.txt
+:language: text
+```
+
+```{literalinclude} ../_generated/cli-native-connect.txt
+:language: text
+```
+
 `serve -d DATABASE` opens a catalog. `serve -r PATTERN` builds an exploration
 catalog from matching rasters. `--rgb-key KEY` controls the final selection key.
 Native `--bind HOST:PORT` defaults to local serving. `--port PORT` uses a local
@@ -23,11 +31,15 @@ launching a browser, useful for a remote shell or controlled deployment.
 
 ### Inspect and supplied samples
 
-`sample -o NEW_DIRECTORY` exports checksum-pinned imagery, attribution and the
-Python catalog helper for [offline first use](../tutorials/first-map.md).
+`sample -o NEW_DIRECTORY` writes checksum-pinned imagery, attribution, a ready-to-serve
+`map.sqlite` catalog and `map.png` preview for [offline first use](../tutorials/first-map.md).
 `inspect` reports configuration, local raster/catalog checks and an optional
 ingestion destination. See [diagnostics](../how-to/diagnostics.md) for its
 JSON/exit-status contract and explicit probe limits.
+
+```{literalinclude} ../_generated/cli-native-sample.txt
+:language: text
+```
 
 ```{literalinclude} ../_generated/cli-native-inspect.txt
 :language: text
@@ -51,6 +63,12 @@ JSON/exit-status contract and explicit probe limits.
 :language: text
 ```
 
+### Native layers
+
+```{literalinclude} ../_generated/cli-native-layers.txt
+:language: text
+```
+
 `data-operation FILE.json` accepts a structured native operation and prints JSON.
 `lambda-event -d DATABASE --event FILE.json` adapts an API Gateway event locally.
 `lambda-runtime` runs inside the custom Lambda runtime. It expects the service
@@ -62,27 +80,27 @@ Native parsing/operation errors exit with status 2. Successful commands exit 0.
 Rust retains the supported Terracotta commands, flags and configuration. Click
 command objects and Python CLI extensions are outside the documented contract.
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-main.txt
+```{literalinclude} ../_generated/cli-terracotta-main.txt
 :language: text
 ```
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-serve.txt
+```{literalinclude} ../_generated/cli-terracotta-serve.txt
 :language: text
 ```
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-ingest.txt
+```{literalinclude} ../_generated/cli-terracotta-ingest.txt
 :language: text
 ```
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-optimize-rasters.txt
+```{literalinclude} ../_generated/cli-terracotta-optimize-rasters.txt
 :language: text
 ```
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-connect.txt
+```{literalinclude} ../_generated/cli-terracotta-connect.txt
 :language: text
 ```
 
-```{literalinclude} ../_generated/cli-terracotta-0.10.1-migrate.txt
+```{literalinclude} ../_generated/cli-terracotta-migrate.txt
 :language: text
 ```
 

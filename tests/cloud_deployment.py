@@ -60,7 +60,11 @@ def fetch(origin, path, images):
     try:
         with urlopen(origin + path, timeout=60) as response:
             body = response.read()
-            row.update(status=response.status, bytes=len(body))
+            row.update(
+                status=response.status,
+                bytes=len(body),
+                request_id=response.headers.get("x-amzn-requestid"),
+            )
         row["http_ms"] = (time.perf_counter() - started) * 1000
         image = Image.open(io.BytesIO(body)).convert("RGBA")
         row.update(

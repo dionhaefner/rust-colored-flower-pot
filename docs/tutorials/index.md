@@ -9,4 +9,5 @@ then learn how a catalog and a rendering request fit together.
 first-map
 catalog
 imagery
+native-demos
 ```

@@ -53,6 +53,10 @@ jobs:
 
       - name: Verify examples and catalog migration
         run: |
+          python tests/native_demos.py --out build/docs-native-demos
+          python tests/cli_contracts.py \
+            --binary "$(python -c 'import rcfp; print(rcfp._RUNTIME_ROOT / "bin" / "rcfp")')" \
+            --out build/docs-cli
           python docs/tools/verify.py \
             --html docs/_build/html \
             --out build/docs-checks \

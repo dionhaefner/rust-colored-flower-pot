@@ -25,6 +25,8 @@ wsgi
 container
 lambda
 demo
+lambda-comparison
+ec2-comparison
 cloud-test
 remote-data
 backup-migrate

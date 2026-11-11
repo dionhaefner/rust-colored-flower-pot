@@ -13,6 +13,14 @@ request client on your laptop to include the real client network. The small
 bundled raster samples provide an installation check. Use representative full
 rasters for performance qualification.
 
+Free-plan accounts can restrict launches to Free Tier eligible instance types.
+For installation and integration checks, use `--instance-type c7i-flex.large`
+or `--instance-type m7i-flex.large` with `up`, then `--workers 1` with `deploy`.
+Check eligibility in the chosen region with
+`aws ec2 describe-instance-types --filters Name=free-tier-eligible,Values=true`.
+These smaller Flex hosts do not match the four-core benchmark configuration.
+They consume signup credits at their regional rates and have variable CPU capacity.
+
 ## Check without credentials
 
 Prepare a complete x86_64 Linux [native bundle](../reference/artifacts.md) that

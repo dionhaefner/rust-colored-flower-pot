@@ -787,7 +787,7 @@ def main():
     with service(
         args.binary,
         database,
-        dict(env, RCFP_COMPAT_PROFILE="terracotta-0.10.1"),
+        dict(env, RCFP_COMPAT_PROFILE="terracotta"),
         folder,
         [],
     ) as (origin, _):

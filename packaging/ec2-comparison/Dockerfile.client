@@ -1,0 +1,4 @@
+FROM mcr.microsoft.com/playwright/python@sha256:f48dffadeef431c469ddb4d3325abaa084a855cc2ef7c89c9c44537acca23a2b
+COPY requirements-client.lock /tmp/requirements-client.lock
+RUN python -m pip install --no-cache-dir -r /tmp/requirements-client.lock
+WORKDIR /workspace

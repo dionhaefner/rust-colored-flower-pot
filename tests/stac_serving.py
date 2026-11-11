@@ -999,7 +999,7 @@ def main():
             (standard + ["--stac-bbox", "1,2,3,4"], "require --stac-search"),
             (standard + ["--stac-assets", "red,red"], "duplicate"),
             (standard + ["--stac-max-items", "0"], "limits"),
-            (["--compat-profile", "terracotta-0.10.1", *standard], "native"),
+            (["--compat-profile", "terracotta", *standard], "native"),
             (standard + ["--stac-search", provider_url + "/search"], "Choose one"),
         ]:
             result = subprocess.run(

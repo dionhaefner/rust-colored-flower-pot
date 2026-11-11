@@ -144,7 +144,7 @@ def exercise(binary, folder, base, name):
     with Image.open(io.BytesIO(body)) as image:
         pixels = image.convert("RGBA").tobytes()
         require(image.size == (256, 256), "SQL-backed image size wrong")
-    legacy = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "terracotta-0.10.1"
+    legacy = os.environ.get("RCFP_COMPAT_PROFILE", "native") == "terracotta"
     default_images = []
     for route in (
         "/singleband/lagoon/red/preview.png",

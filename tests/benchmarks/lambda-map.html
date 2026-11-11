@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Deployed raster navigation comparison</title>
+  <link rel="stylesheet" href="leaflet.css" />
+  <style>
+    html,
+    body,
+    #map {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #eee;
+    }
+  </style>
+  <div id="map"></div>
+  <script src="leaflet.js"></script>
+  <script>
+    let map, layer;
+    const animate =
+      new URLSearchParams(location.search).get("animations") !== "0";
+    window.navigate = async function (action, url) {
+      const start = performance.now();
+      if (action === "first_view") {
+        map = L.map("map", {
+          zoomControl: false,
+          attributionControl: false,
+          zoomAnimation: animate,
+          fadeAnimation: animate,
+        });
+        map.setView([45.6, 12.45], 12);
+        layer = L.tileLayer(url, { maxZoom: 16, keepBuffer: 2 }).addTo(map);
+      } else if (action === "pan") {
+        map.panBy([512, -128], { animate, duration: 0.25 });
+      } else if (action === "zoom_in") {
+        map.setZoom(13);
+      } else if (action === "detail") {
+        map.setZoom(14);
+      } else if (action === "detail_pan") {
+        map.panBy([-512, 256], { animate, duration: 0.25 });
+      } else if (action === "zoom_out") {
+        map.setZoom(12);
+      } else if (action === "revisit") {
+        map.setView([45.6, 12.45], 12, { animate });
+      } else {
+        throw new Error("Unknown navigation action");
+      }
+      // Leaflet completion, visible-image decoding and animation frames have distinct roles.
+      const tiles = await new Promise((resolve, reject) => {
+        const deadline = performance.now() + 60000;
+        function check() {
+          if (performance.now() > deadline)
+            return reject(new Error("Map did not finish"));
+          const moving =
+            map._animatingZoom || (map._panAnim && map._panAnim._inProgress);
+          const tiles = Object.values(layer._tiles).filter((t) => t.current);
+          if (
+            !moving &&
+            !layer.isLoading() &&
+            tiles.length &&
+            tiles.every(
+              (t) =>
+                t.loaded &&
+                t.el.complete &&
+                t.el.naturalWidth === 256 &&
+                Number(getComputedStyle(t.el).opacity) >= 0.999,
+            )
+          ) {
+            resolve(tiles);
+          } else {
+            requestAnimationFrame(check);
+          }
+        }
+        requestAnimationFrame(check);
+      });
+      const ready = performance.now();
+      await Promise.all(tiles.map((t) => t.el.decode()));
+      const decoded = performance.now();
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      );
+      const end = performance.now();
+      const visible = Object.values(layer._tiles)
+        .filter((t) => t.current)
+        .map((t) => t.el.src);
+      return {
+        completion_ms: end - start,
+        action_start_epoch_ms: performance.timeOrigin + start,
+        tiles_and_animation_ready_ms: ready - start,
+        decoded_ms: decoded - start,
+        visible,
+        zoom: map.getZoom(),
+        center: map.getCenter(),
+      };
+    };
+  </script>
+</html>

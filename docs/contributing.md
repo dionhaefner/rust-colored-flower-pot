@@ -53,8 +53,8 @@ changing installation, settings, rendering, storage, or deployment.
 ## Repository checks
 
 For code or test contributions, start with a focused issue and a small
-reproduction. Read the repository `AGENTS.md`, `design/README.md`, and relevant
-compatibility/decision notes in a checkout. `tests/README.md` maps each behavior to
+reproduction. Read the repository `AGENTS.md` and the
+[implementation constraints](maintaining.md) before changing shared behavior. `tests/README.md` maps each behavior to
 its maintained runner. Keep acquired data and generated reports in ignored
 storage. Include exact artifact/input identities and separate unavailable checks
 from passes. The [public corpus](explanation/raster-corpus.md) describes fixture

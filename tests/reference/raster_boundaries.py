@@ -29,7 +29,7 @@ from shapely.geometry import MultiPoint, shape
 ROOT = Path(__file__).resolve().parents[2]
 CORPUS = ROOT / "tests/fixtures/corpus"
 METHODS = ("nearest", "linear", "cubic", "average")
-PROFILES = ("native", "terracotta-0.10.1")
+PROFILES = ("native", "terracotta")
 GDAL_TYPES = {
     "uint8": 1,
     "uint16": 2,

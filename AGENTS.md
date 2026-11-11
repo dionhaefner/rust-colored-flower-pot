@@ -1,13 +1,14 @@
 # Working on RCFP
 
-Read [design/README.md](design/README.md) for maintainer context. Consult
-[design/decisions.md](design/decisions.md) before architecture changes and
-[design/compatibility-notes.md](design/compatibility-notes.md) when changing
-rendering, metadata, catalog access, or Python/HTTP contracts. Current validation
-limits and pending qualification are in [design/human-validation.md](design/human-validation.md).
+Read [docs/maintaining.md](docs/maintaining.md) for implementation constraints and
+[docs/contributing.md](docs/contributing.md) for contributor checks. Consult
+[docs/compatibility.md](docs/compatibility.md) and
+[docs/native-migration.md](docs/native-migration.md) when changing rendering,
+metadata, catalog access, or Python/HTTP contracts. Current platform and deployment
+qualification limits are in [docs/reference/support.md](docs/reference/support.md).
 
-Keep design rationale and agent context in `design/`, user/operator documentation
-in `docs/`, supported build/release helpers in `packaging/`, and maintained tests
+Keep essential implementation rationale, contributor guidance, and user/operator
+documentation in `docs/`, supported build/release helpers in `packaging/`, and maintained tests
 and reference acquisition in `tests/`. Keep temporary plans, experiments, acquired
 references, large fixtures, and generated reports in ignored `build/`, `.cache/`,
 or temporary storage. Do not recreate a phase execution harness.

@@ -1,0 +1,3 @@
+ARG RCFP_IMAGE=rcfp-demo
+FROM ${RCFP_IMAGE}
+COPY catalog.sqlite manifest.json /var/task/

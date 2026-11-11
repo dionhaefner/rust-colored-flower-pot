@@ -97,7 +97,7 @@ def main():
                 )
             tokens.append(token)
         path.write_text(tokenize.untokenize(tokens))
-    env = dict(os.environ, RCFP_COMPAT_PROFILE="terracotta-0.10.1")
+    env = dict(os.environ, RCFP_COMPAT_PROFILE="terracotta")
     package = subprocess.check_output(
         [
             str(args.candidate_python.absolute()),

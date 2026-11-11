@@ -1,0 +1,12 @@
+FROM public.ecr.aws/lambda/python:3.12@sha256:25aee9bac65f131c5d090d3e3a36ccf232d65cf3e6c1dbd0bffd43ca7ce34406
+RUN dnf install -y expat && dnf clean all
+COPY requirements.lock terracotta.tar.gz ./
+RUN echo 'e5d2ac9b78a36d0f28414b1a4890c961dede50d1f9ce33b8d23eee643f5e2348  terracotta.tar.gz' | sha256sum -c - && \
+    python -m pip install --no-cache-dir setuptools==80.9.0 setuptools-scm==8.3.1 setuptools-scm-git-archive==1.4.1 wheel==0.45.1 numpy==2.2.6 && \
+    python -m pip install --no-cache-dir --no-build-isolation ./terracotta.tar.gz -r requirements.lock && \
+    python -m pip check && \
+    python -c 'import terracotta,rasterio; assert terracotta.__version__ == "0.10.1"; assert rasterio.__gdal_version__ == "3.10.3"' && \
+    rm terracotta.tar.gz
+COPY handler.py catalog.sqlite manifest.json ./
+ENV TC_DRIVER_PATH=/var/task/catalog.sqlite TC_USE_MULTIPROCESSING=false
+CMD ["handler.handler"]

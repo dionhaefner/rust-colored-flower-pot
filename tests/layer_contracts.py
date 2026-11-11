@@ -604,7 +604,7 @@ def main():
         assert (
             "native profile"
             in cli(
-                "layers", "list", database, profile="terracotta-0.10.1", success=False
+                "layers", "list", database, profile="terracotta", success=False
             ).stderr
         )
         instruction = out / "legacy-native.json"
@@ -617,7 +617,7 @@ def main():
             in cli(
                 "data-operation",
                 instruction,
-                profile="terracotta-0.10.1",
+                profile="terracotta",
                 success=False,
             ).stderr
         )

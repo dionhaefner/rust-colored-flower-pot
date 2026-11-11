@@ -588,7 +588,7 @@ def main():
             [
                 str(binary),
                 "--compat-profile",
-                "terracotta-0.10.1",
+                "terracotta",
                 "data-operation",
                 str(request),
             ],

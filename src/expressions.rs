@@ -641,7 +641,7 @@ mod tests {
     #[test]
     fn expression_contract_vectors() {
         crate::settings::scope(
-            serde_json::json!({"COMPAT_PROFILE":"terracotta-0.10.1"})
+            serde_json::json!({"COMPAT_PROFILE":"terracotta"})
                 .as_object()
                 .unwrap()
                 .clone(),

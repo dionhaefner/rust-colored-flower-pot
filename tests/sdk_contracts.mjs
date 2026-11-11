@@ -130,7 +130,7 @@ test("discovery paginates and refuses truncated catalogs", async () => {
 });
 test("profiles are immutable server policy and gate native additions", async () => {
   const api = new Client(client.baseUrl, {
-    profile: "terracotta-0.10.1",
+    profile: "terracotta",
     fetch: async () =>
       Response.json({
         protocol_compatibility: "0.10.1",
@@ -200,7 +200,7 @@ test("shared state verifies source/profile/render revisions, roundtrips Unicode,
     restoreState(encoded, { ...input, sourceRevision: "public-r2" }),
   );
   await assert.rejects(
-    restoreState(encoded, { ...input, profile: "terracotta-0.10.1" }),
+    restoreState(encoded, { ...input, profile: "terracotta" }),
   );
   await assert.rejects(
     restoreState(encoded, { ...input, baseUrl: "https://other.test" }),
@@ -255,7 +255,7 @@ test("fetch is called independently of the Client receiver", async () => {
   });
   await api.keys();
   assert.throws(() => {
-    api.profile = "terracotta-0.10.1";
+    api.profile = "terracotta";
   }, TypeError);
   assert.throws(() => {
     api.baseUrl = "https://other.test";
@@ -298,7 +298,7 @@ test("native discovery, TileJSON and source inspection preserve URLs and profile
   assert.throws(() => native.point([], { longitude: 0, latitude: 0 }));
   assert.throws(() => native.tilesets({ limit: 0 }));
   const legacy = new Client("https://example.test", {
-    profile: "terracotta-0.10.1",
+    profile: "terracotta",
   });
   assert.throws(() => legacy.tileJSON(["red"]));
   assert.throws(() => legacy.point(["red"], { longitude: 0, latitude: 0 }));

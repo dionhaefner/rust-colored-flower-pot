@@ -23,7 +23,7 @@ from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "tests/fixtures/corpus"
-PROFILE = "terracotta-0.10.1"
+PROFILE = "terracotta"
 
 
 def invoke(command, *, profile=PROFILE, check=True, **kwargs):
@@ -264,7 +264,7 @@ def run(args):
 
     def precedence():
         config = args.out / "settings.toml"
-        config.write_text('COMPAT_PROFILE = "terracotta-0.10.1"\n')
+        config.write_text('COMPAT_PROFILE = "terracotta"\n')
         result = invoke(
             [str(executable), "-c", str(config), "--version-json"], profile="native"
         )

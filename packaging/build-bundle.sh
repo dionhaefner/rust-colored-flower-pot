@@ -13,6 +13,10 @@ if ! command -v "$build_python" >/dev/null 2>&1; then
     echo "build Python is missing: $build_python" >&2
     exit 2
 fi
+if ! command -v patchelf >/dev/null 2>&1; then
+    echo "patchelf is required to isolate the bundled OpenSSL runtime; install patchelf==0.17.2.4" >&2
+    exit 2
+fi
 
 if [[ -n "${RCFP_NATIVE_TARGET:-}" ]]; then
     native_target=$(realpath "$RCFP_NATIVE_TARGET")
@@ -55,5 +59,6 @@ if [[ -d "$native_target/runtime-libs" ]]; then
     cp -a "$native_target/licenses/." "$output/licenses/"
 fi
 "$build_python" "$root/packaging/stage-licenses.py" "$output/licenses"
+"$build_python" "$root/packaging/isolate-openssl.py" "$output"
 
 "$output/bin/rcfp" --version-json

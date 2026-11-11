@@ -5,8 +5,15 @@ on:
   pull_request:
     paths:
       - "packaging/demo/**"
+      - "packaging/lambda-comparison/**"
       - "packaging/lambda/**"
       - "tests/demo_contracts.py"
+      - "tests/test_demo_budget.py"
+      - "tests/lambda_benchmark*.py"
+      - "tests/lambda_image_comparison.py"
+      - "tests/lambda_map_benchmark.py"
+      - "tests/benchmarks/lambda-map.html"
+      - "tests/test_lambda_benchmark.py"
       - "src/assets/client/**"
       - "js/sdk/**"
       - "src/lambda.rs"
@@ -31,7 +38,11 @@ jobs:
           python -m pip install cfn-lint==1.40.4 pillow==11.3.0 playwright==1.55.0
           python -m playwright install --with-deps chromium
       - name: Validate infrastructure without AWS credentials
-        run: cfn-lint packaging/demo/storage.yaml packaging/demo/template.yaml
+        run: cfn-lint packaging/demo/storage.yaml packaging/demo/template.yaml packaging/lambda-comparison/template.yaml
+      - name: Check global budget configuration
+        run: python -m unittest discover -s tests -p test_demo_budget.py
+      - name: Check deployed comparison timing and statistics
+        run: python -m unittest discover -s tests -p test_lambda_benchmark.py
       - name: Build the AL2023 demo image
         run: bash packaging/demo/build.sh
       - name: Check runtime, imagery, CORS and static viewer

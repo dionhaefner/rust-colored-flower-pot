@@ -32,7 +32,7 @@ const metadata = await client.metadata(layers[0].keys);
 `connect()` verifies protocol `0.10.1` and the deployment's advertised profile.
 A resolved catalog may advertise `source_revision`. Use it as the share state's
 `sourceRevision`. STAC sources use normal dataset discovery and render parameters.
-Select `native` or `terracotta-0.10.1` explicitly when creating the client. The server chooses its profile at startup and keeps it immutable.
+Select `native` or `terracotta` explicitly when creating the client. The server chooses its profile at startup and keeps it immutable.
 This SDK requires an RCFP server advertising `compatibility_profile` at
 `/__terracotta/identity`. It does not infer a profile from upstream Terracotta.
 

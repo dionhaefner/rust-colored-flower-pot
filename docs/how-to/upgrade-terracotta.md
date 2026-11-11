@@ -1,6 +1,6 @@
 # Upgrade from Terracotta
 
-RCFP targets Terracotta 0.10.1 through the named `terracotta-0.10.1` profile.
+RCFP targets Terracotta 0.10.1 through the named `terracotta` profile.
 Your supported raster files, URLs, and 0.10 catalogs can stay in place. Package,
 import, command, and deployment entry-point names need deliberate changes.
 Check [the support matrix](../reference/support.md) for your integration. Private
@@ -42,7 +42,7 @@ from both applications, and back up raster data independently if needed.
 # Before, in the Terracotta environment:
 terracotta serve -d existing.sqlite --port 5000
 # Trial, in the RCFP environment:
-rcfp --compat-profile terracotta-0.10.1 serve -d trial.sqlite --port 5001
+rcfp --compat-profile terracotta serve -d trial.sqlite --port 5001
 ```
 
 ```python
@@ -79,7 +79,7 @@ The downloadable [trial script](../examples/compatibility_trial.py) exercises
 public driver discovery and a native request against a copied catalog:
 
 ```sh
-RCFP_COMPAT_PROFILE=terracotta-0.10.1 python docs/examples/compatibility_trial.py trial.sqlite
+RCFP_COMPAT_PROFILE=terracotta python docs/examples/compatibility_trial.py trial.sqlite
 ```
 
 Use your hosting system to switch its upstream from the old service to the trial

@@ -65,7 +65,7 @@ jobs:
             --reference-python .venv-reference/bin/python \
             --out build/ci/differential
 
-          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+          RCFP_COMPAT_PROFILE=terracotta \
             TC_RUST_MERCATOR_FAST=1 \
             TC_PREFETCH_TILE_RING=1 \
             TC_RUST_UTM_FAST=1 \
@@ -196,7 +196,7 @@ jobs:
             --binary target/release/rcfp \
             --out build/ci/storage-contracts
 
-          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+          RCFP_COMPAT_PROFILE=terracotta \
             python tests/storage_contracts.py \
             --binary target/release/rcfp \
             --out build/ci/storage-contracts-compatibility
@@ -230,7 +230,7 @@ jobs:
             PyMySQL \
             psycopg2-binary
 
-          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+          RCFP_COMPAT_PROFILE=terracotta \
             build/ci/compatibility-env/bin/python tests/compatibility_sql.py \
             --wheel build/ci/compatibility-wheels/*.whl \
             --reference-python .venv-reference/bin/python \

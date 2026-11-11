@@ -1,10 +1,8 @@
 # Reproduce the README animations
 
-The README demos use RCFP's installed, checksum-pinned samples and its bundled
-Leaflet viewer. The navigation animation contains screenshots from real RGB and
-NDVI tile requests. The shell animation types verified commands and ends on a
-captured RGB view. It omits command output. Both use edited playback durations;
-neither measures installation time, tile latency, or browser paint performance.
+The navigation animation captures RCFP's installed, checksum-pinned samples in
+its bundled Leaflet viewer, including real RGB and NDVI tile requests. Playback
+uses edited screenshot durations and does not measure latency or browser paint.
 The NDVI request explicitly selects NIR and red and promotes the UInt16 samples
 with `1.0*v1` and `1.0*v2` before arithmetic. It uses a −1 to 1 stretch and the
 viridis colormap.
@@ -26,12 +24,10 @@ python docs/tools/readme_media.py \
 ```
 
 `--binary` must point to the native executable, or the installed `rcfp` launcher.
-`--python` selects the installed RCFP Python environment for the catalog helper
-and defaults to the interpreter running the capture. Use a fresh `--work`
-directory. The script starts two loopback services on available ports, blocks
+Use a fresh `--work` directory. The script starts two loopback services on available ports, blocks
 external browser requests, checks source checksums and HTTP/JavaScript errors,
-and stops both services when finished. It replaces the four README media files
-in `--assets`. Review both animations and their PNG stills before committing.
+and stops both services when finished. It replaces the two README media files
+in `--assets`. Review the animation and its PNG still before committing.
 
 The work directory retains the command transcript, service logs, full viewer
 screenshot, and a JSON report with source attribution/checksums, binary hash,

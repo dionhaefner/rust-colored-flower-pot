@@ -18,6 +18,8 @@ Click, Pillow, Python SQL adapters and Rasterio are not runtime requirements. Se
 Keep `bin`, `lib`, `share`, and `licenses` together. Copying only `bin/rcfp` loses
 its native dependencies and GDAL/PROJ data. The Linux standalone baseline is
 bundle-specific. The established AL2023 bundle targets glibc 2.34 or newer.
+Linux bundle builds require `patchelf==0.17.2.4` to isolate OpenSSL library names.
+Python source builds install that tool as a build dependency.
 Desktop/wheel artifacts and Lambda-targeted bundles may have different baselines.
 `TERRACOTTA_RUNTIME_ROOT` can select a bundle. An external GDAL library needs its
 own correctly installed dependencies/data.

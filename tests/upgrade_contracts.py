@@ -34,7 +34,7 @@ def worker(args):
     import rcfp
     from PIL import Image
 
-    require(rcfp.compatibility_profile == "terracotta-0.10.1", "profile mismatch")
+    require(rcfp.compatibility_profile == "terracotta", "profile mismatch")
     package = Path(rcfp.__file__).resolve().parent
     require(
         package.is_relative_to(Path(sys.prefix).resolve()),
@@ -182,7 +182,7 @@ def main(args):
         )
     }
     environment.update(
-        RCFP_COMPAT_PROFILE="terracotta-0.10.1",
+        RCFP_COMPAT_PROFILE="terracotta",
         TC_RUST_MERCATOR_FAST="0",
         TC_RUST_UTM_FAST="0",
         TC_PREFETCH_TILE_RING="0",

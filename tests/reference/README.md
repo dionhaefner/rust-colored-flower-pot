@@ -1,7 +1,7 @@
 # Pinned Terracotta reference checks
 
 These runners are maintained compatibility gates for every release shipping the
-`terracotta-0.10.1` profile. They complement the standalone RCFP assertions and
+`terracotta` profile. They complement the standalone RCFP assertions and
 run independently of developer documentation.
 
 ## Prepare the reference
@@ -45,7 +45,7 @@ output directory for every run:
 ```sh
 cargo build --locked --release
 TC_NATIVE_DIRECT_READ=false python tests/reference/differential.py --binary target/release/rcfp --reference-python .venv-reference/bin/python --out build/reference-http
-RCFP_COMPAT_PROFILE=terracotta-0.10.1 TC_RUST_MERCATOR_FAST=1 TC_PREFETCH_TILE_RING=1 TC_RUST_UTM_FAST=1 python tests/reference/differential.py --binary target/release/rcfp --reference-python .venv-reference/bin/python --out build/reference-http-compatibility
+RCFP_COMPAT_PROFILE=terracotta TC_RUST_MERCATOR_FAST=1 TC_PREFETCH_TILE_RING=1 TC_RUST_UTM_FAST=1 python tests/reference/differential.py --binary target/release/rcfp --reference-python .venv-reference/bin/python --out build/reference-http-compatibility
 python tests/reference/compatibility.py --candidate-python /absolute/path/to/wheel-env/bin/python --reference-python .venv-reference/bin/python --out build/reference-public
 ```
 

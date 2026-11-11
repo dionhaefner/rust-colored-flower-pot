@@ -205,7 +205,7 @@ fn tiff_exact_grids_and_fallbacks() {
     assert!(gdal_only.tiff.source(path).is_none());
     let legacy = crate::settings::scope(
         serde_json::from_value(
-            serde_json::json!({"ASYNC_TIFF": true, "COMPAT_PROFILE": "terracotta-0.10.1"}),
+            serde_json::json!({"ASYNC_TIFF": true, "COMPAT_PROFILE": "terracotta"}),
         )
         .unwrap(),
         crate::raster::Gdal::load,

@@ -7,9 +7,9 @@ import rcfp as tc
 
 
 def trial(database):
-    if tc.compatibility_profile != "terracotta-0.10.1":
+    if tc.compatibility_profile != "terracotta":
         raise RuntimeError(
-            "Set RCFP_COMPAT_PROFILE=terracotta-0.10.1 before starting Python"
+            "Set RCFP_COMPAT_PROFILE=terracotta before starting Python"
         )
     tc.update_settings(DRIVER_PATH=database, USE_MULTIPROCESSING=False)
     driver = tc.get_driver(database)

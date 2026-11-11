@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import runpy
 import subprocess
 from pathlib import Path
 
@@ -73,6 +74,10 @@ def main():
             raise RuntimeError(f"ECR images could not be removed: {result['failures']}")
     aws("cloudformation", "delete-stack", "--stack-name", storage)
     aws("cloudformation", "wait", "stack-delete-complete", "--stack-name", storage)
+    account = json.loads(aws("sts", "get-caller-identity"))["Account"]
+    runpy.run_path(str(Path(__file__).with_name("budget.py")))["remove"](
+        account, args.stack + "-account"
+    )
 
 
 if __name__ == "__main__":

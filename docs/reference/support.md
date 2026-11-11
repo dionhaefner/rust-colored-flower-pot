@@ -1,7 +1,7 @@
 # Compatibility and support
 
 RCFP has two process profiles: default `native` and the pinned
-`terracotta-0.10.1` compatibility contract. The package and primary import are
+`terracotta` compatibility contract. The package and primary import are
 `rcfp`. HTTP protocol identity remains 0.10.1. Terracotta catalogs use format 0.10 and
 native layer catalogs use `rcfp-native-1`.
 The package version in this site's title is supplied by Hatch VCS metadata,

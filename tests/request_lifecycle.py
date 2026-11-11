@@ -272,7 +272,7 @@ def main():
     thread = threading.Thread(target=origin.serve_forever, daemon=True)
     thread.start()
     try:
-        for profile in ("native", "terracotta-0.10.1"):
+        for profile in ("native", "terracotta"):
             os.environ["RCFP_COMPAT_PROFILE"] = profile
             folder = out / profile
             folder.mkdir()

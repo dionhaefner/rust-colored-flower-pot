@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Raster comparison function with matched resource budgets and private S3 reads.
+Parameters:
+  ImageUri:
+    Type: String
+    Description: Qualified x86_64 Lambda image, including its ECR sha256 digest.
+    AllowedPattern: ".+@sha256:[0-9a-f]{64}"
+  DataBucket:
+    Type: String
+  AllowedOrigins:
+    Type: String
+    Description: JSON array of anchored origin patterns for the static viewer.
+  PublicUrl:
+    Type: String
+    Default: ""
+    Description: HTTPS Function URL used in published TileJSON and point links.
+  Profile:
+    Type: String
+    Default: native
+    AllowedValues: [native, terracotta]
+  Concurrency:
+    Type: Number
+    Default: 8
+    MinValue: 0
+    MaxValue: 32
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RasterReads
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:s3:::${DataBucket}/rasters/*"
+        - PolicyName: InvocationLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}:*"
+  Logs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: "/aws/lambda/${AWS::StackName}"
+      RetentionInDays: 7
+  Function:
+    Type: AWS::Lambda::Function
+    DependsOn: Logs
+    Properties:
+      FunctionName:
+        Ref: AWS::StackName
+      PackageType: Image
+      Architectures: [x86_64]
+      Code:
+        ImageUri:
+          Ref: ImageUri
+      Role:
+        Fn::GetAtt: [ExecutionRole, Arn]
+      MemorySize: 2048
+      Timeout: 30
+      ReservedConcurrentExecutions:
+        Ref: Concurrency
+      Environment:
+        Variables:
+          TC_DRIVER_PATH: /var/task/catalog.sqlite
+          TC_COMPAT_PROFILE:
+            Ref: Profile
+          TC_RASTER_WORKERS: "1"
+          TC_RASTER_QUEUE_CAPACITY: "4"
+          TC_RASTER_TIMEOUT_MS: "20000"
+          TC_RASTER_CACHE_BYTES: "67108864"
+          TC_REMOTE_RASTER_CACHE_TTL_SECONDS: "60"
+          TC_EXPOSE_METRICS: "false"
+          TC_USE_MULTIPROCESSING: "false"
+          TC_RASTER_CACHE_SIZE: "67108864"
+          TC_RASTER_CACHE_COMPRESS_LEVEL: "9"
+          TC_RENDER_CACHE_BYTES: "0"
+          TC_PNG_COMPRESS_LEVEL: "1"
+          GDAL_CACHEMAX: "64"
+          GDAL_NUM_THREADS: "1"
+          GDAL_DISABLE_READDIR_ON_OPEN: EMPTY_DIR
+          CPL_VSIL_CURL_CACHE_SIZE: "33554432"
+          CPL_VSIL_CURL_CHUNK_SIZE: "16384"
+          VSI_CACHE: "FALSE"
+          TC_PUBLIC_URL:
+            Ref: PublicUrl
+          TC_ALLOWED_ORIGINS_METADATA:
+            Ref: AllowedOrigins
+          TC_ALLOWED_ORIGINS_TILES:
+            Ref: AllowedOrigins
+  Url:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn:
+        Ref: Function
+      AuthType: NONE
+      InvokeMode: BUFFERED
+  UrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: Function
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+  InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: Function
+      Action: lambda:InvokeFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+Outputs:
+  ApiUrl:
+    Value:
+      Fn::GetAtt: [Url, FunctionUrl]
+  FunctionName:
+    Value:
+      Ref: Function

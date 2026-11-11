@@ -321,21 +321,21 @@ jobs:
           "$wheel_python" tests/remote_contracts.py --out build/ci/ci-remote
           "$wheel_python" docs/tools/verify.py --out build/ci/ci-docs-examples
 
-          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+          RCFP_COMPAT_PROFILE=terracotta \
             TC_RUST_MERCATOR_FAST=1 \
             TC_PREFETCH_TILE_RING=1 \
             TC_RUST_UTM_FAST=1 \
             "$wheel_python" tests/compatibility_contracts.py \
             --wheel build/ci/ci-wheels/*.whl \
             --out build/ci/ci-compatibility
-          RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+          RCFP_COMPAT_PROFILE=terracotta \
             "$wheel_python" tests/remote_contracts.py \
             --out build/ci/ci-remote-compatibility
 
           if [[ "${{ matrix.platform.id }}" == linux-x86_64 && \
                 "${{ matrix.python-version }}" == 3.12 ]]; then
             tests/reference/bootstrap.sh
-            RCFP_COMPAT_PROFILE=terracotta-0.10.1 \
+            RCFP_COMPAT_PROFILE=terracotta \
               TC_RUST_MERCATOR_FAST=1 \
               TC_PREFETCH_TILE_RING=1 \
               TC_RUST_UTM_FAST=1 \

@@ -1,14 +1,31 @@
 # Deploy the public demo
 
-The demo serves the bundled raster viewer alongside this documentation on GitHub
-Pages. A public Lambda Function URL supplies the API, and a private S3 bucket
+## Try the live demo
+
+The deployed [AWS Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
+serves the sample Venice lagoon imagery. With RCFP installed, open its interactive
+viewer locally:
+
+```sh
+rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/
+```
+
+Choose **lagoon / red**, then switch **Rendering** to **RGB**. This viewer uses
+the remote Lambda backend and needs network access. The browser frontend is
+served on your computer; the deployment instructions below also support
+publishing it alongside the documentation.
+
+## Deployment layout
+
+The deployment can serve the bundled raster viewer alongside this documentation
+on GitHub Pages. A public Lambda Function URL supplies the API, and a private S3 bucket
 holds four checksum-pinned Sentinel-2 crops. The catalog is precomputed and
 packaged with the function. Tile requests use database-backed S3 raster paths.
 They do not discover STAC Items or stage whole STAC assets.
 
 Infrastructure and deployment helpers live in `packaging/demo/`. Two CloudFormation
-stacks separate S3/ECR storage from the function, permissions, logs and optional
-budget alerts. Deployment uses the AWS CLI.
+stacks separate S3/ECR storage from the function, permissions and logs. Optional
+budget alerts use the global AWS Budgets API. Deployment uses the AWS CLI.
 
 ## Build and check without credentials
 
@@ -43,7 +60,8 @@ python tests/demo_contracts.py --binary dist/bundle/bin/rcfp --out build/demo-na
 Install AWS CLI v2 and authenticate using your account's normal CLI credential
 workflow. The deployment identity needs permission to manage CloudFormation,
 S3, ECR, Lambda, IAM roles and CloudWatch Logs. Budget creation additionally
-requires AWS Budgets permissions. The function's own role has only raster reads
+requires AWS Budgets permissions through its `us-east-1` endpoint, independently
+of the deployment region. The function's own role has only raster reads
 and invocation log writes. Keep credentials outside the repository.
 
 Choose one AWS region and the browser **origin**, which excludes the Pages project
@@ -57,6 +75,10 @@ python packaging/demo/deploy.py \
   --budget-email you@example.com \
   --out build/demo-deployment
 ```
+
+For a local viewer, use `--origin http://127.0.0.1:8000`. Repeat `--origin`
+to allow both local and Pages origins, or add `http://127.0.0.1:5100` for
+`rcfp connect --port 5100`. Plain HTTP origins are limited to loopback hosts.
 
 This command creates billable resources and a public API. It creates storage,
 uploads immutable digest-addressed rasters, builds an image using those S3 paths,
@@ -74,6 +96,10 @@ Both invocation permissions required by public Function URLs are in the template
 RCFP supplies CORS headers itself, with anchored allowed-origin patterns. The URL
 resource supplies no additional CORS configuration, avoiding duplicate headers.
 CORS does not authenticate callers or restrict command-line access.
+
+After AWS assigns the Function URL, the helper configures `PublicUrl` with that
+HTTPS origin in a second stack update. This supplies absolute HTTPS links in
+TileJSON and point discovery. Keep this parameter in saved rollback settings.
 
 Some new AWS accounts have concurrency quotas too small to reserve the default
 eight invocations while leaving AWS's required unreserved capacity. Check the
@@ -125,7 +151,8 @@ Copernicus attribution in the viewer and metadata.
 The [Lambda free tier](https://aws.amazon.com/lambda/pricing/) is shared with other
 account usage. S3 storage/requests, ECR image storage, logs and transfer can incur
 separate charges. Concurrency bounds simultaneous work, not monthly spend.
-Optional alerts track **all account spending** at USD 5 and USD 10. They can arrive
+Optional alerts track **all account spending before credits and refunds** at USD 5
+and USD 10, so signup credits do not hide usage. They can arrive
 after charges accrue and do not stop execution. This configuration is not a hard
 USD 10 spending cap. Retained images and raster revisions also consume storage.
 
@@ -154,7 +181,7 @@ automatically roll back an otherwise successful stack update.
 ## Remove the deployment
 
 The removal helper disables invocations, deletes the runtime stack, empties the
-demo bucket and ECR repository, then deletes the storage stack:
+demo bucket and ECR repository, then deletes the storage stack and demo budget:
 
 ```sh
 python packaging/demo/remove.py --region eu-north-1 --stack rcfp-demo \

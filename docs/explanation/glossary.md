@@ -13,6 +13,6 @@
 | Preview                  | An image of the source extent, sampled to a requested output size                                  |
 | Mask / nodata            | Information identifying invalid source coverage                                                    |
 | Stretch                  | Mapping a data-value interval to display intensities                                               |
-| Profile                  | Immutable native or terracotta-0.10.1 process/application compatibility policy                     |
+| Profile                  | Immutable native or terracotta process/application compatibility policy                            |
 | Protocol version         | Identity used by HTTP/API clients. Separate from package and catalog versions                      |
 | abi3                     | CPython limited-API extension tag supporting the documented Python versions on a matching platform |

@@ -561,7 +561,7 @@ def main():
                 server.terminate()
                 server.wait(timeout=10)
 
-    for profile in ("native", "terracotta-0.10.1"):
+    for profile in ("native", "terracotta"):
         exercise_profile(profile)
 
     (out / "report.json").write_text(

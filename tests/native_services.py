@@ -596,7 +596,7 @@ def main():
                 [
                     str(binary),
                     "--compat-profile",
-                    "terracotta-0.10.1",
+                    "terracotta",
                     "lambda-event",
                     "-d",
                     str(catalog),
