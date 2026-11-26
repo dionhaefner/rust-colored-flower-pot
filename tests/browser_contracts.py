@@ -667,19 +667,22 @@ def main() -> None:
                 )
                 assert public_version == "0.1.0"
                 checks.append("cross-origin-public-module-import")
-                denied = context.new_page()
-                denied.goto(denied_url, wait_until="domcontentloaded")
-                expect(denied.locator("#status")).to_contain_text("CORS")
-                denied_result = denied.evaluate(
+                denied_metadata = urllib.request.Request(
+                    listen_url + "/metadata/lagoon/2024-01-01/red",
+                    headers={"Origin": backend_url},
+                )
+                with urllib.request.urlopen(denied_metadata, timeout=5) as response:
+                    assert response.status == 200
+                    assert response.headers.get("Access-Control-Allow-Origin") is None
+                denied_result = page.evaluate(
                     """async ({service,profile}) => {
                     const {Client} = await import(new URL('sdk/index.js', location.href));
                     try { await new Client(service,{profile}).metadata(['lagoon','2024-01-01','red']); return false; }
-                    catch(e) { return e.kind === 'network'; }
+                    catch(e) { return e.kind === 'network' && e.message.includes('CORS'); }
                 }""",
                     {"service": listen_url, "profile": profile},
                 )
                 assert denied_result
-                denied.close()
                 checks.append("real-browser-denied-origin")
 
                 def slow_metadata(route):
