@@ -236,7 +236,11 @@ def main() -> None:
                 "--no-proxy-server",
                 "--host-resolver-rules=MAP api.test 127.0.0.1",
                 "--unsafely-treat-insecure-origin-as-secure="
-                + ",".join(f"http://api.test:{port}" for port, _ in addresses.values()),
+                + ",".join(
+                    f"http://api.test:{port}"
+                    for pair in addresses.values()
+                    for port in pair
+                ),
             ],
         )
         for profile in ("native", "terracotta"):
@@ -654,7 +658,7 @@ def main() -> None:
                 checks.append("cors-json-post-preview-errors-profile-state-secrets")
                 expected_failures.append("/metadata/missing/date/band")
 
-                denied_url = legacy_url.replace("127.0.0.1", "localhost")
+                denied_url = f"http://api.test:{client_port}"
                 context.route(denied_url + "/**", lambda route: route.continue_())
                 context.route(listen_url + "/**", lambda route: route.continue_())
                 public_version = page.evaluate(
@@ -664,7 +668,7 @@ def main() -> None:
                 assert public_version == "0.1.0"
                 checks.append("cross-origin-public-module-import")
                 denied = context.new_page()
-                denied.goto(denied_url)
+                denied.goto(denied_url, wait_until="domcontentloaded")
                 expect(denied.locator("#status")).to_contain_text("CORS")
                 denied_result = denied.evaluate(
                     """async ({service,profile}) => {
