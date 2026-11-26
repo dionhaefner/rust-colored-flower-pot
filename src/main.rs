@@ -138,7 +138,7 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
         }
         [command, rest @ ..] if command == "layers" => rcfp_core::cli::layers_command(rest),
         [command, rest @ ..] if command == "ingest" => rcfp_core::cli::ingest_command(rest),
-        [command, rest @ ..] if command == "sample" => rcfp_core::diagnostics::sample_command(rest),
+        [command, rest @ ..] if command == "demo" => rcfp_core::diagnostics::demo_command(rest),
         [command] if command == "inspect-raster-worker" => rcfp_core::diagnostics::raster_worker(),
         [command, rest @ ..] if command == "optimize-rasters" => {
             rcfp_core::cli::optimize_command(rest)

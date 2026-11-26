@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>MapLibre SDK sample</title>
-    <link rel="stylesheet" href="/vendor/maplibre-gl.css" />
+    <link rel="stylesheet" href="../vendor/maplibre-gl.css" />
     <style>
       body {
         font-family: system-ui;
@@ -24,16 +24,15 @@
     <select id="dataset"></select>
     <p id="status" role="status">Loading…</p>
     <div id="map" aria-label="Raster map"></div>
-    <script src="/vendor/maplibre-gl.js"></script>
+    <script src="../vendor/maplibre-gl.js"></script>
     <script type="module">
-      import { Client, LatestRequest } from "/sdk/index.js";
+      import { LatestRequest } from "../sdk/index.js";
+      import { connectService, serviceUrl } from "../viewer-connection.js";
       import {
         mapLibreSource,
         mapLibreTileJSONSource,
-      } from "/sdk/integrations.js";
-      const client = new Client(document.body.dataset.service, {
-        profile: document.body.dataset.profile,
-      });
+      } from "../sdk/integrations.js";
+      let client;
       const map = new maplibregl.Map({
         container: "map",
         center: [0, 0],
@@ -110,7 +109,7 @@
         }
       }
       try {
-        await client.connect();
+        ({ client } = await connectService(serviceUrl()));
         if (client.profile === "native")
           ({ tilesets: layers } = await client.discoverTilesets());
         else ({ layers } = await client.discover());

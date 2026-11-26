@@ -5,12 +5,12 @@ const ROOT: &str = "Usage: rcfp [OPTIONS] COMMAND [ARGS]...
 Serve GeoTIFFs and raster catalogs as interactive maps.
 
 Get started:
-  rcfp sample -o sample
-  rcfp serve -d sample/map.sqlite
+  rcfp demo -o demo-data
+  rcfp serve -d demo-data/map.sqlite
   rcfp connect localhost:5000       # in a second terminal
 
 Map commands:
-  sample            Create an offline sample catalog, imagery and preview.
+  demo              Create a demo catalog, imagery and preview.
   serve             Start a tile API from a catalog, raster pattern or STAC.
   connect           Open the web viewer for a running tile server.
 
@@ -70,7 +70,7 @@ STAC selection options:
   --stac-max-staged-bytes N Bound verified raster staging bytes.
 
 Examples:
-  rcfp serve -d sample/map.sqlite
+  rcfp serve -d demo-data/map.sqlite
   rcfp serve -r 'imagery/{date}/{band}.tif' --rgb-key band
   rcfp --compat-profile terracotta serve -d catalog.sqlite --port 5001
 
@@ -79,26 +79,28 @@ Press Ctrl+C to stop the server and drain outstanding raster work.";
 
 const CONNECT: &str = "Usage: rcfp connect HOSTNAME [OPTIONS]
 
-Open the bundled web viewer for a running RCFP tile server.
-Choose datasets, render singleband/RGB/expressions, inspect pixels and share views.
-The viewer's map assets work offline. Raster access depends on the server.
+Open the static explorer for an RCFP or Terracotta tile server, then exit.
+Choose layers, build RGB composites and expressions, and inspect pixels.
+Local RCFP servers provide an offline explorer at /explore/.
 
 Arguments:
   HOSTNAME                  Server host:port or HTTP(S) URL, including a prefix.
 
 Options:
-  --port PORT               Local viewer port. Default: first free 5100-5199.
+  --port PORT               Keep a viewer running on this loopback port.
   --no-browser              Print the viewer URL without opening a browser.
   --source-revision TEXT    Revision used in share links. Default: unversioned.
   -h, --help                Show this help and exit.
 
+Set RCFP_VIEWER_URL to use another static explorer URL.
+
 Examples:
   rcfp connect localhost:5000
-  rcfp connect https://maps.example.com/imagery --no-browser --port 5100
+  rcfp connect https://maps.example.com/imagery --no-browser
 
-Leave both the server and viewer running. Press Ctrl+C to stop the viewer.";
+Keep the tile server running while you explore.";
 
-const SAMPLE: &str = "Usage: rcfp sample -o DIRECTORY
+const DEMO: &str = "Usage: rcfp demo -o DIRECTORY
 
 Create a ready-to-serve map using bundled Sentinel-2 and WorldCover imagery.
 Writes five checksum-verified rasters, attribution, map.sqlite and map.png.
@@ -109,8 +111,8 @@ Options:
   -h, --help                       Show this help and exit.
 
 Example:
-  rcfp sample -o sample
-  rcfp serve -d sample/map.sqlite
+  rcfp demo -o demo-data
+  rcfp serve -d demo-data/map.sqlite
   rcfp connect localhost:5000       # in another terminal
 
 An existing directory is never overwritten.";
@@ -163,8 +165,8 @@ Options:
   -h, --help                Show this help and exit.
 
 Examples:
-  rcfp inspect --raster sample/data/red.tif --render-probe
-  rcfp inspect -d sample/map.sqlite --json
+  rcfp inspect --raster demo-data/data/red.tif --render-probe
+  rcfp inspect -d demo-data/map.sqlite --json
 
 Limits: 100 datasets, 256 bands/file, 10 seconds/file. HTTP probes allow
 5 seconds and 1024 body bytes, with no redirects.
@@ -191,7 +193,7 @@ Options:
   -h, --help                Show this help and exit.
 
 Examples:
-  rcfp optimize-rasters sample/data/red.tif -o optimized
+  rcfp optimize-rasters demo-data/data/red.tif -o optimized
   rcfp optimize-rasters 'classes/*.tif' -o optimized --resampling-method nearest
 
 Use nearest resampling for categories. --overwrite and --skip-existing conflict.";
@@ -217,7 +219,7 @@ Commands:
 
 Examples:
   rcfp layers create layers.sqlite
-  rcfp layers register layers.sqlite red sample/data/red.tif --stretch 0,3000
+  rcfp layers register layers.sqlite red demo-data/data/red.tif --stretch 0,3000
   rcfp layers render layers.sqlite red -o red.png
   rcfp layers put layers.sqlite mosaic < mosaic.json
 
@@ -269,7 +271,7 @@ pub fn show(args: &[String]) -> rcfp_core::Result<bool> {
         "--help" | "-h" => ROOT,
         "serve" => SERVE,
         "connect" => CONNECT,
-        "sample" => SAMPLE,
+        "demo" => DEMO,
         "ingest" => INGEST,
         "inspect" => INSPECT,
         "optimize-rasters" => OPTIMIZE,
@@ -291,7 +293,7 @@ pub fn show(args: &[String]) -> rcfp_core::Result<bool> {
         }
         "migrate" => MIGRATE,
         "lambda-event" => {
-            "Usage: rcfp lambda-event -d DATABASE --event FILE\n\nHandle one saved Lambda JSON event and print the response as JSON.\n\nOptions:\n  -d, --database, --source SOURCE  Required catalog or source definition.\n  --event FILE                    Required Lambda request JSON file.\n  -h, --help                       Show this help and exit.\n\nExample:\n  rcfp lambda-event -d sample/map.sqlite --event event.json"
+            "Usage: rcfp lambda-event -d DATABASE --event FILE\n\nHandle one saved Lambda JSON event and print the response as JSON.\n\nOptions:\n  -d, --database, --source SOURCE  Required catalog or source definition.\n  --event FILE                    Required Lambda request JSON file.\n  -h, --help                       Show this help and exit.\n\nExample:\n  rcfp lambda-event -d demo-data/map.sqlite --event event.json"
         }
         "lambda-runtime" => {
             "Usage: rcfp lambda-runtime\n\nRun the AWS Lambda Runtime API loop inside a Lambda execution environment.\n\nRequired environment:\n  TC_DRIVER_PATH          Catalog or source definition.\n  AWS_LAMBDA_RUNTIME_API  Runtime API address supplied by AWS.\n\nFor local event handling, use rcfp lambda-event --help."

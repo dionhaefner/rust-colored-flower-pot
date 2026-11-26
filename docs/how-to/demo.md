@@ -1,5 +1,33 @@
 # Deploy the public demo
 
+## Connect to a tile server
+
+Open the static explorer at `explore/` on the published documentation site and
+enter the base URL of an RCFP or Terracotta tile API. The URL can include a path
+prefix. With RCFP installed, pass the URL directly to the explorer:
+
+```sh
+rcfp connect https://maps.example.com/imagery
+```
+
+The browser requests catalog metadata and tiles directly from that API. The
+static site needs no application server or raster storage. The tile API must
+allow the viewer's origin for both metadata and tiles. The viewer supports the
+Terracotta 0.10 API and discovers native capabilities when an RCFP server
+advertises them. [Terracotta CORS configuration](https://terracotta-python.readthedocs.io/en/latest/settings.html#cross-origin-resource-sharing-cors)
+
+Use `RCFP_VIEWER_URL` to point `rcfp connect` to another copy of the explorer.
+To export it for static hosting, run:
+
+```sh
+python packaging/demo/export-viewer.py --out build/explore
+```
+
+For offline RCFP on loopback, `connect` opens the explorer from the running tile
+server. Use `--port 5100` when you need a loopback viewer for an API that allows
+loopback origins. Keep that process running for the duration of the session.
+Hosted browsers may require local network access permission for loopback APIs.
+
 ## Try the live demo
 
 The deployed [AWS Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
@@ -7,13 +35,13 @@ serves the sample Venice lagoon imagery. With RCFP installed, open its interacti
 viewer locally:
 
 ```sh
-rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/
+rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/ --port 5100
 ```
 
-Choose **lagoon / red**, then switch **Rendering** to **RGB**. This viewer uses
-the remote Lambda backend and needs network access. The browser frontend is
-served on your computer; the deployment instructions below also support
-publishing it alongside the documentation.
+Choose **lagoon / red** in **Layers**, then set **Display mode** to **RGB composite**.
+Open **Style** to adjust contrast and color correction. The Lambda API needs
+network access. The deployment instructions below also cover the static demo
+viewer published alongside the documentation.
 
 ## Deployment layout
 
@@ -119,7 +147,7 @@ gh workflow run docs.yml --ref main
 ```
 
 For an existing Pages site, use `--method PUT` to update its build type. The
-documentation workflow publishes the complete site, including `/demo/`, only
+documentation workflow publishes the complete site, including `/explore/` and `/demo/`, only
 from `main` when `PUBLISH_DOCS=true`. With no API URL configured, `/demo/` displays
 an availability message and deployment instructions. Changing the URL requires
 rebuilding the site. Keep the deployed backend and viewer revision compatible.

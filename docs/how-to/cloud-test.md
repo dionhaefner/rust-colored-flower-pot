@@ -123,8 +123,7 @@ image hashes and PNGs. Its default preview must match the independent pinned
 Terracotta reference. `--viewer-binary` starts the bundled viewer locally and
 uses Chromium to check first view, pan, zoom and revisit. Omitting it records the
 browser as unchecked. The API uses HTTP for this restricted temporary test.
-Open the viewer locally with `rcfp connect API_URL`, rather than through the
-HTTPS documentation site.
+Open the viewer locally with `rcfp connect API_URL --port 5100`.
 
 ## Use representative inputs
 

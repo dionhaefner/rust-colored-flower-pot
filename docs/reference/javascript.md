@@ -144,14 +144,20 @@ selection is currently stored on the server and has no browser time-filter route
 `inspect(render, { longitude, latitude, zoom }, { signal })` fetches and decodes
 the same displayed XYZ tile. Its result has `kind: 'display'`, `rgba`, `nodata`,
 `pixel` and `size`. `inspectImage(blob, [u, v])` samples normalized image
-coordinates. Transparency is reported as no displayed data. The viewer supports
-map clicks and a keyboard-accessible **Inspect map center** button.
+coordinates. Transparency is reported as no displayed data. In the viewer, turn
+on **Inspect** and click the map. With keyboard focus on the map, press Enter to
+inspect its center.
 
-These are display values after sampling, expressions, stretches and encoding. RGBA cannot recover accurate source samples. Raw values, units, expression
-analysis values and collection-aware nearest-observation queries need a dedicated
-server point-query contract. The SDK labels display inspection explicitly and
-provides no source-value estimate. Image decoding uses the browser's decoded
-RGBA values, including its alpha/color conversion.
+These are display values after sampling, expressions, stretches and encoding.
+RGBA cannot recover accurate source samples. Image decoding uses the browser's
+decoded RGBA values, including its alpha/color conversion.
+
+For native keyed layers, `point(keys, { longitude, latitude }, { signal })`
+requests a source sample from the server. The viewer shows this value when
+available for single-band rendering and labels the display RGBA separately.
+RGB composites, browser expressions, and the Terracotta profile use display
+inspection. See the [native point contract](native-services.md#inspect-source-values) for source
+sampling semantics and supported layers.
 
 ## Abort, errors and CORS
 

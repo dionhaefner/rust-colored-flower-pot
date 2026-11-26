@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 import numpy as np
 from PIL import Image
@@ -43,7 +44,7 @@ def main():
         for name in (
             "serve",
             "connect",
-            "sample",
+            "demo",
             "inspect",
             "ingest",
             "optimize-rasters",
@@ -86,6 +87,25 @@ def main():
     assert "Get started:" in command("--help").stdout
     checks.append("nested help and invalid commands")
 
+    result = command(
+        "connect",
+        "maps.example.invalid/imagery",
+        "--no-browser",
+        "--source-revision",
+        "r/2",
+    )
+    viewer = urlsplit(result.stdout.strip())
+    assert viewer.scheme == "https" and viewer.path.endswith("/explore/")
+    assert parse_qs(viewer.query) == {
+        "service": ["https://maps.example.invalid/imagery"],
+        "source-revision": ["r/2"],
+    }
+    command(
+        "connect", "https://maps.example.invalid/?token=private", "--no-browser", code=2
+    )
+    command("sample", "--help", code=2)
+    checks.append("hosted viewer launch without backend preflight")
+
     for imports in (
         "import hashlib; import rcfp; import ssl",
         "import ssl; import hashlib; import rcfp",
@@ -101,13 +121,15 @@ def main():
         )
     checks.append("hashlib/ssl/rcfp import orders")
 
-    result = command("sample", "-o", "sample")
-    assert "rcfp serve -d sample/map.sqlite" in result.stdout
+    result = command("demo", "-o", "demo-data")
+    assert "rcfp serve -d demo-data/map.sqlite" in result.stdout
     assert "rcfp connect localhost:5000" in result.stdout
-    manifest = json.loads((out / "sample/data/manifest.json").read_text())
+    manifest = json.loads((out / "demo-data/data/manifest.json").read_text())
     for row in manifest["fixtures"]:
         assert (
-            hashlib.sha256((out / "sample/data" / row["file"]).read_bytes()).hexdigest()
+            hashlib.sha256(
+                (out / "demo-data/data" / row["file"]).read_bytes()
+            ).hexdigest()
             == row["sha256"]
         )
     golden = ROOT / "tests/fixtures/demo/preview.png"
@@ -117,14 +139,15 @@ def main():
         == golden_manifest["preview_sha256"]
     )
     assert np.array_equal(
-        np.asarray(Image.open(out / "sample/map.png").convert("RGBA")),
+        np.asarray(Image.open(out / "demo-data/map.png").convert("RGBA")),
         np.asarray(Image.open(golden).convert("RGBA")),
     ), "sample preview differs from pinned independent Terracotta pixels"
-    command("inspect", "-d", "sample/map.sqlite", "--json")
-    before = hashlib.sha256((out / "sample/map.sqlite").read_bytes()).hexdigest()
-    command("sample", "-o", "sample", code=2)
+    command("inspect", "-d", "demo-data/map.sqlite", "--json")
+    before = hashlib.sha256((out / "demo-data/map.sqlite").read_bytes()).hexdigest()
+    command("demo", "-o", "demo-data", code=2)
     assert (
-        hashlib.sha256((out / "sample/map.sqlite").read_bytes()).hexdigest() == before
+        hashlib.sha256((out / "demo-data/map.sqlite").read_bytes()).hexdigest()
+        == before
     )
     checks.append("checksum-pinned ready-to-serve sample and independent preview")
     (out / "report.json").write_text(

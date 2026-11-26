@@ -327,19 +327,18 @@ def main():
                     lambda response: responses.append((response.url, response.status)),
                 )
                 page.goto(origin + "/project/demo/", wait_until="networkidle")
-                expect(page.locator("header")).to_contain_text(
+                expect(page.locator(".leaflet-control-attribution")).to_contain_text(
                     "Contains modified Copernicus Sentinel data 2021"
                 )
-                expect(page.locator("#dataset option")).to_have_count(4)
+                expect(page.locator(".layer-row")).to_have_count(4)
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                 page.select_option("#mode", "rgb")
-                page.click('button[type="submit"]')
                 page.wait_for_function(
-                    "document.querySelector('#status').textContent.startsWith('native:')"
+                    "document.querySelector('#workspace').getAttribute('aria-busy') === 'false'"
                 )
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
-                page.click("#share")
-                expect(page.locator("#share-link")).not_to_have_value("")
+                expect(page.locator("#share")).to_be_hidden()
+                expect(page.get_by_label("Basemap")).to_have_value("land")
                 page.goto(
                     origin + "/project/demo/examples/leaflet.html",
                     wait_until="networkidle",
@@ -349,7 +348,7 @@ def main():
                 page.screenshot(path=str(out / "viewer.png"))
             finally:
                 browser.close()
-        checks.append("pages-project-path-viewer-rgb-share-sdk-example")
+        checks.append("pages-project-path-viewer-rgb-basemap-sdk-example")
         (out / "report.json").write_text(
             json.dumps(
                 {

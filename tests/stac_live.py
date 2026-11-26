@@ -13,7 +13,6 @@ import hashlib
 import io
 import json
 import os
-import re
 import socket
 import subprocess
 import time
@@ -30,6 +29,7 @@ from native_rendering import bounds_for_tile, expected
 from navigation_benchmark import tile
 from PIL import Image
 from rasterio.enums import Resampling
+from viewer_helpers import select_layer, view_link
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "tests/fixtures/stac-live.json"
@@ -146,16 +146,14 @@ def compare(png, source, bounds, band, display_range, destination):
 def browse(binary, base, folder, ids):
     from playwright.sync_api import expect, sync_playwright
 
-    client = "http://127.0.0.1:" + available_port()
-    with (
-        process(
-            binary,
-            ["connect", base, "--no-browser", "--port", client.rsplit(":", 1)[1]],
-            client,
-            folder / "client.log",
-        ),
-        sync_playwright() as playwright,
-    ):
+    client = subprocess.run(
+        [str(binary), "connect", base, "--no-browser"],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    ).stdout.strip()
+    with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True, args=["--no-sandbox"])
         try:
             context = browser.new_context(viewport={"width": 1440, "height": 1000})
@@ -174,29 +172,43 @@ def browse(binary, base, folder, ids):
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(client)
-            expect(page.locator("#dataset option")).to_have_count(len(ids))
+            expect(page.locator(".layer-row")).to_have_count(len(ids))
             for index, item_id in enumerate(ids):
-                page.get_by_label("Dataset", exact=True).select_option(index=index)
+                select_layer(page, index=index)
                 expect(page.locator("#metadata")).to_contain_text(item_id)
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
-                page.get_by_role("button", name="Create share link").click()
-                expect(page.locator("#share-link")).to_have_value(
-                    re.compile(".*" + re.escape(item_id) + ".*")
+                expect(page.locator("#share")).to_be_hidden()
+                keys = json.loads(
+                    page.locator(".layer-row[aria-pressed=true]").get_attribute(
+                        "data-layer-id"
+                    )
                 )
-                page.evaluate(
-                    """async (base) => {
-                        const {restoreState, createState, encodeState} = await import('/sdk/index.js');
-                        const state = await restoreState(location.hash, {baseUrl: base, profile: 'native', sourceRevision: document.getElementById('source-revision').value});
-                        const updated = await createState({...state, view: {center: [12.35,45.45], zoom: 13}});
-                        document.getElementById('share-link').value = location.origin + '/' + encodeState(updated);
-                    }""",
-                    base,
+                page.goto(
+                    view_link(
+                        page,
+                        {
+                            "mode": "singleband",
+                            "keys": keys,
+                            "params": {
+                                "stretch_range": [
+                                    float(page.locator(f"#{name}").input_value())
+                                    for name in ("minimum", "maximum")
+                                ],
+                            },
+                        },
+                        center=[12.35, 45.45],
+                        zoom=13,
+                    )
                 )
-                page.get_by_role("button", name="Restore share link").click()
-                expect(page.locator("#status")).to_contain_text("native:")
+                expect(page.locator("#workspace")).to_have_attribute(
+                    "aria-busy", "false"
+                )
                 expect(page.locator("#metadata")).to_contain_text(item_id)
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
-                page.get_by_role("button", name="Inspect map center").click()
+                inspect = page.get_by_role("button", name="Inspect", exact=True)
+                if inspect.get_attribute("aria-pressed") == "false":
+                    inspect.click()
+                page.locator("#map").press("Enter")
                 expect(page.locator("#inspection")).to_contain_text("Display RGBA:")
                 page.screenshot(path=str(folder / f"observation-{index}.png"))
             assert not external and not errors, (external, errors)

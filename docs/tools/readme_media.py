@@ -93,24 +93,22 @@ def main():
         )
         return result.stdout
 
-    run([binary, "sample", "-o", "sample"], "rcfp sample -o sample")
-    manifest = json.loads((work / "sample/data/manifest.json").read_text())
+    run([binary, "demo", "-o", "demo-data"], "rcfp demo -o demo-data")
+    manifest = json.loads((work / "demo-data/data/manifest.json").read_text())
     for row in manifest["fixtures"]:
         actual = hashlib.sha256(
-            (work / "sample/data" / row["file"]).read_bytes()
+            (work / "demo-data/data" / row["file"]).read_bytes()
         ).hexdigest()
         assert actual == row["sha256"], row["file"]
-    backend_port, client_port = port(), port()
+    backend_port = port()
     service = f"http://127.0.0.1:{backend_port}"
-    viewer = f"http://127.0.0.1:{client_port}"
+    viewer = service + "/explore/"
     frames, durations, stages, responses, errors, external = [], [], [], [], [], []
     processes = []
     with (work / "services.log").open("w") as log:
         try:
             environment = {
                 **os.environ,
-                "TC_ALLOWED_ORIGINS_METADATA": json.dumps([viewer]),
-                "TC_ALLOWED_ORIGINS_TILES": json.dumps([viewer]),
                 "TC_RASTER_QUEUE_CAPACITY": "64",
             }
             backend = subprocess.Popen(
@@ -118,7 +116,7 @@ def main():
                     binary,
                     "serve",
                     "-d",
-                    "sample/map.sqlite",
+                    "demo-data/map.sqlite",
                     "--bind",
                     f"127.0.0.1:{backend_port}",
                 ],
@@ -129,21 +127,13 @@ def main():
             )
             processes.append(backend)
             ready(service + "/keys", backend)
-            client = subprocess.Popen(
-                [
-                    binary,
-                    "connect",
-                    service,
-                    "--port",
-                    str(client_port),
-                    "--no-browser",
-                ],
-                cwd=work,
-                stdout=log,
-                stderr=log,
+            assert (
+                run(
+                    [binary, "connect", service, "--no-browser"],
+                    "rcfp connect localhost:5000",
+                ).strip()
+                == viewer
             )
-            processes.append(client)
-            ready(viewer, client)
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(
                     headless=True, args=["--no-sandbox"]
@@ -169,27 +159,25 @@ def main():
                     ),
                 )
                 page.goto(viewer)
-                page.get_by_label("Dataset", exact=True).select_option(
-                    '["lagoon","red"]'
-                )
+                page.get_by_role("button", name="lagoon / red", exact=True).click()
                 expect(page.locator("#status")).to_contain_text("lagoon / red")
-                page.get_by_label("Rendering", exact=True).select_option("rgb")
+                page.get_by_label("Display mode", exact=True).select_option("rgb")
                 for label, band in (
                     ("Red", "red"),
                     ("Green", "green"),
                     ("Blue", "blue"),
                 ):
                     page.get_by_label(label, exact=True).select_option(band)
-                page.get_by_role("button", name="Apply rendering").click()
+                page.get_by_role("tab", name="Style", exact=True).click()
                 page.wait_for_load_state("networkidle")
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                 page.get_by_role("button", name="Zoom in", exact=True).click()
                 page.wait_for_load_state("networkidle")
 
                 def capture(label, duration=140):
-                    screenshot = Image.open(
-                        io.BytesIO(page.locator("#map").screenshot())
-                    ).convert("RGB")
+                    screenshot = Image.open(io.BytesIO(page.screenshot())).convert(
+                        "RGB"
+                    )
                     screenshot = screenshot.resize(
                         (WIDTH, 546), Image.Resampling.LANCZOS
                     )
@@ -226,9 +214,7 @@ def main():
                     durations.append(duration)
 
                 def settled(label):
-                    expect(page.locator("#status")).to_contain_text(
-                        "native: lagoon / red"
-                    )
+                    expect(page.locator("#status")).to_contain_text("lagoon / red")
                     page.wait_for_load_state("networkidle")
                     page.wait_for_timeout(350)
                     assert "failed" not in page.locator("#status").inner_text().lower()
@@ -250,17 +236,13 @@ def main():
                     capture("03 / Pan across the lagoon")
                 page.mouse.up()
                 settled("03 / Pan across the lagoon")
-                page.get_by_label("Rendering", exact=True).select_option("singleband")
-                page.get_by_label("Colormap", exact=True).select_option("viridis")
-                page.get_by_label("Rendering", exact=True).select_option("compute")
-                page.get_by_label("v1", exact=True).select_option("nir")
-                page.get_by_label("v2", exact=True).select_option("red")
-                page.get_by_label("Expression", exact=True).fill(
-                    "(1.0*v1-1.0*v2)/(1.0*v1+1.0*v2)"
-                )
-                page.get_by_label("Stretch minimum").fill("-1")
-                page.get_by_label("Stretch maximum").fill("1")
-                page.get_by_role("button", name="Apply rendering").click()
+                page.get_by_role("tab", name="Layers", exact=False).click()
+                page.get_by_label("Display mode", exact=True).select_option("compute")
+                page.get_by_role("button", name="Insert NDVI").click()
+                page.get_by_role("button", name="Apply expression").click()
+                expect(page.locator("#header-layer")).to_contain_text("Expression")
+                page.get_by_role("tab", name="Style", exact=True).click()
+                page.get_by_label("Color palette", exact=True).select_option("viridis")
                 settled("04 / NDVI / (nir − red) / (nir + red)")
                 page.get_by_role("button", name="Zoom out", exact=True).click()
                 for _ in range(5):

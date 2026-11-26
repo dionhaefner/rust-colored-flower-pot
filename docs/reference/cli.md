@@ -26,18 +26,21 @@ from Terracotta's Click definitions.
 catalog from matching rasters. `--rgb-key KEY` controls the final selection key.
 Native `--bind HOST:PORT` defaults to local serving. `--port PORT` uses a local
 address. `--debug` adds diagnostics. `--profile` emits request timing JSON.
-`connect HOSTNAME --no-browser --port PORT` starts the bundled client without
-launching a browser, useful for a remote shell or controlled deployment.
+`connect HOSTNAME` opens the static explorer for an RCFP or Terracotta API and
+exits. A local RCFP server also serves an offline copy at `/explore/`. Use
+`--no-browser` to print the selected URL or `--port PORT` to keep a loopback
+viewer running. See [Connect to a tile server](../how-to/demo.md#connect-to-a-tile-server)
+for deployment and CORS settings.
 
-### Inspect and supplied samples
+### Inspect and create demo data
 
-`sample -o NEW_DIRECTORY` writes checksum-pinned imagery, attribution, a ready-to-serve
+`demo -o NEW_DIRECTORY` writes checksum-pinned imagery, attribution, a ready-to-serve
 `map.sqlite` catalog and `map.png` preview for [offline first use](../tutorials/first-map.md).
 `inspect` reports configuration, local raster/catalog checks and an optional
 ingestion destination. See [diagnostics](../how-to/diagnostics.md) for its
 JSON/exit-status contract and explicit probe limits.
 
-```{literalinclude} ../_generated/cli-native-sample.txt
+```{literalinclude} ../_generated/cli-native-demo.txt
 :language: text
 ```
 

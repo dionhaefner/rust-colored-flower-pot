@@ -959,24 +959,24 @@ fn emit(report: &Value, json_output: bool) {
     }
 }
 
-pub fn sample_command(args: &[String]) -> Result<()> {
+pub fn demo_command(args: &[String]) -> Result<()> {
     if args == ["--help"] || args == ["-h"] {
         println!(
-            "Usage: rcfp sample -o NEW_DIRECTORY\nWrite checksum-pinned Sentinel-2 and WorldCover samples and attribution for offline first use. Refuses to replace an existing directory."
+            "Usage: rcfp demo -o NEW_DIRECTORY\nWrite checksum-pinned Sentinel-2 and WorldCover samples and attribution for offline first use. Refuses to replace an existing directory."
         );
         return Ok(());
     }
     let [option, path] = args else {
-        return Err("sample requires -o NEW_DIRECTORY; use sample --help".into());
+        return Err("demo requires -o NEW_DIRECTORY; use demo --help".into());
     };
     if option != "-o" && option != "--output-directory" {
-        return Err("sample requires -o NEW_DIRECTORY".into());
+        return Err("demo requires -o NEW_DIRECTORY".into());
     }
     let path = Path::new(path);
     std::fs::create_dir(path)
-        .map_err(|_| "choose a new sample directory in an existing writable parent")?;
+        .map_err(|_| "choose a new demo directory in an existing writable parent")?;
     let data = path.join("data");
-    std::fs::create_dir(&data).map_err(|_| "could not create sample data directory")?;
+    std::fs::create_dir(&data).map_err(|_| "could not create demo data directory")?;
     let manifest = include_str!("../docs/examples/data/manifest.json");
     let parsed: Value = serde_json::from_str(manifest).map_err(|_| "invalid sample manifest")?;
     use sha2::Digest;

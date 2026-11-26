@@ -568,6 +568,35 @@ impl Application {
         let (raw_path, query) = url.split_once('?').unwrap_or((url, ""));
         // Decode each key after splitting the route so encoded slashes stay in their component.
         let path = raw_path;
+        if let Some(asset) = path
+            .strip_prefix("/explore")
+            .filter(|asset| asset.is_empty() || asset.starts_with('/'))
+        {
+            if ![Method::Get, Method::Head].contains(method) {
+                let mut response = html_error(405);
+                response.headers.insert("Allow".into(), "GET, HEAD".into());
+                return response;
+            }
+            if !asset.is_empty() {
+                let profile = crate::compatibility::CompatibilityProfile::current().name();
+                return crate::client::viewer_asset(asset, "", profile, None).map_or_else(
+                    || html_error(404),
+                    |(data, mime)| {
+                        let mut response = bytes_response(mime, data);
+                        if asset == "/" {
+                            response.headers.insert("X-RCFP-Viewer".into(), "1".into());
+                        }
+                        response
+                    },
+                );
+            }
+            let mut response = bytes_response("text/plain; charset=utf-8", Vec::new());
+            response.status = 308;
+            response
+                .headers
+                .insert("Location".into(), "explore/".into());
+            return response;
+        }
         let mut parameters = parse_query(query);
         if !crate::compatibility::CompatibilityProfile::current().is_terracotta()
             && (render_route(path) || path.ends_with("/render.png"))

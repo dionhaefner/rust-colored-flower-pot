@@ -5,7 +5,7 @@ Run each Python block with `python` from the same writable directory. Create the
 sample once; use new catalog paths when repeating an example:
 
 ```sh
-rcfp sample -o sample
+rcfp demo -o demo-data
 ```
 
 ## Logical bands and expressions
@@ -19,7 +19,7 @@ import rcfp
 store = rcfp.DataStore("vegetation.sqlite")
 store.create(["scene", "band"], format="native")
 for band in ("red", "nir"):
-    store.insert(["lagoon", band], f"sample/data/{band}.tif", values="scaled")
+    store.insert(["lagoon", band], f"demo-data/data/{band}.tif", values="scaled")
 store.define(["lagoon", "ndvi"], "(nir-red)/(nir+red)",
              {"nir": ["lagoon", "nir"], "red": ["lagoon", "red"]},
              stretch=[-1, 1], colormap="viridis")
@@ -40,7 +40,7 @@ from pathlib import Path
 import json
 import rcfp
 
-app = rcfp.NativeApplication("sample/data/lagoon-stac.json")
+app = rcfp.NativeApplication("demo-data/data/lagoon-stac.json")
 status, _, body, _, _ = app.request("GET", "/datasets")
 assert status == 200
 print(json.loads(body))
@@ -52,7 +52,7 @@ del app
 ```
 
 Open `stac.png`. To browse it, run
-`rcfp serve --stac-item sample/data/lagoon-stac.json`, then connect the viewer.
+`rcfp serve --stac-item demo-data/data/lagoon-stac.json`, then connect the viewer.
 [STAC guidance](../how-to/stac.md) covers static catalogs and API searches.
 Direct STAC sources verify and stage the whole TIFF on first use.
 
@@ -70,7 +70,7 @@ store = rcfp.LayerStore("mosaic.sqlite")
 store.create()
 store.put("lagoon", {
     "observations": [{"id": band, "assets": {"value": {
-        "location": str(Path(f"sample/data/{band}.tif").resolve())}}}
+        "location": str(Path(f"demo-data/data/{band}.tif").resolve())}}}
         for band in ("red", "green")],
     "overlap": "first_valid",
     "mosaic": {"max_sources": 2, "max_reads": 2,
@@ -109,7 +109,7 @@ import rcfp
 store = rcfp.LayerStore("models.sqlite")
 store.create()
 store.put("satellite", {"observations": [{"id": "lagoon", "assets": {
-    band: {"location": str(Path(f"sample/data/{band}.tif").resolve())}
+    band: {"location": str(Path(f"demo-data/data/{band}.tif").resolve())}
     for band in ("red", "nir")}}], "overlap": "first_valid"})
 
 def ndvi(values, valid, context):
@@ -138,17 +138,17 @@ load Python functions.
 
 ## Browser SDK
 
-Start the sample server and the bundled viewer in separate terminals:
+Start the tile server and open the bundled viewer from a second terminal:
 
 ```sh
-rcfp serve -d sample/map.sqlite
+rcfp serve -d demo-data/map.sqlite
 ```
 
 ```sh
-rcfp connect localhost:5000 --port 5100
+rcfp connect localhost:5000
 ```
 
-Open <http://127.0.0.1:5100/examples/leaflet.html> and select **lagoon / red**.
+Open <http://127.0.0.1:5000/explore/examples/leaflet.html> and select **lagoon / red**.
 The page's module imports `Client` and `leafletTileJSON` from the SDK served
 beside it. Its complete HTML is available through the browser's **View source**.
 Replace the URL's filename with `maplibre.html` or `openlayers.html` to try those
@@ -165,7 +165,7 @@ from pathlib import Path
 import rcfp
 
 url = "/singleband/lagoon/red/preview.png"
-app = rcfp.NativeApplication("sample/map.sqlite")
+app = rcfp.NativeApplication("demo-data/map.sqlite")
 status, _, image, _, headers = app.request("GET", url)
 assert status == 200
 status, _, body, _, _ = app.request("GET", url, {"If-None-Match": headers["ETag"]})
@@ -189,14 +189,14 @@ Set worker, queue and cache budgets, then inspect the effective configuration:
 
 ```sh
 TC_RASTER_WORKERS=2 TC_RASTER_QUEUE_CAPACITY=8 TC_RENDER_CACHE_BYTES=4194304 \
-  rcfp inspect -d sample/map.sqlite --json
+  rcfp inspect -d demo-data/map.sqlite --json
 ```
 
 Use the same settings to serve the map:
 
 ```sh
 TC_RASTER_WORKERS=2 TC_RASTER_QUEUE_CAPACITY=8 TC_RENDER_CACHE_BYTES=4194304 \
-  rcfp serve -d sample/map.sqlite
+  rcfp serve -d demo-data/map.sqlite
 ```
 
 Connect the viewer from another terminal. Stop the processes with Ctrl+C before

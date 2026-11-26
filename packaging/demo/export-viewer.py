@@ -11,9 +11,11 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def export(out: Path, api_url: str = "", revision: str = "unversioned") -> None:
+def export(
+    out: Path, api_url: str | None = None, revision: str = "unversioned"
+) -> None:
     out.mkdir(parents=True, exist_ok=True)
-    if not api_url:
+    if api_url == "":
         (out / "index.html").write_text(
             '<!doctype html><html lang="en"><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -22,17 +24,20 @@ def export(out: Path, api_url: str = "", revision: str = "unversioned") -> None:
             '<p><a href="../how-to/demo.html">Deployment instructions</a></p></html>\n'
         )
         return
-    url = urlsplit(api_url)
-    if (
-        url.scheme not in ("https", "http")
-        or not url.hostname
-        or (url.scheme == "http" and url.hostname != "127.0.0.1")
-        or url.username
-        or url.password
-        or url.query
-        or url.fragment
-    ):
-        raise ValueError("API URL must be HTTPS without credentials, query or fragment")
+    if api_url is not None:
+        url = urlsplit(api_url)
+        if (
+            url.scheme not in ("https", "http")
+            or not url.hostname
+            or (url.scheme == "http" and url.hostname != "127.0.0.1")
+            or url.username
+            or url.password
+            or url.query
+            or url.fragment
+        ):
+            raise ValueError(
+                "API URL must be HTTPS without credentials, query or fragment"
+            )
     client = ROOT / "src/assets/client"
     for folder in ("vendor", "examples"):
         shutil.copytree(client / folder, out / folder, dirs_exist_ok=True)
@@ -40,23 +45,27 @@ def export(out: Path, api_url: str = "", revision: str = "unversioned") -> None:
     shutil.copy2(
         ROOT / "packaging/licenses/CLIENT-LICENSE.txt", out / "CLIENT-LICENSE.txt"
     )
-    for name in ("viewer.js", "viewer.css"):
+    for name in (
+        "viewer.js",
+        "viewer.css",
+        "viewer-connection.js",
+        "natural-earth-land.geojson",
+    ):
         shutil.copy2(client / name, out / name)
     shutil.copy2(client / "templates/index.html", out / "index.html")
-    for path in [out / "index.html", out / "viewer.js", *out.glob("examples/*.html")]:
-        prefix = "../" if path.parent.name == "examples" else "./"
-        text = path.read_text()
-        for folder in ("vendor/", "sdk/", "examples/", "viewer."):
-            text = text.replace(f'"/{folder}', f'"{prefix}{folder}')
+    for path in [out / "index.html", *out.glob("examples/*.html")]:
         text = (
-            text.replace("{{ hostname }}", html.escape(api_url.rstrip("/"), quote=True))
-            .replace("{{ profile }}", "native")
+            path.read_text()
+            .replace(
+                "{{ hostname }}", html.escape((api_url or "").rstrip("/"), quote=True)
+            )
+            .replace("{{ profile }}", "native" if api_url else "")
             .replace("{{ source_revision }}", html.escape(revision, quote=True))
         )
-        if path.name == "index.html":
+        if api_url and path.name == "index.html":
             text = text.replace(
-                "Explore your rasters with the bundled offline map.",
-                "Contains modified Copernicus Sentinel data 2021",
+                'data-attribution=""',
+                'data-attribution="Contains modified Copernicus Sentinel data 2021"',
             )
         path.write_text(text)
 
@@ -64,7 +73,7 @@ def export(out: Path, api_url: str = "", revision: str = "unversioned") -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--api-url", default="")
+    parser.add_argument("--api-url")
     parser.add_argument("--revision", default="unversioned")
     args = parser.parse_args()
     export(args.out, args.api_url, args.revision)

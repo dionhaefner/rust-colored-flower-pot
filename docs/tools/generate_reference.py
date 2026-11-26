@@ -149,7 +149,7 @@ def snapshots():
             "serve",
             "ingest",
             "inspect",
-            "sample",
+            "demo",
             "optimize-rasters",
             "connect",
             "migrate",

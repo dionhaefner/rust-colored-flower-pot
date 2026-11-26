@@ -1,6 +1,14 @@
 // Bundled browser assets and MIME types.
 pub fn asset(path: &str) -> Option<(&'static [u8], &'static str)> {
     match path {
+        "/" => Some((
+            include_bytes!("assets/client/templates/index.html"),
+            "text/html; charset=utf-8",
+        )),
+        "/natural-earth-land.geojson" => Some((
+            include_bytes!("assets/client/natural-earth-land.geojson"),
+            "application/geo+json",
+        )),
         "/examples/leaflet.html" => Some((
             include_bytes!("assets/client/examples/leaflet.html"),
             "text/html; charset=utf-8",
@@ -65,6 +73,10 @@ pub fn asset(path: &str) -> Option<(&'static [u8], &'static str)> {
         )),
         "/viewer.css" => Some((include_bytes!("assets/client/viewer.css"), "text/css")),
         "/viewer.js" => Some((include_bytes!("assets/client/viewer.js"), "text/javascript")),
+        "/viewer-connection.js" => Some((
+            include_bytes!("assets/client/viewer-connection.js"),
+            "text/javascript",
+        )),
         _ => None,
     }
 }

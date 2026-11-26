@@ -22,6 +22,7 @@ from urllib.request import urlopen
 import numpy as np
 import rasterio
 from PIL import Image
+from viewer_helpers import select_layer, settled
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,7 +60,7 @@ def main():
         )
 
     sample = out / "sample"
-    exported = command("sample", "-o", sample)
+    exported = command("demo", "-o", sample)
     assert exported.returncode == 0, exported.stderr
     red = sample / "data/red.tif"
     database = out / "map.sqlite"
@@ -135,7 +136,7 @@ def main():
                 (ROOT / "docs/examples/data/manifest.json").read_bytes(),
             )
             before = digest(red)
-            result = command("sample", "-o", sample)
+            result = command("demo", "-o", sample)
             self.assertEqual(result.returncode, 2)
             self.assertEqual(digest(red), before)
 
@@ -541,21 +542,27 @@ def trial(binary, out, env, browser, command):
         assert result.returncode == 0, result.stderr + result.stdout
         return result
 
-    step("create sample catalog and preview", lambda: run("sample", "-o", "sample"))
+    step(
+        "create sample catalog and preview",
+        lambda: run("demo", "-o", "demo-data"),
+    )
     report = json.loads(
         run(
-            "inspect", "--raster", "sample/data/red.tif", "--render-probe", "--json"
+            "inspect", "--raster", "demo-data/data/red.tif", "--render-probe", "--json"
         ).stdout
     )
     steps.append({"step": "inspect imagery", "issues": report["issues"]})
 
-    step("inspect catalog", lambda: run("inspect", "-d", "sample/map.sqlite", "--json"))
+    step(
+        "inspect catalog",
+        lambda: run("inspect", "-d", "demo-data/map.sqlite", "--json"),
+    )
     golden = ROOT / "tests/fixtures/demo/preview.png"
     manifest = json.loads((ROOT / "tests/fixtures/demo/manifest.json").read_text())
     assert digest(golden) == manifest["preview_sha256"]
     expected = np.asarray(Image.open(golden).convert("RGBA"))
     assert np.array_equal(
-        np.asarray(Image.open(folder / "sample/map.png").convert("RGBA")), expected
+        np.asarray(Image.open(folder / "demo-data/map.png").convert("RGBA")), expected
     )
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -563,7 +570,7 @@ def trial(binary, out, env, browser, command):
     url = f"http://127.0.0.1:{port}"
     log = (folder / "server.log").open("w")
     server = subprocess.Popen(
-        [str(binary), "serve", "-d", "sample/map.sqlite", "--port", str(port)],
+        [str(binary), "serve", "-d", "demo-data/map.sqlite", "--port", str(port)],
         cwd=folder,
         env=env,
         stdout=log,
@@ -598,119 +605,85 @@ def trial(binary, out, env, browser, command):
         if browser:
             from playwright.sync_api import expect, sync_playwright
 
-            with socket.socket() as listener:
-                listener.bind(("127.0.0.1", 0))
-                client_port = listener.getsockname()[1]
-            client_url = f"http://127.0.0.1:{client_port}"
-            client = subprocess.Popen(
-                [
-                    str(binary),
-                    "connect",
-                    f"127.0.0.1:{port}",
-                    "--no-browser",
-                    "--port",
-                    str(client_port),
-                ],
-                cwd=folder,
-                env=env,
-                stdout=log,
-                stderr=log,
-            )
-            try:
-                with sync_playwright() as playwright:
-                    chromium = playwright.chromium.launch(
-                        headless=True, args=["--no-sandbox"]
-                    )
-                    page = chromium.new_page(viewport={"width": 1440, "height": 1000})
-                    external = []
+            client_url = run("connect", url, "--no-browser").stdout.strip()
+            assert client_url == url + "/explore/"
+            with sync_playwright() as playwright:
+                chromium = playwright.chromium.launch(
+                    headless=True, args=["--no-sandbox"]
+                )
+                page = chromium.new_page(viewport={"width": 1440, "height": 1000})
+                external = []
 
-                    def route(request):
-                        if request.request.url.startswith(
-                            (url, client_url, "data:", "blob:")
-                        ):
-                            request.continue_()
-                        else:
-                            external.append(request.request.url)
-                            request.abort()
+                def route(request):
+                    if request.request.url.startswith(
+                        (url, client_url, "data:", "blob:")
+                    ):
+                        request.continue_()
+                    else:
+                        external.append(request.request.url)
+                        request.abort()
 
-                    page.route("**/*", route)
-                    page.on(
-                        "request",
-                        lambda request: (
-                            external.append(request.url)
-                            if request.url.startswith(("http://", "https://"))
-                            and not request.url.startswith((url, client_url))
-                            else None
-                        ),
-                    )
-                    deadline = time.monotonic() + 10
-                    while True:
-                        try:
-                            urlopen(client_url, timeout=1).close()
-                            break
-                        except OSError:
-                            assert time.monotonic() < deadline
-                            time.sleep(0.05)
-                    page.goto(client_url)
-                    page.get_by_label("Dataset", exact=True).select_option(
-                        '["lagoon","red"]'
-                    )
-                    expect(page.locator("#status")).to_contain_text("lagoon / red")
-                    expect(page.locator(".leaflet-tile-loaded").first).to_be_visible(
-                        timeout=15000
-                    )
-                    page.screenshot(path=str(folder / "map.png.browser.png"))
-                    failures = []
-                    page.on(
-                        "response",
-                        lambda response: (
-                            failures.append(
-                                {"url": response.url, "status": response.status}
-                            )
-                            if "/rgb/" in response.url and response.status != 200
-                            else None
-                        ),
-                    )
-                    page.get_by_label("Rendering", exact=True).select_option("rgb")
-                    page.get_by_role("button", name="Apply rendering").click()
-                    expect(page.locator("#status")).to_contain_text("lagoon / red")
-                    page.get_by_role("button", name="Create share link").click()
-                    expect(page.locator("#share-link")).not_to_have_value("")
-                    page.get_by_role("button", name="Restore share link").click()
-                    for name in ("Zoom in", "Zoom in", "Zoom out"):
-                        page.get_by_role("button", name=name, exact=True).click()
-                        # Leaflet's zoom animation completes before the new tile grid settles.
-                        page.wait_for_timeout(350)
-                        page.wait_for_function(
-                            """() => {
-                            const tiles = [...document.querySelectorAll('.leaflet-tile')];
-                            return tiles.length > 0 && tiles.every(tile =>
-                                tile.classList.contains('leaflet-tile-loaded') &&
-                                tile.naturalWidth > 0);
-                        }""",
-                            timeout=15000,
+                page.route("**/*", route)
+                page.on(
+                    "request",
+                    lambda request: (
+                        external.append(request.url)
+                        if request.url.startswith(("http://", "https://"))
+                        and not request.url.startswith((url, client_url))
+                        else None
+                    ),
+                )
+                page.goto(client_url)
+                select_layer(page, '["lagoon","red"]')
+                expect(page.locator("#status")).to_contain_text("lagoon / red")
+                expect(page.locator(".leaflet-tile-loaded").first).to_be_visible(
+                    timeout=15000
+                )
+                page.screenshot(path=str(folder / "map.png.browser.png"))
+                failures = []
+                page.on(
+                    "response",
+                    lambda response: (
+                        failures.append(
+                            {"url": response.url, "status": response.status}
                         )
-                    page.screenshot(path=str(folder / "map.rgb-zoom.png"))
-                    assert failures == [], failures
-                    steps.append(
-                        {
-                            "step": "RGB share restoration and zoom at default capacity",
-                            "failed_tiles": failures,
-                        }
+                        if "/rgb/" in response.url and response.status != 200
+                        else None
+                    ),
+                )
+                expect(page.get_by_role("button", name="Share view")).to_be_hidden()
+                page.get_by_label("Display mode", exact=True).select_option("rgb")
+                expect(page.locator("#header-layer")).to_contain_text("RGB")
+                settled(page)
+                for name in ("Zoom in", "Zoom in", "Zoom out"):
+                    page.get_by_role("button", name=name, exact=True).click()
+                    # Leaflet's zoom animation completes before the new tile grid settles.
+                    page.wait_for_timeout(350)
+                    page.wait_for_function(
+                        """() => {
+                        const tiles = [...document.querySelectorAll('.leaflet-tile')];
+                        return tiles.length > 0 && tiles.every(tile =>
+                            tile.classList.contains('leaflet-tile-loaded') &&
+                            tile.naturalWidth > 0);
+                    }""",
+                        timeout=15000,
                     )
-                    page.goto(url + "/apidoc")
-                    expect(page.locator("body")).to_contain_text(
-                        "RCFP raster tile service.", timeout=15000
-                    )
-                    page.wait_for_timeout(500)
-                    assert external == [], external
-                    chromium.close()
-                    steps.append(
-                        {"step": "offline Chromium map", "external_requests": 0}
-                    )
-            finally:
-                client.terminate()
-                client.wait(timeout=10)
+                page.screenshot(path=str(folder / "map.rgb-zoom.png"))
+                assert failures == [], failures
+                steps.append(
+                    {
+                        "step": "RGB navigation at default capacity",
+                        "failed_tiles": failures,
+                    }
+                )
+                page.goto(url + "/apidoc")
+                expect(page.locator("body")).to_contain_text(
+                    "RCFP raster tile service.", timeout=15000
+                )
+                page.wait_for_timeout(500)
+                assert external == [], external
+                chromium.close()
+                steps.append({"step": "offline Chromium map", "external_requests": 0})
     finally:
         server.terminate()
         server.wait(timeout=15)

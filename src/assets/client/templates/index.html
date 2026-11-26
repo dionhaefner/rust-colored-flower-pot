@@ -2,105 +2,559 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>RCFP raster viewer</title>
-    <link rel="stylesheet" href="/vendor/leaflet.css" />
-    <link rel="stylesheet" href="/viewer.css" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>RCFP explorer</title>
+    <link rel="stylesheet" href="./vendor/leaflet.css" />
+    <link rel="stylesheet" href="./viewer.css" />
   </head>
   <body
     data-service="{{ hostname }}"
     data-profile="{{ profile }}"
+    data-attribution=""
     data-source-revision="{{ source_revision }}"
   >
-    <header>
-      <h1>RCFP raster viewer</h1>
-      <p>Explore your rasters with the bundled offline map.</p>
+    <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-layers" viewBox="0 0 24 24">
+        <path d="m12 3 10 5-10 5L2 8Zm-9 10 9 5 9-5M3 18l9 5 9-5" />
+      </symbol>
+      <symbol id="i-style" viewBox="0 0 24 24">
+        <path d="M5 3v18M12 3v18M19 3v18M2 8h6m1 8h6m1-9h6" />
+      </symbol>
+      <symbol id="i-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6m0-10v1" />
+      </symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24">
+        <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8Z" />
+      </symbol>
+      <symbol id="i-share" viewBox="0 0 24 24">
+        <path d="M12 16V3m-5 5 5-5 5 5M5 13v8h14v-8" />
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="6" />
+        <path d="M12 1v5m0 12v5M1 12h5m12 0h5" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M6 18 18 6" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="10" cy="10" r="6" />
+        <path d="m15 15 6 6" />
+      </symbol>
+    </svg>
+    <header class="app-header">
+      <a class="brand" href="#" aria-label="RCFP explorer home"
+        ><span class="brand-mark" aria-hidden="true"
+          ><svg viewBox="0 0 512 512">
+            <g id="mark">
+              <path fill="#263438" d="M248 176h16v56h-16z" />
+              <path
+                fill="#287F7B"
+                d="M224 96h64v64h-64zM144 152h64v64h-64zM304 152h64v64h-64z"
+              />
+              <path fill="#943E30" d="M136 248h240v40H136z" />
+              <path fill="#C2543B" d="M160 304h192l-24 96H184z" />
+            </g></svg></span
+        ><strong class="brand-name">RCFP</strong></a
+      >
+      <span id="header-layer" class="header-layer">Connecting to catalog…</span>
+      <button id="change-server" class="button quiet" type="button" hidden>
+        Open server
+      </button>
+      <button id="share" class="button quiet" type="button" hidden disabled>
+        <svg><use href="#i-share" /></svg><span>Share view</span>
+      </button>
     </header>
     <main>
-      <aside aria-label="Raster controls">
-        <label for="dataset">Dataset</label
-        ><select id="dataset"></select>
-        <label for="time-key">Time key</label
-        ><select id="time-key">
-          <option value="">None</option>
-        </select>
-        <label for="time">Time</label
-        ><select id="time" disabled></select>
-        <form id="render-form">
-          <label for="mode">Rendering</label
-          ><select id="mode">
-            <option value="singleband">singleband</option>
-            <option value="rgb">rgb</option>
-            <option value="compute">expression</option>
-          </select>
-          <div id="single-controls">
-            <label for="colormap">Colormap</label
-            ><select id="colormap">
-              <option value="">grayscale</option>
-              <option>viridis</option>
-              <option>terrain</option>
-              <option>plasma</option>
-            </select>
-          </div>
-          <fieldset id="rgb-controls" hidden>
-            <legend>RGB bands</legend>
-            <label for="r">Red</label
-            ><select id="r"></select
-            ><label for="g">Green</label
-            ><select id="g"></select
-            ><label for="b">Blue</label
-            ><select id="b"></select>
-          </fieldset>
-          <fieldset id="expression-controls" hidden>
-            <legend>Expression bands</legend>
-            <label for="v1">v1</label
-            ><select id="v1"></select
-            ><label for="v2">v2</label
-            ><select id="v2"></select
-            ><label for="expression">Expression</label
-            ><input id="expression" value="(v1-v2)/(v1+v2)" />
-          </fieldset>
-          <label for="minimum">Stretch minimum</label
-          ><input id="minimum" type="number" value="0" step="any" required />
-          <label for="maximum">Stretch maximum</label
-          ><input id="maximum" type="number" value="3000" step="any" required />
-          <button type="submit">Apply rendering</button>
-        </form>
-        <button id="inspect" type="button">Inspect map center</button>
-        <p id="inspection" role="status">
-          Inspection reports display RGBA. Source values are unavailable.
-        </p>
-        <div id="legend" aria-label="Legend"></div>
-        <details>
-          <summary>Metadata</summary>
-          <pre id="metadata"></pre>
-        </details>
-        <label for="source-revision">Public source revision</label
-        ><input id="source-revision" value="{{ source_revision }}" readonly />
-        <button id="share" type="button">Create share link</button>
-        <label for="share-link">Share link</label><input id="share-link" />
-        <button id="restore" type="button">Restore share link</button>
-        <p id="status" role="status" aria-live="polite">Loading discovery…</p>
-        <nav aria-label="SDK examples">
-          <a href="/examples/leaflet.html">Leaflet sample</a> ·
-          <a href="/examples/maplibre.html">MapLibre sample</a> ·
-          <a href="/examples/openlayers.html">OpenLayers sample</a>
-        </nav>
-      </aside>
-      <section aria-label="Raster map">
+      <section id="workspace" aria-label="Raster map">
         <div
           id="map"
-          aria-label="Map. Use arrow keys to pan, plus and minus to zoom"
+          aria-label="Map. Arrow keys pan, plus and minus zoom, Enter inspects when enabled."
         ></div>
-        <img id="native-image" alt="Native layer rendering" hidden />
-        <p>
-          Click the map to inspect display pixels. Keyboard users can inspect
-          its center.
-        </p>
+        <div id="native-stage" hidden>
+          <img id="native-image" alt="Selected layer rendering" tabindex="0" />
+        </div>
+        <div class="map-tools" aria-label="Map controls">
+          <button
+            id="fit"
+            class="button tool"
+            type="button"
+            title="Fit the selected layer"
+            disabled
+          >
+            <svg><use href="#i-fit" /></svg><span>Fit layer</span>
+          </button>
+          <button
+            id="inspect"
+            class="button tool"
+            type="button"
+            aria-pressed="false"
+            disabled
+          >
+            <svg><use href="#i-pin" /></svg><span>Inspect</span>
+          </button>
+        </div>
+        <div id="legend" class="map-legend" aria-label="Legend" hidden></div>
+        <div class="map-footer">
+          <label class="basemap-select"
+            >Basemap
+            <select id="basemap">
+              <option value="land">World land</option>
+              <option value="streets">OpenStreetMap</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <span id="coordinates" hidden></span>
+        </div>
+        <div id="notice" class="notice" hidden>
+          <span id="status" role="status" aria-live="polite">Connecting…</span
+          ><button id="retry" type="button" hidden>Retry</button>
+        </div>
+        <div id="empty" class="empty-state" hidden>
+          <svg><use href="#i-layers" /></svg>
+          <h2>No layers in this catalog</h2>
+          <p>Register imagery, then refresh the catalog to explore it.</p>
+        </div>
       </section>
+      <aside id="panel" aria-label="Catalog explorer" data-open="false">
+        <div class="panel-handle">
+          <button
+            id="panel-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="panel-content"
+          >
+            <span class="handle-bar"></span><span>Layers & display</span>
+          </button>
+        </div>
+        <div class="panel-tabs" role="tablist" aria-label="Explorer tools">
+          <button
+            id="tab-layers"
+            role="tab"
+            aria-selected="true"
+            aria-controls="pane-layers"
+            tabindex="0"
+          >
+            <svg><use href="#i-layers" /></svg>Layers
+            <span id="layer-count" class="count"></span>
+          </button>
+          <button
+            id="tab-style"
+            role="tab"
+            aria-selected="false"
+            aria-controls="pane-style"
+            tabindex="-1"
+            disabled
+          >
+            <svg><use href="#i-style" /></svg>Style
+          </button>
+          <button
+            id="tab-details"
+            role="tab"
+            aria-selected="false"
+            aria-controls="pane-details"
+            tabindex="-1"
+            disabled
+          >
+            <svg><use href="#i-info" /></svg>Details
+          </button>
+        </div>
+        <div id="panel-content">
+          <section
+            id="pane-layers"
+            role="tabpanel"
+            aria-labelledby="tab-layers"
+          >
+            <div class="panel-heading">
+              <h1>Catalog</h1>
+              <button
+                id="refresh"
+                class="text-button"
+                type="button"
+                title="Refresh the catalog"
+                disabled
+              >
+                Refresh
+              </button>
+            </div>
+            <div id="layer-controls" hidden>
+              <div class="field">
+                <label for="mode">Display mode</label
+                ><select id="mode">
+                  <option value="singleband">Single band</option>
+                  <option value="rgb">RGB composite</option>
+                  <option value="compute">Expression</option>
+                </select>
+              </div>
+              <div id="rgb-bands" hidden>
+                <div class="channel-picker">
+                  <label for="r"
+                    ><span class="channel-dot red"></span>Red</label
+                  >
+                  <select id="r"></select>
+                </div>
+                <div class="channel-picker">
+                  <label for="g"
+                    ><span class="channel-dot green"></span>Green</label
+                  >
+                  <select id="g"></select>
+                </div>
+                <div class="channel-picker">
+                  <label for="b"
+                    ><span class="channel-dot blue"></span>Blue</label
+                  >
+                  <select id="b"></select>
+                </div>
+              </div>
+              <form id="expression-controls" hidden>
+                <div class="two-columns">
+                  <div>
+                    <label for="v1">Band v1</label
+                    ><select id="v1"></select>
+                  </div>
+                  <div>
+                    <label for="v2">Band v2</label
+                    ><select id="v2"></select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="expression">Expression</label>
+                  <input id="expression" spellcheck="false" required />
+                </div>
+                <div class="expression-actions">
+                  <button
+                    id="apply-expression"
+                    class="button primary"
+                    type="submit"
+                  >
+                    Apply expression
+                  </button>
+                  <button id="ndvi" class="text-button" type="button" hidden>
+                    Insert NDVI
+                  </button>
+                </div>
+              </form>
+              <div id="time-controls" hidden>
+                <label for="time-key">Observation key</label
+                ><select id="time-key">
+                  <option value="">None</option>
+                </select>
+                <div id="time-row" class="time-row" hidden>
+                  <button
+                    id="previous-time"
+                    type="button"
+                    aria-label="Previous observation"
+                  >
+                    ←</button
+                  ><select id="time" aria-label="Time"></select
+                  ><button
+                    id="next-time"
+                    type="button"
+                    aria-label="Next observation"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="search-field">
+              <svg><use href="#i-search" /></svg
+              ><input
+                id="layer-search"
+                type="search"
+                aria-label="Search layers"
+                placeholder="Search scene, band, date…"
+                autocomplete="off"
+              />
+            </div>
+            <p id="search-summary" class="muted small" aria-live="polite"></p>
+            <div id="layer-list" class="layer-list" aria-label="Layers"></div>
+            <p id="no-results" class="no-results" hidden>
+              No matching layers. Try a different search.
+            </p>
+            <button
+              id="more-layers"
+              class="button secondary"
+              type="button"
+              hidden
+            >
+              Show more layers
+            </button>
+          </section>
+          <section
+            id="pane-style"
+            role="tabpanel"
+            aria-labelledby="tab-style"
+            hidden
+          >
+            <div class="panel-heading">
+              <h2>Display</h2>
+              <button id="reset-style" type="button" class="text-button">
+                Reset style
+              </button>
+            </div>
+            <p id="style-empty" class="muted small" hidden>
+              Apply an expression in Layers to style it.
+            </p>
+            <form id="render-form">
+              <div class="style-group">
+                <div class="section-heading">
+                  <h3>Contrast</h3>
+                  <button id="auto-contrast" class="text-button" type="button">
+                    Auto contrast
+                  </button>
+                </div>
+                <div id="scalar-contrast" class="range-control">
+                  <div class="range-sliders">
+                    <input
+                      id="single-low"
+                      type="range"
+                      aria-label="Contrast minimum"
+                    /><input
+                      id="single-high"
+                      type="range"
+                      aria-label="Contrast maximum"
+                    />
+                  </div>
+                  <div class="range-numbers">
+                    <input
+                      id="minimum"
+                      type="number"
+                      step="any"
+                      aria-label="Stretch minimum"
+                      required
+                    /><span>to</span
+                    ><input
+                      id="maximum"
+                      type="number"
+                      step="any"
+                      aria-label="Stretch maximum"
+                      required
+                    />
+                  </div>
+                </div>
+                <div id="rgb-contrast" hidden>
+                  <div class="channel-contrast">
+                    <h4><span class="channel-dot red"></span>Red</h4>
+                    <div class="range-control">
+                      <div class="range-sliders">
+                        <input
+                          id="r-low"
+                          type="range"
+                          aria-label="Red contrast minimum"
+                        /><input
+                          id="r-high"
+                          type="range"
+                          aria-label="Red contrast maximum"
+                        />
+                      </div>
+                      <div class="range-numbers">
+                        <input
+                          id="r-min"
+                          type="number"
+                          step="any"
+                          aria-label="Red minimum"
+                        /><span>to</span
+                        ><input
+                          id="r-max"
+                          type="number"
+                          step="any"
+                          aria-label="Red maximum"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="channel-contrast">
+                    <h4><span class="channel-dot green"></span>Green</h4>
+                    <div class="range-control">
+                      <div class="range-sliders">
+                        <input
+                          id="g-low"
+                          type="range"
+                          aria-label="Green contrast minimum"
+                        /><input
+                          id="g-high"
+                          type="range"
+                          aria-label="Green contrast maximum"
+                        />
+                      </div>
+                      <div class="range-numbers">
+                        <input
+                          id="g-min"
+                          type="number"
+                          step="any"
+                          aria-label="Green minimum"
+                        /><span>to</span
+                        ><input
+                          id="g-max"
+                          type="number"
+                          step="any"
+                          aria-label="Green maximum"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="channel-contrast">
+                    <h4><span class="channel-dot blue"></span>Blue</h4>
+                    <div class="range-control">
+                      <div class="range-sliders">
+                        <input
+                          id="b-low"
+                          type="range"
+                          aria-label="Blue contrast minimum"
+                        /><input
+                          id="b-high"
+                          type="range"
+                          aria-label="Blue contrast maximum"
+                        />
+                      </div>
+                      <div class="range-numbers">
+                        <input
+                          id="b-min"
+                          type="number"
+                          step="any"
+                          aria-label="Blue minimum"
+                        /><span>to</span
+                        ><input
+                          id="b-max"
+                          type="number"
+                          step="any"
+                          aria-label="Blue maximum"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="style-group">
+                <div id="single-controls" class="field">
+                  <label for="colormap">Color palette</label
+                  ><select id="colormap">
+                    <option value="">Grayscale</option>
+                    <option value="viridis">Viridis</option>
+                    <option value="terrain">Terrain</option>
+                    <option value="plasma">Plasma</option>
+                    <option value="inferno">Inferno</option>
+                  </select>
+                </div>
+
+                <div id="rgb-correction" class="field" hidden>
+                  <label for="color-correction">Color correction</label>
+                  <select id="color-correction">
+                    <option value="">None</option>
+                    <option value="gamma rgb 1.35">Brighten midtones</option>
+                    <option value="sigmoidal rgb 5 0.5">
+                      Increase contrast
+                    </option>
+                    <option value="saturation 1.25">Boost saturation</option>
+                  </select>
+                </div>
+              </div>
+              <div class="style-group">
+                <div class="section-heading">
+                  <label for="opacity">Layer opacity</label>
+                  <output id="opacity-value">100%</output>
+                </div>
+                <input
+                  id="opacity"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="100"
+                />
+              </div>
+            </form>
+          </section>
+          <section
+            id="pane-details"
+            role="tabpanel"
+            aria-labelledby="tab-details"
+            hidden
+          >
+            <div class="panel-heading">
+              <h2>Metadata</h2>
+            </div>
+            <dl id="metadata-summary" class="metadata-summary"></dl>
+            <details>
+              <summary>Metadata JSON</summary>
+              <pre id="metadata"></pre>
+              <button id="copy-metadata" class="text-button" type="button">
+                Copy metadata
+              </button>
+            </details>
+            <details>
+              <summary>Service & developer tools</summary>
+              <a id="api-docs" target="_blank" rel="noopener"
+                >API documentation ↗</a
+              ><a id="image-url" target="_blank" rel="noopener" hidden
+                >Open preview image ↗</a
+              >
+              <nav aria-label="SDK examples">
+                <a href="./examples/leaflet.html">Leaflet example ↗</a
+                ><a href="./examples/maplibre.html">MapLibre example ↗</a
+                ><a href="./examples/openlayers.html">OpenLayers example ↗</a>
+              </nav>
+              <p id="service-address" class="muted small"></p>
+            </details>
+          </section>
+        </div>
+      </aside>
     </main>
-    <noscript>Enable JavaScript to explore rasters.</noscript>
-    <script src="/vendor/leaflet.js"></script>
-    <script type="module" src="/viewer.js"></script>
+    <dialog id="server-dialog" aria-labelledby="server-title">
+      <div class="dialog-heading">
+        <h2 id="server-title">Open a tile server</h2>
+        <button
+          id="close-server"
+          class="icon-button"
+          aria-label="Close server dialog"
+          type="button"
+        >
+          <svg><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <form id="server-form">
+        <div class="field">
+          <label for="server-url">Tile server URL</label>
+          <input
+            id="server-url"
+            type="url"
+            placeholder="https://maps.example.com"
+            required
+          />
+        </div>
+        <button type="submit" class="button primary">Connect</button>
+        <p id="server-error" role="alert"></p>
+      </form>
+    </dialog>
+    <dialog id="share-dialog" aria-labelledby="share-title">
+      <div class="dialog-heading">
+        <h2 id="share-title">Share this view</h2>
+        <button
+          id="close-share"
+          class="icon-button"
+          aria-label="Close share dialog"
+          type="button"
+        >
+          <svg><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <label for="share-link">View link</label>
+      <div class="copy-row">
+        <input id="share-link" type="url" readonly /><button
+          id="copy-share"
+          class="button primary"
+          type="button"
+        >
+          Copy link
+        </button>
+      </div>
+      <p id="share-note" class="muted small" role="status"></p>
+    </dialog>
+    <noscript>Enable JavaScript to explore this catalog.</noscript>
+    <script src="./vendor/leaflet.js"></script>
+    <script type="module" src="./viewer.js"></script>
   </body>
 </html>

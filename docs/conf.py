@@ -48,6 +48,7 @@ def export_demo(app, exception):
         exporter = runpy.run_path(
             str(Path(__file__).resolve().parents[1] / "packaging/demo/export-viewer.py")
         )
+        exporter["export"](Path(app.outdir) / "explore")
         exporter["export"](
             Path(app.outdir) / "demo",
             os.environ.get("DEMO_API_URL", ""),

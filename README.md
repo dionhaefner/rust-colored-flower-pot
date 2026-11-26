@@ -36,8 +36,8 @@ use. To install a prebuilt wheel, follow the [installation guide](docs/how-to/in
 Create a ready-to-serve map from the bundled real imagery:
 
 ```sh
-rcfp sample -o sample
-rcfp serve -d sample/map.sqlite
+rcfp demo -o demo-data
+rcfp serve -d demo-data/map.sqlite
 ```
 
 In a second terminal, with the same environment active:
@@ -46,19 +46,23 @@ In a second terminal, with the same environment active:
 rcfp connect localhost:5000
 ```
 
-Select **lagoon / red**, then try **Rendering → RGB** or an expression.
-The viewer works offline after installation, with no map token or data download.
+Choose a layer, RGB bands, or an expression in **Layers**. Use **Style** to adjust
+contrast and color. `connect` opens the browser and exits. The local viewer works
+offline after installation, with no map token or data download.
 The server also exposes [`/keys`](http://127.0.0.1:5000/keys),
 [`/datasets`](http://127.0.0.1:5000/datasets), and
 [`/apidoc`](http://127.0.0.1:5000/apidoc).
 [First-map tutorial](docs/tutorials/first-map.md) |
 [Inspect your own imagery](docs/how-to/diagnostics.md)
 
-To explore the **live AWS Lambda demo** with the same viewer:
+To explore the **live AWS Lambda demo** with the bundled local viewer:
 
 ```sh
-rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/
+rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/ --port 5100
 ```
+
+The [viewer connection guide](docs/how-to/demo.md#connect-to-a-tile-server)
+covers the static explorer and connections to RCFP and Terracotta.
 
 ## Keep your Terracotta workflow
 
@@ -114,7 +118,7 @@ import rcfp
 store = rcfp.DataStore("vegetation.sqlite")
 store.create(["scene", "band"], format="native")
 for band in ("red", "nir"):
-    store.insert(["lagoon", band], f"sample/data/{band}.tif", values="scaled")
+    store.insert(["lagoon", band], f"demo-data/data/{band}.tif", values="scaled")
 store.define(
     ["lagoon", "ndvi"], "(nir-red)/(nir+red)",
     {"nir": ["lagoon", "nir"], "red": ["lagoon", "red"]},

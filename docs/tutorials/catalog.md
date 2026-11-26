@@ -5,7 +5,7 @@ installed environment and sample data as [your first map](first-map.md). Choose 
 new filename because the example refuses to replace an existing catalog.
 
 ```sh
-python sample/create_catalog.py catalog.sqlite
+python demo-data/create_catalog.py catalog.sqlite
 ```
 
 The script verifies sample checksums, fixes the key order with `DataStore.create`,

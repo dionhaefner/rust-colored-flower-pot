@@ -68,6 +68,7 @@ jobs:
           python docs/tools/browser_check.py --html docs/_build/html --out build/docs-browser
           python tests/browser_contracts.py \
             --binary "$(python -c 'import rcfp; print(rcfp._RUNTIME_ROOT / "bin" / "rcfp")')" \
+            --reference-python build/docs-terracotta/bin/python \
             --out build/docs-client
 
       - name: Verify diagnostics and offline first use

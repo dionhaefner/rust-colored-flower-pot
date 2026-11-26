@@ -34,6 +34,7 @@ from rasterio.enums import Resampling
 from rasterio.transform import from_bounds
 from rasterio.warp import reproject, transform_bounds
 from rcfp.wsgi import Application as WSGI
+from viewer_helpers import select_layer
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "tests/fixtures/corpus"
@@ -1240,9 +1241,7 @@ def main():
                             )
                             page.screenshot(path=str(out / (library + ".png")))
                         page.goto(viewer_url)
-                        page.get_by_label("Dataset", exact=True).select_option(
-                            label="stress / 2021-06-29 / value"
-                        )
+                        select_layer(page, label="stress / 2021-06-29 / value")
                         page.wait_for_function(
                             "document.querySelector('#status')?.textContent.includes('2021-06-29 / value')"
                         )

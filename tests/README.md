@@ -218,7 +218,9 @@ keys, JSON preflight/CORS, errors/recovery, fetch abort and stale-view responses
 keyboard controls and mobile layout. It blocks outbound requests and retains
 screenshots, exact executable hash and pinned fixture provenance. Time labels
 reuse a real raster to test browser selection, not temporal acquisition science.
-External provider basemaps and source-value point APIs are separate scope.
+It checks the offline world basemap and intercepts optional street tile requests
+with a local image. Pass `--reference-python` with Terracotta 0.10.1 installed to
+check the static explorer against upstream Terracotta across two browser origins.
 
 Run `node tests/sdk_contracts.mjs` for SDK transport, paging, revisions, encoding,
 adapters and cancellation controls. Check public declarations using
@@ -621,7 +623,7 @@ platforms record that case as skipped.
 The runner exports imagery and executes the published first-map steps from a
 fresh directory. Its PNG comparison uses the retained, independently acquired
 Terracotta demo reference. Optional Chromium blocks external requests and checks
-the offline map, RGB share restoration and repeated zoom at default server limits,
+the offline map, repeated RGB zoom at default server limits,
 and the API-docs page. Each zoom waits for animation and successful decoding of
 every tile. `first-use.json` records completion time, warnings/obstacles and
 artifact identity. This automated trial does not claim a human usability study.

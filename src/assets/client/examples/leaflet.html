@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Leaflet SDK sample</title>
-    <link rel="stylesheet" href="/vendor/leaflet.css" />
+    <link rel="stylesheet" href="../vendor/leaflet.css" />
     <style>
       body {
         font-family: system-ui;
@@ -32,13 +32,12 @@
       <summary>Metadata</summary>
       <pre id="metadata"></pre>
     </details>
-    <script src="/vendor/leaflet.js"></script>
+    <script src="../vendor/leaflet.js"></script>
     <script type="module">
-      import { Client, LatestRequest } from "/sdk/index.js";
-      import { leafletLayer, leafletTileJSON } from "/sdk/integrations.js";
-      const client = new Client(document.body.dataset.service, {
-        profile: document.body.dataset.profile,
-      });
+      import { LatestRequest } from "../sdk/index.js";
+      import { connectService, serviceUrl } from "../viewer-connection.js";
+      import { leafletLayer, leafletTileJSON } from "../sdk/integrations.js";
+      let client;
       const map = L.map("map").setView([0, 0], 2),
         latest = new LatestRequest();
       const select = document.getElementById("dataset"),
@@ -92,7 +91,7 @@
         }
       }
       try {
-        await client.connect();
+        ({ client } = await connectService(serviceUrl()));
         if (client.profile === "native")
           ({ tilesets: layers } = await client.discoverTilesets());
         else ({ layers } = await client.discover());

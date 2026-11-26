@@ -31,6 +31,7 @@ import numpy as np
 from native_rendering import expected
 from PIL import Image
 from rasterio.enums import Resampling
+from viewer_helpers import select_layer, settled, style_tab, view_link
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs/examples/data"
@@ -1370,11 +1371,12 @@ def main():
                     page.goto(client_url)
                     expect(page.locator("#metadata")).to_contain_text("selection_id")
                     expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
-                    assert page.locator("#dataset option").count() == 4
-                    page.get_by_label("Dataset", exact=True).select_option(index=2)
+                    assert page.locator(".layer-row").count() == 4
+                    select_layer(page, index=2)
                     expect(page.locator("#metadata")).to_contain_text(
                         rows["red"]["sha256"]
                     )
+                    style_tab(page)
                     assert page.locator("#render-form").is_visible()
                     assert (
                         json.loads(page.locator("#metadata").text_content())[
@@ -1382,32 +1384,48 @@ def main():
                         ]["stac"]["revision"]
                         == rows["red"]["sha256"]
                     )
-                    page.get_by_role("button", name="Inspect map center").click()
+                    page.get_by_role("button", name="Inspect", exact=True).click()
+                    page.locator("#map").press("Enter")
                     expect(page.locator("#inspection")).to_contain_text("Display RGBA:")
                     page.screenshot(path=str(active_case / "red.png"))
-                    page.get_by_label("Dataset", exact=True).select_option(index=3)
+                    select_layer(page, index=3)
                     expect(page.locator("#metadata")).to_contain_text("green")
                     expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                     page.locator(".leaflet-control-zoom-in").click()
                     expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                     page.screenshot(path=str(active_case / "green.png"))
-                    page.get_by_label("Dataset", exact=True).select_option(index=2)
-                    page.get_by_label("Rendering", exact=True).select_option("rgb")
-                    for label, key in (
-                        ("Red", "red"),
-                        ("Green", "green"),
-                        ("Blue", "blue"),
-                    ):
-                        page.get_by_label(label, exact=True).select_option(key)
+                    select_layer(page, index=2)
                     with page.expect_response(
                         lambda response: (
                             "/rgb/" in response.url and response.status == 200
                         )
                     ):
-                        page.get_by_role("button", name="Apply rendering").click()
-                    page.get_by_role("button", name="Create share link").click()
-                    expect(page.locator("#share-link")).not_to_have_value("")
-                    page.reload()
+                        page.get_by_label("Display mode", exact=True).select_option(
+                            "rgb"
+                        )
+                    settled(page)
+                    expect(page.locator("#share")).to_be_hidden()
+                    keys = json.loads(
+                        page.locator(".layer-row[aria-pressed=true]").get_attribute(
+                            "data-layer-id"
+                        )
+                    )
+                    params = {}
+                    for channel in ("r", "g", "b"):
+                        params[channel] = page.locator(f"#{channel}").input_value()
+                        params[f"{channel}_range"] = [
+                            float(page.locator(f"#{channel}-{end}").input_value())
+                            for end in ("min", "max")
+                        ]
+                    page.goto(
+                        view_link(
+                            page,
+                            {"mode": "rgb", "keys": keys[:-1], "params": params},
+                            center=[12.35, 45.45],
+                            zoom=13,
+                        )
+                    )
+                    settled(page)
                     expect(page.locator("#mode")).to_have_value("rgb")
                     expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                     page.screenshot(path=str(active_case / "rgb.png"))

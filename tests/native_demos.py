@@ -21,7 +21,7 @@ def main():
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     subprocess.run(
-        [sys.executable, "-m", "rcfp_cli", "sample", "-o", "sample"],
+        [sys.executable, "-m", "rcfp_cli", "demo", "-o", "demo-data"],
         cwd=out,
         check=True,
         timeout=30,

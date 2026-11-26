@@ -6,10 +6,10 @@ computes missing catalog statistics, updates metadata or rewrites raster paths.
 Without arguments it inspects `DRIVER_PATH`, if configured, or configuration only.
 
 ```sh
-rcfp inspect -r 'sample/data/{band}.tif' -o bands.sqlite
+rcfp inspect -r 'demo-data/data/{band}.tif' -o bands.sqlite
 rcfp inspect -d map.sqlite
 rcfp -c settings.toml inspect -d map.sqlite --json
-rcfp inspect --raster sample/data/red.tif --bands 1 --render-probe
+rcfp inspect --raster demo-data/data/red.tif --bands 1 --render-probe
 ```
 
 The pattern uses the same discovery and ordered-key rules as `ingest`.
@@ -27,7 +27,7 @@ than copying imagery into SQLite. `DRIVER_PATH` is the serving catalog location.
 It does not replace ingestion's required `-o`. Inspect first, then run:
 
 ```sh
-rcfp ingest 'sample/data/{band}.tif' -o bands.sqlite
+rcfp ingest 'demo-data/data/{band}.tif' -o bands.sqlite
 rcfp serve -d bands.sqlite
 ```
 
