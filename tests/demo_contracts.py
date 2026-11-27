@@ -322,6 +322,13 @@ def main():
             browser = playwright.chromium.launch(headless=True, args=["--no-sandbox"])
             try:
                 page = browser.new_page(viewport={"width": 1280, "height": 900})
+                page.route(
+                    "https://tile.openstreetmap.org/**",
+                    lambda route: route.fulfill(
+                        path=ROOT / "tests/fixtures/demo/preview.png",
+                        content_type="image/png",
+                    ),
+                )
                 errors, responses = [], []
                 page.on("pageerror", lambda error: errors.append(str(error)))
                 page.on(
@@ -345,7 +352,11 @@ def main():
                 )
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                 expect(page.locator("#share")).to_be_hidden()
-                expect(page.get_by_label("Basemap")).to_have_value("land")
+                expect(page.get_by_label("Basemap")).to_have_value("streets")
+                expect(
+                    page.locator(".leaflet-streets-pane .leaflet-tile-loaded").first
+                ).to_be_visible()
+                expect(page.get_by_label("Layer opacity")).to_have_value("80")
                 page.goto(
                     origin + "/project/demo/examples/leaflet.html",
                     wait_until="networkidle",

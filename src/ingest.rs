@@ -7,7 +7,7 @@ use crate::{
 use regex::Regex;
 use std::{
     collections::HashSet,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
 };
 
 pub fn glob(pattern: &str) -> Result<Vec<PathBuf>> {
@@ -19,8 +19,16 @@ pub fn glob(pattern: &str) -> Result<Vec<PathBuf>> {
             .map_err(|e| e.to_string())?
             .join(path)
     };
-    let mut paths = vec![PathBuf::from("/")];
-    for part in path.components().skip(1) {
+    let mut parts = path.components().peekable();
+    let mut root = PathBuf::new();
+    while matches!(
+        parts.peek(),
+        Some(Component::Prefix(_) | Component::RootDir)
+    ) {
+        root.push(parts.next().unwrap());
+    }
+    let mut paths = vec![root];
+    for part in parts {
         let part = part.as_os_str().to_string_lossy();
         if !part.contains(['*', '?', '[']) {
             paths = paths.into_iter().map(|p| p.join(part.as_ref())).collect();
@@ -86,6 +94,8 @@ pub fn raster_pattern(
             .to_string_lossy()
             .into_owned()
     };
+    #[cfg(windows)]
+    let pattern = pattern.replace('/', "\\");
     let mut keys = Vec::<String>::new();
     let mut parts = Vec::new();
     let mut glob_pattern = String::new();

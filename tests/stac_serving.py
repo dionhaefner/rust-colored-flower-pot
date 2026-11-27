@@ -1395,6 +1395,11 @@ def main():
                     expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                     page.screenshot(path=str(active_case / "green.png"))
                     select_layer(page, index=2)
+                    keys = json.loads(
+                        page.locator(".layer-row[aria-pressed=true]").get_attribute(
+                            "data-layer-id"
+                        )
+                    )
                     with page.expect_response(
                         lambda response: (
                             "/rgb/" in response.url and response.status == 200
@@ -1405,11 +1410,6 @@ def main():
                         )
                     settled(page)
                     expect(page.locator("#share")).to_be_hidden()
-                    keys = json.loads(
-                        page.locator(".layer-row[aria-pressed=true]").get_attribute(
-                            "data-layer-id"
-                        )
-                    )
                     params = {}
                     for channel in ("r", "g", "b"):
                         params[channel] = page.locator(f"#{channel}").input_value()

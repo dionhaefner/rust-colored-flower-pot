@@ -40,6 +40,9 @@ GitHub Pages serves the viewer, and the
 [Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
 serves catalog metadata and imagery. Use **Layers** to switch bands or build an
 RGB composite, and **Style** to adjust contrast and color.
+The public demo opens over OpenStreetMap with partial imagery opacity so the
+streets remain visible. Choose **World land** or **None** in the basemap menu,
+or set layer opacity to 100% in **Style** to see the imagery at full opacity.
 
 ## Deployment layout
 

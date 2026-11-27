@@ -20,11 +20,14 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
           - macos-15-intel
-          - macos-14
+          - macos-15
           - windows-2022
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
+
+    env:
+      RCFP_TEST_BINARY: ${{ matrix.os == 'windows-2022' && 'target/release/rcfp.exe' || 'target/release/rcfp' }}
 
     defaults:
       run:
@@ -58,24 +61,24 @@ jobs:
         run: |
           python tests/platform_smoke.py \
             --native-only \
-            --binary target/release/rcfp \
+            --binary "$RCFP_TEST_BINARY" \
             --out build/ci/ci-smoke
 
       - name: Native and compatibility behavior contracts
         run: |
           python tests/native_contracts.py \
-            --binary target/release/rcfp \
+            --binary "$RCFP_TEST_BINARY" \
             --out build/ci/profile-contracts
 
       - name: Native database-backed multiband contracts
-        run: python tests/layer_contracts.py --binary target/release/rcfp --out build/ci/layer-contracts
+        run: python tests/layer_contracts.py --binary "$RCFP_TEST_BINARY" --out build/ci/layer-contracts
 
       - name: Indexed mosaic correctness and viewport measurements
         if: runner.os == 'Linux'
-        run: python tests/mosaic_contracts.py --binary target/release/rcfp --out build/ci/mosaic-contracts
+        run: python tests/mosaic_contracts.py --binary "$RCFP_TEST_BINARY" --out build/ci/mosaic-contracts
 
       - name: Request lifecycle correctness
-        run: python tests/request_lifecycle.py --binary target/release/rcfp --out build/ci/request-lifecycle
+        run: python tests/request_lifecycle.py --binary "$RCFP_TEST_BINARY" --out build/ci/request-lifecycle
 
       - uses: actions/upload-artifact@v4
         if: always()

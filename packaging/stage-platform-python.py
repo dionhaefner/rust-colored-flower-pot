@@ -115,9 +115,8 @@ if sys.platform == "win32":
         macros=[("Py_LIMITED_API", "0x030C0000")],
     )
     compiler.link_shared_object(
-        objects,
+        [*objects, str(link)],
         str(extension),
-        extra_objects=[str(link)],
         library_dirs=[str(Path(sys.base_prefix) / "libs")],
         libraries=["python3"],
     )

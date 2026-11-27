@@ -755,7 +755,14 @@ $("basemap").onchange = () => {
   if (name === "streets") streets.addTo(map);
   else streets.remove();
 };
-$("basemap").onchange();
+if (demo) {
+  $("basemap").value = "streets";
+  $("opacity").value = 80;
+  opacity();
+  map.once("moveend", $("basemap").onchange);
+} else {
+  $("basemap").onchange();
+}
 fetch(new URL("./natural-earth-land.geojson", import.meta.url))
   .then((response) => {
     if (!response.ok) throw new Error("Basemap unavailable");

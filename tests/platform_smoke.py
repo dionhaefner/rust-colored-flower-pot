@@ -7,6 +7,7 @@ import io
 import json
 import os
 import platform
+import shutil
 import socket
 import subprocess
 import sys
@@ -21,6 +22,21 @@ from PIL import Image
 from rasterio.windows import Window
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def download_source(url, path):
+    for attempt in range(3):
+        try:
+            with (
+                urllib.request.urlopen(url, timeout=60) as response,
+                path.open("wb") as target,
+            ):
+                shutil.copyfileobj(response, target)
+            return
+        except OSError:
+            if attempt == 2:
+                raise
+            time.sleep(2**attempt)
 
 
 def main():
@@ -42,7 +58,7 @@ def main():
     if not raster.exists():
         asset = fixture["source"]
         parent = out / "sentinel-red.tif"
-        urllib.request.urlretrieve(asset["url"], parent)
+        download_source(asset["url"], parent)
         assert parent.stat().st_size == asset["bytes"]
         assert hashlib.sha256(parent.read_bytes()).hexdigest() == asset["sha256"]
         raster.parent.mkdir(parents=True, exist_ok=True)
