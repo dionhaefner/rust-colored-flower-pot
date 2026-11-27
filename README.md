@@ -10,14 +10,14 @@ One Rust core powers the tile server, CLI, Python API, WSGI, and Lambda adapters
 Matching wheels bundle GDAL/PROJ and the executable.
 
 [Get started](#from-zero-to-map) | [Coming from Terracotta?](#keep-your-terracotta-workflow) |
-[Feature demos](docs/tutorials/native-demos.md) | [Documentation](docs/README.md) |
-[Live Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
+[Live demo](https://dionhaefner.github.io/rust-colored-flower-pot/demo/) |
+[Feature demos](docs/tutorials/native-demos.md) |
+[Documentation](https://dionhaefner.github.io/rust-colored-flower-pot/)
 
-![RCFP's bundled viewer zooming and panning over Venice lagoon imagery, then switching from RGB to NDVI](docs/static/readme/navigation.gif)
+![RCFP explorer scrolling and dragging across a Sentinel-2 scene over Venice, then mapping vegetation with NDVI](docs/static/readme/navigation.gif)
 
-<sub>Real Sentinel-2 imagery, rendered by RCFP in the offline viewer. Edited
-playback, not a latency measurement. Contains modified Copernicus Sentinel data 2021. [Still image](docs/static/readme/navigation.png) |
-[Reproduce the demos](docs/tools/readme-media.md)</sub>
+<sub>Contains modified Copernicus Sentinel data 2021. Playback timing is edited.
+[Still image](docs/static/readme/navigation.png) · [Reproduce the demos](docs/tools/readme-media.md)</sub>
 
 ## From zero to map
 
@@ -47,22 +47,20 @@ rcfp connect localhost:5000
 ```
 
 Choose a layer, RGB bands, or an expression in **Layers**. Use **Style** to adjust
-contrast and color. `connect` opens the browser and exits. The local viewer works
-offline after installation, with no map token or data download.
+contrast and color. `connect` opens the GitHub Pages explorer and exits. Allow
+local network access if your browser prompts you. To use the bundled explorer
+offline, run `rcfp connect localhost:5000 --local`.
 The server also exposes [`/keys`](http://127.0.0.1:5000/keys),
 [`/datasets`](http://127.0.0.1:5000/datasets), and
 [`/apidoc`](http://127.0.0.1:5000/apidoc).
 [First-map tutorial](docs/tutorials/first-map.md) |
 [Inspect your own imagery](docs/how-to/diagnostics.md)
 
-To explore the **live AWS Lambda demo** with the bundled local viewer:
-
-```sh
-rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/ --port 5100
-```
-
-The [viewer connection guide](docs/how-to/demo.md#connect-to-a-tile-server)
-covers the static explorer and connections to RCFP and Terracotta.
+The [live demo](https://dionhaefner.github.io/rust-colored-flower-pot/demo/)
+connects the GitHub Pages explorer to the public
+[Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc).
+The [connection guide](docs/how-to/demo.md#connect-to-a-tile-server) covers other
+RCFP and Terracotta servers.
 
 ## Keep your Terracotta workflow
 

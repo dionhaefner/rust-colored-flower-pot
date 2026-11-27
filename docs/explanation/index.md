@@ -1,17 +1,11 @@
 # Explanation
 
-Understand the data model, rendering, deployment choices, and compatibility
-boundaries before deciding how to use RCFP in your application.
+Read about the design of RCFP and the tradeoffs behind its deployment and performance.
 
 ```{toctree}
 :maxdepth: 1
 
-concepts
-architecture
+data
+service-design
 why-rcfp
-rendering
-deployment
-performance
-raster-corpus
-glossary
 ```

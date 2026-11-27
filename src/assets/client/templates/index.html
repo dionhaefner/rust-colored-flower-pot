@@ -13,7 +13,7 @@
   <body
     data-service="{{ hostname }}"
     data-profile="{{ profile }}"
-    data-attribution=""
+    data-demo=""
     data-source-revision="{{ source_revision }}"
   >
     <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -181,6 +181,10 @@
               </button>
             </div>
             <div id="layer-controls" hidden>
+              <div id="demo-scene-control" class="field" hidden>
+                <label for="demo-scene">Scene</label>
+                <select id="demo-scene"></select>
+              </div>
               <div class="field">
                 <label for="mode">Display mode</label
                 ><select id="mode">
@@ -291,7 +295,7 @@
             hidden
           >
             <div class="panel-heading">
-              <h2>Display</h2>
+              <h2>Style</h2>
               <button id="reset-style" type="button" class="text-button">
                 Reset style
               </button>
@@ -336,7 +340,8 @@
                     />
                   </div>
                 </div>
-                <div id="rgb-contrast" hidden>
+                <details id="rgb-contrast" hidden>
+                  <summary>Adjust RGB channels</summary>
                   <div class="channel-contrast">
                     <h4><span class="channel-dot red"></span>Red</h4>
                     <div class="range-control">
@@ -427,7 +432,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </details>
               </div>
               <div class="style-group">
                 <div id="single-controls" class="field">

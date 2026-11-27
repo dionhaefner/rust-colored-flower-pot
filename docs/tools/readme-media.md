@@ -1,41 +1,28 @@
-# Reproduce the README animations
+# Reproduce the README and feature screenshots
 
-The navigation animation captures RCFP's installed, checksum-pinned samples in
-its bundled Leaflet viewer, including real RGB and NDVI tile requests. Playback
-uses edited screenshot durations and does not measure latency or browser paint.
-The NDVI request explicitly selects NIR and red and promotes the UInt16 samples
-with `1.0*v1` and `1.0*v2` before arithmetic. It uses a −1 to 1 stretch and the
-viridis colormap.
+The README walkthrough uses a full 10 m Sentinel-2 scene around Venice. It
+captures wheel zooms centered on the pointer, short drag gestures, and the
+switch from RGB to an NDVI expression. Playback timing is edited. The feature
+images come from the runnable native demos, the Leaflet SDK example, the
+rendered-publication example, and the native metrics endpoint.
 
-Use a current installed RCFP wheel, Pillow, Playwright, and its Chromium browser.
-The capture was made with Playwright 1.55.0 and Pillow 12.3.0 on Linux. The default
-font directory contains the DejaVu Sans and Sans Mono TrueType files; pass
-`--fonts` to use another directory containing those files.
-
-From the repository root, in the environment containing RCFP and the capture
-dependencies:
+Use a current RCFP wheel and matching native bundle with Pillow and Playwright.
+The capture runs on Linux with Chromium. From the repository root:
 
 ```sh
 python -m playwright install chromium
 python docs/tools/readme_media.py \
-  --binary "$(command -v rcfp)" \
+  --binary dist/bundle/bin/rcfp \
   --work build/readme-capture \
-  --assets docs/static/readme
+  --assets docs/static/readme \
+  --features docs/_static/native-demos
 ```
 
-`--binary` must point to the native executable, or the installed `rcfp` launcher.
-Use a fresh `--work` directory. The script starts two loopback services on available ports, blocks
-external browser requests, checks source checksums and HTTP/JavaScript errors,
-and stops both services when finished. It replaces the two README media files
-in `--assets`. Review the animation and its PNG still before committing.
+Use a fresh work directory. The script verifies the rasters against their
+pinned checksums and starts two loopback servers. Pass `--sources PATH` to
+reuse downloaded rasters named as in `tests/fixtures/navigation.json`.
+Browser requests stay on loopback. Review the still, animation, and screenshots
+before committing. The work directory contains sample frames, service logs,
+and a source and response report.
 
-The work directory retains the command transcript, service logs, full viewer
-screenshot, and a JSON report with source attribution/checksums, binary hash,
-request count, navigation stages, and output hashes/sizes. Generated reports
-and intermediate captures belong in ignored storage. These images are product
-demonstrations, not independent rendering reference outputs.
-
-The imagery contains modified Copernicus Sentinel data 2021. The sample manifest
-also documents the ESA WorldCover layer supplied with the quickstart; it is not
-shown in these animations. Source URLs, acquisition details, and attribution are
-in [the sample manifest](../examples/data/manifest.json).
+Contains modified Copernicus Sentinel data 2021.

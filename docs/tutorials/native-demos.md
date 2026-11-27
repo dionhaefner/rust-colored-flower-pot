@@ -1,6 +1,7 @@
 # Try the native features
 
 These examples use the installed RCFP package and its real offline samples.
+The examples and captures contain modified Copernicus Sentinel data 2021.
 Run each Python block with `python` from the same writable directory. Create the
 sample once; use new catalog paths when repeating an example:
 
@@ -9,6 +10,8 @@ rcfp demo -o demo-data
 ```
 
 ## Logical bands and expressions
+
+![Stored NDVI layer showing vegetation in green around the Venice lagoon.](../_static/native-demos/ndvi.png)
 
 Store red/NIR bindings and publish NDVI as a discoverable dataset:
 
@@ -27,10 +30,12 @@ Path("ndvi.png").write_bytes(rcfp.render_preview("vegetation.sqlite", ["lagoon",
 ```
 
 Open `ndvi.png`, or run `rcfp serve -d vegetation.sqlite` and
-`rcfp connect localhost:5000` in another terminal. Choose **lagoon / ndvi**.
+`rcfp connect localhost:5000 --local` in another terminal. Choose **lagoon / ndvi**.
 See [logical datasets](../reference/layers.md) for packed multiband inputs.
 
 ## STAC sources
+
+![Grayscale Sentinel-2 red band rendered from a STAC Item.](../_static/native-demos/stac.png)
 
 The sample includes a local STAC Item with a pinned raster checksum. Render it
 through the same application interface:
@@ -57,6 +62,8 @@ Open `stac.png`. To browse it, run
 Direct STAC sources verify and stage the whole TIFF on first use.
 
 ## Indexed virtual mosaics
+
+![Rendered overlap of two raster assets in the indexed virtual mosaic.](../_static/native-demos/mosaic.png)
 
 Combine the overlapping red and green sample footprints in a bounded mosaic.
 The overlap rule chooses the first valid observation. Inspect its contributors
@@ -96,6 +103,8 @@ first observation where it covers the grid. [Mosaic guidance](../how-to/mosaics.
 extends this to adjacent scenes, attribute selection and broad-view snapshots.
 
 ## Python compute layers
+
+![Vegetation index returned by the NumPy callback and rendered as a scalar raster.](../_static/native-demos/model.png)
 
 Run a NumPy model on aligned red/NIR inputs and render its returned scalar values.
 This host uses a bounded worker pool and publishes the model through ordinary
@@ -138,6 +147,8 @@ load Python functions.
 
 ## Browser SDK
 
+![Leaflet SDK example displaying the red band over the Venice lagoon.](../_static/native-demos/leaflet.png)
+
 Start the tile server and open the bundled viewer from a second terminal:
 
 ```sh
@@ -145,7 +156,7 @@ rcfp serve -d demo-data/map.sqlite
 ```
 
 ```sh
-rcfp connect localhost:5000
+rcfp connect localhost:5000 --local
 ```
 
 Open <http://127.0.0.1:5000/explore/examples/leaflet.html> and select **lagoon / red**.
@@ -156,6 +167,8 @@ integrations. All three examples bundle their map libraries and work offline.
 The [SDK reference](../reference/javascript.md) explains embedding and typed APIs.
 
 ## Rendered publication
+
+![Browser snapshot loaded through a URL with a pinned render revision.](../_static/native-demos/publication.png)
 
 Get an ETag and an immutable render revision, then revalidate and retrieve the
 pinned representation using the byte-oriented API:
@@ -185,6 +198,8 @@ available for pinned URLs; RCFP does not archive old rasters.
 
 ## Native operations
 
+![Native metrics reporting the configured raster workers, queue, and render cache.](../_static/native-demos/operations.png)
+
 Set worker, queue and cache budgets, then inspect the effective configuration:
 
 ```sh
@@ -192,13 +207,14 @@ TC_RASTER_WORKERS=2 TC_RASTER_QUEUE_CAPACITY=8 TC_RENDER_CACHE_BYTES=4194304 \
   rcfp inspect -d demo-data/map.sqlite --json
 ```
 
-Use the same settings to serve the map:
+Use the same settings to serve the map and expose the local metrics endpoint:
 
 ```sh
-TC_RASTER_WORKERS=2 TC_RASTER_QUEUE_CAPACITY=8 TC_RENDER_CACHE_BYTES=4194304 \
-  rcfp serve -d demo-data/map.sqlite
+TC_EXPOSE_METRICS=true TC_RASTER_WORKERS=2 TC_RASTER_QUEUE_CAPACITY=8 \
+  TC_RENDER_CACHE_BYTES=4194304 rcfp serve -d demo-data/map.sqlite
 ```
 
-Connect the viewer from another terminal. Stop the processes with Ctrl+C before
-starting another example on the same port. See [resource budgets](../how-to/resources.md)
+Open <http://127.0.0.1:5000/__terracotta/metrics> to see the worker, queue, and
+cache counters. Stop the server with Ctrl+C before starting another example on
+the same port. See [resource budgets](../how-to/resources.md)
 and [monitoring](../reference/monitoring.md) for production configuration.

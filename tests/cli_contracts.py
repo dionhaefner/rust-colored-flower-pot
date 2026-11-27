@@ -100,6 +100,16 @@ def main():
         "service": ["https://maps.example.invalid/imagery"],
         "source-revision": ["r/2"],
     }
+    viewer = urlsplit(
+        command("connect", "localhost:5000", "--no-browser").stdout.strip()
+    )
+    assert viewer.netloc == "dionhaefner.github.io"
+    assert parse_qs(viewer.query) == {"service": ["http://localhost:5000"]}
+    assert command("connect", "--no-browser").stdout.strip() == (
+        "https://dionhaefner.github.io/rust-colored-flower-pot/explore/"
+    )
+    local = command("connect", "localhost:5000", "--local", "--no-browser")
+    assert local.stdout.strip() == "http://localhost:5000/explore/"
     command(
         "connect", "https://maps.example.invalid/?token=private", "--no-browser", code=2
     )

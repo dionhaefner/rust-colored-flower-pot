@@ -97,11 +97,15 @@ fn configured_run(args: &[String]) -> rcfp_core::Result<()> {
         {
             rcfp_core::diagnostics::command(rest, &origins)
         }
-        _ => run(&args[index..]),
+        _ => run(
+            &args[index..],
+            origins.contains_key("ALLOWED_ORIGINS_TILES")
+                || std::env::var_os("TC_ALLOWED_ORIGINS_TILES").is_some(),
+        ),
     })
 }
 
-fn run(args: &[String]) -> rcfp_core::Result<()> {
+fn run(args: &[String], explicit_tile_origins: bool) -> rcfp_core::Result<()> {
     if command_help::show(args)? {
         return Ok(());
     }
@@ -131,7 +135,7 @@ fn run(args: &[String]) -> rcfp_core::Result<()> {
             print_help();
             Ok(())
         }
-        [command, rest @ ..] if command == "serve" => serve(rest),
+        [command, rest @ ..] if command == "serve" => serve(rest, explicit_tile_origins),
         [command, rest @ ..] if command == "connect" => rcfp_core::client::command(rest),
         [command, rest @ ..] if command == "migrate" => {
             rcfp_core::storage::migrations::command(rest)
@@ -200,7 +204,7 @@ fn lambda_runtime() -> rcfp_core::Result<()> {
     rcfp_core::lambda::run_runtime(&database, &runtime_api)
 }
 
-fn serve(args: &[String]) -> rcfp_core::Result<()> {
+fn serve(args: &[String], explicit_tile_origins: bool) -> rcfp_core::Result<()> {
     let mut database = None;
     let mut bind = "127.0.0.1:5000".to_owned();
     let mut pattern = None;
@@ -296,6 +300,18 @@ fn serve(args: &[String]) -> rcfp_core::Result<()> {
             .ok_or("No free port between 5000 and 5099")?;
     } else if allow_all {
         bind = bind.replace("127.0.0.1", "0.0.0.0");
+    }
+    if bind
+        .parse::<std::net::SocketAddr>()
+        .is_ok_and(|address| address.ip().is_loopback())
+        && !explicit_tile_origins
+    {
+        settings
+            .get_mut("ALLOWED_ORIGINS_TILES")
+            .expect("configured tile origins")
+            .as_array_mut()
+            .expect("tile origins")
+            .push(format!("{}$", regex::escape(rcfp_core::client::HOSTED_ORIGIN)).into());
     }
     let application = rcfp_core::settings::scope(settings, || {
         if is_stac {

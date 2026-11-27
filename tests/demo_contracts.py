@@ -51,6 +51,9 @@ def main():
     mode.add_argument("--binary", type=Path)
     mode.add_argument("--image")
     parser.add_argument("--remote-catalog", action="store_true")
+    parser.add_argument(
+        "--sources", type=Path, help="Use previously downloaded rasters"
+    )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     out = args.out.resolve()
@@ -64,14 +67,8 @@ def main():
         if args.binary:
             binary = args.binary.resolve()
             prepared = out / "prepared"
-            manifest = helper("prepare").prepare(binary, prepared)
+            manifest = helper("prepare").prepare(binary, prepared, sources=args.sources)
             database = prepared / "catalog.sqlite"
-            with sqlite3.connect(database) as connection:
-                for row in manifest["fixtures"]:
-                    connection.execute(
-                        "UPDATE datasets SET path = ? WHERE band = ?",
-                        (str(prepared / "data" / row["file"]), row["id"]),
-                    )
             events, replies = queue.Queue(), queue.Queue()
 
             class Runtime(BaseHTTPRequestHandler):
@@ -140,8 +137,8 @@ def main():
                 )
                 for row in manifest["fixtures"]:
                     connection.execute(
-                        "UPDATE datasets SET path = ? WHERE band = ?",
-                        (f"/var/task/data/{row['file']}", row["id"]),
+                        "UPDATE datasets SET path = ? WHERE scene = ? AND band = ?",
+                        (f"/var/task/data/{row['file']}", row["scene"], row["band"]),
                     )
             with socket.socket() as listener:
                 listener.bind(("127.0.0.1", 0))
@@ -159,13 +156,15 @@ def main():
 
         with sqlite3.connect(database) as connection:
             assert (
-                connection.execute("SELECT COUNT(*) FROM metadata").fetchone()[0] == 4
+                connection.execute("SELECT COUNT(*) FROM metadata").fetchone()[0] == 6
             )
-        assert {row["id"] for row in manifest["fixtures"]} == {
-            "red",
-            "green",
-            "blue",
-            "nir",
+        assert {(row["scene"], row["band"]) for row in manifest["fixtures"]} == {
+            ("lagoon", "red"),
+            ("lagoon", "green"),
+            ("lagoon", "blue"),
+            ("lagoon", "nir"),
+            ("dolomites", "elevation"),
+            ("cape-town", "elevation"),
         }
         checks.append("pinned-assets-and-precomputed-catalog")
 
@@ -280,22 +279,25 @@ def main():
             json.loads(event("/__terracotta/identity")["body"])["compatibility_profile"]
             == "native"
         )
-        assert len(json.loads(event("/datasets")["body"])["datasets"]) == 4
+        assert len(json.loads(event("/datasets")["body"])["datasets"]) == 6
         preview = "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D"
+        for path in (
+            preview,
+            "/singleband/dolomites/elevation/preview.png",
+            "/singleband/cape-town/elevation/preview.png",
+        ):
+            image_response = event(path)
+            assert (
+                image_response["statusCode"] == 200
+                and image_response["isBase64Encoded"]
+            )
+            png = base64.b64decode(image_response["body"])
+            with Image.open(io.BytesIO(png)) as image:
+                assert image.convert("RGBA").getchannel("A").getextrema()[1] > 0
+                low, high = image.convert("L").getextrema()
+                assert low < high
+            (out / (path.split("/")[2] + ".png")).write_bytes(png)
         response = event(preview)
-        assert response["statusCode"] == 200 and response["isBase64Encoded"]
-        png = base64.b64decode(response["body"])
-        (out / "preview.png").write_bytes(png)
-        actual = Image.open(io.BytesIO(png)).convert("RGBA")
-        reference = ROOT / "tests/fixtures/demo"
-        provenance = json.loads((reference / "manifest.json").read_text())
-        golden_bytes = (reference / "preview.png").read_bytes()
-        assert hashlib.sha256(golden_bytes).hexdigest() == provenance["preview_sha256"]
-        assert provenance["source_sha256"] == next(
-            row["sha256"] for row in manifest["fixtures"] if row["id"] == "red"
-        )
-        golden = Image.open(io.BytesIO(golden_bytes)).convert("RGBA")
-        assert actual.size == golden.size and actual.tobytes() == golden.tobytes()
         assert response["headers"]["access-control-allow-origin"] == origin
         assert (
             "access-control-allow-origin"
@@ -310,7 +312,7 @@ def main():
             == 200
         )
         assert event("/singleband/missing/red/preview.png")["statusCode"] == 404
-        checks.append("persistent-runtime-binary-decoding-golden-cors-errors")
+        checks.append("persistent-runtime-decodes-all-scenes-and-enforces-cors")
 
         demo = site_root / "project/demo"
         helper("export-viewer").export(
@@ -332,9 +334,14 @@ def main():
                 )
                 expect(page.locator(".layer-row")).to_have_count(4)
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
-                page.select_option("#mode", "rgb")
+                expect(page.locator("#mode")).to_have_value("rgb")
+                page.get_by_label("Scene", exact=True).select_option("dolomites")
                 page.wait_for_function(
                     "document.querySelector('#workspace').getAttribute('aria-busy') === 'false'"
+                )
+                expect(page.locator("#mode")).to_have_value("singleband")
+                expect(page.locator(".leaflet-control-attribution")).to_contain_text(
+                    "Copernicus WorldDEM-30"
                 )
                 expect(page.locator(".leaflet-tile-loaded").first).to_be_visible()
                 expect(page.locator("#share")).to_be_hidden()

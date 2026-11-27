@@ -10,22 +10,54 @@ import shutil
 import sqlite3
 import subprocess
 from pathlib import Path
+from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "docs/examples/data"
+PINS = ROOT / "tests/fixtures/navigation.json"
+LAYERS = {
+    ("lagoon", "red"): "s2-red",
+    ("lagoon", "green"): "s2-green",
+    ("lagoon", "blue"): "s2-blue",
+    ("lagoon", "nir"): "s2-nir",
+    ("dolomites", "elevation"): "dem",
+    ("cape-town", "elevation"): "dem-south",
+}
+DEM_CREDIT = (
+    "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided "
+    "under COPERNICUS by the European Union and ESA; all rights reserved"
+)
 
 
-def prepare(binary: Path, out: Path, bucket: str = "") -> dict:
+def prepare(
+    binary: Path,
+    out: Path,
+    bucket: str = "",
+    sources: Path | None = None,
+    runtime_data: Path | None = None,
+) -> dict:
     binary = binary.resolve()
     out.mkdir(parents=True, exist_ok=False)
     (out / "data").mkdir()
-    rows = json.loads((DATA / "manifest.json").read_text())["fixtures"]
-    rows = [row for row in rows if row["id"] in ("red", "green", "blue", "nir")]
-    for row in rows:
-        source = DATA / row["file"]
-        if hashlib.sha256(source.read_bytes()).hexdigest() != row["sha256"]:
-            raise ValueError(f"sample checksum mismatch: {source}")
-        shutil.copy2(source, out / "data" / row["file"])
+    pins = json.loads(PINS.read_text())["sources"]
+    rows = []
+    for (scene, band), asset in LAYERS.items():
+        row = {**pins[asset], "scene": scene, "band": band}
+        if band == "elevation":
+            row["attribution"] = f"Produced using Copernicus WorldDEM-30 {DEM_CREDIT}"
+            row["source_notice"] = DEM_CREDIT
+        target = out / "data" / row["file"]
+        if sources:
+            shutil.copyfile(sources / row["file"], target)
+        else:
+            with (
+                urlopen(row["url"], timeout=120) as download,
+                target.open("wb") as file,
+            ):
+                shutil.copyfileobj(download, file)
+        with target.open("rb") as file:
+            if hashlib.file_digest(file, "sha256").hexdigest() != row["sha256"]:
+                raise ValueError(f"sample checksum mismatch: {target}")
+        rows.append(row)
     runtime = binary.parent.parent
     env = {
         **os.environ,
@@ -50,7 +82,7 @@ def prepare(binary: Path, out: Path, bucket: str = "") -> dict:
             "operation": "create",
             "keys": [
                 {"key": "scene", "description": "Sample acquisition"},
-                {"key": "band", "description": "Sentinel-2 band"},
+                {"key": "band", "description": "Raster band"},
             ],
         }
     )
@@ -58,8 +90,8 @@ def prepare(binary: Path, out: Path, bucket: str = "") -> dict:
         operation(
             {
                 "operation": "insert",
-                "keys": ["lagoon", row["id"]],
-                "raster": str(DATA / row["file"]),
+                "keys": [row["scene"], row["band"]],
+                "raster": str(out / "data" / row["file"]),
             }
         )
     with sqlite3.connect(database) as connection:
@@ -68,22 +100,22 @@ def prepare(binary: Path, out: Path, bucket: str = "") -> dict:
             path = (
                 f"s3://{bucket}/{row['object_key']}"
                 if bucket
-                else f"/var/task/data/{row['file']}"
+                else str((runtime_data or out / "data") / row["file"])
             )
             connection.execute(
                 "UPDATE datasets SET path = ? WHERE scene = ? AND band = ?",
-                (path, "lagoon", row["id"]),
+                (path, row["scene"], row["band"]),
             )
             metadata = json.loads(
                 connection.execute(
                     "SELECT metadata FROM metadata WHERE scene = ? AND band = ?",
-                    ("lagoon", row["id"]),
+                    (row["scene"], row["band"]),
                 ).fetchone()[0]
             )
             metadata["attribution"] = row["attribution"]
             connection.execute(
                 "UPDATE metadata SET metadata = ? WHERE scene = ? AND band = ?",
-                (json.dumps(metadata), "lagoon", row["id"]),
+                (json.dumps(metadata), row["scene"], row["band"]),
             )
     (out / "operation.json").unlink()
     manifest = {
@@ -101,5 +133,13 @@ if __name__ == "__main__":
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--bucket", default="")
+    parser.add_argument(
+        "--sources", type=Path, help="Use previously downloaded rasters"
+    )
+    parser.add_argument(
+        "--runtime-data", type=Path, help="Raster directory in the runtime image"
+    )
     args = parser.parse_args()
-    prepare(args.binary, args.out.resolve(), args.bucket)
+    prepare(
+        args.binary, args.out.resolve(), args.bucket, args.sources, args.runtime_data
+    )

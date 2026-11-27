@@ -8,6 +8,7 @@ on:
       - "packaging/lambda-comparison/**"
       - "packaging/lambda/**"
       - "tests/demo_contracts.py"
+      - "tests/fixtures/navigation.json"
       - "tests/test_demo_budget.py"
       - "tests/lambda_benchmark*.py"
       - "tests/lambda_image_comparison.py"

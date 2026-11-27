@@ -26,10 +26,11 @@ from Terracotta's Click definitions.
 catalog from matching rasters. `--rgb-key KEY` controls the final selection key.
 Native `--bind HOST:PORT` defaults to local serving. `--port PORT` uses a local
 address. `--debug` adds diagnostics. `--profile` emits request timing JSON.
-`connect HOSTNAME` opens the static explorer for an RCFP or Terracotta API and
-exits. A local RCFP server also serves an offline copy at `/explore/`. Use
-`--no-browser` to print the selected URL or `--port PORT` to keep a loopback
-viewer running. See [Connect to a tile server](../how-to/demo.md#connect-to-a-tile-server)
+`connect HOSTNAME` opens the GitHub Pages explorer for an RCFP or Terracotta API
+and exits. Run `connect` without a hostname to open the server picker.
+Use `--local` with a loopback RCFP server to open its bundled explorer
+at `/explore/`. Use `--no-browser` to print the selected URL or `--port PORT` to
+run a standalone bundled viewer on loopback. See [Connect to a tile server](../how-to/demo.md#connect-to-a-tile-server)
 for deployment and CORS settings.
 
 ### Inspect and create demo data

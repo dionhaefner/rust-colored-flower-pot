@@ -2,8 +2,9 @@
 
 `@rcfp/sdk` is a dependency-free ES module package with TypeScript declarations.
 Applications import `index.js` and `integrations.js` without depending on viewer code. RCFP embeds the same files in its native executable and wheels.
-Start `rcfp connect HOST --no-browser` to serve them at `/sdk/` and to open the
-viewer at `/`. There is no CDN or basemap request on first use.
+Start `rcfp serve` exposes them under `/explore/sdk/`. A standalone viewer started
+with `rcfp connect HOST --port 5100` serves them at `/sdk/`. Both use a bundled
+Natural Earth basemap by default.
 
 ## Install and discover
 

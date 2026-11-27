@@ -1,14 +1,16 @@
 //! Open the browser explorer or serve its assets on loopback.
 use crate::Result;
-use std::{process::Stdio, time::Duration};
+use std::process::Stdio;
 use tiny_http::{Header, Response, Server, StatusCode};
 #[path = "client_assets.rs"]
 mod assets;
 
+pub const HOSTED_ORIGIN: &str = "https://dionhaefner.github.io";
 const HOSTED_VIEWER: &str = "https://dionhaefner.github.io/rust-colored-flower-pot/explore/";
 pub fn command(args: &[String]) -> Result<()> {
     let mut host = None;
     let mut port = None;
+    let mut local = false;
     let mut browser = true;
     let mut source_revision = None;
     let mut i = 0;
@@ -16,11 +18,12 @@ pub fn command(args: &[String]) -> Result<()> {
         match args[i].as_str() {
             "--help" | "-h" => {
                 println!(
-                    "Usage: rcfp connect HOSTNAME [--no-browser] [--port PORT] [--source-revision REVISION]"
+                    "Usage: rcfp connect [HOSTNAME] [--local] [--no-browser] [--port PORT] [--source-revision REVISION]"
                 );
                 return Ok(());
             }
             "--no-browser" => browser = false,
+            "--local" => local = true,
             "--source-revision" if i + 1 < args.len() => {
                 i += 1;
                 let revision = &args[i];
@@ -38,7 +41,13 @@ pub fn command(args: &[String]) -> Result<()> {
         }
         i += 1;
     }
-    let host = host.ok_or("connect requires a hostname")?;
+    let Some(host) = host else {
+        if local || port.is_some() {
+            return Err("a bundled viewer requires a tile server hostname".into());
+        }
+        launch(hosted_viewer()?, source_revision, browser);
+        return Ok(());
+    };
     let explicit_scheme = host.contains("://");
     let mut url = clean_url(&if explicit_scheme {
         host
@@ -59,35 +68,18 @@ pub fn command(args: &[String]) -> Result<()> {
             .map_err(|_| "invalid service scheme")?;
     }
     let host = url.as_str().trim_end_matches('/');
+    let port = port.or_else(|| (local && !loopback).then_some(5100));
     let Some(port) = port else {
-        let override_url = std::env::var("RCFP_VIEWER_URL").ok();
-        let mut local = url.clone();
-        local.set_path(&format!("{}/explore/", url.path().trim_end_matches('/')));
-        let local_viewer = override_url.is_none()
-            && loopback
-            && ureq::AgentBuilder::new()
-                .redirects(0)
-                .timeout(Duration::from_secs(2))
-                .build()
-                .head(local.as_str())
-                .call()
-                .is_ok_and(|response| response.header("X-RCFP-Viewer") == Some("1"));
-        let mut viewer = if local_viewer {
-            local
+        let viewer = if local {
+            let mut viewer = url.clone();
+            viewer.set_path(&format!("{}/explore/", url.path().trim_end_matches('/')));
+            viewer
         } else {
-            let mut viewer = clean_url(override_url.as_deref().unwrap_or(HOSTED_VIEWER))?;
+            let mut viewer = hosted_viewer()?;
             viewer.query_pairs_mut().append_pair("service", host);
             viewer
         };
-        if let Some(revision) = source_revision {
-            viewer
-                .query_pairs_mut()
-                .append_pair("source-revision", revision);
-        }
-        println!("{viewer}");
-        if browser && std::env::var_os("TC_TESTING").is_none() {
-            open_browser(viewer.as_str());
-        }
+        launch(viewer, source_revision, browser);
         return Ok(());
     };
     let server = Server::http(("127.0.0.1", port))
@@ -119,6 +111,23 @@ pub fn command(args: &[String]) -> Result<()> {
         let _ = request.respond(response);
     }
     Ok(())
+}
+
+fn hosted_viewer() -> Result<url::Url> {
+    let override_url = std::env::var("RCFP_VIEWER_URL").ok();
+    clean_url(override_url.as_deref().unwrap_or(HOSTED_VIEWER))
+}
+
+fn launch(mut viewer: url::Url, source_revision: Option<&str>, browser: bool) {
+    if let Some(revision) = source_revision {
+        viewer
+            .query_pairs_mut()
+            .append_pair("source-revision", revision);
+    }
+    println!("{viewer}");
+    if browser && std::env::var_os("TC_TESTING").is_none() {
+        open_browser(viewer.as_str());
+    }
 }
 
 fn clean_url(value: &str) -> Result<url::Url> {

@@ -48,7 +48,7 @@ this server's HTTP contract.
 ## Explore in the client
 
 ```sh
-rcfp connect localhost:5000
+rcfp connect localhost:5000 --local
 ```
 
 Choose **lagoon / red** in **Layers**. To compose an RGB image, set **Display

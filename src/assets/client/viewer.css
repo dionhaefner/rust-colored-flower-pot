@@ -642,6 +642,9 @@ input[type="number"] {
   margin-bottom: 18px;
   border-bottom: 1px solid var(--line);
 }
+#demo-scene-control {
+  margin-bottom: 12px;
+}
 .two-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -672,8 +675,17 @@ input[type="number"] {
   border-top: 1px solid var(--line);
   padding-top: 15px;
 }
+.style-group {
+  padding-bottom: 14px;
+}
 .style-group .field {
-  margin-bottom: 16px;
+  margin: 0;
+}
+#rgb-contrast {
+  margin-top: 6px;
+}
+#search-summary:empty {
+  margin: 0;
 }
 #expression-controls .field {
   margin: 11px 0 16px;

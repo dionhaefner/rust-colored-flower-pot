@@ -35,6 +35,10 @@ def main():
             errors = []
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(origin, wait_until="networkidle")
+            assert page.locator(".sidebar-logo").evaluate(
+                "image => image.complete && image.naturalWidth > 0"
+            )
+            checks.append("documentation_logo")
             page.locator('article a[href="tutorials/first-map.html"]').first.click()
             page.wait_for_load_state("networkidle")
             assert page.locator("h1").inner_text().startswith("Your first raster map")
@@ -60,6 +64,7 @@ def main():
             for route in (
                 "index.html",
                 "tutorials/first-map.html",
+                "tutorials/native-demos.html",
                 "how-to/upgrade-terracotta.html",
                 "explanation/architecture.html",
                 "reference/configuration.html",

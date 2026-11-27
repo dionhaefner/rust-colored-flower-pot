@@ -64,8 +64,8 @@ def export(
         )
         if api_url and path.name == "index.html":
             text = text.replace(
-                'data-attribution=""',
-                'data-attribution="Contains modified Copernicus Sentinel data 2021"',
+                'data-demo=""',
+                'data-demo="true"',
             )
         path.write_text(text)
 

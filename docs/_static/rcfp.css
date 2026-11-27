@@ -9,6 +9,10 @@ article img {
 article pre {
   overflow-x: auto;
 }
+.sidebar-logo {
+  width: 76px;
+  height: auto;
+}
 .sidebar-version {
   display: block;
   margin-top: 0.5rem;

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -59,14 +58,6 @@ def main():
         parser.error("concurrency must be between 1 and 32")
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
-    rows = json.loads((ROOT / "docs/examples/data/manifest.json").read_text())[
-        "fixtures"
-    ]
-    rows = [row for row in rows if row["id"] in ("red", "green", "blue", "nir")]
-    for row in rows:
-        source = ROOT / "docs/examples/data" / row["file"]
-        if hashlib.sha256(source.read_bytes()).hexdigest() != row["sha256"]:
-            raise ValueError(f"sample checksum mismatch: {source}")
 
     def aws(*arguments):
         return subprocess.check_output(
@@ -100,15 +91,6 @@ def main():
         )
         (out / "budget.json").write_text(json.dumps(budget, indent=2) + "\n")
     bucket, repository = resources["DataBucket"], resources["RepositoryUri"]
-    for row in rows:
-        key = f"rasters/{row['sha256']}/{row['file']}"
-        aws(
-            "s3",
-            "cp",
-            str(ROOT / "docs/examples/data" / row["file"]),
-            f"s3://{bucket}/{key}",
-            "--only-show-errors",
-        )
     subprocess.run(
         ["bash", str(HERE / "build.sh")],
         check=True,
@@ -126,6 +108,27 @@ def main():
         ],
         check=True,
     )
+    container = subprocess.check_output(
+        ["docker", "create", "rcfp-demo"], text=True
+    ).strip()
+    assets = out / "assets"
+    assets.mkdir()
+    try:
+        for name in ("manifest.json", "data"):
+            subprocess.run(
+                ["docker", "cp", f"{container}:/var/task/{name}", str(assets)],
+                check=True,
+            )
+    finally:
+        subprocess.run(["docker", "rm", container], check=True)
+    for row in json.loads((assets / "manifest.json").read_text())["fixtures"]:
+        aws(
+            "s3",
+            "cp",
+            str(assets / "data" / row["file"]),
+            f"s3://{bucket}/{row['object_key']}",
+            "--only-show-errors",
+        )
     image_id = (
         subprocess.check_output(
             ["docker", "image", "inspect", "--format", "{{.Id}}", "rcfp-demo"],
@@ -197,6 +200,8 @@ def main():
     for path in (
         "/keys",
         "/singleband/lagoon/red/preview.png?stretch_range=%5B0%2C3000%5D",
+        "/singleband/dolomites/elevation/preview.png",
+        "/singleband/cape-town/elevation/preview.png",
     ):
         request = urllib.request.Request(base + path, headers={"Origin": origins[0]})
         with urllib.request.urlopen(request, timeout=60) as response:

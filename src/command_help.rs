@@ -77,17 +77,19 @@ Examples:
 Open the web viewer in another terminal: rcfp connect localhost:5000
 Press Ctrl+C to stop the server and drain outstanding raster work.";
 
-const CONNECT: &str = "Usage: rcfp connect HOSTNAME [OPTIONS]
+const CONNECT: &str = "Usage: rcfp connect [HOSTNAME] [OPTIONS]
 
-Open the static explorer for an RCFP or Terracotta tile server, then exit.
+Open the GitHub Pages explorer for an RCFP or Terracotta tile server, then exit.
 Choose layers, build RGB composites and expressions, and inspect pixels.
-Local RCFP servers provide an offline explorer at /explore/.
 
 Arguments:
   HOSTNAME                  Server host:port or HTTP(S) URL, including a prefix.
+                            Omit it to open the server picker.
 
 Options:
-  --port PORT               Keep a viewer running on this loopback port.
+  --local                   Use the bundled viewer. Loopback RCFP serves it
+                            at /explore/. For remote APIs, serve it on port 5100.
+  --port PORT               Serve the bundled viewer on this loopback port.
   --no-browser              Print the viewer URL without opening a browser.
   --source-revision TEXT    Revision used in share links. Default: unversioned.
   -h, --help                Show this help and exit.
@@ -96,6 +98,7 @@ Set RCFP_VIEWER_URL to use another static explorer URL.
 
 Examples:
   rcfp connect localhost:5000
+  rcfp connect localhost:5000 --local
   rcfp connect https://maps.example.com/imagery --no-browser
 
 Keep the tile server running while you explore.";

@@ -4,7 +4,7 @@
 
 Open the static explorer at `explore/` on the published documentation site and
 enter the base URL of an RCFP or Terracotta tile API. The URL can include a path
-prefix. With RCFP installed, pass the URL directly to the explorer:
+prefix. Run `rcfp connect` to open the server picker, or pass the API URL directly:
 
 ```sh
 rcfp connect https://maps.example.com/imagery
@@ -23,32 +23,32 @@ To export it for static hosting, run:
 python packaging/demo/export-viewer.py --out build/explore
 ```
 
-For offline RCFP on loopback, `connect` opens the explorer from the running tile
-server. Use `--port 5100` when you need a loopback viewer for an API that allows
-loopback origins. Keep that process running for the duration of the session.
-Hosted browsers may require local network access permission for loopback APIs.
+For a loopback RCFP server, use `rcfp connect localhost:5000 --local` to open its
+bundled explorer offline. Use `--port 5100` to serve a standalone bundled copy
+for an API that allows that loopback origin. Keep the standalone process running
+for the session.
+
+With the default loopback bind, `rcfp serve` allows the project's Pages origin
+for tiles unless you set `ALLOWED_ORIGINS_TILES` explicitly. The browser may ask
+for local network access. For other deployments, configure both metadata and tile
+CORS for the viewer's origin.
 
 ## Try the live demo
 
-The deployed [AWS Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
-serves the sample Venice lagoon imagery. With RCFP installed, open its interactive
-viewer locally:
-
-```sh
-rcfp connect https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/ --port 5100
-```
-
-Choose **lagoon / red** in **Layers**, then set **Display mode** to **RGB composite**.
-Open **Style** to adjust contrast and color correction. The Lambda API needs
-network access. The deployment instructions below also cover the static demo
-viewer published alongside the documentation.
+Open the [live explorer](https://dionhaefner.github.io/rust-colored-flower-pot/demo/).
+GitHub Pages serves the viewer, and the
+[Lambda API](https://atyp7fgt6ar4i4eddkp2jndixi0abpia.lambda-url.eu-north-1.on.aws/apidoc)
+serves catalog metadata and imagery. Use **Layers** to switch bands or build an
+RGB composite, and **Style** to adjust contrast and color.
 
 ## Deployment layout
 
 The deployment can serve the bundled raster viewer alongside this documentation
 on GitHub Pages. A public Lambda Function URL supplies the API, and a private S3 bucket
-holds four checksum-pinned Sentinel-2 crops. The catalog is precomputed and
-packaged with the function. Tile requests use database-backed S3 raster paths.
+holds checksum-pinned cloud-optimized GeoTIFFs. The demo catalog includes native
+10 m Sentinel-2 red, green, blue, and near-infrared bands over the Venice lagoon
+and 30 m Copernicus elevation tiles around the Dolomites and Cape Town. The catalog
+is precomputed and packaged with the function. Tile requests use database-backed S3 raster paths.
 They do not discover STAC Items or stage whole STAC assets.
 
 Infrastructure and deployment helpers live in `packaging/demo/`. Two CloudFormation
@@ -68,16 +68,17 @@ python tests/demo_contracts.py --image rcfp-demo --out build/demo-check
 ```
 
 The build uses the existing AL2023 native build and packages its GDAL/PROJ runtime
-in a Lambda container image. The credential-free image includes local copies of
-the same rasters. Tests invoke the bootstrap through AWS's runtime emulator,
-compare decoded imagery with an independent pinned golden, and exercise CORS,
-discovery, errors, RGB and the static viewer under a Pages project path.
+in a Lambda container image. The build downloads and checksum-verifies the rasters. The image retains local
+copies for qualification. Tests invoke the bootstrap through AWS's runtime
+emulator, decode a preview of each scene, and exercise CORS, RGB, scene switching,
+and the static viewer under a Pages project path.
 These checks do not establish real AWS permissions, S3 access or cloud latency.
 The **Lambda demo qualification** workflow runs the same checks and retains the
 image and report. It does not deploy infrastructure.
 
 For a prepared native bundle, the runtime API adapter and browser checks can also
-run without Docker:
+run without Docker. Pass `--sources PATH` to reuse a directory of rasters named
+as in `tests/fixtures/navigation.json`:
 
 ```sh
 python tests/demo_contracts.py --binary dist/bundle/bin/rcfp --out build/demo-native-check
@@ -108,9 +109,8 @@ For a local viewer, use `--origin http://127.0.0.1:8000`. Repeat `--origin`
 to allow both local and Pages origins, or add `http://127.0.0.1:5100` for
 `rcfp connect --port 5100`. Plain HTTP origins are limited to loopback hosts.
 
-This command creates billable resources and a public API. It creates storage,
-uploads immutable digest-addressed rasters, builds an image using those S3 paths,
-and checks it locally with the packaged copies of the rasters. It then pushes to
+This command creates billable resources and a public API. It creates storage, builds an image using digest-addressed S3 paths, and checks
+it locally with the packaged rasters. It uploads those rasters to S3, pushes to
 ECR, deploys the function, and checks discovery, CORS and a decoded PNG through
 the actual Function URL. Docker login stores an expiring ECR token using Docker's
 configured credential storage.

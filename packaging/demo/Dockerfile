@@ -6,8 +6,9 @@ ARG DEMO_BUCKET=""
 COPY --from=artifact /bundle /bundle
 WORKDIR /source
 COPY packaging/demo/prepare.py packaging/demo/prepare.py
-COPY docs/examples/data docs/examples/data
-RUN python packaging/demo/prepare.py --binary /bundle/bin/rcfp --out /demo --bucket "${DEMO_BUCKET}"
+COPY tests/fixtures/navigation.json tests/fixtures/navigation.json
+RUN python packaging/demo/prepare.py --binary /bundle/bin/rcfp --out /demo \
+    --bucket "${DEMO_BUCKET}" --runtime-data /var/task/data
 
 FROM public.ecr.aws/lambda/provided:al2023
 COPY --from=artifact /bundle /var/runtime/runtime

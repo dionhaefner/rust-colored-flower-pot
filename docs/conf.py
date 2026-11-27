@@ -21,6 +21,7 @@ myst_substitutions = {"version": release}
 html_theme = "furo"
 html_title = "RCFP documentation"
 html_short_title = "RCFP"
+html_logo = "static/rcfp-logo-256.png"
 templates_path = ["_templates"]
 html_static_path = ["_static"]
 html_css_files = ["rcfp.css"]
@@ -30,8 +31,6 @@ html_theme_options = {
         "color-brand-content": "#9c442c",
     }
 }
-if ".dev" in release:
-    html_theme_options["announcement"] = "Development documentation"
 html_last_updated_fmt = None
 html_copy_source = False
 html_show_sourcelink = False

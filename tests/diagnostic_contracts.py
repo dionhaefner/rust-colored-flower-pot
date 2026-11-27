@@ -17,7 +17,7 @@ import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 import numpy as np
 import rasterio
@@ -590,11 +590,17 @@ def trial(binary, out, env, browser, command):
                 assert server.poll() is None, "server exited"
                 assert time.monotonic() < deadline, "server startup timeout"
                 time.sleep(0.05)
+        preview = url + "/singleband/lagoon/red/preview.png?stretch_range=%5B0,3000%5D"
+        pages = "https://dionhaefner.github.io"
         with urlopen(
-            url + "/singleband/lagoon/red/preview.png?stretch_range=%5B0,3000%5D",
-            timeout=10,
+            Request(preview, headers={"Origin": pages}), timeout=10
         ) as response:
             actual = np.asarray(Image.open(io.BytesIO(response.read())).convert("RGBA"))
+            assert response.headers["Access-Control-Allow-Origin"] == pages
+        with urlopen(
+            Request(preview, headers={"Origin": pages + ".example"}), timeout=10
+        ) as response:
+            assert response.headers["Access-Control-Allow-Origin"] is None
         assert np.array_equal(actual, expected), "independent Terracotta preview pixels"
         steps.append(
             {
@@ -605,7 +611,7 @@ def trial(binary, out, env, browser, command):
         if browser:
             from playwright.sync_api import expect, sync_playwright
 
-            client_url = run("connect", url, "--no-browser").stdout.strip()
+            client_url = run("connect", url, "--local", "--no-browser").stdout.strip()
             assert client_url == url + "/explore/"
             with sync_playwright() as playwright:
                 chromium = playwright.chromium.launch(

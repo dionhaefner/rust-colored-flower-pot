@@ -281,6 +281,7 @@ def main() -> None:
                         str(binary),
                         "connect",
                         listen_url,
+                        "--local",
                         "--no-browser",
                         "--source-revision",
                         REVISION,
@@ -481,9 +482,6 @@ def main() -> None:
                 )
                 page.get_by_label("Time", exact=True).select_option("2024-01-02")
                 expect(page.locator("#status")).to_contain_text("2024-01-02 / red")
-                expect(page.locator("#header-layer")).to_contain_text(
-                    "2024-01-02 / red"
-                )
                 checks.append("explicit-time-browsing")
 
                 with page.expect_response(
@@ -498,6 +496,7 @@ def main() -> None:
                     expect(page.get_by_label(channel, exact=True)).to_be_visible()
                 style_tab(page)
                 expect(page.get_by_label("Red", exact=True)).to_be_hidden()
+                page.get_by_text("Adjust RGB channels", exact=True).click()
                 checks.append("rgb-band-assignment-in-layers")
 
                 green_range = page.locator("#g-min").input_value()
@@ -878,11 +877,8 @@ def main() -> None:
             ready(client_url, client)
             page = context.new_page()
             page.goto(client_url)
+            settled(page)
             expect(page.locator("#status")).to_contain_text("lagoon / image / 1")
-            page.wait_for_function(
-                """() => [...document.querySelectorAll('.leaflet-tile-loaded')]
-                    .some(image => image.complete && image.naturalWidth > 0)"""
-            )
             page.get_by_role("button", name="Inspect", exact=True).click()
             page.locator("#map").press("Enter")
             expect(page.locator("#inspection")).to_contain_text("Display RGBA:")

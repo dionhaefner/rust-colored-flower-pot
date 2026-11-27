@@ -15,6 +15,7 @@ const $ = (id) => document.getElementById(id);
 const loopback = (hostname) =>
   /^(?:(?:.+\.)?localhost\.?|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(hostname);
 const hosted = !document.body.dataset.service;
+const demo = document.body.dataset.demo === "true";
 const pageUrl = new URL(location.href);
 let client, serverUrl, canShare;
 const map = L.map("map", { zoomControl: false, zoomSnap: 0.25 }).setView(
@@ -23,11 +24,6 @@ const map = L.map("map", { zoomControl: false, zoomSnap: 0.25 }).setView(
 );
 L.control.zoom({ position: "topright" }).addTo(map);
 L.control.scale({ imperial: false }).addTo(map);
-if (document.body.dataset.attribution) {
-  const credit = document.createElement("span");
-  credit.textContent = document.body.dataset.attribution;
-  map.attributionControl.addAttribution(credit.outerHTML);
-}
 const rendering = new LatestRequest(),
   inspection = new LatestRequest(),
   restoring = new LatestRequest(),
@@ -45,6 +41,7 @@ let discovery,
   nativeIds,
   nativeBlob,
   nativeUrl,
+  rasterCredit,
   marker;
 const channelMetadata = new Map();
 let sourceRevision =
@@ -164,12 +161,15 @@ function listLayers() {
     .toLocaleLowerCase()
     .split(/\s+/)
     .filter(Boolean);
-  const found = layers().filter((layer) =>
-    terms.every((term) => layer.title.toLocaleLowerCase().includes(term)),
+  const scene = demo ? $("demo-scene").value : "";
+  const found = layers().filter(
+    (layer) =>
+      (!scene || layer.keys[0] === scene) &&
+      terms.every((term) => layer.title.toLocaleLowerCase().includes(term)),
   );
   $("search-summary").textContent = terms.length
     ? `${found.length} matching ${found.length === 1 ? "layer" : "layers"}`
-    : `${found.length} ${found.length === 1 ? "layer" : "layers"} in this catalog`;
+    : "";
   $("no-results").hidden = found.length > 0 || !terms.length;
   $("more-layers").hidden = found.length <= shown;
   $("layer-list").replaceChildren(
@@ -179,7 +179,10 @@ function listLayers() {
       button.dataset.layerId = layer.id;
       button.className = "layer-row";
       button.setAttribute("aria-label", layer.title);
-      button.setAttribute("aria-pressed", String(layer.id === selected?.id));
+      const displayed =
+        layer.id === selected?.id &&
+        (nativeIds || $("mode").value === "singleband");
+      button.setAttribute("aria-pressed", String(!!displayed));
       const glyph = document.createElement("span");
       glyph.className = "layer-glyph";
       glyph.setAttribute("aria-hidden", "true");
@@ -191,10 +194,11 @@ function listLayers() {
       name.textContent = layer.keys.at(-1);
       const context = document.createElement("span");
       context.className = "layer-context";
-      context.textContent = layer.keys.slice(0, -1).join(" / ") || "Layer";
+      context.textContent = scene ? "" : layer.keys.slice(0, -1).join(" / ");
+      context.hidden = !context.textContent;
       label.append(name, context);
       button.append(glyph, label);
-      if (layer.id === selected?.id) {
+      if (displayed) {
         const check = document.createElement("span");
         check.className = "layer-check";
         check.textContent = "✓";
@@ -221,10 +225,17 @@ $("more-layers").onclick = () => {
   shown += 30;
   listLayers();
 };
-function selectionTitle() {
-  $("header-layer").textContent = selected.title;
-  listLayers();
+function selectDemoScene(scene) {
+  const choices = layers().filter((layer) => layer.keys[0] === scene);
+  const red = choices.find((layer) => layer.keys.at(-1) === "red");
+  const rgb = ["red", "green", "blue"].every((band) =>
+    choices.some((layer) => layer.keys.at(-1) === band),
+  );
+  $("layer-search").value = "";
+  $("colormap").value = choices[0].keys.at(-1) === "elevation" ? "terrain" : "";
+  return choose(red || choices[0], { mode: rgb ? "rgb" : "singleband" });
 }
+$("demo-scene").onchange = () => selectDemoScene($("demo-scene").value);
 function bandChoices() {
   const prefix = selected.keys.slice(0, -1);
   return [
@@ -282,6 +293,7 @@ function showMode() {
   $("rgb-contrast").hidden = mode !== "rgb";
   $("rgb-correction").hidden = mode !== "rgb";
   $("auto-contrast").hidden = mode === "compute";
+  listLayers();
 }
 function rangeIds(key) {
   return key === "single"
@@ -335,6 +347,13 @@ function summary(meta) {
       return [dt, dd];
     }),
   );
+}
+function updateAttribution(value) {
+  if (rasterCredit) map.attributionControl.removeAttribution(rasterCredit);
+  const credit = document.createElement("span");
+  credit.textContent = typeof value === "string" ? value : "";
+  rasterCredit = credit.textContent ? credit.outerHTML : undefined;
+  if (rasterCredit) map.attributionControl.addAttribution(rasterCredit);
 }
 function specification() {
   const mode = $("mode").value;
@@ -459,11 +478,12 @@ async function apply({ fitView = false, restored } = {}) {
     if (version !== generation) return;
     if (JSON.stringify(keys) === selected.id) layerMetadata = result.meta;
     summary(result.meta);
+    updateAttribution(result.meta.metadata?.attribution);
     showLegend(result.legend, render);
     active = render;
     const title =
       render.mode === "singleband"
-        ? selected.title
+        ? ""
         : `${render.keys.join(" / ")} / ${render.mode === "rgb" ? "RGB" : "Expression"}`;
     $("header-layer").textContent = title;
     $("image-url").href = client.previewUrl(render);
@@ -508,7 +528,7 @@ function schedule() {
   clearTimeout(timer);
   timer = setTimeout(() => apply(), 220);
 }
-async function updateRgb({ reset = false } = {}) {
+async function updateRgb({ reset = false, fitView = false } = {}) {
   const bands = channelKeys.map((channel) => {
     const keys = [...selected.keys.slice(0, -1), $(channel).value];
     return { channel, keys, id: JSON.stringify(keys) };
@@ -518,6 +538,7 @@ async function updateRgb({ reset = false } = {}) {
   );
   loadingChannels = true;
   $("render-form").inert = true;
+  $("auto-contrast").disabled = true;
   clearTimeout(timer);
   try {
     const results = await channelRequest.run((signal) =>
@@ -531,27 +552,34 @@ async function updateRgb({ reset = false } = {}) {
     if (error.name === "AbortError") return;
     loadingChannels = false;
     $("render-form").inert = false;
+    $("auto-contrast").disabled = false;
     fail(error);
     return;
   }
   loadingChannels = false;
   $("render-form").inert = false;
-  await apply();
+  $("auto-contrast").disabled = false;
+  await apply({ fitView });
 }
-async function choose(layer, { fitView = true, preserveStyle = false } = {}) {
+async function choose(
+  layer,
+  { fitView = true, preserveStyle = false, mode = "singleband" } = {},
+) {
   clearTimeout(timer);
   generation++;
   rendering.cancel();
   channelRequest.cancel();
   loadingChannels = false;
+  $("auto-contrast").disabled = false;
   clearInspection();
   selected = layer;
   if (!preserveStyle) {
-    $("mode").value = "singleband";
+    $("mode").value = mode;
     $("expression").value = "";
     appliedExpression = undefined;
   }
-  selectionTitle();
+  $("header-layer").textContent = "";
+  listLayers();
   if (nativeIds) return applyNative();
   loadingSelection = true;
   $("render-form").inert = true;
@@ -571,7 +599,8 @@ async function choose(layer, { fitView = true, preserveStyle = false } = {}) {
     loadingSelection = false;
     $("render-form").inert = false;
     $("layer-controls").inert = false;
-    await apply({ fitView });
+    if ($("mode").value === "rgb") await updateRgb({ fitView });
+    else await apply({ fitView });
   } catch (error) {
     if (selected === layer) {
       loadingSelection = false;
@@ -625,6 +654,7 @@ $("mode").onchange = async () => {
   channelRequest.cancel();
   loadingChannels = false;
   $("render-form").inert = false;
+  $("auto-contrast").disabled = false;
   showMode();
   if ($("mode").value === "rgb") return updateRgb();
   if ($("mode").value === "compute") {
@@ -921,7 +951,7 @@ async function restore(fragment) {
       throw new Error("The saved layer is no longer in this catalog.");
     selected = layer;
     layerMetadata = undefined;
-    selectionTitle();
+    if (demo) $("demo-scene").value = layer.keys[0];
     bands();
     $("time-key").value = state.timeKey || "";
     timeOptions();
@@ -1010,6 +1040,22 @@ async function discover() {
     $("basemap").disabled = !!nativeIds;
     $("api-docs").href = client.baseUrl + "/apidoc";
     $("service-address").textContent = client.baseUrl;
+    if (demo && !nativeIds && layers().length) {
+      const scene = $("demo-scene");
+      options(
+        scene,
+        [...new Set(layers().map((layer) => layer.keys[0]))],
+        selected?.keys[0] || "lagoon",
+      );
+      const names = {
+        lagoon: "Venice lagoon",
+        dolomites: "Dolomites",
+        "cape-town": "Cape Town",
+      };
+      for (const option of scene.options)
+        option.textContent = names[option.value] || option.value;
+      $("demo-scene-control").hidden = scene.options.length < 2;
+    }
     if (hosted) {
       for (const link of $("pane-details").querySelectorAll("nav a")) {
         const url = new URL(link.href);
@@ -1024,6 +1070,7 @@ async function discover() {
       return;
     }
     if (location.hash && !nativeIds) await restore(location.hash);
+    else if (demo && !nativeIds) await selectDemoScene($("demo-scene").value);
     else
       await choose(
         layers().find((layer) => layer.id === selected?.id) || layers()[0],

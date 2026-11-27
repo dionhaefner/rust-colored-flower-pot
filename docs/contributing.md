@@ -78,5 +78,5 @@ The root `.readthedocs.yaml` configures a versioned Sphinx build from the matchi
 source/artifact, using [Read the Docs configuration](https://docs.readthedocs.com/platform/stable/config-file/v2.html).
 An owner connects the repository, enables release tags and development previews,
 and chooses the canonical URL in the hosting service. Preserve immutable
-release versions and mark development documentation clearly. Configuring builds
+release versions and show the documented package version in the sidebar. Configuring builds
 locally does not itself create an account connection or publish a site.
